@@ -1,7 +1,8 @@
-import { SolidityNestedMappingSubquery } from "@axiom-crypto/tools";
+import { DataSubqueryType, SolidityNestedMappingSubquery } from "@axiom-crypto/tools";
 import { CircuitValue, RawCircuitInput, CircuitValue256 } from "@axiom-crypto/halo2-lib-js";
 import { Halo2LibWasm } from "@axiom-crypto/halo2-lib-js/wasm/web";
-import { getCircuitValue256Constant, getCircuitValueConstant, PrepData, getCircuitValue256FromCircuitValue } from "./utils";
+import { getCircuitValue256Constant, getCircuitValueConstant, getCircuitValue256FromCircuitValue } from "./utils";
+import { prepData } from "./data";
 
 export interface SolidityMapping {
   /**
@@ -21,13 +22,13 @@ export interface SolidityMapping {
   nested: (keys: (RawCircuitInput | CircuitValue256 | CircuitValue)[]) => Promise<CircuitValue256>;
 }
 
-export const buildMapping = (blockNumber: CircuitValue, addr: CircuitValue, mappingSlot: CircuitValue256 | CircuitValue, halo2Lib: Halo2LibWasm, prepData: PrepData<SolidityNestedMappingSubquery>) => {
+export const buildMapping = (blockNumber: CircuitValue, addr: CircuitValue, mappingSlot: CircuitValue256 | CircuitValue) => {
 
   const nested = (keys: (RawCircuitInput | CircuitValue256 | CircuitValue)[]) => {
     const mappingDepth = keys.length;
 
     if (mappingSlot instanceof CircuitValue) {
-      mappingSlot = getCircuitValue256FromCircuitValue(halo2Lib, mappingSlot);
+      mappingSlot = getCircuitValue256FromCircuitValue(mappingSlot);
     }
 
     if (keys.length === 0) {
@@ -40,16 +41,16 @@ export const buildMapping = (blockNumber: CircuitValue, addr: CircuitValue, mapp
       throw new Error("mappingDepth range is [1,4]");
     }
 
-    let mappingDepthCV = getCircuitValueConstant(halo2Lib, mappingDepth);
+    let mappingDepthCV = getCircuitValueConstant(mappingDepth);
 
     let halo2LibValue256Keys: CircuitValue256[] = [];
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
       if (typeof key === "string" || typeof key === "number" || typeof key == "bigint") {
-        halo2LibValue256Keys.push(getCircuitValue256Constant(halo2Lib, key));
+        halo2LibValue256Keys.push(getCircuitValue256Constant(key));
       }
       else if (key instanceof CircuitValue) {
-        const convertedKey = getCircuitValue256FromCircuitValue(halo2Lib, key);
+        const convertedKey = getCircuitValue256FromCircuitValue(key);
         halo2LibValue256Keys.push(convertedKey);
       }
       else {
@@ -69,15 +70,16 @@ export const buildMapping = (blockNumber: CircuitValue, addr: CircuitValue, mapp
     };
     const hiLoKeys = halo2LibValue256Keys.map((key) => [key.hi(), key.lo()]);
     const flattened = hiLoKeys.reduce((acc, val) => acc.concat(val), []);
-    return prepData(mappingSubquery, [blockNumber, addr, mappingSlot.hi(), mappingSlot.lo(), mappingDepthCV, ...flattened]);
+    const dataSubquery = { subqueryData: mappingSubquery, type: DataSubqueryType.SolidityNestedMapping };
+    return prepData(dataSubquery, [blockNumber, addr, mappingSlot.hi(), mappingSlot.lo(), mappingDepthCV, ...flattened]);
   }
 
   const key = (key: RawCircuitInput | CircuitValue256 | CircuitValue) => {
     if (typeof key === "string" || typeof key === "number" || typeof key == "bigint") {
-      key = getCircuitValue256Constant(halo2Lib, key);
+      key = getCircuitValue256Constant(key);
     }
     else if (key instanceof CircuitValue) {
-      key = getCircuitValue256FromCircuitValue(halo2Lib, key);
+      key = getCircuitValue256FromCircuitValue(key);
     }
     return nested([key]);
   }

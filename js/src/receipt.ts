@@ -1,7 +1,7 @@
-import { AxiomV2FieldConstant, ReceiptField, ReceiptSubquery } from "@axiom-crypto/tools";
+import { AxiomV2FieldConstant, DataSubqueryType, ReceiptField, ReceiptSubquery } from "@axiom-crypto/tools";
 import { CircuitValue, RawCircuitInput, CircuitValue256 } from "@axiom-crypto/halo2-lib-js";
-import { Halo2LibWasm } from "@axiom-crypto/halo2-lib-js/wasm/web";
-import { getCircuitValue256Constant, getCircuitValueConstant, getCircuitValueWithOffset, lowercase, PrepData } from "./utils";
+import { getCircuitValue256Constant, getCircuitValueConstant, getCircuitValueWithOffset, lowercase } from "./utils";
+import { prepData } from "./data";
 
 /**
  * Represents a log entry in a receipt.
@@ -67,7 +67,7 @@ export interface Receipt extends ReceiptEnumKeyFields, SpecialReceiptKeyFields {
   logsBloom: (logsBloomIdx: RawCircuitInput) => Promise<CircuitValue256>;
 };
 
-export const buildReceipt = (blockNumber: CircuitValue, txIdx: CircuitValue, halo2Lib: Halo2LibWasm, prepData: PrepData<ReceiptSubquery>) => {
+export const buildReceipt = (blockNumber: CircuitValue, txIdx: CircuitValue) => {
 
   const getSubquery = (fieldOrLog: CircuitValue, topicOrData: CircuitValue, eventSchema: CircuitValue256) => {
 
@@ -78,43 +78,44 @@ export const buildReceipt = (blockNumber: CircuitValue, txIdx: CircuitValue, hal
       topicOrDataOrAddressIdx: topicOrData.number(),
       eventSchema: eventSchema.hex(),
     };
-    return prepData(receiptSubquery, [blockNumber, txIdx, fieldOrLog, topicOrData, eventSchema.hi(), eventSchema.lo()]);
+    const dataSubquery = { subqueryData: receiptSubquery, type: DataSubqueryType.Receipt };
+    return prepData(dataSubquery, [blockNumber, txIdx, fieldOrLog, topicOrData, eventSchema.hi(), eventSchema.lo()]);
   }
 
   const log = (logIdx: RawCircuitInput | CircuitValue) => {
     if (typeof logIdx === "string" || typeof logIdx === "number" || typeof logIdx == "bigint") {
-      logIdx = getCircuitValueConstant(halo2Lib, logIdx);
+      logIdx = getCircuitValueConstant(logIdx);
     }
-    const logIdxProcessed = getCircuitValueWithOffset(halo2Lib, logIdx, AxiomV2FieldConstant.Receipt.LogIdxOffset);
+    const logIdxProcessed = getCircuitValueWithOffset(logIdx, AxiomV2FieldConstant.Receipt.LogIdxOffset);
     const topic = (topicIdx: RawCircuitInput | CircuitValue, eventSchema?: string | CircuitValue256) => {
       if (typeof eventSchema === "string") {
-        eventSchema = getCircuitValue256Constant(halo2Lib, eventSchema);
+        eventSchema = getCircuitValue256Constant(eventSchema);
       }
       if (eventSchema === undefined) {
-        eventSchema = getCircuitValue256Constant(halo2Lib, 0);
+        eventSchema = getCircuitValue256Constant(0);
       }
       if (typeof topicIdx === "string" || typeof topicIdx === "number" || typeof topicIdx == "bigint") {
-        topicIdx = getCircuitValueConstant(halo2Lib, topicIdx);
+        topicIdx = getCircuitValueConstant(topicIdx);
       }
       return getSubquery(logIdxProcessed, topicIdx, eventSchema);
     }
 
     const address = async () => {
-      const topicOrDataIdx = getCircuitValueConstant(halo2Lib, AxiomV2FieldConstant.Receipt.AddressIdx);
-      return getSubquery(logIdxProcessed, topicOrDataIdx, getCircuitValue256Constant(halo2Lib, 0))
+      const topicOrDataIdx = getCircuitValueConstant(AxiomV2FieldConstant.Receipt.AddressIdx);
+      return getSubquery(logIdxProcessed, topicOrDataIdx, getCircuitValue256Constant(0))
     }
 
     const data = async (dataIdx: CircuitValue | RawCircuitInput, eventSchema?: string | CircuitValue256) => {
       if (typeof dataIdx === "string" || typeof dataIdx === "number" || typeof dataIdx == "bigint") {
-        dataIdx = getCircuitValueConstant(halo2Lib, dataIdx);
+        dataIdx = getCircuitValueConstant(dataIdx);
       }
       if (eventSchema === undefined) {
-        eventSchema = getCircuitValue256Constant(halo2Lib, 0);
+        eventSchema = getCircuitValue256Constant(0);
       }
       if (typeof eventSchema === "string") {
-        eventSchema = getCircuitValue256Constant(halo2Lib, eventSchema);
+        eventSchema = getCircuitValue256Constant(eventSchema);
       }
-      const dataIdxProcessed = getCircuitValueWithOffset(halo2Lib, dataIdx, AxiomV2FieldConstant.Receipt.DataIdxOffset);
+      const dataIdxProcessed = getCircuitValueWithOffset(dataIdx, AxiomV2FieldConstant.Receipt.DataIdxOffset);
       return getSubquery(logIdxProcessed, dataIdxProcessed, eventSchema);
     }
 
@@ -128,9 +129,9 @@ export const buildReceipt = (blockNumber: CircuitValue, txIdx: CircuitValue, hal
   const functions = Object.fromEntries(
     Object.keys(ReceiptField).map((key) => {
       return [lowercase(key), () => {
-        const receiptField = getCircuitValueConstant(halo2Lib, ReceiptField[key as keyof typeof ReceiptField]);
-        const zero = getCircuitValueConstant(halo2Lib, 0);
-        const zeroCircuitValue256 = getCircuitValue256Constant(halo2Lib, 0);
+        const receiptField = getCircuitValueConstant(ReceiptField[key as keyof typeof ReceiptField]);
+        const zero = getCircuitValueConstant(0);
+        const zeroCircuitValue256 = getCircuitValue256Constant(0);
         return getSubquery(receiptField, zero, zeroCircuitValue256);
       }]
     })
@@ -139,9 +140,9 @@ export const buildReceipt = (blockNumber: CircuitValue, txIdx: CircuitValue, hal
   const specialFunctions = Object.fromEntries(
     Object.keys(SpecialReceiptField).map((key) => {
       return [lowercase(key), () => {
-        const receiptField = getCircuitValueConstant(halo2Lib, SpecialReceiptField[key as keyof typeof SpecialReceiptField]);
-        const zero = getCircuitValueConstant(halo2Lib, 0);
-        const zeroCircuitValue256 = getCircuitValue256Constant(halo2Lib, 0);
+        const receiptField = getCircuitValueConstant(SpecialReceiptField[key as keyof typeof SpecialReceiptField]);
+        const zero = getCircuitValueConstant(0);
+        const zeroCircuitValue256 = getCircuitValue256Constant(0);
         return getSubquery(receiptField, zero, zeroCircuitValue256);
       }]
     })
@@ -153,14 +154,14 @@ export const buildReceipt = (blockNumber: CircuitValue, txIdx: CircuitValue, hal
       throw new Error("logsBloomIdxRaw must be a constant (not a CircuitValue)");
     }
 
-    const logsBloomIdx = getCircuitValueConstant(halo2Lib, logsBloomIdxRaw);
+    const logsBloomIdx = getCircuitValueConstant(logsBloomIdxRaw);
 
     if (logsBloomIdx.number() < 0 || logsBloomIdx.number() >= 8) {
       throw new Error("logsBloomIdx range is [0,8)");
     }
-    const logIdxProcessed = getCircuitValueWithOffset(halo2Lib, logsBloomIdx, AxiomV2FieldConstant.Receipt.LogsBloomIdxOffset);
-    const zero = getCircuitValueConstant(halo2Lib, 0);
-    const zeroCircuitValue256 = getCircuitValue256Constant(halo2Lib, 0);
+    const logIdxProcessed = getCircuitValueWithOffset(logsBloomIdx, AxiomV2FieldConstant.Receipt.LogsBloomIdxOffset);
+    const zero = getCircuitValueConstant(0);
+    const zeroCircuitValue256 = getCircuitValue256Constant(0);
     return getSubquery(logIdxProcessed, zero, zeroCircuitValue256);
   }
 

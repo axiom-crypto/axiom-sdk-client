@@ -1,7 +1,8 @@
-import { AxiomV2FieldConstant, HeaderField, HeaderSubquery } from "@axiom-crypto/tools";
+import { AxiomV2FieldConstant, DataSubqueryType, HeaderField, HeaderSubquery } from "@axiom-crypto/tools";
 import { CircuitValue, RawCircuitInput, CircuitValue256 } from "@axiom-crypto/halo2-lib-js";
 import { Halo2LibWasm } from "@axiom-crypto/halo2-lib-js/wasm/web";
-import { getCircuitValueConstant, getCircuitValueWithOffset, lowercase, PrepData } from "./utils";
+import { getCircuitValueConstant, getCircuitValueWithOffset, lowercase } from "./utils";
+import { prepData } from "./data";
 
 type HeaderEnumKeys = Uncapitalize<keyof typeof HeaderField>;
 type HeaderEnumKeyFieldsUnfiltered = { [key in HeaderEnumKeys]: () => Promise<CircuitValue256> };
@@ -16,20 +17,21 @@ export interface Header extends HeaderEnumKeyFields {
   logsBloom: (logsBloomIdx: RawCircuitInput) => Promise<CircuitValue256>;
 };
 
-export const buildHeader = (blockNumber: CircuitValue, halo2Lib: Halo2LibWasm, prepData: PrepData<HeaderSubquery>) => {
+export const buildHeader = (blockNumber: CircuitValue) => {
 
   const getSubquery = (fieldIdx: CircuitValue) => {
     let headerSubquery: HeaderSubquery = {
       blockNumber: blockNumber.number(),
       fieldIdx: fieldIdx.number()
     };
-    return prepData(headerSubquery, [blockNumber, fieldIdx]);
+    const dataSubquery = { subqueryData: headerSubquery, type: DataSubqueryType.Header };
+    return prepData(dataSubquery, [blockNumber, fieldIdx]);
   }
 
   const functions = Object.fromEntries(
     Object.keys(HeaderField).map((key) => {
       return [lowercase(key), () => {
-        const headerField = getCircuitValueConstant(halo2Lib, HeaderField[key as keyof typeof HeaderField])
+        const headerField = getCircuitValueConstant(HeaderField[key as keyof typeof HeaderField])
         return getSubquery(headerField);
       }]
     })
@@ -41,12 +43,12 @@ export const buildHeader = (blockNumber: CircuitValue, halo2Lib: Halo2LibWasm, p
       throw new Error("logsBloomIdxRaw must be a constant (not a CircuitValue)");
     }
 
-    const logsBloomIdx = getCircuitValueConstant(halo2Lib, logsBloomIdxRaw);
+    const logsBloomIdx = getCircuitValueConstant(logsBloomIdxRaw);
 
     if (logsBloomIdx.number() < 0 || logsBloomIdx.number() >= 8) {
       throw new Error("logsBloomIdx range is [0,8)");
     }
-    const logIdxProcessed = getCircuitValueWithOffset(halo2Lib, logsBloomIdx, AxiomV2FieldConstant.Header.LogsBloomFieldIdxOffset);
+    const logIdxProcessed = getCircuitValueWithOffset(logsBloomIdx, AxiomV2FieldConstant.Header.LogsBloomFieldIdxOffset);
     return getSubquery(logIdxProcessed);
   }
 

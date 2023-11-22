@@ -1,7 +1,8 @@
-import { StorageSubquery } from "@axiom-crypto/tools"
-import { PrepData, getCircuitValue256FromCircuitValue, getCircuitValue256Constant } from "./utils";
+import { DataSubqueryType, StorageSubquery } from "@axiom-crypto/tools"
+import { getCircuitValue256FromCircuitValue, getCircuitValue256Constant } from "./utils";
 import { CircuitValue, RawCircuitInput, CircuitValue256 } from "@axiom-crypto/halo2-lib-js";
 import { Halo2LibWasm } from "@axiom-crypto/halo2-lib-js/wasm/web";
+import { prepData } from "./data";
 
 /**
  * Represents the storage of a contract.
@@ -16,14 +17,14 @@ export interface Storage {
   slot: (slot: RawCircuitInput | CircuitValue256 | CircuitValue) => Promise<CircuitValue256>;
 }
 
-export const buildStorage = (blockNumber: CircuitValue, addr: CircuitValue, halo2Lib: Halo2LibWasm, prepData: PrepData<StorageSubquery>) => {
+export const buildStorage = (blockNumber: CircuitValue, addr: CircuitValue) => {
 
   const slot = (slot: RawCircuitInput | CircuitValue256 | CircuitValue) => {
     if (slot instanceof CircuitValue) {
-      slot = getCircuitValue256FromCircuitValue(halo2Lib, slot);
+      slot = getCircuitValue256FromCircuitValue(slot);
     }
     if (typeof slot === "string" || typeof slot === "number" || typeof slot == "bigint") {
-      slot = getCircuitValue256Constant(halo2Lib, slot);
+      slot = getCircuitValue256Constant(slot);
     }
 
     let storageSubquery: StorageSubquery = {
@@ -31,7 +32,8 @@ export const buildStorage = (blockNumber: CircuitValue, addr: CircuitValue, halo
       addr: addr.address(),
       slot: slot.hex()
     }
-    return prepData(storageSubquery, [blockNumber, addr, slot.hi(), slot.lo()]);
+    const dataSubquery = { subqueryData: storageSubquery, type: DataSubqueryType.Storage };
+    return prepData(dataSubquery, [blockNumber, addr, slot.hi(), slot.lo()]);
   }
 
   const storage: Storage = { slot };

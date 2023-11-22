@@ -1,12 +1,11 @@
 import { JsonRpcProvider } from "ethers";
-import { fetchDataQueries, getCircuitValue256Witness, getCircuitValueWitness } from "./utils";
+import { getCircuitValue256Witness, getCircuitValueWitness } from "./utils";
 import { SUBQUERY_NUM_INSTANCES, USER_COMPUTE_NUM_INSTANCES } from "./constants";
 import { getInputFunctionSignature } from "@axiom-crypto/halo2-lib-js/shared/utils";
-import { Halo2Lib, autoConfigCircuit, CircuitConfig } from "@axiom-crypto/halo2-lib-js";
+import { autoConfigCircuit, CircuitConfig } from "@axiom-crypto/halo2-lib-js";
 import { Halo2Wasm, Halo2LibWasm } from "@axiom-crypto/halo2-lib-js/wasm/web";
-import { AxiomData } from "./data";
 
-const parseDataInputs = (halo2Lib: Halo2LibWasm, inputs: string) => {
+const parseDataInputs = (inputs: string) => {
   let parsedInputs = JSON.parse(inputs);
   let parsedInputKeys = Object.keys(parsedInputs);
   for (let key of parsedInputKeys) {
@@ -18,28 +17,30 @@ const parseDataInputs = (halo2Lib: Halo2LibWasm, inputs: string) => {
         if (String(nestedKey).length == 66) {
           if (isCircuitValue256 === false) throw new Error("All array elements must be of the same type")
           isCircuitValue256 = true;
-          newval.push(getCircuitValue256Witness(halo2Lib, nestedKey));
+          newval.push(getCircuitValue256Witness(nestedKey));
         }
         else {
           if (isCircuitValue256 === true) throw new Error("All array elements must be of the same type")
           isCircuitValue256 = false;
-          newval.push(getCircuitValueWitness(halo2Lib, nestedKey));
+          newval.push(getCircuitValueWitness(nestedKey));
         }
       }
       parsedInputs[key] = newval;
     }
     else if (String(val).length == 66) {
-      parsedInputs[key] = getCircuitValue256Witness(halo2Lib, val);
+      parsedInputs[key] = getCircuitValue256Witness(val);
     }
     else {
-      parsedInputs[key] = getCircuitValueWitness(halo2Lib, val);
+      parsedInputs[key] = getCircuitValueWitness(val);
     }
   }
 
   return parsedInputs;
 }
 
-const padInstances = (halo2Wasm: Halo2Wasm, halo2Lib: Halo2LibWasm) => {
+const padInstances = () => {
+  const halo2Lib = globalThis.axiom.halo2lib;
+  const halo2Wasm = globalThis.axiom.halo2wasm;
   let userInstances = [...halo2Wasm.getInstances(0)];
   const numUserInstances = userInstances.length;
 
@@ -62,84 +63,40 @@ const padInstances = (halo2Wasm: Halo2Wasm, halo2Lib: Halo2LibWasm) => {
 }
 
 export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibWasm, config: CircuitConfig, provider: JsonRpcProvider) {
+  globalThis.axiom.halo2wasm = halo2Wasm;
+  globalThis.axiom.halo2lib = halo2LibWasm;
+  globalThis.axiom.provider = provider;
+  globalThis.axiom.dataQuery = [];
+
   config = { ...config };
   const clear = () => {
     halo2Wasm.clear();
     halo2LibWasm.config();
   }
 
-  async function buildFromString(code: string, inputs: string, cachedResults?: { [key: string]: string }) {
-    clear()
-    const halo2Lib = new Halo2Lib(halo2Wasm, halo2LibWasm, { firstPass: true });
-    const halo2LibFns = Object.keys(halo2Lib).filter(key => !(typeof key === 'string' && (key.charAt(0) === '_' || key === "makePublic")));
-    const axiomData = new AxiomData(halo2Wasm, halo2LibWasm, provider, cachedResults);
-    const axiomDataFns = Object.keys(axiomData).filter(key => !(typeof key === 'string' && key.charAt(0) === '_'));
-    const functionInputs = getInputFunctionSignature(inputs);
-    const parsedInputs = parseDataInputs(halo2LibWasm, inputs);
-    const fn = eval(`let {${halo2LibFns.join(", ")}} = halo2Lib; let {${axiomDataFns.join(", ")}} = axiomData; (async function({${functionInputs}}) { ${code} })`);
-    await fn(parsedInputs);
-
-    let dataQuery = axiomData._getDataQuery();
-    let results = await fetchDataQueries(provider, dataQuery, cachedResults);
-
-    const { numUserInstances } = padInstances(halo2Wasm, halo2LibWasm);
-    halo2Wasm.assignInstances();
-
-    autoConfigCircuit(halo2Wasm, config);
-
-    return {
-      dataQuery,
-      results,
-      config,
-      numUserInstances,
-    }
-  }
-
-  async function build<T extends { [key: string]: number | string | bigint }>(f: (halo2Lib: Halo2Lib, axiomData: AxiomData, inputs: T) => Promise<void>, inputs: T) {
-    clear()
-    let halo2Lib = new Halo2Lib(halo2Wasm, halo2LibWasm, { firstPass: true });
-    let axiomData = new AxiomData(halo2Wasm, halo2LibWasm, provider);
-
-    let stringifiedInputs = JSON.stringify(inputs);
-    let parsedInputs = parseDataInputs(halo2LibWasm, stringifiedInputs);
-
-    await f(halo2Lib, axiomData, parsedInputs);
-
-    const { numUserInstances } = padInstances(halo2Wasm, halo2LibWasm);
-
-    let dataQuery = axiomData._getDataQuery();
-    let results = await fetchDataQueries(provider, dataQuery);
-
-    return {
-      results,
-      dataQuery,
-      numUserInstances,
-    };
-  }
-
   async function runFromString(code: string, inputs: string, { results, firstPass }: { results: { [key: string]: string }, firstPass?: boolean }) {
     clear()
     if (firstPass == undefined) firstPass = true;
 
-    const halo2Lib = new Halo2Lib(halo2Wasm, halo2LibWasm, { firstPass });
+    const halo2Lib = await import("@axiom-crypto/halo2-lib-js/halo2lib/functions");
     const halo2LibFns = Object.keys(halo2Lib).filter(key => !(typeof key === 'string' && (key.charAt(0) === '_' || key === "makePublic")));
 
-    const axiomData = new AxiomData(halo2Wasm, halo2LibWasm, provider, results);
+    const axiomData = await import("./functions")
     const axiomDataFns = Object.keys(axiomData).filter(key => !(typeof key === 'string' && key.charAt(0) === '_'));
 
     let functionInputs = getInputFunctionSignature(inputs);
-    let parsedInputs = parseDataInputs(halo2LibWasm, inputs);
+    let parsedInputs = parseDataInputs(inputs);
 
     let fn = eval(`let {${halo2LibFns.join(", ")}} = halo2Lib; let {${axiomDataFns.join(", ")}} = axiomData; (async function({${functionInputs}}) { ${code} })`);
     await fn(parsedInputs);
 
-    const { numUserInstances } = padInstances(halo2Wasm, halo2LibWasm);
+    const { numUserInstances } = padInstances();
     halo2Wasm.assignInstances();
 
     let newConfig = config;
 
     if (firstPass) {
-      autoConfigCircuit(halo2Wasm, config);
+      autoConfigCircuit(config);
       const { config: _newConfig } = await runFromString(code, inputs, { results, firstPass: false });
       newConfig = _newConfig;
     }
@@ -150,17 +107,15 @@ export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibW
     }
   }
 
-  async function run<T extends { [key: string]: number | string | bigint }>(f: (halo2Lib: Halo2Lib, axiomData: AxiomData, inputs: T) => Promise<void>, inputs: T, results: { [key: string]: string }) {
+  async function run<T extends { [key: string]: number | string | bigint }>(f: (inputs: T) => Promise<void>, inputs: T, results: { [key: string]: string }) {
     clear()
-    let halo2Lib = new Halo2Lib(halo2Wasm, halo2LibWasm);
-    let axiomData = new AxiomData(halo2Wasm, halo2LibWasm, provider, results);
 
     let stringifiedInputs = JSON.stringify(inputs);
-    let parsedInputs = parseDataInputs(halo2LibWasm, stringifiedInputs);
+    let parsedInputs = parseDataInputs(stringifiedInputs);
 
-    await f(halo2Lib, axiomData, parsedInputs);
+    await f(parsedInputs);
 
-    const { numUserInstances } = padInstances(halo2Wasm, halo2LibWasm);
+    const { numUserInstances } = padInstances();
     halo2Wasm.assignInstances();
     return {
       numUserInstances
@@ -169,8 +124,6 @@ export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibW
 
   return Object.freeze({
     runFromString,
-    run,
-    buildFromString,
-    build
+    run
   })
 }

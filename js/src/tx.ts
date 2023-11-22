@@ -1,7 +1,7 @@
-import { AxiomV2FieldConstant, TxField, TxSubquery } from "@axiom-crypto/tools";
+import { AxiomV2FieldConstant, DataSubqueryType, TxField, TxSubquery } from "@axiom-crypto/tools";
 import { CircuitValue, RawCircuitInput, CircuitValue256 } from "@axiom-crypto/halo2-lib-js";
-import { Halo2LibWasm } from "@axiom-crypto/halo2-lib-js/wasm/web";
-import { getCircuitValueConstant, getCircuitValueWithOffset, PrepData, lowercase } from "./utils";
+import { getCircuitValueConstant, getCircuitValueWithOffset, lowercase } from "./utils";
+import { prepData } from "./data";
 
 enum SpecialTxFields {
   Type = 51,
@@ -39,7 +39,9 @@ export interface Tx extends BaseTx, SpecialTx {
   contractData: (contractDataIdx: CircuitValue | RawCircuitInput) => Promise<CircuitValue256>;
 };
 
-export const buildTx = (blockNumber: CircuitValue, txIdx: CircuitValue, halo2Lib: Halo2LibWasm, prepData: PrepData<TxSubquery>) => {
+export const buildTx = (blockNumber: CircuitValue, txIdx: CircuitValue) => {
+
+  const halo2Lib = globalThis.axiom.halo2lib;
 
   const getSubquery = (fieldOrCalldataIdx: CircuitValue) => {
     let TxSubquery: TxSubquery = {
@@ -47,13 +49,14 @@ export const buildTx = (blockNumber: CircuitValue, txIdx: CircuitValue, halo2Lib
       txIdx: txIdx.number(),
       fieldOrCalldataIdx: fieldOrCalldataIdx.number()
     };
-    return prepData(TxSubquery, [blockNumber, txIdx, fieldOrCalldataIdx]);
+    const dataSubquery = { subqueryData: TxSubquery, type: DataSubqueryType.Transaction };
+    return prepData(dataSubquery, [blockNumber, txIdx, fieldOrCalldataIdx]);
   }
 
   const functions = Object.fromEntries(
     Object.keys(TxField).map((key) => {
       return [lowercase(key), () => {
-        const txField = getCircuitValueConstant(halo2Lib, TxField[key as keyof typeof TxField]);
+        const txField = getCircuitValueConstant(TxField[key as keyof typeof TxField]);
         return getSubquery(txField);
       }]
     })
@@ -62,7 +65,7 @@ export const buildTx = (blockNumber: CircuitValue, txIdx: CircuitValue, halo2Lib
   const specialFunctions = Object.fromEntries(
     Object.keys(SpecialTxFields).map((key) => {
       return [lowercase(key), () => {
-        const txField = getCircuitValueConstant(halo2Lib, SpecialTxFields[key as keyof typeof SpecialTxFields]);
+        const txField = getCircuitValueConstant(SpecialTxFields[key as keyof typeof SpecialTxFields]);
         return getSubquery(txField);
       }]
     })
@@ -70,17 +73,17 @@ export const buildTx = (blockNumber: CircuitValue, txIdx: CircuitValue, halo2Lib
 
   const calldata = async (calldataIdx: CircuitValue | RawCircuitInput) => {
     if (typeof calldataIdx === "string" || typeof calldataIdx === "number" || typeof calldataIdx == "bigint") {
-      calldataIdx = getCircuitValueConstant(halo2Lib, calldataIdx);
+      calldataIdx = getCircuitValueConstant(calldataIdx);
     }
-    const logIdxProcessed = getCircuitValueWithOffset(halo2Lib, calldataIdx, AxiomV2FieldConstant.Tx.CalldataIdxOffset);
+    const logIdxProcessed = getCircuitValueWithOffset(calldataIdx, AxiomV2FieldConstant.Tx.CalldataIdxOffset);
     return getSubquery(logIdxProcessed);
   }
 
   const contractData = async (contractDataIdx: CircuitValue | RawCircuitInput) => {
     if (typeof contractDataIdx === "string" || typeof contractDataIdx === "number" || typeof contractDataIdx == "bigint") {
-      contractDataIdx = getCircuitValueConstant(halo2Lib, contractDataIdx);
+      contractDataIdx = getCircuitValueConstant(contractDataIdx);
     }
-    const logIdxProcessed = getCircuitValueWithOffset(halo2Lib, contractDataIdx, AxiomV2FieldConstant.Tx.ContractDataIdxOffset);
+    const logIdxProcessed = getCircuitValueWithOffset(contractDataIdx, AxiomV2FieldConstant.Tx.ContractDataIdxOffset);
     return getSubquery(logIdxProcessed);
   }
 

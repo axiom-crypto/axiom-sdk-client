@@ -67,7 +67,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
         this.results = results;
         await this.populateCircuit(inputs);
         await this.keygen();
-        const vk = [... this.getVk()];
+        const vk = [... this.getHalo2Vk()];
         return {
             vk,
             config,

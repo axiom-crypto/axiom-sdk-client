@@ -16,6 +16,7 @@ program
     .option("-p, --provider [provider]", "provider")
     .option("-i, --inputs [inputs]", "inputs")
     .option("-o, --output [output]", "output", "data/build.json")
+    .option("-f, --function [function]", "function name", "circuit")
     .action(compile)
 
 program.parseAsync(process.argv)

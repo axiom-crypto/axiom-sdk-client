@@ -5,7 +5,7 @@ import { execSync } from 'child_process';
 import * as vm from 'vm';
 import * as os from 'os';
 
-export async function getFunctionFromTs(relativePath: string) {
+export async function getFunctionFromTs(relativePath: string, functionName: string) {
     const code = fs.readFileSync(path.resolve(relativePath), 'utf8');
     const result = ts.transpileModule(code, {
         compilerOptions: { module: ts.ModuleKind.CommonJS }
@@ -37,11 +37,11 @@ export async function getFunctionFromTs(relativePath: string) {
         __dirname: __dirname,
     });
     script.runInContext(context);
-    if (!context.exports.circuit) throw new Error("File does not export a `circuit` function");
+    if (!context.exports[functionName]) throw new Error(`File does not export a function called \`${functionName}\`!`);
     let inputs = undefined;
     if (context.exports.inputs) inputs = context.exports.inputs;
     return {
-        circuit: context.exports.circuit,
+        circuit: context.exports[functionName],
         inputs,
     };
 }

@@ -1,18 +1,18 @@
-import { CircuitValue, convertInput, RawCircuitInput, CircuitValue256 } from "@axiom-crypto/halo2-lib-js";
+import { CircuitValue, convertRawInput, RawCircuitInput, CircuitValue256 } from "@axiom-crypto/halo2-lib-js";
 
 export const getCircuitValue256Witness = (value: RawCircuitInput) => {
   let convertedVal = BigInt(value).toString(16).padStart(64, '0');
   let hi128 = convertedVal.slice(0, 32);
   let lo128 = convertedVal.slice(32);
 
-  const hi128CircuitValue = new CircuitValue({ cell: globalThis.axiom.halo2lib.witness(convertInput("0x" + hi128)) });
-  const lo128CircuitValue = new CircuitValue({ cell: globalThis.axiom.halo2lib.witness(convertInput("0x" + lo128)) });
+  const hi128CircuitValue = new CircuitValue({ cell: globalThis.axiom.halo2lib.witness(convertRawInput("0x" + hi128)) });
+  const lo128CircuitValue = new CircuitValue({ cell: globalThis.axiom.halo2lib.witness(convertRawInput("0x" + lo128)) });
   const halo2LibValue256 = new CircuitValue256({ hi: hi128CircuitValue, lo: lo128CircuitValue });
   return halo2LibValue256;
 }
 
 export const getCircuitValueWitness = (value: RawCircuitInput) => {
-  const halo2LibValue = new CircuitValue({ cell: globalThis.axiom.halo2lib.witness(convertInput(value)) });
+  const halo2LibValue = new CircuitValue({ cell: globalThis.axiom.halo2lib.witness(convertRawInput(value)) });
   return halo2LibValue;
 }
 
@@ -21,14 +21,14 @@ export const getCircuitValue256Constant = (value: RawCircuitInput) => {
   let hi128 = convertedVal.slice(0, 32);
   let lo128 = convertedVal.slice(32);
 
-  const hi128CircuitValue = new CircuitValue({ cell: globalThis.axiom.halo2lib.constant(convertInput("0x" + hi128)) });
-  const lo128CircuitValue = new CircuitValue({ cell: globalThis.axiom.halo2lib.constant(convertInput("0x" + lo128)) });
+  const hi128CircuitValue = new CircuitValue({ cell: globalThis.axiom.halo2lib.constant(convertRawInput("0x" + hi128)) });
+  const lo128CircuitValue = new CircuitValue({ cell: globalThis.axiom.halo2lib.constant(convertRawInput("0x" + lo128)) });
   const halo2LibValue256 = new CircuitValue256({ hi: hi128CircuitValue, lo: lo128CircuitValue });
   return halo2LibValue256;
 }
 
 export const getCircuitValueConstant = (value: RawCircuitInput) => {
-  const halo2LibValue = new CircuitValue({ cell: globalThis.axiom.halo2lib.constant(convertInput(value)) });
+  const halo2LibValue = new CircuitValue({ cell: globalThis.axiom.halo2lib.constant(convertRawInput(value)) });
   return halo2LibValue;
 }
 

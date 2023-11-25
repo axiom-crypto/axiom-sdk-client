@@ -8,6 +8,7 @@ import { Axiom, QueryBuilderV2, QueryV2 } from "@axiom-crypto/core";
 import { BaseCircuitScaffold } from "@axiom-crypto/halo2-wasm/shared/scaffold";
 import { DEFAULT_CIRCUIT_CONFIG } from "./constants";
 import { RawInput } from "./types";
+import { fromByteArray, toByteArray } from "base64-js";
 
 export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     protected numInstances: number;
@@ -46,9 +47,9 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
         this.results = {};
     }
 
-    async loadSaved(input: { config: CircuitConfig, vk: number[] | Uint8Array }) {
+    async loadSaved(input: { config: CircuitConfig, vk: string }) {
         this.config = input.config;
-        await this.loadParamsAndVk(new Uint8Array(input.vk));
+        await this.loadParamsAndVk(toByteArray(input.vk));
     }
 
     getQuerySchema() {
@@ -68,9 +69,9 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
         this.results = results;
         await this.populateCircuit(inputs);
         await this.keygen();
-        const vk = [... this.getHalo2Vk()];
+        const vk = this.getHalo2Vk();
         return {
-            vk,
+            vk: fromByteArray(vk),
             config,
             querySchema: this.getQuerySchema(),
         }

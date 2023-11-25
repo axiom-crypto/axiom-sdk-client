@@ -1,6 +1,5 @@
-import {add, sub, mul, constant, witness, log, rangeCheck, isLessThan} from "@axiom-crypto/halo2-lib-js";
 //@ts-ignore -- to avoid halo2-lib-js being a dependency of the cli
-import { getHeader, CircuitValue, addToCallback } from "@axiom-crypto/client-rc";
+import { getHeader, CircuitValue, addToCallback, add, sub, mul, constant, witness, log, rangeCheck, isLessThan } from "@axiom-crypto/client-rc";
 
 export const circuit = async (inputs: {x: CircuitValue}) => {
     const a = witness(1);

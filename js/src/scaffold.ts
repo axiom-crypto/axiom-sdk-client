@@ -45,9 +45,9 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
         this.results = {};
     }
 
-    async loadSaved(input: { config: CircuitConfig, vk: Uint8Array }) {
+    async loadSaved(input: { config: CircuitConfig, vk: number[] | Uint8Array }) {
         this.config = input.config;
-        await this.loadParamsAndVk(input.vk);
+        await this.loadParamsAndVk(new Uint8Array(input.vk));
     }
 
     getQuerySchema() {

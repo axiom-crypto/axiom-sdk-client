@@ -2,8 +2,14 @@ import { CircuitConfig } from "@axiom-crypto/halo2-lib-js";
 import { AxiomBaseCircuitScaffold } from "../scaffold";
 import { getHalo2LibWasm, getHalo2Wasm } from "@axiom-crypto/halo2-wasm/web/";
 
-export class AxiomCircuit extends AxiomBaseCircuitScaffold {
-    constructor(inputs: { config: CircuitConfig, provider: string, mock?: boolean, chainId?: number | string | bigint, shouldTime?: boolean }) {
+export class AxiomCircuit<T> extends AxiomBaseCircuitScaffold<T> {
+    constructor(inputs: {
+        provider: string,
+        f: (inputs: T) => Promise<void>,
+        mock?: boolean,
+        chainId?: number | string | bigint,
+        shouldTime?: boolean
+    }) {
         super(inputs);
     }
 

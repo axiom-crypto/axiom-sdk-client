@@ -1,3 +1,3 @@
 export * from "./subquery";
 export * from "./run";
-export { convertToBytes32, convertToBytes } from "./utils";
+export { CircuitValue, CircuitValue256 } from "@axiom-crypto/halo2-lib-js";

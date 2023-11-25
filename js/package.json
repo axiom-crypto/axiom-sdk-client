@@ -1,6 +1,6 @@
 {
-  "name": "@axiom-crypto/client",
-  "version": "1.0.0",
+  "name": "@axiom-crypto/client-rc",
+  "version": "1.0.3",
   "author": "Intrinsic Technologies",
   "license": "MIT",
   "description": "SDK to write custom compute queries for Axiom, the ZK Coprocessor for Ethereum.",
@@ -25,6 +25,7 @@
     "@axiom-crypto/halo2-lib-js": "0.2.11",
     "@axiom-crypto/halo2-wasm": "0.2.9",
     "@axiom-crypto/tools": "^0.3.33",
+    "commander": "^11.1.0",
     "ethers": "^6.8.1",
     "viem": "^1.19.9"
   },

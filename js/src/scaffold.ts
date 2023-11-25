@@ -7,6 +7,7 @@ import { AxiomV2Callback, AxiomV2ComputeQuery, DataSubquery } from "@axiom-crypt
 import { Axiom, QueryBuilderV2, QueryV2 } from "@axiom-crypto/core";
 import { BaseCircuitScaffold } from "@axiom-crypto/halo2-wasm/shared/scaffold";
 import { DEFAULT_CIRCUIT_CONFIG } from "./constants";
+import { RawInput } from "./types";
 
 export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     protected numInstances: number;
@@ -58,7 +59,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
         return schema as string;
     }
 
-    async compile(inputs: T) {
+    async compile(inputs: RawInput<T>) {
         this.newCircuitFromConfig(this.config);
         this.timeStart("Witness generation");
         const { config, results } = await AxiomCircuitRunner(this.halo2wasm, this.halo2Lib, this.config, this.provider).compile(this.f, inputs);
@@ -75,7 +76,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
         }
     }
 
-    async populateCircuit(inputs: T) {
+    async populateCircuit(inputs: RawInput<T>) {
         this.newCircuitFromConfig(this.config);
         this.timeStart("Witness generation");
         const {
@@ -86,7 +87,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
         this.dataQuery = dataQuery;
     }
 
-    async run(inputs: T) {
+    async run(inputs: RawInput<T>) {
         await this.populateCircuit(inputs);
         this.prove();
         const vk = this.getPartialVk();
@@ -142,23 +143,23 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
 
     getComputeProof() {
         if (!this.proof) throw new Error("No proof generated");
-        let proofString = this.getComputeResults().slice(2);
+        let proofString = this.getComputeResults().map(r => r.slice(2)).join("");
         proofString += convertToBytes(this.proof);
         return "0x" + proofString;
     }
 
     getComputeResults() {
         if (!this.proof) throw new Error("No proof generated");
-        let proofString = "";
+        const computeResults: string[] = [];
         const instances = this.getInstances();
         for (let i = 0; i < this.numInstances / 2; i++) {
             const instanceHi = BigInt(instances[2 * i]);
             const instanceLo = BigInt(instances[2 * i + 1]);
             const instance = instanceHi * BigInt(2 ** 128) + instanceLo;
             const instanceString = instance.toString(16).padStart(64, "0");
-            proofString += instanceString;
+            computeResults.push("0x" + instanceString);
         }
-        return "0x" + proofString;
+        return computeResults;
     }
 
     getDataQuery() {

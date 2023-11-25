@@ -4,6 +4,7 @@ import { SUBQUERY_NUM_INSTANCES, USER_COMPUTE_NUM_INSTANCES } from "./constants"
 import { getInputFunctionSignature } from "@axiom-crypto/halo2-lib-js/shared/utils";
 import { autoConfigCircuit, CircuitConfig, setCircuit } from "@axiom-crypto/halo2-lib-js";
 import { Halo2Wasm, Halo2LibWasm } from "@axiom-crypto/halo2-lib-js/wasm/web";
+import { RawInput } from "./types";
 
 const parseDataInputs = (inputs: string) => {
   let parsedInputs = JSON.parse(inputs);
@@ -115,7 +116,7 @@ export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibW
     }
   }
 
-  async function run<T>(f: (inputs: T) => Promise<void>, inputs: T, results?: { [key: string]: string }) {
+  async function run<T>(f: (inputs: T) => Promise<void>, inputs: RawInput<T>, results?: { [key: string]: string }) {
     clear()
     globalThis.axiom.results = results ?? {};
 
@@ -134,7 +135,7 @@ export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibW
     };
   }
 
-  async function compile<T>(f: (inputs: T) => Promise<void>, inputs: T, results?: { [key: string]: string }) {
+  async function compile<T>(f: (inputs: T) => Promise<void>, inputs: RawInput<T>, results?: { [key: string]: string }) {
     setCircuit(halo2Wasm, halo2LibWasm, true);
     const res = await run(f, inputs, results);
     autoConfigCircuit(config);

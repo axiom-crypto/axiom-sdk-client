@@ -1,7 +1,7 @@
 import { AccountField, AccountSubquery, DataSubqueryType } from "@axiom-crypto/tools";
-import { lowercase } from "./utils";
+import { lowercase } from "../utils";
 import { CircuitValue, CircuitValue256 } from "@axiom-crypto/halo2-lib-js";
-import { getCircuitValueConstant } from "./utils";
+import { getCircuitValueConstant } from "../utils";
 import { prepData } from "./data";
 
 type AccountEnumKeys = Uncapitalize<keyof typeof AccountField>;

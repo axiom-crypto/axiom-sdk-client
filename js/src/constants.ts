@@ -12,3 +12,12 @@ export const USER_COMPUTE_NUM_INSTANCES = USER_OUTPUT_FE * MAX_USER_OUTPUTS;
 export const SUBQUERY_NUM_INSTANCES = MAX_DATA_SUBQUERIES * (1 + MAX_SUBQUERY_INPUTS + MAX_SUBQUERY_OUTPUTS);
 
 export const COMPUTE_NUM_INSTANCES = USER_COMPUTE_NUM_INSTANCES + SUBQUERY_NUM_INSTANCES;
+
+export const DEFAULT_CIRCUIT_CONFIG = {
+    k: 14,
+    numAdvice: 4,
+    numLookupAdvice: 1,
+    numInstance: 1,
+    numLookupBits: 13,
+    numVirtualInstance: 2,
+};

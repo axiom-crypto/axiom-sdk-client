@@ -5,7 +5,7 @@ import { buildMapping } from "./mapping";
 import { buildReceipt } from "./receipt";
 import { buildStorage } from "./storage";
 import { buildTx } from "./tx";
-import { getCircuitValue256Witness } from "./utils";
+import { getCircuitValue256Witness } from "../utils";
 
 /**
  * Retrieves the account information for a specific block and address.

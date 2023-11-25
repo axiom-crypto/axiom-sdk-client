@@ -2,7 +2,7 @@ import { JsonRpcProvider } from "ethers";
 import { getCircuitValue256Witness, getCircuitValueWitness } from "./utils";
 import { SUBQUERY_NUM_INSTANCES, USER_COMPUTE_NUM_INSTANCES } from "./constants";
 import { getInputFunctionSignature } from "@axiom-crypto/halo2-lib-js/shared/utils";
-import { autoConfigCircuit, CircuitConfig } from "@axiom-crypto/halo2-lib-js";
+import { autoConfigCircuit, CircuitConfig, setCircuit } from "@axiom-crypto/halo2-lib-js";
 import { Halo2Wasm, Halo2LibWasm } from "@axiom-crypto/halo2-lib-js/wasm/web";
 
 const parseDataInputs = (inputs: string) => {
@@ -62,26 +62,32 @@ const padInstances = () => {
   return { numUserInstances };
 }
 
-export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibWasm, config: CircuitConfig, provider: JsonRpcProvider) {
-  globalThis.axiom.halo2wasm = halo2Wasm;
-  globalThis.axiom.halo2lib = halo2LibWasm;
-  globalThis.axiom.provider = provider;
-  globalThis.axiom.dataQuery = [];
+export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibWasm, config: CircuitConfig, provider: string) {
+  globalThis.axiom = {
+    dataQuery: [],
+    halo2lib: halo2LibWasm,
+    halo2wasm: halo2Wasm,
+    provider: new JsonRpcProvider(provider),
+    results: {}
+  };
+  setCircuit(halo2Wasm, halo2LibWasm);
 
   config = { ...config };
   const clear = () => {
     halo2Wasm.clear();
     halo2LibWasm.config();
+    globalThis.axiom.dataQuery = [];
   }
 
   async function runFromString(code: string, inputs: string, { results, firstPass }: { results: { [key: string]: string }, firstPass?: boolean }) {
     clear()
     if (firstPass == undefined) firstPass = true;
+    globalThis.axiom.results = results;
 
     const halo2Lib = await import("@axiom-crypto/halo2-lib-js/halo2lib/functions");
     const halo2LibFns = Object.keys(halo2Lib).filter(key => !(typeof key === 'string' && (key.charAt(0) === '_' || key === "makePublic")));
 
-    const axiomData = await import("./functions")
+    const axiomData = await import("./subquery")
     const axiomDataFns = Object.keys(axiomData).filter(key => !(typeof key === 'string' && key.charAt(0) === '_'));
 
     let functionInputs = getInputFunctionSignature(inputs);
@@ -103,12 +109,15 @@ export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibW
 
     return {
       config: newConfig,
-      numUserInstances
+      numUserInstances,
+      results: globalThis.axiom.results,
+      dataQuery: globalThis.axiom.dataQuery
     }
   }
 
-  async function run<T extends { [key: string]: number | string | bigint }>(f: (inputs: T) => Promise<void>, inputs: T, results: { [key: string]: string }) {
+  async function run<T extends { [key: string]: number | string | bigint }>(f: (inputs: T) => Promise<void>, inputs: T, results?: { [key: string]: string }) {
     clear()
+    globalThis.axiom.results = results ?? {};
 
     let stringifiedInputs = JSON.stringify(inputs);
     let parsedInputs = parseDataInputs(stringifiedInputs);
@@ -117,8 +126,11 @@ export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibW
 
     const { numUserInstances } = padInstances();
     halo2Wasm.assignInstances();
+
     return {
-      numUserInstances
+      numUserInstances,
+      results: globalThis.axiom.results,
+      dataQuery: globalThis.axiom.dataQuery
     };
   }
 

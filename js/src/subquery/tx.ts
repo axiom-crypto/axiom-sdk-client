@@ -1,6 +1,6 @@
 import { AxiomV2FieldConstant, DataSubqueryType, TxField, TxSubquery } from "@axiom-crypto/tools";
 import { CircuitValue, RawCircuitInput, CircuitValue256 } from "@axiom-crypto/halo2-lib-js";
-import { getCircuitValueConstant, getCircuitValueWithOffset, lowercase } from "./utils";
+import { getCircuitValueConstant, getCircuitValueWithOffset, lowercase } from "../utils";
 import { prepData } from "./data";
 
 enum SpecialTxFields {

@@ -36,7 +36,7 @@ export const sendQuery = async (
       computeQuery: outputJson.computeQuery,
       callback: {
         target: callbackAddress,
-        extraData: options.callbackExtraData,
+        extraData: options.callbackExtraData ?? "0x",
       },
       refundAddress: options.refundAddress,
       caller: options.caller ?? options.refundAddress,

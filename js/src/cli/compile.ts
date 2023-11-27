@@ -8,6 +8,7 @@ export const compile = async (path: string, options: { stats: boolean, function:
         f: f.circuit,
         mock: true,
         provider,
+        shouldTime: true,
     })
     let circuitInputs = f.inputs;
     if (options.inputs) {
@@ -15,7 +16,7 @@ export const compile = async (path: string, options: { stats: boolean, function:
     }
     try {
         const res = await circuit.compile(circuitInputs);
-        saveJsonToFile(JSON.stringify(res), options.output, "build.json");
+        saveJsonToFile(res, options.output, "build.json");
     }
     catch (e) {
         console.error(e);

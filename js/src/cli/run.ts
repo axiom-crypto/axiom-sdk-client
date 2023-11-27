@@ -9,6 +9,7 @@ export const run = async (path: string, options: { stats: boolean, build: string
         f: f.circuit,
         mock: true,
         provider,
+        shouldTime: true,
     })
     let circuitInputs = f.inputs;
     if (options.inputs) {
@@ -18,11 +19,13 @@ export const run = async (path: string, options: { stats: boolean, build: string
         circuit.loadSaved(buildJson);
         const computeQuery = await circuit.run(circuitInputs);
         const computeResults = circuit.getComputeResults();
+        const dataQuery = circuit.getDataQuery();
         const res = {
             computeQuery,
-            computeResults
+            computeResults,
+            dataQuery,
         }
-        saveJsonToFile(JSON.stringify(res), options.output, "output.json");
+        saveJsonToFile(res, options.output, "output.json");
     }
     catch (e) {
         console.error(e);

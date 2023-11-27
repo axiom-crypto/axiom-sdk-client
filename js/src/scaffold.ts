@@ -9,6 +9,7 @@ import { BaseCircuitScaffold } from "@axiom-crypto/halo2-wasm/shared/scaffold";
 import { DEFAULT_CIRCUIT_CONFIG } from "./constants";
 import { RawInput } from "./types";
 import { fromByteArray, toByteArray } from "base64-js";
+import { buildSendQuery } from "./sendQuery";
 
 export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     protected numInstances: number;
@@ -110,36 +111,17 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
         refundAddress: string,
     }) {
         if (!this.computeQuery) throw new Error("No compute query generated");
-        const query = this.axiom.query as QueryV2;
         const axiomCallback: AxiomV2Callback = {
             target: input.callbackAddress,
             extraData: input.callbackExtraData
         };
-        const qb: QueryBuilderV2 = query.new(undefined, this.computeQuery, axiomCallback);
-        if (this.dataQuery.length > 0) {
-            qb.setBuiltDataQuery({ subqueries: this.dataQuery, sourceChainId: this.chainId });
-        }
-        const {
-            dataQueryHash,
-            dataQuery,
-            computeQuery,
-            callback,
-            maxFeePerGas,
-            callbackGasLimit,
-            sourceChainId,
-        } = await qb.build();
-        const payment = await qb.calculateFee();
-        const salt = getRandom32Bytes();
-        const abi = this.axiom.getAxiomQueryAbi();
-        const axiomQueryAddress = this.axiom.getAxiomQueryAddress();
-        const args = [sourceChainId, dataQueryHash, computeQuery, callback, salt, maxFeePerGas, callbackGasLimit, input.refundAddress, dataQuery]
-        return {
-            address: axiomQueryAddress as `0x${string}`,
-            abi: abi,
-            functionName: 'sendQuery',
-            value: BigInt(payment),
-            args
-        };
+        return await buildSendQuery({
+            axiom: this.axiom,
+            dataQuery: this.dataQuery,
+            computeQuery: this.computeQuery,
+            callback: axiomCallback,
+            refundAddress: input.refundAddress
+        });
     }
 
     getComputeProof() {

@@ -62,13 +62,13 @@ export function getProvider(provider: string | undefined): string {
     return providerToUse;
 }
 
-export function saveJsonToFile(json: string, relativePath: string, name: string) {
+export function saveJsonToFile(json: any, relativePath: string, name: string) {
     const filePath = path.resolve(relativePath);
     const folderPath = path.dirname(filePath);
     if (!fs.existsSync(folderPath)) {
         fs.mkdirSync(folderPath, { recursive: true });
     }
-    fs.writeFileSync(filePath, json);
+    fs.writeFileSync(filePath, JSON.stringify(json, null, 2));
     console.log(`Saved ${name} to ${filePath}`);
 }
 

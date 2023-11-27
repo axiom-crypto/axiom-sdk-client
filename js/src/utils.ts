@@ -69,13 +69,10 @@ export const convertToBytes = (inputArray: Uint8Array): string => {
   return hex;
 }
 
-export const getRandom32Bytes = (): `0x${string}` => {
-  let randomBytes = "";
+export const byteArrayToBase64 = (byteArray: Uint8Array) => {
+  return Buffer.from(byteArray).toString('base64');
+}
 
-  for (let i = 0; i < 64; i++) { // Each byte has two hex characters
-    const randomHex = Math.floor(Math.random() * 16).toString(16);
-    randomBytes += randomHex;
-  }
-
-  return `0x${randomBytes}`;
+export const base64ToByteArray = (base64: string): Uint8Array => {
+  return Buffer.from(base64, 'base64');
 }

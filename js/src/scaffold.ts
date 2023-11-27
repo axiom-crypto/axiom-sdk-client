@@ -1,6 +1,6 @@
 import { CircuitConfig, Halo2LibWasm } from "@axiom-crypto/halo2-wasm/web";
 import { keccak256 } from "ethers";
-import { convertToBytes, convertToBytes32, getRandom32Bytes } from "./utils";
+import { base64ToByteArray, byteArrayToBase64, convertToBytes, convertToBytes32 } from "./utils";
 import { encodePacked } from "viem";
 import { AxiomCircuitRunner } from "./run";
 import {
@@ -17,7 +17,6 @@ import {
 import { BaseCircuitScaffold } from "@axiom-crypto/halo2-wasm/shared/scaffold";
 import { DEFAULT_CIRCUIT_CONFIG } from "./constants";
 import { RawInput } from "./types";
-import { fromByteArray, toByteArray } from "base64-js";
 import { buildSendQuery } from "./sendQuery";
 
 export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
@@ -30,10 +29,12 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   protected chainId: string;
   protected f: (inputs: T) => Promise<void>;
   protected results: { [key: string]: string };
+  protected inputSchema: string;
 
   constructor(inputs: {
     provider: string;
     f: (inputs: T) => Promise<void>;
+    inputSchema: string | object;
     config?: CircuitConfig;
     mock?: boolean;
     chainId?: number | string | bigint;
@@ -54,12 +55,26 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     this.shouldTime = inputs.shouldTime ?? false;
     this.loadedVk = false;
     this.f = inputs.f;
+    if (inputs.inputSchema instanceof Object) {
+      inputs.inputSchema = JSON.stringify(inputs.inputSchema);
+    }
+    else {
+      try {
+        JSON.parse(inputs.inputSchema);
+      }
+      catch (e) {
+        let byteArray = base64ToByteArray(inputs.inputSchema);
+        let dec = new TextDecoder();
+        inputs.inputSchema = dec.decode(byteArray);
+      }
+    }
+    this.inputSchema = inputs.inputSchema;
     this.results = {};
   }
 
   async loadSaved(input: { config: CircuitConfig; vk: string }) {
     this.config = input.config;
-    await this.loadParamsAndVk(toByteArray(input.vk));
+    await this.loadParamsAndVk(base64ToByteArray(input.vk));
   }
 
   getQuerySchema() {
@@ -81,17 +96,20 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       this.halo2Lib,
       this.config,
       this.provider,
-    ).compile(this.f, inputs);
+    ).compile(this.f, inputs, this.inputSchema);
     this.timeEnd("Witness generation");
     this.config = config;
     this.results = results;
     await this.populateCircuit(inputs);
     await this.keygen();
     const vk = this.getHalo2Vk();
+    const encoder = new TextEncoder();
+    const inputSchema = encoder.encode(this.inputSchema);
     return {
-      vk: fromByteArray(vk),
+      vk: byteArrayToBase64(vk),
       config,
       querySchema: this.getQuerySchema(),
+      inputSchema: byteArrayToBase64(inputSchema),
     };
   }
 
@@ -103,7 +121,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       this.halo2Lib,
       this.config,
       this.provider,
-    ).run(this.f, inputs, this.results);
+    ).run(this.f, inputs, this.inputSchema, this.results);
     this.timeEnd("Witness generation");
     this.numInstances = numUserInstances;
     this.dataQuery = dataQuery;
@@ -112,6 +130,10 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   async run(inputs: RawInput<T>) {
     await this.populateCircuit(inputs);
     this.prove();
+    return this.buildComputeQuery();
+  }
+
+  buildComputeQuery() {
     const vk = this.getPartialVk();
     const vkBytes = convertToBytes32(vk);
     const computeProof = this.getComputeProof();
@@ -156,7 +178,6 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   }
 
   getComputeResults() {
-    if (!this.proof) throw new Error("No proof generated");
     const computeResults: string[] = [];
     const instances = this.getInstances();
     for (let i = 0; i < this.numInstances / 2; i++) {

@@ -50,7 +50,7 @@ const convertInlineTypeToJsonString = (typeNode: ts.TypeNode) => {
 }
 
 
-export const extractInterfaceAndConvert = (sourceCode: string, functionName: string) => {
+export const extractFunctionInterface = (sourceCode: string, functionName: string) => {
     const sourceFile = ts.createSourceFile('temp.ts', sourceCode, ts.ScriptTarget.Latest, true);
 
     let functionTypeNode: ts.TypeNode | undefined;

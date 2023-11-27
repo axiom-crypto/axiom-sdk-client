@@ -6,6 +6,7 @@ export class AxiomCircuit<T> extends AxiomBaseCircuitScaffold<T> {
     constructor(inputs: {
         provider: string,
         f: (inputs: T) => Promise<void>,
+        inputSchema: string,
         mock?: boolean,
         chainId?: number | string | bigint,
         shouldTime?: boolean

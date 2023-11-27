@@ -6,7 +6,7 @@ import { autoConfigCircuit, CircuitConfig, setCircuit } from "@axiom-crypto/halo
 import { Halo2Wasm, Halo2LibWasm } from "@axiom-crypto/halo2-lib-js/wasm/web";
 import { RawInput } from "./types";
 
-const parseDataInputs = (inputs: string) => {
+const autoParseDataInputs = (inputs: string) => {
   let parsedInputs = JSON.parse(inputs);
   let parsedInputKeys = Object.keys(parsedInputs);
   for (let key of parsedInputKeys) {
@@ -37,6 +37,50 @@ const parseDataInputs = (inputs: string) => {
   }
 
   return parsedInputs;
+}
+
+const parseDataInputsFromSchema = (inputs: string, inputSchema: string) => {
+  let parsedInputs = JSON.parse(inputs);
+  let parsedInputKeys = Object.keys(parsedInputs);
+  let parsedSchema = JSON.parse(inputSchema);
+  for (let key of parsedInputKeys) {
+    const type = parsedSchema[key];
+    const val = parsedInputs[key];
+    if (type === "CircuitValue") {
+      parsedInputs[key] = getCircuitValueWitness(val);
+    }
+    else if (type === "CircuitValue256") {
+      parsedInputs[key] = getCircuitValue256Witness(val);
+    }
+    else if (type === "CircuitValue[]") {
+      const newval = [];
+      for (let nestedKey of val) {
+        newval.push(getCircuitValueWitness(nestedKey));
+      }
+      parsedInputs[key] = newval;
+    }
+    else if (type === "CircuitValue256[]") {
+      const newval = [];
+      for (let nestedKey of val) {
+        newval.push(getCircuitValue256Witness(nestedKey));
+      }
+      parsedInputs[key] = newval;
+    }
+    else {
+      throw new Error(`Invalid type ${type}`);
+    }
+  }
+  return parsedInputs;
+}
+
+const parseDataInputs = (inputs: string, inputSchema?: string) => {
+  if (inputSchema !== undefined) {
+    return parseDataInputsFromSchema(inputs, inputSchema);
+  }
+  else {
+    return autoParseDataInputs(inputs);
+
+  }
 }
 
 const padInstances = () => {
@@ -80,7 +124,7 @@ export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibW
     globalThis.axiom.dataQuery = [];
   }
 
-  async function runFromString(code: string, inputs: string, { results, firstPass }: { results: { [key: string]: string }, firstPass?: boolean }) {
+  async function runFromString(code: string, inputs: string, inputSchema: string | undefined, { results, firstPass }: { results: { [key: string]: string }, firstPass?: boolean }) {
     clear()
     if (firstPass == undefined) firstPass = true;
     globalThis.axiom.results = results;
@@ -104,7 +148,7 @@ export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibW
 
     if (firstPass) {
       autoConfigCircuit(config);
-      const { config: _newConfig } = await runFromString(code, inputs, { results, firstPass: false });
+      const { config: _newConfig } = await runFromString(code, inputs, inputSchema, { results, firstPass: false });
       newConfig = _newConfig;
     }
 
@@ -116,12 +160,12 @@ export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibW
     }
   }
 
-  async function run<T>(f: (inputs: T) => Promise<void>, inputs: RawInput<T>, results?: { [key: string]: string }) {
+  async function run<T>(f: (inputs: T) => Promise<void>, inputs: RawInput<T>, inputSchema: string, results?: { [key: string]: string }) {
     clear()
     globalThis.axiom.results = results ?? {};
 
     let stringifiedInputs = JSON.stringify(inputs);
-    let parsedInputs = parseDataInputs(stringifiedInputs);
+    let parsedInputs = parseDataInputs(stringifiedInputs, inputSchema);
 
     await f(parsedInputs);
 
@@ -135,9 +179,9 @@ export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibW
     };
   }
 
-  async function compile<T>(f: (inputs: T) => Promise<void>, inputs: RawInput<T>, results?: { [key: string]: string }) {
+  async function compile<T>(f: (inputs: T) => Promise<void>, inputs: RawInput<T>, inputSchema: string, results?: { [key: string]: string }) {
     setCircuit(halo2Wasm, halo2LibWasm, true);
-    const res = await run(f, inputs, results);
+    const res = await run(f, inputs, inputSchema, results);
     autoConfigCircuit(config);
     return {
       config,

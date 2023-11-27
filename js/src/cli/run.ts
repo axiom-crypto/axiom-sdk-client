@@ -10,10 +10,16 @@ export const run = async (path: string, options: { stats: boolean, build: string
         mock: true,
         provider,
         shouldTime: true,
+        inputSchema: buildJson.inputSchema,
     })
     let circuitInputs = f.inputs;
     if (options.inputs) {
         circuitInputs = readJsonFromFile(options.inputs);
+    }
+    else {
+        if (circuitInputs === undefined) {
+            throw new Error("No inputs provided. Either export `inputs` from your circuit file or provide a path to a json file with inputs.");
+        }
     }
     try {
         circuit.loadSaved(buildJson);

@@ -4,9 +4,11 @@ import * as ts from 'typescript';
 import { execSync } from 'child_process';
 import * as vm from 'vm';
 import * as os from 'os';
+import { extractFunctionInterface } from './parseFunction';
 
 export async function getFunctionFromTs(relativePath: string, functionName: string) {
     const code = fs.readFileSync(path.resolve(relativePath), 'utf8');
+    const inputSchema = extractFunctionInterface(code, functionName);
     const result = ts.transpileModule(code, {
         compilerOptions: { module: ts.ModuleKind.CommonJS }
     });
@@ -43,6 +45,7 @@ export async function getFunctionFromTs(relativePath: string, functionName: stri
     return {
         circuit: context.exports[functionName],
         inputs,
+        inputSchema,
     };
 }
 

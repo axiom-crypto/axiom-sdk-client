@@ -43,7 +43,8 @@ program
     .option("-a, --args", "args")
     .option("-i, --input [input]", "input", "data/output.json")
     .option("-o, --output [output]", "output", "data/sendQuery.json")
-    .option("-r, --refundAddress [refundAddress]", "refundAddress", "0x0000000000000000000000000000000000000000")
+    .option("-r, --refundAddress [refundAddress]", "refundAddress")
+    .option("--caller [caller]", "caller (defaults to refundAddress)")
     .action(sendQuery)
 
 program.parseAsync(process.argv)

@@ -1,6 +1,5 @@
 import { Axiom } from "@axiom-crypto/core";
-import { AxiomCircuit } from "../js";
-import { getFunctionFromTs, getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
+import { getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
 import { buildSendQuery } from "../sendQuery";
 
 export const sendQuery = async (options: {
@@ -11,10 +10,14 @@ export const sendQuery = async (options: {
     output: string,
     input: string,
     refundAddress: string,
+    caller: string,
     provider?: string,
 }) => {
     if (options.args && options.calldata) {
         throw new Error("Please choose either args or calldata.");
+    }
+    if(!options.refundAddress){
+        throw new Error("Please provide a refund address.");
     }
     const provider = getProvider(options.provider);
     const outputJson = readJsonFromFile(options.input);
@@ -31,7 +34,7 @@ export const sendQuery = async (options: {
             computeQuery: outputJson.computeQuery,
             callback: outputJson.callback,
             refundAddress: options.refundAddress,
-            caller: options.refundAddress,
+            caller: options.caller ?? options.refundAddress,
         })
         build.value = build.value.toString() as any;
         let res: any;

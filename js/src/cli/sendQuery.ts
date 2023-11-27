@@ -31,19 +31,22 @@ export const sendQuery = async (options: {
             computeQuery: outputJson.computeQuery,
             callback: outputJson.callback,
             refundAddress: options.refundAddress,
+            caller: options.refundAddress,
         })
         build.value = build.value.toString() as any;
         let res: any;
         if (options.args) {
             res = {
                 value: build.value,
-                args: build.args
+                args: build.args,
+                queryId: build.queryId,
             }
         }
         else if (options.calldata) {
             res = {
                 value: build.value,
-                calldata: build.calldata
+                calldata: build.calldata,
+                queryId: build.queryId,
             }
         }
         else {

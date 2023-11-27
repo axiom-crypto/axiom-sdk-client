@@ -7,6 +7,7 @@ export const buildSendQuery = async (input: {
     dataQuery: DataSubquery[],
     computeQuery: AxiomV2ComputeQuery,
     callback: AxiomV2Callback,
+    caller: string,
     refundAddress: string;
 }) => {
     const query = input.axiom.query as QueryV2;
@@ -24,6 +25,7 @@ export const buildSendQuery = async (input: {
         sourceChainId,
     } = await qb.build();
     const payment = await qb.calculateFee();
+    const id = await qb.getQueryId(input.caller);
     const salt = getRandom32Bytes();
     const abi = input.axiom.getAxiomQueryAbi();
     const axiomQueryAddress = input.axiom.getAxiomQueryAddress();
@@ -33,7 +35,8 @@ export const buildSendQuery = async (input: {
         abi: abi,
         functionName: 'sendQuery',
         value: BigInt(payment),
-        args
+        args,
+        queryId: id,
     };
 
     const calldata = encodeFunctionData(sendQueryArgs);

@@ -35,7 +35,7 @@ program
 
 program
     .command("sendQuery")
-    .description("send an Axiom query")
+    .description("get args / calldata necessary to send an Axiom query")
     .option("-s, --stats", "print stats")
     .option("-p, --provider [provider]", "provider")
     .option("-m, --mock", "mock")

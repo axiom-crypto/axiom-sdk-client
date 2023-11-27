@@ -109,6 +109,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
         callbackAddress: string,
         callbackExtraData: string,
         refundAddress: string,
+        callerAddress: string,
     }) {
         if (!this.computeQuery) throw new Error("No compute query generated");
         const axiomCallback: AxiomV2Callback = {
@@ -120,7 +121,8 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
             dataQuery: this.dataQuery,
             computeQuery: this.computeQuery,
             callback: axiomCallback,
-            refundAddress: input.refundAddress
+            refundAddress: input.refundAddress,
+            caller: input.callerAddress,
         });
     }
 

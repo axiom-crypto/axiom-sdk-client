@@ -41,7 +41,6 @@ program
   .option("-e, --callbackExtraData [callbackExtraData]", "callback extra data")
   .option("--caller [caller]", "caller (defaults to refundAddress)")
   .option("-i, --input [input]", "circuit run output path", "data/output.json")
-  .option("-m, --mock", "return AxiomV2QueryMock address")
   .option(
     "-o, --output [output]",
     "sendQueryArgs output path",

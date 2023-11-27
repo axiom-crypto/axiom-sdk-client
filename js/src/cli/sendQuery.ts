@@ -13,7 +13,6 @@ export const sendQuery = async (
     input: string;
     caller: string;
     provider?: string;
-    mock: boolean;
   },
 ) => {
   if (!options.refundAddress) {
@@ -27,8 +26,8 @@ export const sendQuery = async (
   const axiom = new Axiom({
     providerUri: provider,
     chainId: options.sourceChainId,
-    mock: options.mock,
     version: "v2",
+    // mock? does not change behavior here
   });
   try {
     let build = await buildSendQuery({

@@ -13,6 +13,8 @@ export const sendQuery = async (
     input: string;
     caller: string;
     provider?: string;
+    maxFeePerGas?: string;
+    callbackGasLimit?: number;
   },
 ) => {
   if (!options.refundAddress) {
@@ -38,7 +40,11 @@ export const sendQuery = async (
         target: callbackAddress,
         extraData: options.callbackExtraData ?? "0x",
       },
-      refundAddress: options.refundAddress,
+      options: {
+        refundee: options.refundAddress,
+        maxFeePerGas: options.maxFeePerGas,
+        callbackGasLimit: options.callbackGasLimit,
+      },
       caller: options.caller ?? options.refundAddress,
     });
     build.value = build.value.toString() as any;

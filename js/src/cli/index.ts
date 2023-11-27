@@ -37,9 +37,11 @@ program
   .option("-c, --calldata", "output encoded calldata")
   .option("-s, --sourceChainId [sourceChainId]", "source chain id")
   .option("-r, --refundAddress [refundAddress]", "refundAddress")
-  .option("-p, --provider [provider]", "provider")
   .option("-e, --callbackExtraData [callbackExtraData]", "callback extra data")
   .option("--caller [caller]", "caller (defaults to refundAddress)")
+  .option("--maxFeePerGas [maxFeePerGas]", "maxFeePerGas")
+  .option("--callbackGasLimit [callbackGasLimit]", "callbackGasLimit")
+  .option("-p, --provider [provider]", "provider")
   .option("-i, --input [input]", "circuit run output path", "data/output.json")
   .option(
     "-o, --output [output]",

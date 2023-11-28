@@ -160,7 +160,7 @@ export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibW
     }
   }
 
-  async function run<T>(f: (inputs: T) => Promise<void>, inputs: RawInput<T>, inputSchema: string, results?: { [key: string]: string }) {
+  async function run<T>(f: (inputs: T) => Promise<void>, inputs: RawInput<T>, inputSchema: string | undefined, results?: { [key: string]: string }) {
     clear()
     globalThis.axiom.results = results ?? {};
 
@@ -179,7 +179,7 @@ export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibW
     };
   }
 
-  async function compile<T>(f: (inputs: T) => Promise<void>, inputs: RawInput<T>, inputSchema: string, results?: { [key: string]: string }) {
+  async function compile<T>(f: (inputs: T) => Promise<void>, inputs: RawInput<T>, inputSchema: string | undefined, results?: { [key: string]: string }) {
     setCircuit(halo2Wasm, halo2LibWasm, true);
     const res = await run(f, inputs, inputSchema, results);
     autoConfigCircuit(config);

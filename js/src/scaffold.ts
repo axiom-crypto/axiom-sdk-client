@@ -29,12 +29,12 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   protected chainId: string;
   protected f: (inputs: T) => Promise<void>;
   protected results: { [key: string]: string };
-  protected inputSchema: string;
+  protected inputSchema?: string;
 
   constructor(inputs: {
     provider: string;
     f: (inputs: T) => Promise<void>;
-    inputSchema: string | object;
+    inputSchema?: string | object;
     config?: CircuitConfig;
     mock?: boolean;
     chainId?: number | string | bigint;
@@ -58,7 +58,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     if (inputs.inputSchema instanceof Object) {
       inputs.inputSchema = JSON.stringify(inputs.inputSchema);
     }
-    else {
+    else if (typeof inputs.inputSchema === "string") {
       try {
         JSON.parse(inputs.inputSchema);
       }

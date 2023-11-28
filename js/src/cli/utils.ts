@@ -18,7 +18,7 @@ export async function getFunctionFromTs(relativePath: string, functionName: stri
             if (moduleName === "@axiom-crypto/halo2-lib-js") {
                 return require("@axiom-crypto/halo2-lib-js");
             }
-            else if (moduleName === "@axiom-crypto/client-rc") {
+            else if (moduleName === "@axiom-crypto/client") {
                 return require("../index");
             }
             else {

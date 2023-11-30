@@ -3,6 +3,7 @@ import { getFunctionFromTs, getProvider, readJsonFromFile, saveJsonToFile } from
 
 export const compile = async (path: string, options: { stats: boolean, function: string, output: string, provider?: string, inputs?: string }) => {
     const f = await getFunctionFromTs(path, options.function);
+    console.log(f.circuit.toString());
     const provider = getProvider(options.provider);
     const circuit = new AxiomCircuit({
         f: f.circuit,
@@ -22,7 +23,14 @@ export const compile = async (path: string, options: { stats: boolean, function:
     }
     try {
         const res = await circuit.compile(circuitInputs);
-        saveJsonToFile(res, options.output, "build.json");
+        const circuitFn = `const ${f.importName} = AXIOM_CLIENT_IMPORT\n${f.circuit.toString()}`;
+        const encoder = new TextEncoder();
+        const circuitBuild = encoder.encode(circuitFn);
+        const build = {
+            ...res,
+            circuit: Buffer.from(circuitBuild).toString('base64'),
+        }
+        saveJsonToFile(build, options.output, "build.json");
     }
     catch (e) {
         console.error(e);

@@ -10,8 +10,17 @@ export async function getFunctionFromTs(relativePath: string, functionName: stri
     const code = fs.readFileSync(path.resolve(relativePath), 'utf8');
     const inputSchema = extractFunctionInterface(code, functionName);
     const result = ts.transpileModule(code, {
-        compilerOptions: { module: ts.ModuleKind.CommonJS }
+        compilerOptions: {
+            preserveConstEnums: true,
+            keepFunctionNames: true,
+            target: ts.ScriptTarget.ESNext,
+            module: ts.ModuleKind.CommonJS,
+        }
     });
+    const pattern: RegExp = /const (\w+) = require\("@axiom-crypto\/client"\);/;
+    const match = result.outputText.match(pattern);
+    const importName = match ? match[1] : null;
+    if(!importName) throw new Error("Could not find import name");
     const script = new vm.Script(result.outputText);
     const customRequire = (moduleName: string) => {
         try {
@@ -46,6 +55,7 @@ export async function getFunctionFromTs(relativePath: string, functionName: stri
         circuit: context.exports[functionName],
         inputs,
         inputSchema,
+        importName
     };
 }
 

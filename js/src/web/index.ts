@@ -25,3 +25,5 @@ export class AxiomCircuit<T> extends AxiomBaseCircuitScaffold<T> {
         this.halo2Lib = getHalo2LibWasm(this.halo2wasm);
     }
 }
+
+export * from "../index";

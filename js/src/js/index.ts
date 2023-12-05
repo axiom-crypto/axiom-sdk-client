@@ -16,9 +16,15 @@ export class AxiomCircuit<T> extends AxiomBaseCircuitScaffold<T> {
         this.halo2wasm.config(this.config);
     }
 
+    async setup(numThreads: number) {
+        console.warn("Setup does nothing in JS AxiomCircuit (multiple threads not supported)");
+    }
+
     newCircuitFromConfig(config: CircuitConfig): void {
         super.newCircuitFromConfig(config);
         if (this.halo2Lib) this.halo2Lib.free();
         this.halo2Lib = getHalo2LibWasm(this.halo2wasm);
     }
 }
+
+export * from "../index";

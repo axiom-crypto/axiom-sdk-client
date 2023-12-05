@@ -11,8 +11,6 @@ import {
 import {
   Axiom,
   AxiomV2QueryOptions,
-  QueryBuilderV2,
-  QueryV2,
 } from "@axiom-crypto/core";
 import { BaseCircuitScaffold } from "@axiom-crypto/halo2-wasm/shared/scaffold";
 import { DEFAULT_CIRCUIT_CONFIG } from "./constants";
@@ -193,5 +191,14 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   getDataQuery() {
     if (!this.dataQuery) throw new Error("No data query generated");
     return this.dataQuery;
+  }
+
+  setMock(mock: boolean) {
+    this.axiom = new Axiom({
+      providerUri: this.provider,
+      chainId: this.chainId,
+      mock,
+      version: "v2",
+    });
   }
 }

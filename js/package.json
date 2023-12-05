@@ -1,6 +1,6 @@
 {
   "name": "@axiom-crypto/client",
-  "version": "0.1.2-alpha.0",
+  "version": "0.1.2",
   "author": "Intrinsic Technologies",
   "license": "MIT",
   "description": "Client SDK to write custom queries for Axiom, the ZK Coprocessor for Ethereum.",
@@ -8,7 +8,7 @@
   "browser": "web/index.js",
   "types": "web/index.d.ts",
   "scripts": {
-    "build": "rm -rf ./dist/* && tsc && ts-node scripts/postTsc.js && npm run build:docs",
+    "build": "rm -rf ./dist/* && tsc && ts-node scripts/postTsc.js && $npm_execpath run build:docs",
     "build:docs": "./scripts/buildDocs.sh"
   },
   "publishConfig": {

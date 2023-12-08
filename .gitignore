@@ -3,3 +3,7 @@ node_modules
 dist
 data
 build
+target
+Cargo.lock
+params
+.DS_Store

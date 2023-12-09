@@ -1,11 +1,11 @@
 import { Command } from "commander";
-import { compile } from "./compile";
-import { run } from "./run";
+import { compile } from "@axiom-crypto/circuit";
+import { run } from "@axiom-crypto/circuit";
 import { sendQuery } from "./sendQuery";
 
 const program = new Command();
 
-program.name("axiom").version("0.1.0").description("axiom CLI");
+program.name("axiom").version("0.1.1").description("axiom CLI");
 
 program
   .command("compile")

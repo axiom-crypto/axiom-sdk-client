@@ -1,4 +1,4 @@
-import { AxiomBaseCircuit } from "@axiom-crypto/circuit";
+import { AxiomBaseCircuit } from "@axiom-crypto/circuit/web/";
 import { AxiomV2Callback, AxiomV2QueryOptions } from "@axiom-crypto/core";
 import { buildSendQuery } from "../sendQuery";
 

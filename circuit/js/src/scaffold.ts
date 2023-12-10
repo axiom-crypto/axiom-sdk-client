@@ -144,27 +144,6 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     return computeQuery;
   }
 
-  // async getSendQueryArgs(input: {
-  //   callbackAddress: string;
-  //   callbackExtraData: string;
-  //   callerAddress: string;
-  //   options: AxiomV2QueryOptions;
-  // }) {
-  //   if (!this.computeQuery) throw new Error("No compute query generated");
-  //   const axiomCallback: AxiomV2Callback = {
-  //     target: input.callbackAddress,
-  //     extraData: input.callbackExtraData,
-  //   };
-  //   return await buildSendQuery({
-  //     axiom: this.axiom,
-  //     dataQuery: this.dataQuery,
-  //     computeQuery: this.computeQuery,
-  //     callback: axiomCallback,
-  //     caller: input.callerAddress,
-  //     options: input.options,
-  //   });
-  // }
-
   getComputeProof() {
     if (!this.proof) throw new Error("No proof generated");
     let proofString = this.getComputeResults()

@@ -15,7 +15,6 @@ import {
 import { BaseCircuitScaffold } from "@axiom-crypto/halo2-wasm/shared/scaffold";
 import { DEFAULT_CIRCUIT_CONFIG } from "./constants";
 import { RawInput } from "./types";
-// import { buildSendQuery } from "../../../client/src/sendQuery";
 
 export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   protected numInstances: number;

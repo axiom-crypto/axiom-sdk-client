@@ -1,10 +1,10 @@
-import { AxiomCircuit } from "../js";
+import { AxiomBaseCircuit } from "../js";
 import { getFunctionFromTs, getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
 
 export const compile = async (path: string, options: { stats: boolean, function: string, output: string, provider?: string, inputs?: string }) => {
     const f = await getFunctionFromTs(path, options.function);
     const provider = getProvider(options.provider);
-    const circuit = new AxiomCircuit({
+    const circuit = new AxiomBaseCircuit({
         f: f.circuit,
         mock: true,
         provider,

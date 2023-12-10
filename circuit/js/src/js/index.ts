@@ -2,7 +2,7 @@ import { CircuitConfig } from "@axiom-crypto/halo2-lib-js";
 import { AxiomBaseCircuitScaffold } from "../scaffold";
 import { getHalo2LibWasm, getHalo2Wasm } from "@axiom-crypto/halo2-wasm/js/";
 
-export class AxiomCircuit<T> extends AxiomBaseCircuitScaffold<T> {
+export class AxiomBaseCircuit<T> extends AxiomBaseCircuitScaffold<T> {
     constructor(inputs: {
         provider: string,
         f: (inputs: T) => Promise<void>,
@@ -17,7 +17,7 @@ export class AxiomCircuit<T> extends AxiomBaseCircuitScaffold<T> {
     }
 
     async setup(numThreads: number) {
-        console.warn("Setup does nothing in JS AxiomCircuit (multiple threads not supported)");
+        console.warn("Setup does nothing in JS AxiomBaseCircuit (multiple threads not supported)");
     }
 
     newCircuitFromConfig(config: CircuitConfig): void {

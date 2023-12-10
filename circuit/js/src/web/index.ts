@@ -2,7 +2,7 @@ import { CircuitConfig } from "@axiom-crypto/halo2-lib-js";
 import { AxiomBaseCircuitScaffold } from "../scaffold";
 import { getHalo2LibWasm, getHalo2Wasm } from "@axiom-crypto/halo2-wasm/web";
 
-export class AxiomCircuit<T> extends AxiomBaseCircuitScaffold<T> {
+export class AxiomBaseCircuit<T> extends AxiomBaseCircuitScaffold<T> {
     constructor(inputs: {
         provider: string,
         f: (inputs: T) => Promise<void>,

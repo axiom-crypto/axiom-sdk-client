@@ -1,5 +1,9 @@
 .env
+.DS_Store
 node_modules
 dist
 data
 build
+
+# Client
+client/test/integration/out

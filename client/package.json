@@ -8,7 +8,7 @@
   "browser": "web/index.js",
   "types": "web/index.d.ts",
   "scripts": {
-    "build": "rm -rf ./dist/* && tsc && ts-node scripts/postTsc.js",
+    "build": "rm -rf ./dist/* && tsc && tsx scripts/postTsc.js",
     "build:docs": "./scripts/buildDocs.sh"
   },
   "publishConfig": {

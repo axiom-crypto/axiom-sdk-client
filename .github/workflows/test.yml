@@ -20,6 +20,10 @@ jobs:
         with:
           node-version: 18.x
 
+      - name: Build client
+        working-directory: ./client
+        run: npm install && npm run build
+
       - name: Install Dependencies
         working-directory: ./test  
         run: npm install

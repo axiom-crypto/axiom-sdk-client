@@ -1,5 +1,8 @@
 import { 
   CircuitValue,
+  CircuitValue256,
+  constant,
+  witness,
   getHeader,
   getAccount,
   getStorage,
@@ -11,8 +14,8 @@ import {
   mul,
   sub,
   div,
-} from "../../../../src/";
-// } from "@axiom-crypto/client";
+} from "@axiom-crypto/client";
+
 export const inputs = {
   // $input
 };
@@ -24,5 +27,15 @@ export interface CircuitValueInputs {
 export const circuit = async ({
   // $cvInputs
 }: CircuitValueInputs) => {
-  // $circuit
+
+for (let i = 0; i < 8; i++) {
+  let tx = getReceipt(9000050 + i, i);
+  addToCallback(await tx.cumulativeGas());
+}
+
+for (let i = 0; i < 8; i++) {
+  let tx = getTx(9000000 + i, 10 + i);
+  addToCallback(await tx.r());
+}
+
 };

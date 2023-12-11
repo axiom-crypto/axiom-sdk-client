@@ -9,5 +9,5 @@ header.nonce();
 header.mixHash();
 
 const input = {
-  "claimedBlockNumber": 9173677,
+  claimedBlockNumber: 9173677,
 };

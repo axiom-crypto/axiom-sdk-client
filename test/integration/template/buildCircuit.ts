@@ -25,17 +25,17 @@ const getCircuitInterfaceFromInput = (inputs: string) => {
   return newInputs;
 }
 
-export const buildCircuit = (circuitPath: string) => {
+export const buildCircuit = (circuitPath: string): string => {
   // Parse path
-  let [parsedPath, parsedFilename] = circuitPath.split("integration/")[1].split("/");
+  let [parsedPath, parsedFilename] = circuitPath.split("input/")[1].split("/");
   parsedFilename = parsedFilename.split(".js")[0] + ".circuit.ts";
 
   // Load the input circuit and template
-  let circuit = fs.readFileSync(path.resolve("./test/integration/template/template.circuit.ts")).toString();
+  let circuit = fs.readFileSync(path.resolve(__dirname, "template.circuit.ts")).toString();
   let inputCircuit = fs.readFileSync(path.resolve(circuitPath)).toString();
 
   // Check if inputCircuit defines an input object
-  let inputObject = inputCircuit.match(/const input = {[\s\S]*};/);
+  let inputObject = inputCircuit.match(/const input = {[\s\S]*}/);
   if (inputObject) {
     // Split out extraneous lines in input
     let inputs = inputObject[0].split("\n").slice(1, -1).join("\n");
@@ -47,7 +47,6 @@ export const buildCircuit = (circuitPath: string) => {
     inputCircuit = inputCircuit.replace(inputObject[0], "");
 
     // Get input types
-    // let inputTypes = inputs.split("\n").map((line) => line.split(":")[1].trim());
     const circuitValueInputs = getCircuitInterfaceFromInput(inputs);
     circuit = circuit.replace("  // $typeInputs", circuitValueInputs);
 
@@ -56,13 +55,13 @@ export const buildCircuit = (circuitPath: string) => {
   }
 
   // Add the input circuit to the circuit template
-  circuit = circuit.replace("  // $circuit", inputCircuit);
+  circuit = circuit.replace("  // $circuit", "\n" + inputCircuit);
   
   // Write the output file
-  const outpath = __dirname + "/../out/" + parsedPath;
-  console.log(outpath);
+  const outpath = path.resolve(__dirname, "../output", parsedPath);
+  const outFilePath = path.resolve(outpath, parsedFilename);
   fs.mkdirSync(path.resolve(outpath), { recursive: true });
-  fs.writeFileSync(path.resolve(outpath, parsedFilename), circuit);
-}
+  fs.writeFileSync(outFilePath, circuit);
 
-buildCircuit("./test/integration/account/7_balance.js");
+  return outFilePath;
+}

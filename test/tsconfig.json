@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "declaration": true,
+    "declarationMap": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "importHelpers": true,
+    "lib": [
+      "es2020",
+      "es6"
+    ],
+    "preserveSymlinks": true,
+    "preserveWatchOutput": true,
+    "pretty": false,
+    "strict": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "outDir": "dist",
+    "types": [
+      "node",
+      "jest"
+    ]
+  },
+  "include": [
+    "integration/**/*.ts",
+    "integration/**/*.json"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "scripts"
+  ],
+  "ts-node": {
+    "esm": true
+  }
+}
+  

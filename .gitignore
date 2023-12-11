@@ -4,6 +4,3 @@ node_modules
 dist
 data
 build
-
-# Client
-client/test/integration/out

@@ -1,15 +1,16 @@
-import { AxiomCircuit } from "../js";
+import { AxiomBaseCircuit } from "../js";
 import { getFunctionFromTs, getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
 
-export const compile = async (path: string, options: { stats: boolean, function: string, output: string, provider?: string, inputs?: string }) => {
+export const run = async (path: string, options: { stats: boolean, build: string, function: string, output: string, provider?: string, inputs?: string }) => {
     const f = await getFunctionFromTs(path, options.function);
     const provider = getProvider(options.provider);
-    const circuit = new AxiomCircuit({
+    const buildJson = readJsonFromFile(options.build);
+    const circuit = new AxiomBaseCircuit({
         f: f.circuit,
         mock: true,
         provider,
         shouldTime: true,
-        inputSchema: f.inputSchema,
+        inputSchema: buildJson.inputSchema,
     })
     let circuitInputs = f.inputs;
     if (options.inputs) {
@@ -21,15 +22,16 @@ export const compile = async (path: string, options: { stats: boolean, function:
         }
     }
     try {
-        const res = await circuit.compile(circuitInputs);
-        const circuitFn = `const ${f.importName} = AXIOM_CLIENT_IMPORT\n${f.circuit.toString()}`;
-        const encoder = new TextEncoder();
-        const circuitBuild = encoder.encode(circuitFn);
-        const build = {
-            ...res,
-            circuit: Buffer.from(circuitBuild).toString('base64'),
+        circuit.loadSaved(buildJson);
+        const computeQuery = await circuit.run(circuitInputs);
+        const computeResults = circuit.getComputeResults();
+        const dataQuery = circuit.getDataQuery();
+        const res = {
+            computeQuery,
+            computeResults,
+            dataQuery,
         }
-        saveJsonToFile(build, options.output, "build.json");
+        saveJsonToFile(res, options.output, "output.json");
     }
     catch (e) {
         console.error(e);

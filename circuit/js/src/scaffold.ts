@@ -2,7 +2,7 @@ import { CircuitConfig, Halo2LibWasm } from "@axiom-crypto/halo2-wasm/web";
 import { keccak256 } from "ethers";
 import { base64ToByteArray, byteArrayToBase64, convertToBytes, convertToBytes32 } from "./utils";
 import { encodePacked } from "viem";
-import { AxiomCircuitRunner } from "./run";
+import { AxiomCircuitRunner } from "./circuitRunner";
 import {
   AxiomV2Callback,
   AxiomV2ComputeQuery,
@@ -15,7 +15,6 @@ import {
 import { BaseCircuitScaffold } from "@axiom-crypto/halo2-wasm/shared/scaffold";
 import { DEFAULT_CIRCUIT_CONFIG } from "./constants";
 import { RawInput } from "./types";
-import { buildSendQuery } from "./sendQuery";
 
 export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   protected numInstances: number;
@@ -143,27 +142,6 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     };
     this.computeQuery = computeQuery;
     return computeQuery;
-  }
-
-  async getSendQueryArgs(input: {
-    callbackAddress: string;
-    callbackExtraData: string;
-    callerAddress: string;
-    options: AxiomV2QueryOptions;
-  }) {
-    if (!this.computeQuery) throw new Error("No compute query generated");
-    const axiomCallback: AxiomV2Callback = {
-      target: input.callbackAddress,
-      extraData: input.callbackExtraData,
-    };
-    return await buildSendQuery({
-      axiom: this.axiom,
-      dataQuery: this.dataQuery,
-      computeQuery: this.computeQuery,
-      callback: axiomCallback,
-      caller: input.callerAddress,
-      options: input.options,
-    });
   }
 
   getComputeProof() {

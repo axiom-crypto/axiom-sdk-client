@@ -1,6 +1,6 @@
 import { buildCircuit } from "./template/buildCircuit";
 import util from 'node:util';
-import { fileMap } from "./input/fileMap";
+import { listDir, makeFileMap } from "./template/utils";
 
 const exec = util.promisify(require('node:child_process').exec);
 
@@ -9,12 +9,17 @@ describe("Run", () => {
     throw new Error("`PROVIDER_URI_GOERLI` environment variable must be defined");
   }
 
+  const files = listDir("./integration/input/");
+  const fileMap = makeFileMap(files);
+
   for (let [folder, files] of Object.entries(fileMap)) {
     for (let file of files) {
       const inputFile = `./integration/input/${folder}/${file}`;
       const fileName = file.split(".js")[0];
       const outputFileBase = `./integration/output/${folder}/${fileName}`;
       test(`Test ${folder}: ${inputFile}`, async () => {
+        console.log(`Running test: ${inputFile}`)
+
         // Build the circuit
         const circuitPath = buildCircuit(inputFile);
 

@@ -4,5 +4,5 @@ for(let i=0; i<8; i++){
 }
 
 const input = {
-    "claimedBlockNumber": 9173677,
+    claimedBlockNumber: 9173677,
 }

@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 axiom-eth = { git = "https://github.com/axiom-crypto/axiom-eth-working.git", branch = "v2-spearbit-audit-improvements" }
 axiom-codec = { git = "https://github.com/axiom-crypto/axiom-eth-working.git", branch = "v2-spearbit-audit-improvements" }
+axiom-query = { git = "https://github.com/axiom-crypto/axiom-eth-working.git", branch = "v2-spearbit-audit-improvements" }
 ethers = "2.0"
 anyhow = "1.0.75"
 tokio = "1.34.0"

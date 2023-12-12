@@ -1,7 +1,7 @@
 use std::{borrow::BorrowMut, env};
 
 use crate::{
-    run::{keygen, mock, prove},
+    run::{keygen, mock, prove, run},
     scaffold::{AxiomCircuitScaffold, RawCircuitInput},
     subquery::{caller::SubqueryCaller, types::AssignedHeaderSubquery},
 };
@@ -132,7 +132,7 @@ pub fn test_prove() {
         lookup_bits: Some(12),
     };
     let client = Provider::<Http>::try_from(env::var("PROVIDER_URI").unwrap()).unwrap();
-    let pk = keygen(
+    let (_, pk) = keygen(
         circuit.clone(),
         client.clone(),
         params.clone(),
@@ -140,4 +140,27 @@ pub fn test_prove() {
         Some(20),
     );
     prove(circuit, client, params, None, Some(20), pk);
+}
+
+#[test]
+pub fn test_run() {
+    dotenv().ok();
+    let circuit = MyCircuit;
+    let params = BaseCircuitParams {
+        k: 13,
+        num_advice_per_phase: vec![4, 0, 0],
+        num_lookup_advice_per_phase: vec![1, 0, 0],
+        num_fixed: 1,
+        num_instance_columns: 1,
+        lookup_bits: Some(12),
+    };
+    let client = Provider::<Http>::try_from(env::var("PROVIDER_URI").unwrap()).unwrap();
+    let (vk, pk) = keygen(
+        circuit.clone(),
+        client.clone(),
+        params.clone(),
+        None,
+        None,
+    );
+    run(circuit, client, params, None, None, pk, vk);
 }

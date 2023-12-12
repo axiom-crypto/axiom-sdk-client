@@ -1,6 +1,6 @@
 use crate::constants::{SUBQUERY_NUM_INSTANCES, USER_OUTPUT_NUM_INSTANCES};
 use crate::subquery::caller::SubqueryCaller;
-use crate::subquery::types::AxiomV2CircuitOutput;
+use crate::subquery::types::AxiomV2CircuitScaffoldOutput;
 use axiom_codec::utils::native::decode_hilo_to_h256;
 use axiom_codec::HiLo;
 use axiom_eth::halo2_base::gates::circuit::{BaseCircuitParams, BaseConfig};
@@ -74,7 +74,7 @@ pub struct AxiomCircuitRunner<F: Field, P: JsonRpcClient, A: AxiomCircuitScaffol
     pub provider: Provider<P>,
     pub payload: RefCell<Option<A::FirstPhasePayload>>,
     pub keccak_rows_per_round: usize,
-    output: RefCell<AxiomV2CircuitOutput>,
+    output: RefCell<AxiomV2CircuitScaffoldOutput>,
     keccak_call_collector: RefCell<Option<KeccakCallCollector<F>>>,
 }
 
@@ -157,7 +157,7 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
             .iter()
             .map(|hilo| decode_hilo_to_h256(HiLo::from_hi_lo(hilo.hi_lo().map(|x| *x.value()))))
             .collect_vec();
-        self.output.replace(AxiomV2CircuitOutput {
+        self.output.replace(AxiomV2CircuitScaffoldOutput {
             data_query: subquery_caller.data_query(),
             compute_results: circuit_output,
         });
@@ -334,6 +334,11 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
         let serialized = serde_json::to_string_pretty(output.deref()).unwrap();
         let mut file = File::create(path).unwrap();
         file.write_all(serialized.as_bytes()).unwrap();
+    }
+
+    pub fn scaffold_output(&self) -> AxiomV2CircuitScaffoldOutput {
+        self.virtual_assign_phase0();
+        self.output.borrow().clone()
     }
 }
 

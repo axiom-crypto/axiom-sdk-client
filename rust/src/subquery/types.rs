@@ -2,7 +2,7 @@ use axiom_codec::{
     constants::MAX_SOLIDITY_MAPPING_KEYS,
     types::native::{
         AccountSubquery, AnySubquery, HeaderSubquery, ReceiptSubquery,
-        SolidityNestedMappingSubquery, StorageSubquery, TxSubquery,
+        SolidityNestedMappingSubquery, StorageSubquery, TxSubquery, AxiomV2ComputeQuery,
     },
     utils::native::decode_hilo_to_h256,
     HiLo,
@@ -144,7 +144,7 @@ impl<F: Field> From<AssignedSolidityNestedMappingSubquery<F>> for SolidityNested
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct Subquery(pub AnySubquery);
 impl Serialize for Subquery {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -163,7 +163,7 @@ impl Serialize for Subquery {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct RawSubquery {
     #[serde(rename = "subqueryData")]
     pub(crate) subquery_data: Subquery,
@@ -181,9 +181,17 @@ impl From<AnySubquery> for RawSubquery {
     }
 }
 
-#[derive(Debug, Serialize, Default)]
+#[derive(Debug, Serialize, Clone, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct AxiomV2CircuitOutput {
+pub struct AxiomV2CircuitScaffoldOutput {
     pub(crate) data_query: Vec<RawSubquery>,
     pub(crate) compute_results: Vec<H256>,
+}
+
+#[derive(Debug, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct AxiomV2CircuitOutput {
+    pub compute_query: AxiomV2ComputeQuery,
+    #[serde(flatten)]
+    pub scaffold_output: AxiomV2CircuitScaffoldOutput,
 }

@@ -1,6 +1,6 @@
 use axiom_codec::types::native::{AnySubquery, SubqueryType};
 use axiom_eth::{halo2_base::utils::fe_to_biguint, Field};
-use ethers::types::{H256, H160};
+use ethers::types::{H160, H256};
 
 pub fn usize_to_u8_array(value: usize) -> [u8; 32] {
     let mut arr = [0u8; 32];
@@ -31,15 +31,6 @@ pub fn fe_to_h160<F: Field>(fe: &F) -> H160 {
     let mut addr = [0u8; 20];
     addr.copy_from_slice(&fe_bytes[12..]);
     H160::from(&addr)
-}
-
-pub fn hi_lo_fe_to_h256<F: Field>(hi: &F, lo: &F) -> H256 {
-    let hi_biguint = fe_to_biguint(hi);
-    let lo_biguint = fe_to_biguint(lo);
-    let mut h256 = [0u8; 32];
-    h256[..16].copy_from_slice(&hi_biguint.to_bytes_be());
-    h256[16..].copy_from_slice(&lo_biguint.to_bytes_be());
-    H256::from(h256)
 }
 
 pub fn get_subquery_type_from_any_subquery(any_subquery: &AnySubquery) -> u64 {

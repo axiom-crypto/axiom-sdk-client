@@ -40,10 +40,7 @@ pub async fn get_solidity_nested_mapping_field_value<P: JsonRpcClient>(
 impl<F: Field> FetchSubquery<F> for AssignedSolidityNestedMappingSubquery<F> {
     fn fetch<P: JsonRpcClient>(&self, p: &Provider<P>) -> Result<(H256, Vec<AssignedValue<F>>)> {
         let rt = Runtime::new()?;
-        let val = rt.block_on(get_solidity_nested_mapping_field_value(
-            p,
-            (*self).into(),
-        ))?;
+        let val = rt.block_on(get_solidity_nested_mapping_field_value(p, (*self).into()))?;
         let mut flattened = vec![
             self.block_number,
             self.addr,

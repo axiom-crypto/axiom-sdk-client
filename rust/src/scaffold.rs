@@ -1,6 +1,7 @@
 use crate::constants::{SUBQUERY_NUM_INSTANCES, USER_OUTPUT_NUM_INSTANCES};
 use crate::subquery::caller::SubqueryCaller;
-use crate::subquery::types::RawSubquery;
+use crate::subquery::types::AxiomV2CircuitOutput;
+use axiom_codec::utils::native::decode_hilo_to_h256;
 use axiom_codec::HiLo;
 use axiom_eth::halo2_base::gates::circuit::{BaseCircuitParams, BaseConfig};
 use axiom_eth::halo2_base::safe_types::SafeTypeChip;
@@ -30,8 +31,10 @@ use itertools::Itertools;
 use std::borrow::BorrowMut;
 use std::cell::RefCell;
 use std::fmt::Debug;
+use std::fs::File;
+use std::io::Write;
 use std::mem;
-use std::ops::DerefMut;
+use std::ops::{Deref, DerefMut};
 
 pub trait RawCircuitInput<F: Field, O> {
     fn default() -> Self;
@@ -71,7 +74,7 @@ pub struct AxiomCircuitRunner<F: Field, P: JsonRpcClient, A: AxiomCircuitScaffol
     pub provider: Provider<P>,
     pub payload: RefCell<Option<A::FirstPhasePayload>>,
     pub keccak_rows_per_round: usize,
-    data_query: RefCell<Vec<RawSubquery>>,
+    output: RefCell<AxiomV2CircuitOutput>,
     keccak_call_collector: RefCell<Option<KeccakCallCollector<F>>>,
 }
 
@@ -108,12 +111,12 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
             provider,
             payload: RefCell::new(None),
             keccak_rows_per_round: keccak_rows_per_round.unwrap_or(0),
-            data_query: RefCell::new(Vec::new()),
+            output: Default::default(),
             keccak_call_collector: RefCell::new(None),
         }
     }
 
-    pub fn virtual_assign_phase0(&self) {
+    fn virtual_assign_phase0(&self) {
         if self.payload.borrow().is_some() {
             return;
         }
@@ -133,6 +136,7 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
         self.payload.borrow_mut().replace(payload);
 
         let mut flattened_callback = callback
+            .clone()
             .into_iter()
             .flat_map(|hilo| hilo.flatten())
             .collect::<Vec<_>>();
@@ -148,7 +152,15 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
         flattened_callback.extend(subquery_instances);
         let instances = vec![flattened_callback];
         self.builder.borrow_mut().base.assigned_instances = instances.clone();
-        self.data_query.replace(subquery_caller.data_query());
+
+        let circuit_output = callback
+            .iter()
+            .map(|hilo| decode_hilo_to_h256(HiLo::from_hi_lo(hilo.hi_lo().map(|x| *x.value()))))
+            .collect_vec();
+        self.output.replace(AxiomV2CircuitOutput {
+            data_query: subquery_caller.data_query(),
+            compute_results: circuit_output,
+        });
 
         if self.keccak_rows_per_round > 0 {
             let keccak_calls = KeccakCallCollector::new(
@@ -161,7 +173,7 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
         }
     }
 
-    pub fn virtual_assign_phase1(&self) {
+    fn virtual_assign_phase1(&self) {
         let payload = self
             .payload
             .borrow_mut()
@@ -253,7 +265,8 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
         self.builder.borrow_mut().clear();
         self.payload.borrow_mut().take();
         self.keccak_call_collector.borrow_mut().take();
-        self.data_query.borrow_mut().clear();
+        self.output.borrow_mut().compute_results.clear();
+        self.output.borrow_mut().data_query.clear();
     }
 
     pub fn calculate_params(&mut self) {
@@ -314,6 +327,14 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
             .map(|instance| instance.iter().map(|x| *x.value()).collect())
             .collect()
     }
+
+    pub fn write_output(&self, path: &str) {
+        self.virtual_assign_phase0();
+        let output = self.output.borrow();
+        let serialized = serde_json::to_string_pretty(output.deref()).unwrap();
+        let mut file = File::create(path).unwrap();
+        file.write_all(serialized.as_bytes()).unwrap();
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -362,7 +383,6 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> Circuit<
     }
 
     fn configure_with_params(meta: &mut ConstraintSystem<F>, params: Self::Params) -> Self::Config {
-        
         match params {
             AxiomCircuitParams::Rlc(params) => {
                 let k = params.base.k;
@@ -389,15 +409,9 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> Circuit<
             AxiomCircuitConfig::Rlc(config) => {
                 self.synthesize_with_rlc_and_keccak(config, None, layouter)
             }
-            AxiomCircuitConfig::Base(config) => {
-                self.synthesize_without_rlc(config, layouter)
-            }
+            AxiomCircuitConfig::Base(config) => self.synthesize_without_rlc(config, layouter),
             AxiomCircuitConfig::Keccak(config) => {
-                self.synthesize_with_rlc_and_keccak(
-                    config.rlc,
-                    Some(config.keccak),
-                    layouter,
-                )
+                self.synthesize_with_rlc_and_keccak(config.rlc, Some(config.keccak), layouter)
             }
         }
     }

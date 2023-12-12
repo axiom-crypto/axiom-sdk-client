@@ -1,4 +1,10 @@
-use axiom_eth::{Field, keccak::{promise::{KeccakFixLenCall, KeccakVarLenCall}, types::KeccakLogicalInput}};
+use axiom_eth::{
+    keccak::{
+        promise::{KeccakFixLenCall, KeccakVarLenCall},
+        types::KeccakLogicalInput,
+    },
+    Field,
+};
 
 pub enum KeccakSubqueryTypes<F: Field> {
     FixLen(KeccakFixLenCall<F>),

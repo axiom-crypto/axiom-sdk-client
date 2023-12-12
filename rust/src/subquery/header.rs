@@ -6,14 +6,18 @@ use axiom_codec::{
     },
     types::native::{AnySubquery, HeaderSubquery},
 };
-use axiom_eth::{Field, halo2_base::AssignedValue};
+use axiom_eth::{halo2_base::AssignedValue, Field};
 use ethers::{
     providers::{JsonRpcClient, Middleware, Provider},
     types::{BigEndianHash, BlockId, H256},
 };
 use tokio::runtime::Runtime;
 
-use super::{caller::FetchSubquery, utils::{usize_to_u8_array, pad_to_bytes32}, types::AssignedHeaderSubquery};
+use super::{
+    caller::FetchSubquery,
+    types::AssignedHeaderSubquery,
+    utils::{pad_to_bytes32, usize_to_u8_array},
+};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 

@@ -5,13 +5,14 @@ use std::{
 
 use crate::scaffold::{AxiomCircuitRunner, AxiomCircuitScaffold};
 use axiom_eth::{
-    halo2_base::{utils::fs::gen_srs, gates::circuit::BaseCircuitParams},
+    halo2_base::{gates::circuit::BaseCircuitParams, utils::fs::gen_srs},
     halo2_proofs::{
         dev::MockProver,
         plonk::{keygen_pk, keygen_vk, ProvingKey},
         SerdeFormat,
     },
-    halo2curves::bn256::{Fr, G1Affine}, snark_verifier_sdk::halo2::gen_snark_shplonk,
+    halo2curves::bn256::{Fr, G1Affine},
+    snark_verifier_sdk::halo2::gen_snark_shplonk,
 };
 use ethers::providers::{JsonRpcClient, Provider};
 
@@ -23,11 +24,19 @@ pub fn mock<P: JsonRpcClient + Clone, S: AxiomCircuitScaffold<P, Fr>>(
     keccak_rows_per_round: Option<usize>,
 ) {
     let k = circuit_params.k;
-    let mut runner = AxiomCircuitRunner::new(circuit, provider, circuit_params, num_rlc_columns, keccak_rows_per_round, None);
+    let mut runner = AxiomCircuitRunner::new(
+        circuit,
+        provider,
+        circuit_params,
+        num_rlc_columns,
+        keccak_rows_per_round,
+        None,
+    );
     if keccak_rows_per_round.is_some() {
         runner.calculate_params();
     }
     let instances = runner.instances();
+    runner.write_output("data/output.json");
     MockProver::run(k as u32, &runner, instances)
         .unwrap()
         .assert_satisfied();
@@ -41,10 +50,18 @@ pub fn keygen<P: JsonRpcClient + Clone, S: AxiomCircuitScaffold<P, Fr>>(
     keccak_rows_per_round: Option<usize>,
 ) -> ProvingKey<G1Affine> {
     let params = gen_srs(circuit_params.k as u32);
-    let mut runner = AxiomCircuitRunner::new(circuit, provider, circuit_params, num_rlc_columns, keccak_rows_per_round, None);
+    let mut runner = AxiomCircuitRunner::new(
+        circuit,
+        provider,
+        circuit_params,
+        num_rlc_columns,
+        keccak_rows_per_round,
+        None,
+    );
     if keccak_rows_per_round.is_some() {
         runner.calculate_params();
     }
+    runner.write_output("data/output.json");
     let vk = keygen_vk(&params, &runner).expect("Failed to generate vk");
     let path = Path::new("data/vk.bin");
     if let Some(parent) = path.parent() {
@@ -70,9 +87,17 @@ pub fn prove<P: JsonRpcClient + Clone, S: AxiomCircuitScaffold<P, Fr>>(
     pk: ProvingKey<G1Affine>,
 ) {
     let params = gen_srs(circuit_params.k as u32);
-    let mut runner = AxiomCircuitRunner::new(circuit, provider, circuit_params, num_rlc_columns, keccak_rows_per_round, None);
+    let mut runner = AxiomCircuitRunner::new(
+        circuit,
+        provider,
+        circuit_params,
+        num_rlc_columns,
+        keccak_rows_per_round,
+        None,
+    );
     if keccak_rows_per_round.is_some() {
         runner.calculate_params();
     }
+    runner.write_output("data/output.json");
     gen_snark_shplonk(&params, &pk, runner, None::<&str>);
 }

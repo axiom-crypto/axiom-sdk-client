@@ -4,13 +4,14 @@ use axiom_codec::{
         AccountSubquery, AnySubquery, HeaderSubquery, ReceiptSubquery,
         SolidityNestedMappingSubquery, StorageSubquery, TxSubquery,
     },
+    utils::native::decode_hilo_to_h256,
     HiLo,
 };
 use axiom_eth::{halo2_base::AssignedValue, Field};
-use ethers::types::BigEndianHash;
+use ethers::types::{BigEndianHash, H256};
 use serde::{Serialize, Serializer};
 
-use super::utils::{fe_to_h160, get_subquery_type_from_any_subquery, hi_lo_fe_to_h256};
+use super::utils::{fe_to_h160, get_subquery_type_from_any_subquery};
 
 #[derive(Clone, Copy)]
 pub struct AssignedHeaderSubquery<F: Field> {
@@ -55,7 +56,8 @@ impl<F: Field> From<AssignedStorageSubquery<F>> for StorageSubquery {
     fn from(subquery: AssignedStorageSubquery<F>) -> Self {
         let hi = subquery.slot.hi();
         let lo = subquery.slot.lo();
-        let slot = hi_lo_fe_to_h256(hi.value(), lo.value());
+        let hilo = HiLo::from_hi_lo([*hi.value(), *lo.value()]);
+        let slot = decode_hilo_to_h256(hilo);
         Self {
             block_number: subquery.block_number.value().get_lower_32(),
             addr: fe_to_h160(subquery.addr.value()),
@@ -94,7 +96,8 @@ impl<F: Field> From<AssignedReceiptSubquery<F>> for ReceiptSubquery {
     fn from(subquery: AssignedReceiptSubquery<F>) -> Self {
         let hi = subquery.event_schema.hi();
         let lo = subquery.event_schema.lo();
-        let event_schema = hi_lo_fe_to_h256(hi.value(), lo.value());
+        let hilo = HiLo::from_hi_lo([*hi.value(), *lo.value()]);
+        let event_schema = decode_hilo_to_h256(hilo);
         Self {
             block_number: subquery.block_number.value().get_lower_32(),
             tx_idx: subquery.tx_idx.value().get_lower_32() as u16,
@@ -121,14 +124,14 @@ impl<F: Field> From<AssignedSolidityNestedMappingSubquery<F>> for SolidityNested
     fn from(subquery: AssignedSolidityNestedMappingSubquery<F>) -> Self {
         let hi = subquery.mapping_slot.hi();
         let lo = subquery.mapping_slot.lo();
-        let mapping_slot = hi_lo_fe_to_h256(hi.value(), lo.value());
+        let hilo = HiLo::from_hi_lo([*hi.value(), *lo.value()]);
+        let mapping_slot = decode_hilo_to_h256(hilo);
         let keys = subquery
             .keys
             .iter()
             .map(|key| {
-                let hi = key.hi();
-                let lo = key.lo();
-                hi_lo_fe_to_h256(hi.value(), lo.value())
+                let hilo = HiLo::from_hi_lo([*key.hi().value(), *key.lo().value()]);
+                decode_hilo_to_h256(hilo)
             })
             .collect();
         Self {
@@ -141,6 +144,7 @@ impl<F: Field> From<AssignedSolidityNestedMappingSubquery<F>> for SolidityNested
     }
 }
 
+#[derive(Debug)]
 pub(crate) struct Subquery(pub AnySubquery);
 impl Serialize for Subquery {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -159,7 +163,7 @@ impl Serialize for Subquery {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub struct RawSubquery {
     #[serde(rename = "subqueryData")]
     pub(crate) subquery_data: Subquery,
@@ -175,4 +179,11 @@ impl From<AnySubquery> for RawSubquery {
             subquery_type,
         }
     }
+}
+
+#[derive(Debug, Serialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct AxiomV2CircuitOutput {
+    pub(crate) data_query: Vec<RawSubquery>,
+    pub(crate) compute_results: Vec<H256>,
 }

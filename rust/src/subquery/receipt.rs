@@ -6,7 +6,7 @@ use axiom_codec::{
     },
     types::native::{AnySubquery, ReceiptSubquery},
 };
-use axiom_eth::{Field, halo2_base::AssignedValue};
+use axiom_eth::{halo2_base::AssignedValue, Field};
 use ethers::{
     providers::{JsonRpcClient, Middleware, Provider},
     types::{BigEndianHash, BlockId, H256},

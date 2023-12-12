@@ -8,7 +8,9 @@ use crate::{
 use axiom_codec::HiLo;
 use axiom_eth::{
     halo2_base::{
-        gates::{circuit::BaseCircuitParams, GateChip, GateInstructions, RangeChip, RangeInstructions},
+        gates::{
+            circuit::BaseCircuitParams, GateChip, GateInstructions, RangeChip, RangeInstructions,
+        },
         safe_types::SafeTypeChip,
         AssignedValue, Context,
     },
@@ -63,10 +65,7 @@ impl<P: JsonRpcClient> AxiomCircuitScaffold<P, Fr> for MyCircuit {
         gate.add(builder.base.borrow_mut().main(0), inputs.a, inputs.b);
         let bytes = SafeTypeChip::unsafe_to_fix_len_bytes_vec(vec![inputs.b, inputs.b], 2);
         let keccak_call = KeccakFixLenCall::new(bytes);
-        let hilo = subquery_caller.keccak(
-            builder.base.borrow_mut().main(0),
-            keccak_call,
-        );
+        let hilo = subquery_caller.keccak(builder.base.borrow_mut().main(0), keccak_call);
         callback.push(hilo);
         range.range_check(builder.base.borrow_mut().main(0), inputs.a, 10);
         let block_number = builder
@@ -74,7 +73,11 @@ impl<P: JsonRpcClient> AxiomCircuitScaffold<P, Fr> for MyCircuit {
             .borrow_mut()
             .main(0)
             .load_witness(Fr::from(9730000));
-        let field_idx = builder.base.borrow_mut().main(0).load_constant(Fr::from(11));
+        let field_idx = builder
+            .base
+            .borrow_mut()
+            .main(0)
+            .load_constant(Fr::from(11));
         let subquery = AssignedHeaderSubquery {
             block_number,
             field_idx,
@@ -129,6 +132,12 @@ pub fn test_prove() {
         lookup_bits: Some(12),
     };
     let client = Provider::<Http>::try_from(env::var("PROVIDER_URI").unwrap()).unwrap();
-    let pk = keygen(circuit.clone(), client.clone(), params.clone(), None, Some(20));
+    let pk = keygen(
+        circuit.clone(),
+        client.clone(),
+        params.clone(),
+        None,
+        Some(20),
+    );
     prove(circuit, client, params, None, Some(20), pk);
 }

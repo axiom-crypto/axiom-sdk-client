@@ -1,14 +1,8 @@
-use crate::subquery::{
-    types::RawSubquery,
-    utils::get_subquery_type_from_any_subquery,
-};
+use crate::subquery::{types::RawSubquery, utils::get_subquery_type_from_any_subquery};
 use anyhow::Result;
 use axiom_codec::{
     constants::MAX_SUBQUERY_INPUTS,
-    types::{
-        field_elements::SUBQUERY_RESULT_LEN,
-        native::AnySubquery,
-    },
+    types::{field_elements::SUBQUERY_RESULT_LEN, native::AnySubquery},
     HiLo,
 };
 use axiom_eth::{
@@ -50,7 +44,10 @@ impl<P: JsonRpcClient, F: Field> SubqueryCaller<P, F> {
     }
 
     pub fn keccak_call_collector(&self) -> KeccakCallCollector<F> {
-        KeccakCallCollector::new(self.keccak_fix_len_calls.clone(), self.keccak_var_len_calls.clone())
+        KeccakCallCollector::new(
+            self.keccak_fix_len_calls.clone(),
+            self.keccak_var_len_calls.clone(),
+        )
     }
 
     pub fn clear(&mut self) {

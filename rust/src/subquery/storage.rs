@@ -1,6 +1,6 @@
 use anyhow::Result;
-use axiom_codec::types::native::{StorageSubquery, AnySubquery};
-use axiom_eth::{Field, halo2_base::AssignedValue};
+use axiom_codec::types::native::{AnySubquery, StorageSubquery};
+use axiom_eth::{halo2_base::AssignedValue, Field};
 use ethers::{
     providers::{JsonRpcClient, Middleware, Provider},
     types::{BigEndianHash, BlockId, H256},

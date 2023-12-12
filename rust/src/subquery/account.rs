@@ -1,7 +1,7 @@
 use super::{caller::FetchSubquery, types::AssignedAccountSubquery};
 use anyhow::Result;
 use axiom_codec::types::native::{AccountSubquery, AnySubquery};
-use axiom_eth::{Field, halo2_base::AssignedValue};
+use axiom_eth::{halo2_base::AssignedValue, Field};
 use ethers::{
     providers::{JsonRpcClient, Middleware, Provider},
     types::{BigEndianHash, BlockId, H256, U256},

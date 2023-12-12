@@ -1,6 +1,6 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 require('dotenv').config({
-  path: '.env.local'
+  path: '.env'
 });
 
 module.exports = {

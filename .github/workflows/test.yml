@@ -28,7 +28,7 @@ jobs:
         working-directory: ./test  
         run: npm install
 
-      - name: Run Unit Tests
+      - name: Run Integration Tests
         working-directory: ./test
         run: |
           export PROVIDER_URI_GOERLI=${{ secrets.PROVIDER_URI_GOERLI }}

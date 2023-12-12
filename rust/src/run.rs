@@ -126,10 +126,12 @@ pub fn run<P: JsonRpcClient + Clone, S: AxiomCircuitScaffold<P, Fr>>(
     let snark = gen_snark_shplonk(&params, &pk, runner, None::<&str>);
     let partial_vk = get_partial_vk_from_vk(&vk);
     let partial_vk_output = write_partial_vkey(&partial_vk).unwrap();
+    let mut compute_proof = output.compute_results.iter().map(|x| x.to_fixed_bytes()).collect::<Vec<_>>().concat();
+    compute_proof.extend(snark.proof);
     let compute_query = AxiomV2ComputeQuery {
         k: k as u8,
         result_len: output.compute_results.len() as u16,
-        compute_proof: snark.proof.into(),
+        compute_proof: compute_proof.into(),
         vkey: partial_vk_output,
     };
     let output = AxiomV2CircuitOutput {

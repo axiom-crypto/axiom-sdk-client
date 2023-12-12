@@ -1,12 +1,15 @@
-use std::marker::PhantomData;
-
 use anyhow::Result;
 use axiom_codec::{
     constants::MAX_SUBQUERY_INPUTS,
-    types::{native::{AnySubquery, SubqueryType}, field_elements::SUBQUERY_RESULT_LEN},
+    types::{
+        field_elements::SUBQUERY_RESULT_LEN,
+        native::{AnySubquery, SubqueryType},
+    },
+    HiLo,
 };
 use axiom_eth::{
     halo2_base::{AssignedValue, Context},
+    keccak::{promise::{KeccakFixLenCall, KeccakVarLenCall}, types::KeccakLogicalInput},
     utils::encode_h256_to_hilo,
     Field,
 };
@@ -14,8 +17,6 @@ use ethers::{
     providers::{JsonRpcClient, Provider},
     types::H256,
 };
-
-use super::types::AssignedHiLo;
 
 fn get_subquery_type_from_any_subquery(any_subquery: &AnySubquery) -> u64 {
     let subquery_type = match any_subquery {
@@ -35,11 +36,42 @@ pub trait FetchSubquery<F: Field> {
     fn any_subquery(&self) -> AnySubquery;
 }
 
+pub enum KeccakSubqueryTypes<F: Field> {
+    FixLen(KeccakFixLenCall<F>),
+    VarLen(KeccakVarLenCall<F>),
+}
+
+pub trait KeccakSubquery<F: Field> {
+    fn to_logical_input(&self) -> KeccakLogicalInput;
+    fn subquery_type(&self) -> KeccakSubqueryTypes<F>;
+}
+
+impl<F: Field> KeccakSubquery<F> for KeccakFixLenCall<F> {
+    fn to_logical_input(&self) -> KeccakLogicalInput {
+        self.to_logical_input()
+    }
+
+    fn subquery_type(&self) -> KeccakSubqueryTypes<F> {
+        KeccakSubqueryTypes::FixLen(self.clone())
+    }
+}
+
+impl<F: Field> KeccakSubquery<F> for KeccakVarLenCall<F> {
+    fn to_logical_input(&self) -> KeccakLogicalInput {
+        self.to_logical_input()
+    }
+
+    fn subquery_type(&self) -> KeccakSubqueryTypes<F> {
+        KeccakSubqueryTypes::VarLen(self.clone())
+    }
+}
+
 pub struct SubqueryCaller<P: JsonRpcClient, F: Field> {
     pub provider: Provider<P>,
     pub subqueries: Vec<(AnySubquery, H256)>,
     pub subquery_assigned_values: Vec<AssignedValue<F>>,
-    _phantom: PhantomData<F>,
+    pub keccak_fix_len_calls: Vec<(KeccakFixLenCall<F>, HiLo<AssignedValue<F>>)>,
+    pub keccak_var_len_calls: Vec<(KeccakVarLenCall<F>, HiLo<AssignedValue<F>>)>,
 }
 
 impl<P: JsonRpcClient, F: Field> SubqueryCaller<P, F> {
@@ -48,7 +80,8 @@ impl<P: JsonRpcClient, F: Field> SubqueryCaller<P, F> {
             provider,
             subqueries: Vec::new(),
             subquery_assigned_values: Vec::new(),
-            _phantom: PhantomData,
+            keccak_fix_len_calls: Vec::new(),
+            keccak_var_len_calls: Vec::new(),
         }
     }
 
@@ -56,7 +89,7 @@ impl<P: JsonRpcClient, F: Field> SubqueryCaller<P, F> {
         &mut self,
         ctx: &mut Context<F>,
         subquery: T,
-    ) -> AssignedHiLo<F> {
+    ) -> HiLo<AssignedValue<F>> {
         let result = subquery.fetch(&self.provider).unwrap();
         let any_subquery = subquery.any_subquery();
         self.subqueries.push((any_subquery.clone(), result.0));
@@ -73,6 +106,27 @@ impl<P: JsonRpcClient, F: Field> SubqueryCaller<P, F> {
         flattened_subquery.extend(hi_lo_vec);
         assert_eq!(flattened_subquery.len(), SUBQUERY_RESULT_LEN);
         self.subquery_assigned_values.extend(flattened_subquery);
-        AssignedHiLo { hi, lo }
+        HiLo::from_hi_lo([hi, lo])
+    }
+
+    pub fn keccak<T: KeccakSubquery<F>>(
+        &mut self,
+        ctx: &mut Context<F>,
+        subquery: T,
+    ) -> HiLo<AssignedValue<F>> {
+        let logic_input = subquery.to_logical_input();
+        let output_fe = logic_input.compute_output();
+        let hi = ctx.load_witness(output_fe.hash.hi());
+        let lo = ctx.load_witness(output_fe.hash.lo());
+        let hilo = HiLo::from_hi_lo([hi, lo]);
+        match subquery.subquery_type() {
+            KeccakSubqueryTypes::FixLen(call) => {
+                self.keccak_fix_len_calls.push((call, hilo));
+            }
+            KeccakSubqueryTypes::VarLen(call) => {
+                self.keccak_var_len_calls.push((call, hilo));
+            }
+        };
+        hilo
     }
 }

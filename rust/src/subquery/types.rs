@@ -3,36 +3,12 @@ use axiom_codec::{
     types::native::{
         AccountSubquery, HeaderSubquery, ReceiptSubquery, SolidityNestedMappingSubquery,
         StorageSubquery, TxSubquery
-    },
+    }, HiLo,
 };
 use axiom_eth::{halo2_base::AssignedValue, Field};
 use ethers::types::BigEndianHash;
 
 use super::utils::{fe_to_h160, hi_lo_fe_to_h256};
-
-#[derive(Clone, Copy)]
-pub struct AssignedHiLo<F: Field> {
-    pub hi: AssignedValue<F>,
-    pub lo: AssignedValue<F>,
-}
-
-impl<F: Field> AssignedHiLo<F> {
-    pub fn new(hi: AssignedValue<F>, lo: AssignedValue<F>) -> Self {
-        Self { hi, lo }
-    }
-    
-    pub fn hi(&self) -> AssignedValue<F> {
-        self.hi
-    }
-
-    pub fn lo(&self) -> AssignedValue<F> {
-        self.lo
-    }
-
-    pub fn flatten(&self) -> [AssignedValue<F>; 2] {
-        [self.hi, self.lo]
-    }
-}
 
 #[derive(Clone, Copy)]
 pub struct AssignedHeaderSubquery<F: Field> {
@@ -70,7 +46,7 @@ impl<F: Field> From<AssignedAccountSubquery<F>> for AccountSubquery {
 pub struct AssignedStorageSubquery<F: Field> {
     pub block_number: AssignedValue<F>,
     pub addr: AssignedValue<F>,
-    pub slot: AssignedHiLo<F>,
+    pub slot: HiLo<AssignedValue<F>>,
 }
 
 impl<F: Field> From<AssignedStorageSubquery<F>> for StorageSubquery {
@@ -109,7 +85,7 @@ pub struct AssignedReceiptSubquery<F: Field> {
     pub tx_idx: AssignedValue<F>,
     pub field_or_log_idx: AssignedValue<F>,
     pub topic_or_data_or_address_idx: AssignedValue<F>,
-    pub event_schema: AssignedHiLo<F>,
+    pub event_schema: HiLo<AssignedValue<F>>,
 }
 
 impl<F: Field> From<AssignedReceiptSubquery<F>> for ReceiptSubquery {
@@ -134,9 +110,9 @@ impl<F: Field> From<AssignedReceiptSubquery<F>> for ReceiptSubquery {
 pub struct AssignedSolidityNestedMappingSubquery<F: Field> {
     pub block_number: AssignedValue<F>,
     pub addr: AssignedValue<F>,
-    pub mapping_slot: AssignedHiLo<F>,
+    pub mapping_slot: HiLo<AssignedValue<F>>,
     pub mapping_depth: AssignedValue<F>,
-    pub keys: [AssignedHiLo<F>; MAX_SOLIDITY_MAPPING_KEYS],
+    pub keys: [HiLo<AssignedValue<F>>; MAX_SOLIDITY_MAPPING_KEYS],
 }
 
 impl<F: Field> From<AssignedSolidityNestedMappingSubquery<F>> for SolidityNestedMappingSubquery {

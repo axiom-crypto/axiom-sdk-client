@@ -1,16 +1,19 @@
-use std::{borrow::BorrowMut, env, marker::PhantomData};
+use std::{borrow::BorrowMut, env};
 
 use crate::{
     run::{keygen, mock, prove},
     scaffold::{AxiomCircuitScaffold, RawCircuitInput},
-    subquery::{caller::SubqueryCaller, types::{AssignedHeaderSubquery, AssignedHiLo}},
+    subquery::caller::SubqueryCaller,
 };
+use axiom_codec::HiLo;
 use axiom_eth::{
     halo2_base::{
-        gates::{circuit::BaseCircuitParams, GateChip, GateInstructions, RangeChip},
+        gates::{circuit::BaseCircuitParams, GateChip, GateInstructions, RangeChip, RangeInstructions},
+        safe_types::SafeTypeChip,
         AssignedValue, Context,
     },
     halo2curves::bn256::Fr,
+    keccak::promise::KeccakFixLenCall,
     rlc::circuit::builder::RlcCircuitBuilder,
     Field,
 };
@@ -25,9 +28,8 @@ struct MyCircuitInput {
 
 #[derive(Debug, Clone)]
 struct MyCircuitVirtualInput<F: Field> {
-    a: u64,
-    b: u64,
-    c: PhantomData<F>
+    a: AssignedValue<F>,
+    b: AssignedValue<F>,
 }
 
 impl RawCircuitInput<Fr, MyCircuitVirtualInput<Fr>> for MyCircuitInput {
@@ -36,7 +38,9 @@ impl RawCircuitInput<Fr, MyCircuitVirtualInput<Fr>> for MyCircuitInput {
     }
 
     fn assign(&self, ctx: &mut Context<Fr>) -> MyCircuitVirtualInput<Fr> {
-        MyCircuitVirtualInput { a: self.a , b: self.b, c: PhantomData }
+        let a = ctx.load_witness(Fr::from(self.a));
+        let b = ctx.load_witness(Fr::from(self.b));
+        MyCircuitVirtualInput { a, b }
     }
 }
 
@@ -50,16 +54,21 @@ impl<P: JsonRpcClient> AxiomCircuitScaffold<P, Fr> for MyCircuit {
     fn virtual_assign_phase0(
         &self,
         builder: &mut RlcCircuitBuilder<Fr>,
-        _range: &RangeChip<Fr>,
+        range: &RangeChip<Fr>,
         subquery_caller: &mut SubqueryCaller<P, Fr>,
-        callback: &mut Vec<AssignedHiLo<Fr>>,
+        callback: &mut Vec<HiLo<AssignedValue<Fr>>>,
         inputs: Self::VirtualCircuitInput,
     ) -> Self::FirstPhasePayload {
         let gate = GateChip::<Fr>::new();
-        // gate.add(builder.base.borrow_mut().main(0), inputs.a, inputs.b);
-        let a = builder.base.borrow_mut().main(0).load_witness(Fr::from(1));
-        let b = builder.base.borrow_mut().main(0).load_witness(Fr::from(1));
-        let c = gate.add(builder.base.borrow_mut().main(0), a, b);
+        gate.add(builder.base.borrow_mut().main(0), inputs.a, inputs.b);
+        let bytes = SafeTypeChip::unsafe_to_fix_len_bytes_vec(vec![inputs.b, inputs.b], 2);
+        let keccak_call = KeccakFixLenCall::new(bytes);
+        let hilo = subquery_caller.keccak(
+            builder.base.borrow_mut().main(0),
+            keccak_call,
+        );
+        callback.push(hilo);
+        range.range_check(builder.base.borrow_mut().main(0), inputs.a, 10);
         // let block_number = builder
         //     .base
         //     .borrow_mut()
@@ -88,7 +97,7 @@ pub fn test_keygen() {
         lookup_bits: Some(12),
     };
     let client = Provider::<Http>::try_from(env::var("PROVIDER_URI").unwrap()).unwrap();
-    keygen(circuit, client, params, None);
+    keygen(circuit, client, params, None, Some(20));
 }
 
 #[test]
@@ -104,7 +113,7 @@ pub fn test_mock() {
         lookup_bits: Some(11),
     };
     let client = Provider::<Http>::try_from(env::var("PROVIDER_URI").unwrap()).unwrap();
-    mock(circuit, client, params, None);
+    mock(circuit, client, params, None, None);
 }
 
 #[test]
@@ -112,14 +121,14 @@ pub fn test_prove() {
     dotenv().ok();
     let circuit = MyCircuit;
     let params = BaseCircuitParams {
-        k: 12,
+        k: 13,
         num_advice_per_phase: vec![4, 0, 0],
         num_lookup_advice_per_phase: vec![1, 0, 0],
         num_fixed: 1,
         num_instance_columns: 1,
-        lookup_bits: Some(11),
+        lookup_bits: Some(12),
     };
     let client = Provider::<Http>::try_from(env::var("PROVIDER_URI").unwrap()).unwrap();
-    let pk = keygen(circuit.clone(), client.clone(), params.clone(), None);
-    prove(circuit, client, params, None, pk);
+    let pk = keygen(circuit.clone(), client.clone(), params.clone(), None, Some(20));
+    prove(circuit, client, params, None, Some(20), pk);
 }

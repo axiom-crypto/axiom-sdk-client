@@ -60,7 +60,6 @@ pub struct AxiomCircuitRunner<F: Field, P: JsonRpcClient, A: AxiomCircuitScaffol
     pub inputs: A::CircuitInput,
     pub provider: Provider<P>,
     pub payload: RefCell<Option<A::FirstPhasePayload>>,
-    uses_rlc: bool,
 }
 
 impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
@@ -77,8 +76,7 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
             base: params.clone(),
             num_rlc_columns: num_rlc_columns.unwrap_or(0),
         };
-        let uses_rlc = rlc_params.num_rlc_columns > 0;
-        let rlc_bits = if uses_rlc { DEFAULT_RLC_CACHE_BITS } else { 0 };
+        let rlc_bits = if rlc_params.num_rlc_columns > 0 { DEFAULT_RLC_CACHE_BITS } else { 0 };
         let builder = RlcCircuitBuilder::<F>::new(false, rlc_bits).use_params(rlc_params.clone());
         let range = RangeChip::new(
             params.lookup_bits.unwrap(),
@@ -91,7 +89,6 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
             inputs: inputs.unwrap_or_else(A::CircuitInput::default),
             provider,
             payload: RefCell::new(None),
-            uses_rlc,
         }
     }
 
@@ -113,10 +110,7 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
             assigned_inputs,
         );
         self.payload.borrow_mut().replace(payload);
-        let mut subquery_instances = subquery_caller.subquery_assigned_values.to_vec();
-        subquery_instances.resize_with(SUBQUERY_NUM_INSTANCES, || {
-            self.builder.borrow_mut().base.main(0).load_witness(F::ZERO)
-        });
+
         let mut flattened_callback = callback
             .into_iter()
             .flat_map(|hilo| hilo.flatten())
@@ -124,6 +118,12 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
         flattened_callback.resize_with(USER_OUTPUT_NUM_INSTANCES, || {
             self.builder.borrow_mut().base.main(0).load_witness(F::ZERO)
         });
+
+        let mut subquery_instances = subquery_caller.subquery_assigned_values.to_vec();
+        subquery_instances.resize_with(SUBQUERY_NUM_INSTANCES, || {
+            self.builder.borrow_mut().base.main(0).load_witness(F::ZERO)
+        });
+
         flattened_callback.extend(subquery_instances);
         let instances = vec![flattened_callback];
         self.builder.borrow_mut().base.assigned_instances = instances.clone();
@@ -145,10 +145,12 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
         config: BaseConfig<F>,
         mut layouter: impl Layouter<F>,
     ) -> Result<(), Error> {
-        self.builder.borrow_mut().base.synthesize(
+        let res = self.builder.borrow_mut().base.synthesize(
             config,
             layouter.namespace(|| "BaseCircuitBuilder raw synthesize phase0"),
-        )
+        );
+        self.builder.borrow_mut().clear();
+        res
     }
 
     fn synthesize_with_rlc(
@@ -209,10 +211,16 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
     }
 }
 
+#[derive(Clone, Debug)]
+pub enum AxiomCircuitConfig<F: Field> {
+    Rlc(RlcConfig<F>),
+    Base(BaseConfig<F>),
+}
+
 impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> Circuit<F>
     for AxiomCircuitRunner<F, P, A>
 {
-    type Config = RlcConfig<F>;
+    type Config = AxiomCircuitConfig<F>;
     type Params = RlcCircuitParams;
     type FloorPlanner = SimpleFloorPlanner;
 
@@ -225,11 +233,16 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> Circuit<
     }
 
     fn configure_with_params(meta: &mut ConstraintSystem<F>, params: Self::Params) -> Self::Config {
-        let k = params.base.k;
-        let mut rlc_config = RlcConfig::configure(meta, params);
-        let usable_rows = (1 << k) - meta.minimum_rows();
-        rlc_config.set_usable_rows(usable_rows);
-        rlc_config
+        let config = if params.num_rlc_columns == 0 {
+            AxiomCircuitConfig::Base(BaseConfig::configure(meta, params.base))
+        } else {
+            let k = params.base.k;
+            let mut rlc_config = RlcConfig::configure(meta, params);
+            let usable_rows = (1 << k) - meta.minimum_rows();
+            rlc_config.set_usable_rows(usable_rows);
+            AxiomCircuitConfig::Rlc(rlc_config)
+        };
+        config
     }
 
     fn configure(_: &mut ConstraintSystem<F>) -> Self::Config {
@@ -237,10 +250,13 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> Circuit<
     }
 
     fn synthesize(&self, config: Self::Config, layouter: impl Layouter<F>) -> Result<(), Error> {
-        if !self.uses_rlc {
-            return self.synthesize_without_rlc(config.base, layouter);
-        } else {
-            return self.synthesize_with_rlc(config, layouter);
+        match config {
+            AxiomCircuitConfig::Rlc(config) => {
+                return self.synthesize_with_rlc(config, layouter);
+            }
+            AxiomCircuitConfig::Base(config) => {
+                return self.synthesize_without_rlc(config, layouter);
+            }
         }
     }
 }

@@ -145,6 +145,7 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
         config: BaseConfig<F>,
         mut layouter: impl Layouter<F>,
     ) -> Result<(), Error> {
+        self.virtual_assign_phase0();
         let res = self.builder.borrow_mut().base.synthesize(
             config,
             layouter.namespace(|| "BaseCircuitBuilder raw synthesize phase0"),

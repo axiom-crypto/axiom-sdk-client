@@ -3,7 +3,7 @@ use std::{borrow::BorrowMut, env};
 use crate::{
     run::{keygen, mock, prove},
     scaffold::{AxiomCircuitScaffold, RawCircuitInput},
-    subquery::caller::SubqueryCaller,
+    subquery::{caller::SubqueryCaller, types::AssignedHeaderSubquery},
 };
 use axiom_codec::HiLo;
 use axiom_eth::{
@@ -69,18 +69,18 @@ impl<P: JsonRpcClient> AxiomCircuitScaffold<P, Fr> for MyCircuit {
         );
         callback.push(hilo);
         range.range_check(builder.base.borrow_mut().main(0), inputs.a, 10);
-        // let block_number = builder
-        //     .base
-        //     .borrow_mut()
-        //     .main(0)
-        //     .load_witness(Fr::from(9730000));
-        // let field_idx = builder.base.borrow_mut().main(0).load_constant(Fr::from(11));
-        // let subquery = AssignedHeaderSubquery {
-        //     block_number,
-        //     field_idx,
-        // };
-        // let timestamp = subquery_caller.call(builder.base.borrow_mut().main(0), subquery);
-        // callback.push(timestamp);
+        let block_number = builder
+            .base
+            .borrow_mut()
+            .main(0)
+            .load_witness(Fr::from(9730000));
+        let field_idx = builder.base.borrow_mut().main(0).load_constant(Fr::from(11));
+        let subquery = AssignedHeaderSubquery {
+            block_number,
+            field_idx,
+        };
+        let timestamp = subquery_caller.call(builder.base.borrow_mut().main(0), subquery);
+        callback.push(timestamp);
     }
 }
 

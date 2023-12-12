@@ -1,69 +1,33 @@
+use crate::subquery::{
+    types::RawSubquery,
+    utils::get_subquery_type_from_any_subquery,
+};
 use anyhow::Result;
 use axiom_codec::{
     constants::MAX_SUBQUERY_INPUTS,
     types::{
         field_elements::SUBQUERY_RESULT_LEN,
-        native::{AnySubquery, SubqueryType},
+        native::AnySubquery,
     },
     HiLo,
 };
 use axiom_eth::{
     halo2_base::{AssignedValue, Context},
-    keccak::{promise::{KeccakFixLenCall, KeccakVarLenCall}, types::KeccakLogicalInput},
-    utils::encode_h256_to_hilo,
+    keccak::promise::{KeccakFixLenCall, KeccakVarLenCall},
+    utils::{encode_h256_to_hilo, keccak::decorator::KeccakCallCollector},
     Field,
 };
 use ethers::{
     providers::{JsonRpcClient, Provider},
     types::H256,
 };
+use itertools::Itertools;
 
-fn get_subquery_type_from_any_subquery(any_subquery: &AnySubquery) -> u64 {
-    let subquery_type = match any_subquery {
-        AnySubquery::Null => SubqueryType::Null,
-        AnySubquery::Header(_) => SubqueryType::Header,
-        AnySubquery::Account(_) => SubqueryType::Account,
-        AnySubquery::Storage(_) => SubqueryType::Storage,
-        AnySubquery::Receipt(_) => SubqueryType::Receipt,
-        AnySubquery::Transaction(_) => SubqueryType::Transaction,
-        AnySubquery::SolidityNestedMapping(_) => SubqueryType::SolidityNestedMapping,
-    };
-    subquery_type as u64
-}
+use super::keccak::{KeccakSubquery, KeccakSubqueryTypes};
 
 pub trait FetchSubquery<F: Field> {
     fn fetch<P: JsonRpcClient>(&self, p: &Provider<P>) -> Result<(H256, Vec<AssignedValue<F>>)>;
     fn any_subquery(&self) -> AnySubquery;
-}
-
-pub enum KeccakSubqueryTypes<F: Field> {
-    FixLen(KeccakFixLenCall<F>),
-    VarLen(KeccakVarLenCall<F>),
-}
-
-pub trait KeccakSubquery<F: Field> {
-    fn to_logical_input(&self) -> KeccakLogicalInput;
-    fn subquery_type(&self) -> KeccakSubqueryTypes<F>;
-}
-
-impl<F: Field> KeccakSubquery<F> for KeccakFixLenCall<F> {
-    fn to_logical_input(&self) -> KeccakLogicalInput {
-        self.to_logical_input()
-    }
-
-    fn subquery_type(&self) -> KeccakSubqueryTypes<F> {
-        KeccakSubqueryTypes::FixLen(self.clone())
-    }
-}
-
-impl<F: Field> KeccakSubquery<F> for KeccakVarLenCall<F> {
-    fn to_logical_input(&self) -> KeccakLogicalInput {
-        self.to_logical_input()
-    }
-
-    fn subquery_type(&self) -> KeccakSubqueryTypes<F> {
-        KeccakSubqueryTypes::VarLen(self.clone())
-    }
 }
 
 pub struct SubqueryCaller<P: JsonRpcClient, F: Field> {
@@ -83,6 +47,26 @@ impl<P: JsonRpcClient, F: Field> SubqueryCaller<P, F> {
             keccak_fix_len_calls: Vec::new(),
             keccak_var_len_calls: Vec::new(),
         }
+    }
+
+    pub fn keccak_call_collector(&self) -> KeccakCallCollector<F> {
+        KeccakCallCollector::new(self.keccak_fix_len_calls.clone(), self.keccak_var_len_calls.clone())
+    }
+
+    pub fn clear(&mut self) {
+        self.subqueries.clear();
+        self.subquery_assigned_values.clear();
+        self.keccak_fix_len_calls.clear();
+        self.keccak_var_len_calls.clear();
+    }
+
+    pub fn data_query(&self) -> Vec<RawSubquery> {
+        let subqueries: Vec<RawSubquery> = self
+            .subqueries
+            .iter()
+            .map(|(any_subquery, _)| any_subquery.clone().into())
+            .collect_vec();
+        subqueries
     }
 
     pub fn call<T: FetchSubquery<F>>(

@@ -1,14 +1,16 @@
 use axiom_codec::{
     constants::MAX_SOLIDITY_MAPPING_KEYS,
     types::native::{
-        AccountSubquery, HeaderSubquery, ReceiptSubquery, SolidityNestedMappingSubquery,
-        StorageSubquery, TxSubquery
-    }, HiLo,
+        AccountSubquery, AnySubquery, HeaderSubquery, ReceiptSubquery,
+        SolidityNestedMappingSubquery, StorageSubquery, TxSubquery,
+    },
+    HiLo,
 };
 use axiom_eth::{halo2_base::AssignedValue, Field};
 use ethers::types::BigEndianHash;
+use serde::{Serialize, Serializer};
 
-use super::utils::{fe_to_h160, hi_lo_fe_to_h256};
+use super::utils::{fe_to_h160, get_subquery_type_from_any_subquery, hi_lo_fe_to_h256};
 
 #[derive(Clone, Copy)]
 pub struct AssignedHeaderSubquery<F: Field> {
@@ -135,6 +137,42 @@ impl<F: Field> From<AssignedSolidityNestedMappingSubquery<F>> for SolidityNested
             mapping_slot: mapping_slot.into_uint(),
             mapping_depth: subquery.mapping_depth.value().get_lower_32() as u8,
             keys,
+        }
+    }
+}
+
+pub(crate) struct Subquery(pub AnySubquery);
+impl Serialize for Subquery {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self.0 {
+            AnySubquery::Null => serializer.serialize_unit_variant("AnySubquery", 0, "Null"),
+            AnySubquery::Header(ref inner) => inner.serialize(serializer),
+            AnySubquery::Account(ref inner) => inner.serialize(serializer),
+            AnySubquery::Storage(ref inner) => inner.serialize(serializer),
+            AnySubquery::Transaction(ref inner) => inner.serialize(serializer),
+            AnySubquery::Receipt(ref inner) => inner.serialize(serializer),
+            AnySubquery::SolidityNestedMapping(ref inner) => inner.serialize(serializer),
+        }
+    }
+}
+
+#[derive(Serialize)]
+pub struct RawSubquery {
+    #[serde(rename = "subqueryData")]
+    pub(crate) subquery_data: Subquery,
+    #[serde(rename = "type")]
+    pub(crate) subquery_type: u64,
+}
+
+impl From<AnySubquery> for RawSubquery {
+    fn from(subquery: AnySubquery) -> Self {
+        let subquery_type = get_subquery_type_from_any_subquery(&subquery);
+        Self {
+            subquery_data: Subquery(subquery),
+            subquery_type,
         }
     }
 }

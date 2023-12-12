@@ -1,5 +1,6 @@
 use crate::constants::{SUBQUERY_NUM_INSTANCES, USER_OUTPUT_NUM_INSTANCES};
 use crate::subquery::caller::SubqueryCaller;
+use crate::subquery::types::RawSubquery;
 use axiom_codec::HiLo;
 use axiom_eth::halo2_base::gates::circuit::{BaseCircuitParams, BaseConfig};
 use axiom_eth::halo2_base::safe_types::SafeTypeChip;
@@ -70,6 +71,7 @@ pub struct AxiomCircuitRunner<F: Field, P: JsonRpcClient, A: AxiomCircuitScaffol
     pub provider: Provider<P>,
     pub payload: RefCell<Option<A::FirstPhasePayload>>,
     pub keccak_rows_per_round: usize,
+    data_query: RefCell<Vec<RawSubquery>>,
     keccak_call_collector: RefCell<Option<KeccakCallCollector<F>>>,
 }
 
@@ -106,6 +108,7 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
             provider,
             payload: RefCell::new(None),
             keccak_rows_per_round: keccak_rows_per_round.unwrap_or(0),
+            data_query: RefCell::new(Vec::new()),
             keccak_call_collector: RefCell::new(None),
         }
     }
@@ -145,6 +148,7 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
         flattened_callback.extend(subquery_instances);
         let instances = vec![flattened_callback];
         self.builder.borrow_mut().base.assigned_instances = instances.clone();
+        self.data_query.replace(subquery_caller.data_query());
 
         if self.keccak_rows_per_round > 0 {
             let keccak_calls = KeccakCallCollector::new(
@@ -245,10 +249,11 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
         Ok(())
     }
 
-    pub fn clear(&self) {
+    fn clear(&self) {
         self.builder.borrow_mut().clear();
         self.payload.borrow_mut().take();
         self.keccak_call_collector.borrow_mut().take();
+        self.data_query.borrow_mut().clear();
     }
 
     pub fn calculate_params(&mut self) {

@@ -1,3 +1,4 @@
+use axiom_codec::types::native::{AnySubquery, SubqueryType};
 use axiom_eth::{halo2_base::utils::fe_to_biguint, Field};
 use ethers::types::{H256, H160};
 
@@ -39,4 +40,17 @@ pub fn hi_lo_fe_to_h256<F: Field>(hi: &F, lo: &F) -> H256 {
     h256[..16].copy_from_slice(&hi_biguint.to_bytes_be());
     h256[16..].copy_from_slice(&lo_biguint.to_bytes_be());
     H256::from(h256)
+}
+
+pub fn get_subquery_type_from_any_subquery(any_subquery: &AnySubquery) -> u64 {
+    let subquery_type = match any_subquery {
+        AnySubquery::Null => SubqueryType::Null,
+        AnySubquery::Header(_) => SubqueryType::Header,
+        AnySubquery::Account(_) => SubqueryType::Account,
+        AnySubquery::Storage(_) => SubqueryType::Storage,
+        AnySubquery::Receipt(_) => SubqueryType::Receipt,
+        AnySubquery::Transaction(_) => SubqueryType::Transaction,
+        AnySubquery::SolidityNestedMapping(_) => SubqueryType::SolidityNestedMapping,
+    };
+    subquery_type as u64
 }

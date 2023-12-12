@@ -25,7 +25,8 @@ describe("Run", () => {
 
         // Compile the circuit
         const compileCmd = `npx axiom compile "${circuitPath}" --function circuit --output "${outputFileBase}.build.json" --provider $PROVIDER_URI_GOERLI`;
-        const { stderr: compileStdErr } = await exec(compileCmd);
+        const { stdout, stderr: compileStdErr } = await exec(compileCmd);
+        console.log(stdout);
         if (compileStdErr) {
           console.log("Failed on compile command:", compileCmd);
           throw new Error(`Compile error: ${compileStdErr}`);

@@ -19,7 +19,7 @@ function copyPackageJson() {
 }
 
 function copyReadme() {
-  fs.copyFileSync("./README.md", "./dist/README.md");
+  fs.copyFileSync("./readme.md", "./dist/readme.md");
 }
 
 copyPackageJson();

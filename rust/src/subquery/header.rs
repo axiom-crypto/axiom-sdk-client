@@ -13,6 +13,8 @@ use ethers::{
 };
 use tokio::runtime::Runtime;
 
+use crate::impl_fr_from;
+
 use super::{
     caller::FetchSubquery,
     types::AssignedHeaderSubquery,
@@ -22,7 +24,7 @@ use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
 #[derive(FromPrimitive)]
-pub enum HeaderFields {
+pub enum HeaderField {
     ParentHash,
     Sha3Uncles,
     Miner,
@@ -44,6 +46,7 @@ pub enum HeaderFields {
     Size = HEADER_SIZE_FIELD_IDX as isize,
     ExtraDataLen = HEADER_EXTRA_DATA_LEN_FIELD_IDX as isize,
 }
+impl_fr_from!(HeaderField);
 
 pub async fn get_header_field_value<P: JsonRpcClient>(
     provider: &Provider<P>,
@@ -66,34 +69,34 @@ pub async fn get_header_field_value<P: JsonRpcClient>(
         let bloom_bytes = &bloom[log_idx..log_idx + 32];
         return Ok(H256::from_slice(bloom_bytes));
     }
-    let header_field_idx = HeaderFields::from_usize(field_idx).expect("Invalid field index");
+    let header_field_idx = HeaderField::from_usize(field_idx).expect("Invalid field index");
     let val = match header_field_idx {
-        HeaderFields::ParentHash => block.parent_hash,
-        HeaderFields::Sha3Uncles => block.uncles_hash,
-        HeaderFields::Miner => H256::from_slice(block.author.unwrap().as_bytes()),
-        HeaderFields::StateRoot => block.state_root,
-        HeaderFields::TransactionsRoot => block.transactions_root,
-        HeaderFields::ReceiptsRoot => block.receipts_root,
-        HeaderFields::LogsBloom => {
+        HeaderField::ParentHash => block.parent_hash,
+        HeaderField::Sha3Uncles => block.uncles_hash,
+        HeaderField::Miner => H256::from_slice(block.author.unwrap().as_bytes()),
+        HeaderField::StateRoot => block.state_root,
+        HeaderField::TransactionsRoot => block.transactions_root,
+        HeaderField::ReceiptsRoot => block.receipts_root,
+        HeaderField::LogsBloom => {
             let logs_bloom = block.logs_bloom.unwrap();
             H256::from(pad_to_bytes32(logs_bloom.as_fixed_bytes()))
         }
-        HeaderFields::Difficulty => H256::from_uint(&block.difficulty),
-        HeaderFields::Number => H256::from(usize_to_u8_array(block.number.unwrap().as_usize())),
-        HeaderFields::GasLimit => H256::from_uint(&block.gas_limit),
-        HeaderFields::GasUsed => H256::from_uint(&block.gas_used),
-        HeaderFields::Timestamp => H256::from_uint(&block.timestamp),
-        HeaderFields::ExtraData => {
+        HeaderField::Difficulty => H256::from_uint(&block.difficulty),
+        HeaderField::Number => H256::from(usize_to_u8_array(block.number.unwrap().as_usize())),
+        HeaderField::GasLimit => H256::from_uint(&block.gas_limit),
+        HeaderField::GasUsed => H256::from_uint(&block.gas_used),
+        HeaderField::Timestamp => H256::from_uint(&block.timestamp),
+        HeaderField::ExtraData => {
             let extra_data = block.extra_data;
             H256::from(pad_to_bytes32(&extra_data))
         }
-        HeaderFields::MixHash => block.mix_hash.unwrap(),
-        HeaderFields::Nonce => H256::from_slice(&block.nonce.unwrap().to_fixed_bytes()),
-        HeaderFields::BaseFeePerGas => H256::from_uint(&block.base_fee_per_gas.unwrap()),
-        HeaderFields::WithdrawalsRoot => block.withdrawals_root.unwrap(),
-        HeaderFields::Hash => block.hash.unwrap(),
-        HeaderFields::Size => H256::from_uint(&block.size.unwrap()),
-        HeaderFields::ExtraDataLen => H256::from(usize_to_u8_array(block.extra_data.len())),
+        HeaderField::MixHash => block.mix_hash.unwrap(),
+        HeaderField::Nonce => H256::from_slice(&block.nonce.unwrap().to_fixed_bytes()),
+        HeaderField::BaseFeePerGas => H256::from_uint(&block.base_fee_per_gas.unwrap()),
+        HeaderField::WithdrawalsRoot => block.withdrawals_root.unwrap(),
+        HeaderField::Hash => block.hash.unwrap(),
+        HeaderField::Size => H256::from_uint(&block.size.unwrap()),
+        HeaderField::ExtraDataLen => H256::from(usize_to_u8_array(block.extra_data.len())),
     };
 
     Ok(val)

@@ -1,9 +1,12 @@
-use std::{borrow::BorrowMut, env};
+use std::borrow::BorrowMut;
 
 use crate::{
+    constant, ctx,
     run::{keygen, mock, prove, run},
     scaffold::{AxiomCircuitScaffold, RawCircuitInput},
-    subquery::{caller::SubqueryCaller, types::AssignedHeaderSubquery},
+    subquery::{caller::SubqueryCaller, header::HeaderField, types::AssignedHeaderSubquery},
+    utils::get_provider,
+    witness, types::AxiomCircuitParams,
 };
 use axiom_codec::HiLo;
 use axiom_eth::{
@@ -19,10 +22,9 @@ use axiom_eth::{
     rlc::circuit::builder::RlcCircuitBuilder,
     Field,
 };
-use dotenv::dotenv;
-use ethers::providers::{Http, JsonRpcClient, Provider};
+use ethers::providers::JsonRpcClient;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 struct MyCircuitInput {
     a: u64,
     b: u64,
@@ -35,10 +37,6 @@ struct MyCircuitVirtualInput<F: Field> {
 }
 
 impl RawCircuitInput<Fr, MyCircuitVirtualInput<Fr>> for MyCircuitInput {
-    fn default() -> Self {
-        MyCircuitInput { a: 1, b: 1 }
-    }
-
     fn assign(&self, ctx: &mut Context<Fr>) -> MyCircuitVirtualInput<Fr> {
         let a = ctx.load_witness(Fr::from(self.a));
         let b = ctx.load_witness(Fr::from(self.b));
@@ -46,12 +44,11 @@ impl RawCircuitInput<Fr, MyCircuitVirtualInput<Fr>> for MyCircuitInput {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 struct MyCircuit;
 impl<P: JsonRpcClient> AxiomCircuitScaffold<P, Fr> for MyCircuit {
     type CircuitInput = MyCircuitInput;
     type VirtualCircuitInput = MyCircuitVirtualInput<Fr>;
-    type FirstPhasePayload = ();
 
     fn virtual_assign_phase0(
         &self,
@@ -60,37 +57,25 @@ impl<P: JsonRpcClient> AxiomCircuitScaffold<P, Fr> for MyCircuit {
         subquery_caller: &mut SubqueryCaller<P, Fr>,
         callback: &mut Vec<HiLo<AssignedValue<Fr>>>,
         inputs: Self::VirtualCircuitInput,
-    ) -> Self::FirstPhasePayload {
+    ) {
         let gate = GateChip::<Fr>::new();
-        gate.add(builder.base.borrow_mut().main(0), inputs.a, inputs.b);
+        gate.add(ctx!(builder, 0), inputs.a, inputs.b);
         let bytes = SafeTypeChip::unsafe_to_fix_len_bytes_vec(vec![inputs.b, inputs.b], 2);
-        let keccak_call = KeccakFixLenCall::new(bytes);
-        let hilo = subquery_caller.keccak(builder.base.borrow_mut().main(0), keccak_call);
-        callback.push(hilo);
-        range.range_check(builder.base.borrow_mut().main(0), inputs.a, 10);
-        let block_number = builder
-            .base
-            .borrow_mut()
-            .main(0)
-            .load_witness(Fr::from(9730000));
-        let field_idx = builder
-            .base
-            .borrow_mut()
-            .main(0)
-            .load_constant(Fr::from(11));
+        let _keccak_call = KeccakFixLenCall::new(bytes);
+        // let hilo = subquery_caller.keccak(ctx!(builder, 0), keccak_call);
+        // callback.push(hilo);
+        range.range_check(ctx!(builder, 0), inputs.a, 10);
         let subquery = AssignedHeaderSubquery {
-            block_number,
-            field_idx,
+            block_number: witness!(builder, Fr::from(9730000)),
+            field_idx: constant!(builder, Fr::from(HeaderField::GasLimit)),
         };
-        let timestamp = subquery_caller.call(builder.base.borrow_mut().main(0), subquery);
+        let timestamp = subquery_caller.call(ctx!(builder, 0), subquery);
         callback.push(timestamp);
     }
 }
 
 #[test]
 pub fn test_keygen() {
-    dotenv().ok();
-    let circuit = MyCircuit;
     let params = BaseCircuitParams {
         k: 13,
         num_advice_per_phase: vec![4, 0, 0],
@@ -99,14 +84,12 @@ pub fn test_keygen() {
         num_instance_columns: 1,
         lookup_bits: Some(12),
     };
-    let client = Provider::<Http>::try_from(env::var("PROVIDER_URI").unwrap()).unwrap();
-    keygen(circuit, client, params, None, Some(20));
+    let client = get_provider();
+    keygen::<_, MyCircuit>(client, AxiomCircuitParams::Base(params));
 }
 
 #[test]
 pub fn test_mock() {
-    dotenv().ok();
-    let circuit = MyCircuit;
     let params = BaseCircuitParams {
         k: 12,
         num_advice_per_phase: vec![4, 0, 0],
@@ -115,14 +98,12 @@ pub fn test_mock() {
         num_instance_columns: 1,
         lookup_bits: Some(11),
     };
-    let client = Provider::<Http>::try_from(env::var("PROVIDER_URI").unwrap()).unwrap();
-    mock(circuit, client, params, None, None);
+    let client = get_provider();
+    mock::<_, MyCircuit>(client, AxiomCircuitParams::Base(params));
 }
 
 #[test]
 pub fn test_prove() {
-    dotenv().ok();
-    let circuit = MyCircuit;
     let params = BaseCircuitParams {
         k: 13,
         num_advice_per_phase: vec![4, 0, 0],
@@ -131,21 +112,13 @@ pub fn test_prove() {
         num_instance_columns: 1,
         lookup_bits: Some(12),
     };
-    let client = Provider::<Http>::try_from(env::var("PROVIDER_URI").unwrap()).unwrap();
-    let (_, pk) = keygen(
-        circuit.clone(),
-        client.clone(),
-        params.clone(),
-        None,
-        Some(20),
-    );
-    prove(circuit, client, params, None, Some(20), pk);
+    let client = get_provider();
+    let (_, pk) = keygen::<_, MyCircuit>(client.clone(), AxiomCircuitParams::Base(params.clone()));
+    prove::<_, MyCircuit>(client, AxiomCircuitParams::Base(params), pk);
 }
 
 #[test]
 pub fn test_run() {
-    dotenv().ok();
-    let circuit = MyCircuit;
     let params = BaseCircuitParams {
         k: 13,
         num_advice_per_phase: vec![4, 0, 0],
@@ -154,13 +127,7 @@ pub fn test_run() {
         num_instance_columns: 1,
         lookup_bits: Some(12),
     };
-    let client = Provider::<Http>::try_from(env::var("PROVIDER_URI").unwrap()).unwrap();
-    let (vk, pk) = keygen(
-        circuit.clone(),
-        client.clone(),
-        params.clone(),
-        None,
-        None,
-    );
-    run(circuit, client, params, None, None, pk, vk);
+    let client = get_provider();
+    let (_vk, pk) = keygen::<_, MyCircuit>(client.clone(), AxiomCircuitParams::Base(params.clone()));
+    run::<_, MyCircuit>(client, AxiomCircuitParams::Base(params), pk);
 }

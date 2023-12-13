@@ -1,13 +1,12 @@
 use crate::constants::{SUBQUERY_NUM_INSTANCES, USER_OUTPUT_NUM_INSTANCES};
 use crate::subquery::caller::SubqueryCaller;
-use crate::subquery::types::AxiomV2CircuitScaffoldOutput;
+use crate::types::{AxiomCircuitConfig, AxiomCircuitParams, AxiomV2CircuitScaffoldOutput};
 use axiom_codec::utils::native::decode_hilo_to_h256;
 use axiom_codec::HiLo;
-use axiom_eth::halo2_base::gates::circuit::{BaseCircuitParams, BaseConfig};
+use axiom_eth::halo2_base::gates::circuit::BaseConfig;
 use axiom_eth::halo2_base::safe_types::SafeTypeChip;
 use axiom_eth::halo2_base::virtual_region::manager::VirtualRegionManager;
 use axiom_eth::halo2_base::{AssignedValue, Context};
-use axiom_eth::rlc::circuit::RlcCircuitParams;
 use axiom_eth::snark_verifier_sdk::CircuitExt;
 use axiom_eth::utils::keccak::decorator::KeccakCallCollector;
 use axiom_eth::utils::keccak::decorator::{RlcKeccakCircuitParams, RlcKeccakConfig};
@@ -37,14 +36,13 @@ use std::mem;
 use std::ops::{Deref, DerefMut};
 
 pub trait RawCircuitInput<F: Field, O> {
-    fn default() -> Self;
     fn assign(&self, ctx: &mut Context<F>) -> O;
 }
 
-pub trait AxiomCircuitScaffold<P: JsonRpcClient, F: Field> {
+pub trait AxiomCircuitScaffold<P: JsonRpcClient, F: Field>: Default + Clone + Debug {
     type VirtualCircuitInput: Clone + Debug;
-    type CircuitInput: Clone + Debug + RawCircuitInput<F, Self::VirtualCircuitInput>;
-    type FirstPhasePayload;
+    type CircuitInput: Clone + Debug + Default + RawCircuitInput<F, Self::VirtualCircuitInput>;
+    type FirstPhasePayload: Clone = ();
 
     fn virtual_assign_phase0(
         &self,
@@ -66,54 +64,51 @@ pub trait AxiomCircuitScaffold<P: JsonRpcClient, F: Field> {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct AxiomCircuitRunner<F: Field, P: JsonRpcClient, A: AxiomCircuitScaffold<P, F>> {
     pub builder: RefCell<RlcCircuitBuilder<F>>,
     pub range: RangeChip<F>,
-    pub scaffold: A,
     pub inputs: A::CircuitInput,
     pub provider: Provider<P>,
     pub payload: RefCell<Option<A::FirstPhasePayload>>,
     pub keccak_rows_per_round: usize,
     output: RefCell<AxiomV2CircuitScaffoldOutput>,
-    keccak_call_collector: RefCell<Option<KeccakCallCollector<F>>>,
+    keccak_call_collector: RefCell<KeccakCallCollector<F>>,
 }
 
 impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
     AxiomCircuitRunner<F, P, A>
 {
     pub fn new(
-        scaffold: A,
         provider: Provider<P>,
-        params: BaseCircuitParams,
-        num_rlc_columns: Option<usize>,
-        keccak_rows_per_round: Option<usize>,
-        inputs: Option<A::CircuitInput>,
+        circuit_params: AxiomCircuitParams,
     ) -> Self {
-        let rlc_params = RlcCircuitParams {
-            base: params.clone(),
-            num_rlc_columns: num_rlc_columns.unwrap_or(0),
-        };
-        let rlc_bits = if rlc_params.num_rlc_columns > 0 {
+        let params: RlcKeccakCircuitParams = circuit_params.into();
+
+        let rlc_bits = if params.rlc.num_rlc_columns > 0 {
             DEFAULT_RLC_CACHE_BITS
         } else {
             0
         };
-        let builder = RlcCircuitBuilder::<F>::new(false, rlc_bits).use_params(rlc_params.clone());
+        let builder = RlcCircuitBuilder::<F>::new(false, rlc_bits).use_params(params.rlc.clone());
         let range = RangeChip::new(
-            params.lookup_bits.unwrap(),
+            params.rlc.base.lookup_bits.unwrap(),
             builder.base.lookup_manager().clone(),
         );
         Self {
             builder: RefCell::new(builder),
             range,
-            scaffold,
-            inputs: inputs.unwrap_or_else(A::CircuitInput::default),
+            inputs: Default::default(),
             provider,
             payload: RefCell::new(None),
-            keccak_rows_per_round: keccak_rows_per_round.unwrap_or(0),
+            keccak_rows_per_round: params.keccak_rows_per_round,
             output: Default::default(),
-            keccak_call_collector: RefCell::new(None),
+            keccak_call_collector: RefCell::new(Default::default()),
         }
+    }
+
+    pub fn set_inputs(&mut self, inputs: A::CircuitInput) {
+        self.inputs = inputs;
     }
 
     fn virtual_assign_phase0(&self) {
@@ -126,7 +121,8 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
 
         let mut subquery_caller = SubqueryCaller::new(self.provider.clone());
         let mut callback = Vec::new();
-        let payload = self.scaffold.virtual_assign_phase0(
+        let payload = A::virtual_assign_phase0(
+            &A::default(),
             &mut self.builder.borrow_mut(),
             &self.range,
             &mut subquery_caller,
@@ -162,15 +158,10 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
             compute_results: circuit_output,
         });
 
-        if self.keccak_rows_per_round > 0 {
-            let keccak_calls = KeccakCallCollector::new(
-                subquery_caller.keccak_fix_len_calls,
-                subquery_caller.keccak_var_len_calls,
-            );
-            self.keccak_call_collector
-                .borrow_mut()
-                .replace(keccak_calls);
-        }
+        self.keccak_call_collector.borrow_mut().var_len_calls =
+            subquery_caller.keccak_var_len_calls;
+        self.keccak_call_collector.borrow_mut().fix_len_calls =
+            subquery_caller.keccak_fix_len_calls;
     }
 
     fn virtual_assign_phase1(&self) {
@@ -180,8 +171,12 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
             .take()
             .expect("FirstPhase witness generation was not run");
         self.builder.borrow_mut().base.main(1);
-        self.scaffold
-            .virtual_assign_phase1(&mut self.builder.borrow_mut(), &self.range, payload);
+        A::virtual_assign_phase1(
+            &A::default(),
+            &mut self.builder.borrow_mut(),
+            &self.range,
+            payload,
+        );
     }
 
     fn synthesize_without_rlc(
@@ -190,6 +185,11 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
         mut layouter: impl Layouter<F>,
     ) -> Result<(), Error> {
         self.virtual_assign_phase0();
+        if !self.keccak_call_collector.borrow().fix_len_calls.is_empty()
+            || !self.keccak_call_collector.borrow().var_len_calls.is_empty()
+        {
+            panic!("Keccak calls made but keccak_rows_per_round is None");
+        }
         self.builder.borrow_mut().base.synthesize(
             config,
             layouter.namespace(|| "BaseCircuitBuilder raw synthesize phase0"),
@@ -211,8 +211,7 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
                 k: k as u32,
                 rows_per_round: self.keccak_rows_per_round,
             };
-            let keccak_calls =
-                mem::take(self.keccak_call_collector.borrow_mut().deref_mut()).unwrap();
+            let keccak_calls = mem::take(self.keccak_call_collector.borrow_mut().deref_mut());
 
             keccak_calls.assign_raw_and_constrain(
                 keccak_circuit_params,
@@ -264,14 +263,14 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
     fn clear(&self) {
         self.builder.borrow_mut().clear();
         self.payload.borrow_mut().take();
-        self.keccak_call_collector.borrow_mut().take();
+        self.keccak_call_collector.borrow_mut().clear();
         self.output.borrow_mut().compute_results.clear();
         self.output.borrow_mut().data_query.clear();
     }
 
     pub fn calculate_params(&mut self) {
         self.virtual_assign_phase0();
-        let keccak_calls = mem::take(self.keccak_call_collector.borrow_mut().deref_mut()).unwrap();
+        let keccak_calls = mem::take(self.keccak_call_collector.borrow_mut().deref_mut());
         let mut capacity = 0;
         for (call, _) in keccak_calls.fix_len_calls.iter() {
             capacity += get_num_keccak_f(call.bytes().len());
@@ -342,26 +341,6 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
     }
 }
 
-#[derive(Clone, Debug)]
-pub enum AxiomCircuitConfig<F: Field> {
-    Rlc(RlcConfig<F>),
-    Base(BaseConfig<F>),
-    Keccak(RlcKeccakConfig<F>),
-}
-
-#[derive(Clone, Debug)]
-pub enum AxiomCircuitParams {
-    Rlc(RlcCircuitParams),
-    Base(BaseCircuitParams),
-    Keccak(RlcKeccakCircuitParams),
-}
-
-impl Default for AxiomCircuitParams {
-    fn default() -> Self {
-        Self::Base(BaseCircuitParams::default())
-    }
-}
-
 impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> Circuit<F>
     for AxiomCircuitRunner<F, P, A>
 {
@@ -422,7 +401,7 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> Circuit<
     }
 }
 
-impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> CircuitExt<F>
+impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F> + Default> CircuitExt<F>
     for AxiomCircuitRunner<F, P, A>
 {
     fn num_instance(&self) -> Vec<usize> {

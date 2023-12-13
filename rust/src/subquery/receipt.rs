@@ -15,6 +15,8 @@ use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 use tokio::runtime::Runtime;
 
+use crate::impl_fr_from;
+
 use super::{
     caller::FetchSubquery,
     types::AssignedReceiptSubquery,
@@ -32,6 +34,7 @@ pub enum ReceiptField {
     BlockNumber = RECEIPT_BLOCK_NUMBER_FIELD_IDX as isize,
     TxIndex = RECEIPT_TX_INDEX_FIELD_IDX as isize,
 }
+impl_fr_from!(ReceiptField);
 
 pub async fn get_receipt_field_value<P: JsonRpcClient>(
     provider: &Provider<P>,

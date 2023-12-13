@@ -18,6 +18,8 @@ use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 use tokio::runtime::Runtime;
 
+use crate::impl_fr_from;
+
 use super::{
     caller::FetchSubquery,
     types::AssignedTxSubquery,
@@ -45,6 +47,7 @@ pub enum TxField {
     CalldataHash = TX_CALLDATA_HASH_FIELD_IDX as isize,
     DataLength = TX_DATA_LENGTH_FIELD_IDX as isize,
 }
+impl_fr_from!(TxField);
 
 pub async fn get_tx_field_value<P: JsonRpcClient>(
     provider: &Provider<P>,

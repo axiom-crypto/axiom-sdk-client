@@ -2,13 +2,13 @@ use axiom_codec::{
     constants::MAX_SOLIDITY_MAPPING_KEYS,
     types::native::{
         AccountSubquery, AnySubquery, HeaderSubquery, ReceiptSubquery,
-        SolidityNestedMappingSubquery, StorageSubquery, TxSubquery, AxiomV2ComputeQuery,
+        SolidityNestedMappingSubquery, StorageSubquery, TxSubquery,
     },
     utils::native::decode_hilo_to_h256,
     HiLo,
 };
 use axiom_eth::{halo2_base::AssignedValue, Field};
-use ethers::types::{BigEndianHash, H256};
+use ethers::types::BigEndianHash;
 use serde::{Serialize, Serializer};
 
 use super::utils::{fe_to_h160, get_subquery_type_from_any_subquery};
@@ -179,19 +179,4 @@ impl From<AnySubquery> for RawSubquery {
             subquery_type,
         }
     }
-}
-
-#[derive(Debug, Serialize, Clone, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct AxiomV2CircuitScaffoldOutput {
-    pub(crate) data_query: Vec<RawSubquery>,
-    pub(crate) compute_results: Vec<H256>,
-}
-
-#[derive(Debug, Serialize, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct AxiomV2CircuitOutput {
-    pub compute_query: AxiomV2ComputeQuery,
-    #[serde(flatten)]
-    pub scaffold_output: AxiomV2CircuitScaffoldOutput,
 }

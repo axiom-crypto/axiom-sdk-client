@@ -8,7 +8,7 @@ use axiom_codec::{
 use axiom_eth::{
     halo2_base::{AssignedValue, Context},
     keccak::promise::{KeccakFixLenCall, KeccakVarLenCall},
-    utils::{encode_h256_to_hilo, keccak::decorator::KeccakCallCollector},
+    utils::encode_h256_to_hilo,
     Field,
 };
 use ethers::{
@@ -41,13 +41,6 @@ impl<P: JsonRpcClient, F: Field> SubqueryCaller<P, F> {
             keccak_fix_len_calls: Vec::new(),
             keccak_var_len_calls: Vec::new(),
         }
-    }
-
-    pub fn keccak_call_collector(&self) -> KeccakCallCollector<F> {
-        KeccakCallCollector::new(
-            self.keccak_fix_len_calls.clone(),
-            self.keccak_var_len_calls.clone(),
-        )
     }
 
     pub fn clear(&mut self) {

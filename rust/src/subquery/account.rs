@@ -1,3 +1,5 @@
+use crate::impl_fr_from;
+
 use super::{caller::FetchSubquery, types::AssignedAccountSubquery};
 use anyhow::Result;
 use axiom_codec::types::native::{AccountSubquery, AnySubquery};
@@ -17,6 +19,7 @@ pub enum AccountField {
     StorageHash,
     CodeHash,
 }
+impl_fr_from!(AccountField);
 
 pub async fn get_account_field_value<P: JsonRpcClient>(
     provider: &Provider<P>,

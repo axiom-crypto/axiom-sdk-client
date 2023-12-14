@@ -30,12 +30,6 @@ export const run = async (
 
   // Compile the circuit
   const buildFile = `${outputFileBase}.build.json`;
-  // const compileCmd = `npx axiom compile "${circuitPath}" --function ${options.function} --output "${buildFile}" --provider $PROVIDER_URI_GOERLI`;
-  // const { stdout, stderr: compileStdErr } = await exec(compileCmd);
-  // if (compileStdErr) {
-  //   console.log("Failed on compile command:", compileCmd);
-  //   throw new Error(`Compile error: ${compileStdErr}`);
-  // }
   console.log("CircuitPath", circuitPath);
   await compile(
     circuitPath, 
@@ -48,12 +42,6 @@ export const run = async (
 
   // Run the circuit
   const outputFile = `${outputFileBase}.output.json`;
-  // const runCmd = `npx axiom run "${circuitPath}" --function ${options.function} --build "${buildFile}" --output "${outputFile}" --provider $PROVIDER_URI_GOERLI`;
-  // const { stderr: runStdErr } = await exec(runCmd);
-  // if (runStdErr) {
-  //   console.log("Failed on run command:", runCmd);
-  //   throw new Error(`Run error: ${runStdErr}`);
-  // }
   await circuitRun(
     circuitPath, 
     {

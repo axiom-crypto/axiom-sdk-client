@@ -20,11 +20,15 @@ jobs:
         with:
           node-version: 18.x
 
-      - name: Build client
+      - name: Build Client
         working-directory: ./client
         run: npm install && npm run build
 
-      - name: Install Dependencies
+      - name: Install Harness dependencies
+        working-directory: ./harness
+        run: npm install && npm run build
+
+      - name: Install Harness/Test dependencies
         working-directory: ./harness/test  
         run: npm install
 

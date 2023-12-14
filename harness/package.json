@@ -6,7 +6,7 @@
   "description": "Circuit harness for axiom-client",
   "scripts": {
     "build": "rm -rf dist && tsc && tsx scripts/postBuild.js",
-    "test": "cd test && $npm_execpath jest"
+    "test": "jest"
   },
   "bin": {
     "harness": "./index.js"

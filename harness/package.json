@@ -1,0 +1,46 @@
+{
+  "name": "@axiom-crypto/harness",
+  "version": "0.1.4",
+  "author": "Intrinsic Technologies",
+  "license": "MIT",
+  "description": "Circuit harness for axiom-client",
+  "scripts": {
+    "build": "rm -rf dist && tsc && tsx scripts/postBuild.js",
+    "test": "jest"
+  },
+  "bin": {
+    "harness": "./index.js"
+  },
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "keywords": [
+    "axiom",
+    "ethereum",
+    "zero knowledge",
+    "zk",
+    "coprocessor",
+    "crypto"
+  ],
+  "dependencies": {
+    "@axiom-crypto/client": "file:../client/dist",
+    "@axiom-crypto/core": "^2.2.50",
+    "@axiom-crypto/halo2-lib-js": "0.2.13-alpha.1",
+    "@axiom-crypto/halo2-wasm": "0.2.10",
+    "@axiom-crypto/tools": "^0.3.33",
+    "commander": "^11.1.0",
+    "ethers": "^6.8.1",
+    "viem": "^1.19.9"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.11",
+    "@types/node": "18.15.13",
+    "dotenv": "^16.3.1",
+    "dts-bundle-generator": "^9.0.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "tslib": "^2.6.2",
+    "tsx": "^4.6.2",
+    "typescript": "^5.3.2"
+  }
+}

@@ -11,13 +11,8 @@ export const run = async (
     provider?: string,
   }
 ) => {
-  console.log(inputPath);
-  console.log(options);
-  console.log("Building circuit parameters:", inputPath);
   const fileName = inputPath.split("/").slice(-1)[0].split(".js")[0];
   const outputFileBase = `${options.output}/${fileName}`;
-
-  console.log("Output file base:", outputFileBase);
 
   // Build the typescript circuit
   const circuit = buildCircuit(inputPath);
@@ -29,7 +24,6 @@ export const run = async (
 
   // Compile the circuit
   const buildFile = `${outputFileBase}.build.json`;
-  console.log("CircuitPath", circuitPath);
   await compile(
     circuitPath, 
     {

@@ -22,11 +22,11 @@ export const circuit = async ({
   addToCallback(await header.baseFeePerGas());
   addToCallback(await header.difficulty());
   addToCallback(await header.extraData());
-  header.timestamp();
-  header.miner();
-  header.mixHash();
-  header.nonce();
-  header.mixHash();
+  addToCallback(await header.timestamp());
+  addToCallback(await header.miner());
+  addToCallback(await header.mixHash());
+  addToCallback(await header.nonce());
+  addToCallback(await header.mixHash());
   
   
   

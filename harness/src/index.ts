@@ -14,6 +14,7 @@ harness
   .argument("<js circuit path>", "js circuit path")
   .option("-o, --output [output]", "output folder", "data")
   .option("-f, --function [function]", "function name", "circuit")
+  .option("-p, --provider [provider]", "provider")
   .action(run);
 
 harness.parseAsync(process.argv);

@@ -10,6 +10,7 @@ export const run = async (
   options: {
     output: string,
     function: string,
+    provider?: string,
   }
 ) => {
   console.log(inputPath);
@@ -37,6 +38,7 @@ export const run = async (
       stats: false,
       function: options.function,
       output: buildFile,
+      provider: options.provider,
     }
   );
 
@@ -49,6 +51,7 @@ export const run = async (
       build: buildFile,
       function: options.function,
       output: outputFile,
+      provider: options.provider,
     }
   );
 };

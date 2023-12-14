@@ -26,7 +26,7 @@ jobs:
 
       - name: Install Harness dependencies
         working-directory: ./harness
-        run: npm install && npm run build
+        run: npm install
 
       - name: Install Harness/Test dependencies
         working-directory: ./harness/test  

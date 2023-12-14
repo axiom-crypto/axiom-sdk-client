@@ -28,12 +28,8 @@ jobs:
         working-directory: ./harness
         run: npm install
 
-      - name: Install Harness/Test dependencies
-        working-directory: ./harness/test  
-        run: npm install
-
       - name: Run Integration Tests
-        working-directory: ./harness/test
+        working-directory: ./harness
         run: |
           export PROVIDER_URI_GOERLI=${{ secrets.PROVIDER_URI_GOERLI }}
           ANVIL_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80

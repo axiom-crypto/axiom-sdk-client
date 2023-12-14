@@ -5,7 +5,7 @@ const harness = new Command('harness');
 
 harness
   .name("harness")
-  .version("0.1.3")
+  .version("0.1.4")
   .description("Axiom circuit harness");
 
 harness

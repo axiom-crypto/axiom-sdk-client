@@ -1,9 +1,7 @@
 import { buildCircuit } from "./template/buildCircuit";
-import util from 'node:util';
-import path from 'node:path';
+import path from 'path';
 import fs from 'fs';
 import { compile, run as circuitRun } from "@axiom-crypto/client/cli/components";
-const exec = util.promisify(require('node:child_process').exec);
 
 export const run = async (
   inputPath: string,

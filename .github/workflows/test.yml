@@ -1,0 +1,38 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    name: Jest Testing
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18.x
+
+      - name: Build Client
+        working-directory: ./client
+        run: npm install && npm run build
+
+      - name: Install Harness dependencies
+        working-directory: ./harness
+        run: npm install
+
+      - name: Run Integration Tests
+        working-directory: ./harness
+        run: |
+          export PROVIDER_URI_GOERLI=${{ secrets.PROVIDER_URI_GOERLI }}
+          ANVIL_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+          export PRIVATE_KEY=$ANVIL_PRIVATE_KEY # just needs to be in the correct format, no tx is sent in unit tests
+          export PRIVATE_KEY_GOERLI=$ANVIL_PRIVATE_KEY
+          npm run test

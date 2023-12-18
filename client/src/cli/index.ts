@@ -3,9 +3,9 @@ import { compile } from "@axiom-crypto/circuit";
 import { run } from "@axiom-crypto/circuit";
 import { sendQuery } from "./sendQuery";
 
-const program = new Command();
+const program = new Command('axiom');
 
-program.name("axiom").version("0.1.1").description("axiom CLI");
+program.name("axiom").version("0.1.3").description("Axiom CLI");
 
 program
   .command("compile")

@@ -9,18 +9,17 @@ function copyPackageJson() {
   delete packageJsonCopy.scripts;
   delete packageJsonCopy.devDependencies;
   delete packageJsonCopy.publishConfig;
-  packageJsonCopy.bin = {
-    'axiom': './cli/index.js',
-  };
   fs.writeFileSync('./dist/package.json', JSON.stringify(packageJsonCopy, null, 2));
-  const indexJs = fs.readFileSync("./dist/cli/index.js", 'utf8');
-  const withHashBang = `#!/usr/bin/env node\n${indexJs}`;
-  fs.writeFileSync('./dist/cli/index.js', withHashBang);
 }
 
 function copyReadme() {
   fs.copyFileSync("./readme.md", "./dist/readme.md");
 }
 
+function copyTemplate() {
+  fs.copyFileSync("./src/template/template.circuit", "./dist/template/template.circuit");
+}
+
 copyPackageJson();
 copyReadme();
+copyTemplate();

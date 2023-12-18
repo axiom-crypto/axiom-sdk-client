@@ -20,7 +20,8 @@
     "skipLibCheck": true,
     "outDir": "dist",
     "types": [
-      "node"
+      "node",
+      "jest"
     ]
   },
   "include": [

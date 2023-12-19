@@ -5,7 +5,7 @@ use std::{
 };
 
 use crate::{
-    scaffold::{AxiomCircuitRunner, AxiomCircuitScaffold},
+    scaffold::{AxiomCircuit, AxiomCircuitScaffold},
     types::{AxiomCircuitParams, AxiomV2CircuitOutput},
     utils::build_axiom_v2_compute_query,
 };
@@ -26,10 +26,12 @@ use ethers::providers::{JsonRpcClient, Provider};
 pub fn mock<P: JsonRpcClient + Clone, S: AxiomCircuitScaffold<P, Fr>>(
     provider: Provider<P>,
     raw_circuit_params: AxiomCircuitParams,
+    inputs: Option<S::CircuitInput>,
 ) {
     let circuit_params = RlcKeccakCircuitParams::from(raw_circuit_params.clone());
     let k = circuit_params.k();
-    let mut runner = AxiomCircuitRunner::<_, _, S>::new(provider, raw_circuit_params);
+    let mut runner = AxiomCircuit::<_, _, S>::new(provider, raw_circuit_params)
+        .use_inputs(inputs.unwrap_or_default());
     if circuit_params.keccak_rows_per_round > 0 {
         runner.calculate_params();
     }
@@ -42,10 +44,12 @@ pub fn mock<P: JsonRpcClient + Clone, S: AxiomCircuitScaffold<P, Fr>>(
 pub fn keygen<P: JsonRpcClient + Clone, S: AxiomCircuitScaffold<P, Fr>>(
     provider: Provider<P>,
     raw_circuit_params: AxiomCircuitParams,
+    inputs: Option<S::CircuitInput>,
 ) -> (VerifyingKey<G1Affine>, ProvingKey<G1Affine>) {
     let circuit_params = RlcKeccakCircuitParams::from(raw_circuit_params.clone());
     let params = gen_srs(circuit_params.k() as u32);
-    let mut runner = AxiomCircuitRunner::<_, _, S>::new(provider, raw_circuit_params);
+    let mut runner = AxiomCircuit::<_, _, S>::new(provider, raw_circuit_params)
+        .use_inputs(inputs.unwrap_or_default());
     if circuit_params.keccak_rows_per_round > 0 {
         runner.calculate_params();
     }
@@ -68,11 +72,13 @@ pub fn keygen<P: JsonRpcClient + Clone, S: AxiomCircuitScaffold<P, Fr>>(
 pub fn prove<P: JsonRpcClient + Clone, S: AxiomCircuitScaffold<P, Fr>>(
     provider: Provider<P>,
     raw_circuit_params: AxiomCircuitParams,
+    inputs: Option<S::CircuitInput>,
     pk: ProvingKey<G1Affine>,
 ) -> Snark {
     let circuit_params = RlcKeccakCircuitParams::from(raw_circuit_params.clone());
     let params = gen_srs(circuit_params.k() as u32);
-    let mut runner = AxiomCircuitRunner::<_, _, S>::new(provider, raw_circuit_params);
+    let mut runner = AxiomCircuit::<_, _, S>::new(provider, raw_circuit_params)
+        .use_inputs(inputs.unwrap_or_default());
     if circuit_params.keccak_rows_per_round > 0 {
         runner.calculate_params();
     }
@@ -82,21 +88,25 @@ pub fn prove<P: JsonRpcClient + Clone, S: AxiomCircuitScaffold<P, Fr>>(
 pub fn run<P: JsonRpcClient + Clone, S: AxiomCircuitScaffold<P, Fr>>(
     provider: Provider<P>,
     raw_circuit_params: AxiomCircuitParams,
+    inputs: Option<S::CircuitInput>,
     pk: ProvingKey<G1Affine>,
 ) -> AxiomV2CircuitOutput {
     let circuit_params = RlcKeccakCircuitParams::from(raw_circuit_params.clone());
     let k = circuit_params.k();
     let params = gen_srs(k as u32);
-    let mut runner = AxiomCircuitRunner::<_, _, S>::new(provider, raw_circuit_params.clone());
+    let mut runner = AxiomCircuit::<_, _, S>::new(provider, raw_circuit_params)
+        .use_inputs(inputs.unwrap_or_default());
     let output = runner.scaffold_output();
     if circuit_params.keccak_rows_per_round > 0 {
         runner.calculate_params();
     }
     let snark = gen_snark_shplonk(&params, &pk, runner, None::<&str>);
-    let compute_query = build_axiom_v2_compute_query(snark, circuit_params.rlc, output.clone());
+    let compute_query =
+        build_axiom_v2_compute_query(snark.clone(), circuit_params.rlc, output.clone());
     let output = AxiomV2CircuitOutput {
         compute_query,
-        scaffold_output: output,
+        data: output,
+        snark,
     };
     let serialized = serde_json::to_string_pretty(&output).unwrap();
     let mut file = File::create("data/output.json").unwrap();

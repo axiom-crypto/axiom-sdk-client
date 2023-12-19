@@ -8,20 +8,24 @@ use axiom_eth::halo2curves::ff::PrimeField;
 use axiom_eth::halo2curves::serde::SerdeObject;
 use axiom_eth::halo2curves::CurveAffine;
 use axiom_eth::rlc::circuit::RlcCircuitParams;
+use axiom_eth::snark_verifier::pcs::kzg::{KzgAccumulator, LimbsEncoding};
+use axiom_eth::snark_verifier::pcs::AccumulatorEncoding;
 use axiom_eth::snark_verifier::system::halo2::transcript_initial_state;
 use axiom_eth::snark_verifier::verifier::plonk::PlonkProtocol;
 use axiom_eth::snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
-use axiom_eth::snark_verifier_sdk::{CircuitExt, Snark};
+use axiom_eth::snark_verifier_sdk::{CircuitExt, NativeLoader, Snark, BITS, LIMBS};
+use axiom_eth::utils::snark_verifier::NUM_FE_ACCUMULATOR;
 use axiom_eth::Field;
 use axiom_query::utils::client_circuit::metadata::AxiomV2CircuitMetadata;
 use axiom_query::utils::client_circuit::vkey::OnchainVerifyingKey;
 use dotenv::dotenv;
 use ethers::providers::{Http, Provider};
 use ethers::types::H256;
+use itertools::Itertools;
 use std::env;
 use std::io::{Result, Write};
 
-use crate::types::AxiomV2CircuitScaffoldOutput;
+use crate::types::AxiomV2DataAndResults;
 
 fn write_field_le<F: Field>(writer: &mut impl Write, fe: F) -> Result<()> {
     let repr = ScalarField::to_bytes_le(&fe);
@@ -153,7 +157,7 @@ pub fn get_metadata_from_protocol(
     }
     *last_challenge -= 1;
     let num_challenge: Vec<u8> = num_challenge_incl_system.iter().map(|x| *x as u8).collect();
-    if num_challenge != vec![0] && num_challenge != vec![0, 1] {
+    if num_challenge != vec![0] && num_challenge != vec![1, 0] {
         log::debug!("num_challenge: {:?}", num_challenge);
         bail!("Only phase0 BaseCircuitBuilder or phase0+1 RlcCircuitBuilder supported right now");
     }
@@ -182,16 +186,27 @@ pub fn get_provider() -> Provider<Http> {
 pub fn build_axiom_v2_compute_query(
     snark: Snark,
     params: RlcCircuitParams,
-    output: AxiomV2CircuitScaffoldOutput,
+    results: AxiomV2DataAndResults,
 ) -> AxiomV2ComputeQuery {
     let metadata =
         get_metadata_from_protocol(&snark.protocol, params.clone(), USER_MAX_OUTPUTS).unwrap();
-    let partial_vk = get_onchain_vk_from_protocol(&snark.protocol, metadata);
+    let partial_vk = get_onchain_vk_from_protocol(&snark.protocol, metadata.clone());
     let partial_vk_output = write_onchain_vkey(&partial_vk).unwrap();
-    let result_len = output.compute_results.len() as u16;
+    let result_len = results.compute_results.len() as u16;
+    let kzg_accumulator = if metadata.is_aggregation {
+        let agg_instances = &snark.instances[0];
+        let KzgAccumulator { lhs, rhs } =
+            <LimbsEncoding<LIMBS, BITS> as AccumulatorEncoding<G1Affine, NativeLoader>>::from_repr(
+                &agg_instances[..NUM_FE_ACCUMULATOR].iter().collect_vec(),
+            )
+            .unwrap();
+        Some((lhs, rhs))
+    } else {
+        None
+    };
     let compute_proof = AxiomV2ComputeSnark {
-        kzg_accumulator: None,
-        compute_results: output.compute_results.clone(),
+        kzg_accumulator,
+        compute_results: results.compute_results.clone(),
         proof_transcript: snark.proof,
     };
     AxiomV2ComputeQuery {

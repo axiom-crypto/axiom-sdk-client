@@ -1,5 +1,5 @@
 use axiom_codec::types::native::AxiomV2ComputeQuery;
-use axiom_eth::{Field, rlc::circuit::{RlcConfig, RlcCircuitParams}, halo2_base::gates::circuit::{BaseConfig, BaseCircuitParams}, utils::keccak::decorator::{RlcKeccakConfig, RlcKeccakCircuitParams}};
+use axiom_eth::{Field, rlc::circuit::{RlcConfig, RlcCircuitParams}, halo2_base::gates::circuit::{BaseConfig, BaseCircuitParams}, utils::keccak::decorator::{RlcKeccakConfig, RlcKeccakCircuitParams}, snark_verifier_sdk::Snark};
 use ethers::types::H256;
 use serde::Serialize;
 
@@ -7,8 +7,8 @@ use crate::subquery::types::RawSubquery;
 
 #[derive(Clone, Debug)]
 pub enum AxiomCircuitConfig<F: Field> {
-    Rlc(RlcConfig<F>),
     Base(BaseConfig<F>),
+    Rlc(RlcConfig<F>),
     Keccak(RlcKeccakConfig<F>),
 }
 
@@ -27,7 +27,7 @@ impl Default for AxiomCircuitParams {
 
 #[derive(Debug, Serialize, Clone, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct AxiomV2CircuitScaffoldOutput {
+pub struct AxiomV2DataAndResults {
     pub(crate) data_query: Vec<RawSubquery>,
     pub(crate) compute_results: Vec<H256>,
 }
@@ -37,7 +37,9 @@ pub struct AxiomV2CircuitScaffoldOutput {
 pub struct AxiomV2CircuitOutput {
     pub compute_query: AxiomV2ComputeQuery,
     #[serde(flatten)]
-    pub scaffold_output: AxiomV2CircuitScaffoldOutput,
+    pub data: AxiomV2DataAndResults,
+    #[serde(skip_serializing)]
+    pub snark: Snark
 }
 
 impl From<AxiomCircuitParams> for RlcKeccakCircuitParams {

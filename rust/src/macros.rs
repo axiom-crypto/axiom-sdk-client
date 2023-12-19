@@ -3,7 +3,6 @@ macro_rules! witness {
     ($builder:expr, $witness_value:expr) => {
         $builder
             .base
-            .borrow_mut()
             .main(0)
             .load_witness($witness_value)
     };
@@ -14,7 +13,6 @@ macro_rules! constant {
     ($builder:expr, $witness_value:expr) => {
         $builder
             .base
-            .borrow_mut()
             .main(0)
             .load_constant($witness_value)
     };
@@ -23,7 +21,7 @@ macro_rules! constant {
 #[macro_export]
 macro_rules! ctx {
     ($builder:expr, $phase:expr) => {
-        $builder.base.borrow_mut().main($phase)
+        $builder.base.main($phase)
     };
 }
 

@@ -1,12 +1,19 @@
-use std::borrow::BorrowMut;
+use std::{
+    borrow::BorrowMut,
+    sync::{Arc, Mutex},
+};
 
 use crate::{
     constant, ctx,
-    run::{keygen, mock, prove, run},
+    run::aggregation::{
+        agg_circuit_keygen, agg_circuit_run, keccak_circuit_run,
+    },
+    run::inner::{keygen, mock, prove, run},
     scaffold::{AxiomCircuitScaffold, RawCircuitInput},
     subquery::{caller::SubqueryCaller, header::HeaderField, types::AssignedHeaderSubquery},
+    types::AxiomCircuitParams,
     utils::get_provider,
-    witness, types::AxiomCircuitParams,
+    witness,
 };
 use axiom_codec::HiLo;
 use axiom_eth::{
@@ -19,7 +26,9 @@ use axiom_eth::{
     },
     halo2curves::bn256::Fr,
     keccak::promise::KeccakFixLenCall,
-    rlc::circuit::builder::RlcCircuitBuilder,
+    rlc::circuit::{builder::RlcCircuitBuilder, RlcCircuitParams},
+    snark_verifier_sdk::halo2::aggregation::AggregationConfigParams,
+    utils::keccak::decorator::RlcKeccakCircuitParams,
     Field,
 };
 use ethers::providers::JsonRpcClient;
@@ -54,7 +63,7 @@ impl<P: JsonRpcClient> AxiomCircuitScaffold<P, Fr> for MyCircuit {
         &self,
         builder: &mut RlcCircuitBuilder<Fr>,
         range: &RangeChip<Fr>,
-        subquery_caller: &mut SubqueryCaller<P, Fr>,
+        subquery_caller: Arc<Mutex<SubqueryCaller<P, Fr>>>,
         callback: &mut Vec<HiLo<AssignedValue<Fr>>>,
         inputs: Self::VirtualCircuitInput,
     ) {
@@ -62,15 +71,32 @@ impl<P: JsonRpcClient> AxiomCircuitScaffold<P, Fr> for MyCircuit {
         gate.add(ctx!(builder, 0), inputs.a, inputs.b);
         let bytes = SafeTypeChip::unsafe_to_fix_len_bytes_vec(vec![inputs.b, inputs.b], 2);
         let _keccak_call = KeccakFixLenCall::new(bytes);
-        // let hilo = subquery_caller.keccak(ctx!(builder, 0), keccak_call);
+        // let hilo = subquery_caller
+        //     .lock()
+        //     .unwrap()
+        //     .keccak(ctx!(builder, 0), keccak_call);
         // callback.push(hilo);
         range.range_check(ctx!(builder, 0), inputs.a, 10);
         let subquery = AssignedHeaderSubquery {
             block_number: witness!(builder, Fr::from(9730000)),
             field_idx: constant!(builder, Fr::from(HeaderField::GasLimit)),
         };
-        let timestamp = subquery_caller.call(ctx!(builder, 0), subquery);
+        let timestamp = subquery_caller
+            .lock()
+            .unwrap()
+            .call(ctx!(builder, 0), subquery);
         callback.push(timestamp);
+    }
+
+    fn virtual_assign_phase1(
+        &self,
+        builder: &mut RlcCircuitBuilder<Fr>,
+        _range: &RangeChip<Fr>,
+        _payload: Self::FirstPhasePayload,
+    ) {
+        let _gate = GateChip::<Fr>::new();
+        builder.base.borrow_mut().main(1).load_witness(Fr::from(1));
+        dbg!(builder.gamma.unwrap_or(Fr::from(0)));
     }
 }
 
@@ -78,56 +104,106 @@ impl<P: JsonRpcClient> AxiomCircuitScaffold<P, Fr> for MyCircuit {
 pub fn test_keygen() {
     let params = BaseCircuitParams {
         k: 13,
-        num_advice_per_phase: vec![4, 0, 0],
-        num_lookup_advice_per_phase: vec![1, 0, 0],
+        num_advice_per_phase: vec![4],
+        num_lookup_advice_per_phase: vec![1],
         num_fixed: 1,
         num_instance_columns: 1,
         lookup_bits: Some(12),
     };
     let client = get_provider();
-    keygen::<_, MyCircuit>(client, AxiomCircuitParams::Base(params));
+    keygen::<_, MyCircuit>(client, AxiomCircuitParams::Base(params), None);
 }
 
 #[test]
 pub fn test_mock() {
     let params = BaseCircuitParams {
         k: 12,
-        num_advice_per_phase: vec![4, 0, 0],
-        num_lookup_advice_per_phase: vec![1, 0, 0],
+        num_advice_per_phase: vec![4],
+        num_lookup_advice_per_phase: vec![1],
         num_fixed: 1,
         num_instance_columns: 1,
         lookup_bits: Some(11),
     };
     let client = get_provider();
-    mock::<_, MyCircuit>(client, AxiomCircuitParams::Base(params));
+    mock::<_, MyCircuit>(client, AxiomCircuitParams::Base(params), None);
 }
 
 #[test]
 pub fn test_prove() {
     let params = BaseCircuitParams {
         k: 13,
-        num_advice_per_phase: vec![4, 0, 0],
-        num_lookup_advice_per_phase: vec![1, 0, 0],
+        num_advice_per_phase: vec![4],
+        num_lookup_advice_per_phase: vec![1],
         num_fixed: 1,
         num_instance_columns: 1,
         lookup_bits: Some(12),
     };
     let client = get_provider();
-    let (_, pk) = keygen::<_, MyCircuit>(client.clone(), AxiomCircuitParams::Base(params.clone()));
-    prove::<_, MyCircuit>(client, AxiomCircuitParams::Base(params), pk);
+    let (_, pk) = keygen::<_, MyCircuit>(
+        client.clone(),
+        AxiomCircuitParams::Base(params.clone()),
+        None,
+    );
+    prove::<_, MyCircuit>(client, AxiomCircuitParams::Base(params), None, pk);
 }
 
 #[test]
 pub fn test_run() {
     let params = BaseCircuitParams {
         k: 13,
-        num_advice_per_phase: vec![4, 0, 0],
-        num_lookup_advice_per_phase: vec![1, 0, 0],
+        num_advice_per_phase: vec![4, 1],
+        num_lookup_advice_per_phase: vec![1, 1],
         num_fixed: 1,
         num_instance_columns: 1,
         lookup_bits: Some(12),
     };
     let client = get_provider();
-    let (_vk, pk) = keygen::<_, MyCircuit>(client.clone(), AxiomCircuitParams::Base(params.clone()));
-    run::<_, MyCircuit>(client, AxiomCircuitParams::Base(params), pk);
+    let (_vk, pk) = keygen::<_, MyCircuit>(
+        client.clone(),
+        AxiomCircuitParams::Rlc(RlcCircuitParams {
+            base: params.clone(),
+            num_rlc_columns: 1,
+        }),
+        None,
+    );
+    run::<_, MyCircuit>(
+        client,
+        AxiomCircuitParams::Rlc(RlcCircuitParams {
+            base: params.clone(),
+            num_rlc_columns: 1,
+        }),
+        None,
+        pk,
+    );
+}
+
+#[test]
+pub fn test_aggregation() {
+    let base_params = BaseCircuitParams {
+        k: 13,
+        num_advice_per_phase: vec![4],
+        num_lookup_advice_per_phase: vec![1],
+        num_fixed: 1,
+        num_instance_columns: 1,
+        lookup_bits: Some(12),
+    };
+    let params = AxiomCircuitParams::Keccak(RlcKeccakCircuitParams {
+        keccak_rows_per_round: 20,
+        rlc: RlcCircuitParams {
+            base: base_params.clone(),
+            num_rlc_columns: 0,
+        },
+    });
+    let client = get_provider();
+    let (_vk, pk) = keygen::<_, MyCircuit>(client.clone(), params.clone(), None);
+    let output = keccak_circuit_run::<_, MyCircuit>(client, params, None, pk);
+    let agg_circuit_params = AggregationConfigParams {
+        degree: 20,
+        num_advice: 23,
+        num_lookup_advice: 2,
+        num_fixed: 1,
+        lookup_bits: 19,
+    };
+    let (_, agg_pk) = agg_circuit_keygen(agg_circuit_params, output.0.clone());
+    agg_circuit_run(agg_circuit_params, agg_pk, output.0, output.1);
 }

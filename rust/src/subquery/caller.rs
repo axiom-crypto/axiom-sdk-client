@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use crate::subquery::{types::RawSubquery, utils::get_subquery_type_from_any_subquery};
 use anyhow::Result;
 use axiom_codec::{
@@ -6,7 +8,7 @@ use axiom_codec::{
     HiLo,
 };
 use axiom_eth::{
-    halo2_base::{AssignedValue, Context},
+    halo2_base::{AssignedValue, Context, ContextTag},
     keccak::promise::{KeccakFixLenCall, KeccakVarLenCall},
     utils::encode_h256_to_hilo,
     Field,
@@ -26,8 +28,8 @@ pub trait FetchSubquery<F: Field> {
 
 pub struct SubqueryCaller<P: JsonRpcClient, F: Field> {
     pub provider: Provider<P>,
-    pub subqueries: Vec<(AnySubquery, H256)>,
-    pub subquery_assigned_values: Vec<AssignedValue<F>>,
+    pub subqueries: BTreeMap<ContextTag, Vec<(AnySubquery, H256)>>,
+    pub subquery_assigned_values: BTreeMap<ContextTag, Vec<AssignedValue<F>>>,
     pub keccak_fix_len_calls: Vec<(KeccakFixLenCall<F>, HiLo<AssignedValue<F>>)>,
     pub keccak_var_len_calls: Vec<(KeccakVarLenCall<F>, HiLo<AssignedValue<F>>)>,
 }
@@ -36,8 +38,8 @@ impl<P: JsonRpcClient, F: Field> SubqueryCaller<P, F> {
     pub fn new(provider: Provider<P>) -> Self {
         Self {
             provider,
-            subqueries: Vec::new(),
-            subquery_assigned_values: Vec::new(),
+            subqueries: BTreeMap::new(),
+            subquery_assigned_values: BTreeMap::new(),
             keccak_fix_len_calls: Vec::new(),
             keccak_var_len_calls: Vec::new(),
         }
@@ -52,11 +54,19 @@ impl<P: JsonRpcClient, F: Field> SubqueryCaller<P, F> {
 
     pub fn data_query(&self) -> Vec<RawSubquery> {
         let subqueries: Vec<RawSubquery> = self
-            .subqueries
-            .iter()
-            .map(|(any_subquery, _)| any_subquery.clone().into())
+            .subqueries.values().flat_map(|val| {
+                val.iter()
+                    .map(|(any_subquery, _)| RawSubquery::from(any_subquery.clone()))
+                    .collect_vec()
+            })
             .collect_vec();
         subqueries
+    }
+
+    pub fn instances(&self) -> Vec<AssignedValue<F>> {
+        self.subquery_assigned_values.values()
+            .flatten().cloned()
+            .collect_vec()
     }
 
     pub fn call<T: FetchSubquery<F>>(
@@ -66,7 +76,11 @@ impl<P: JsonRpcClient, F: Field> SubqueryCaller<P, F> {
     ) -> HiLo<AssignedValue<F>> {
         let result = subquery.fetch(&self.provider).unwrap();
         let any_subquery = subquery.any_subquery();
-        self.subqueries.push((any_subquery.clone(), result.0));
+        let val = (any_subquery.clone(), result.0);
+        self.subqueries
+            .entry(ctx.tag())
+            .and_modify(|thread| thread.push(val.clone()))
+            .or_insert(vec![val]);
         let subquery_type = get_subquery_type_from_any_subquery(&any_subquery);
         let hilo = encode_h256_to_hilo(&result.0);
         let hi = ctx.load_witness(hilo.hi());
@@ -79,7 +93,10 @@ impl<P: JsonRpcClient, F: Field> SubqueryCaller<P, F> {
         flattened_subquery.extend(input);
         flattened_subquery.extend(hi_lo_vec);
         assert_eq!(flattened_subquery.len(), SUBQUERY_RESULT_LEN);
-        self.subquery_assigned_values.extend(flattened_subquery);
+        self.subquery_assigned_values
+            .entry(ctx.tag())
+            .and_modify(|thread| thread.extend(flattened_subquery.clone()))
+            .or_insert(flattened_subquery);
         HiLo::from_hi_lo([hi, lo])
     }
 

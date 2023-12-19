@@ -1,6 +1,8 @@
 use crate::constants::{SUBQUERY_NUM_INSTANCES, USER_OUTPUT_NUM_INSTANCES};
 use crate::subquery::caller::SubqueryCaller;
-use crate::types::{AxiomCircuitConfig, AxiomCircuitParams, AxiomV2CircuitScaffoldOutput};
+use crate::types::{AxiomCircuitConfig, AxiomCircuitParams, AxiomV2DataAndResults};
+use axiom_codec::constants::{USER_MAX_OUTPUTS, USER_MAX_SUBQUERIES, USER_RESULT_FIELD_ELEMENTS};
+use axiom_codec::types::field_elements::SUBQUERY_RESULT_LEN;
 use axiom_codec::utils::native::decode_hilo_to_h256;
 use axiom_codec::HiLo;
 use axiom_eth::halo2_base::gates::circuit::BaseConfig;
@@ -34,6 +36,7 @@ use std::fs::File;
 use std::io::Write;
 use std::mem;
 use std::ops::{Deref, DerefMut};
+use std::sync::{Arc, Mutex};
 
 pub trait RawCircuitInput<F: Field, O> {
     fn assign(&self, ctx: &mut Context<F>) -> O;
@@ -48,7 +51,7 @@ pub trait AxiomCircuitScaffold<P: JsonRpcClient, F: Field>: Default + Clone + De
         &self,
         builder: &mut RlcCircuitBuilder<F>,
         range: &RangeChip<F>,
-        subquery_caller: &mut SubqueryCaller<P, F>,
+        subquery_caller: Arc<Mutex<SubqueryCaller<P, F>>>,
         callback: &mut Vec<HiLo<AssignedValue<F>>>,
         unassigned_inputs: Self::VirtualCircuitInput,
     ) -> Self::FirstPhasePayload;
@@ -65,26 +68,22 @@ pub trait AxiomCircuitScaffold<P: JsonRpcClient, F: Field>: Default + Clone + De
 }
 
 #[derive(Clone, Debug)]
-pub struct AxiomCircuitRunner<F: Field, P: JsonRpcClient, A: AxiomCircuitScaffold<P, F>> {
+pub struct AxiomCircuit<F: Field, P: JsonRpcClient, A: AxiomCircuitScaffold<P, F>> {
     pub builder: RefCell<RlcCircuitBuilder<F>>,
     pub range: RangeChip<F>,
     pub inputs: A::CircuitInput,
     pub provider: Provider<P>,
     pub payload: RefCell<Option<A::FirstPhasePayload>>,
     pub keccak_rows_per_round: usize,
-    output: RefCell<AxiomV2CircuitScaffoldOutput>,
+    output: RefCell<AxiomV2DataAndResults>,
     keccak_call_collector: RefCell<KeccakCallCollector<F>>,
+    max_user_outputs: usize,
+    max_user_subqueries: usize,
 }
 
-impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
-    AxiomCircuitRunner<F, P, A>
-{
-    pub fn new(
-        provider: Provider<P>,
-        circuit_params: AxiomCircuitParams,
-    ) -> Self {
-        let params: RlcKeccakCircuitParams = circuit_params.into();
-
+impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> AxiomCircuit<F, P, A> {
+    pub fn new(provider: Provider<P>, circuit_params: AxiomCircuitParams) -> Self {
+        let params = RlcKeccakCircuitParams::from(circuit_params);
         let rlc_bits = if params.rlc.num_rlc_columns > 0 {
             DEFAULT_RLC_CACHE_BITS
         } else {
@@ -104,11 +103,26 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
             keccak_rows_per_round: params.keccak_rows_per_round,
             output: Default::default(),
             keccak_call_collector: RefCell::new(Default::default()),
+            max_user_outputs: USER_MAX_OUTPUTS,
+            max_user_subqueries: USER_MAX_SUBQUERIES,
         }
+    }
+
+    pub fn set_max_user_outputs(&mut self, max_user_outputs: usize) {
+        self.max_user_outputs = max_user_outputs;
+    }
+
+    pub fn set_max_user_subqueries(&mut self, max_user_subqueries: usize) {
+        self.max_user_subqueries = max_user_subqueries;
     }
 
     pub fn set_inputs(&mut self, inputs: A::CircuitInput) {
         self.inputs = inputs;
+    }
+
+    pub fn use_inputs(mut self, inputs: A::CircuitInput) -> Self {
+        self.set_inputs(inputs);
+        self
     }
 
     fn virtual_assign_phase0(&self) {
@@ -119,13 +133,13 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
             .inputs
             .assign(self.builder.borrow_mut().base.borrow_mut().main(0));
 
-        let mut subquery_caller = SubqueryCaller::new(self.provider.clone());
+        let subquery_caller = Arc::new(Mutex::new(SubqueryCaller::new(self.provider.clone())));
         let mut callback = Vec::new();
         let payload = A::virtual_assign_phase0(
             &A::default(),
             &mut self.builder.borrow_mut(),
             &self.range,
-            &mut subquery_caller,
+            subquery_caller.clone(),
             &mut callback,
             assigned_inputs,
         );
@@ -136,12 +150,12 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
             .into_iter()
             .flat_map(|hilo| hilo.flatten())
             .collect::<Vec<_>>();
-        flattened_callback.resize_with(USER_OUTPUT_NUM_INSTANCES, || {
+        flattened_callback.resize_with(self.max_user_outputs * USER_RESULT_FIELD_ELEMENTS, || {
             self.builder.borrow_mut().base.main(0).load_witness(F::ZERO)
         });
 
-        let mut subquery_instances = subquery_caller.subquery_assigned_values.to_vec();
-        subquery_instances.resize_with(SUBQUERY_NUM_INSTANCES, || {
+        let mut subquery_instances = subquery_caller.lock().unwrap().instances().clone();
+        subquery_instances.resize_with(self.max_user_subqueries * SUBQUERY_RESULT_LEN, || {
             self.builder.borrow_mut().base.main(0).load_witness(F::ZERO)
         });
 
@@ -153,15 +167,15 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
             .iter()
             .map(|hilo| decode_hilo_to_h256(HiLo::from_hi_lo(hilo.hi_lo().map(|x| *x.value()))))
             .collect_vec();
-        self.output.replace(AxiomV2CircuitScaffoldOutput {
-            data_query: subquery_caller.data_query(),
+        self.output.replace(AxiomV2DataAndResults {
+            data_query: subquery_caller.lock().unwrap().data_query(),
             compute_results: circuit_output,
         });
 
         self.keccak_call_collector.borrow_mut().var_len_calls =
-            subquery_caller.keccak_var_len_calls;
+            subquery_caller.lock().unwrap().keccak_var_len_calls.clone();
         self.keccak_call_collector.borrow_mut().fix_len_calls =
-            subquery_caller.keccak_fix_len_calls;
+            subquery_caller.lock().unwrap().keccak_fix_len_calls.clone();
     }
 
     fn virtual_assign_phase1(&self) {
@@ -335,14 +349,14 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>>
         file.write_all(serialized.as_bytes()).unwrap();
     }
 
-    pub fn scaffold_output(&self) -> AxiomV2CircuitScaffoldOutput {
+    pub fn scaffold_output(&self) -> AxiomV2DataAndResults {
         self.virtual_assign_phase0();
         self.output.borrow().clone()
     }
 }
 
 impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> Circuit<F>
-    for AxiomCircuitRunner<F, P, A>
+    for AxiomCircuit<F, P, A>
 {
     type Config = AxiomCircuitConfig<F>;
     type Params = AxiomCircuitParams;
@@ -402,7 +416,7 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> Circuit<
 }
 
 impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F> + Default> CircuitExt<F>
-    for AxiomCircuitRunner<F, P, A>
+    for AxiomCircuit<F, P, A>
 {
     fn num_instance(&self) -> Vec<usize> {
         vec![SUBQUERY_NUM_INSTANCES + USER_OUTPUT_NUM_INSTANCES]

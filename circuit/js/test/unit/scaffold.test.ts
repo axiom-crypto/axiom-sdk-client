@@ -5,7 +5,7 @@ import { circuit } from "./circuits/7_balance.circuit";
 describe("Scaffold", () => {
   test("Build computeQuery", async () => {
     const testCircuit = new AxiomBaseCircuit({
-      provider: "http://localhost:8545",
+      provider: process.env.PROVIDER_URI_GOERLI as string,
       f: circuit,
       inputSchema: `{
         "address": "CircuitValue",

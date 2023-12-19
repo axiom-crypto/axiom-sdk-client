@@ -3,7 +3,7 @@ import { listDir, makeFileMap } from "../utils";
 import { run } from "../../src/run";
 
 describe("Run", () => {
-  if (process.env.PROVIDER_URI_GOERLI == undefined) {
+  if (process.env.PROVIDER_URI_GOERLI === undefined) {
     throw new Error("`PROVIDER_URI_GOERLI` environment variable must be defined");
   }
 

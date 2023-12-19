@@ -10,7 +10,7 @@ export class AxiomCircuit<T> extends AxiomBaseCircuit<T> {
     mock?: boolean,
     chainId?: number | string | bigint,
     shouldTime?: boolean
-}) {
+  }) {
     super(inputs);
   }
 

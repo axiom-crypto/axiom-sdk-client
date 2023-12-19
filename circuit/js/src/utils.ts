@@ -77,7 +77,7 @@ export const base64ToByteArray = (base64: string): Uint8Array => {
   return Buffer.from(base64, 'base64');
 }
 
-export function resizeArray(arr: any[], size: number, defaultValue: any): any[] {
+export function resizeArray<T>(arr: T[], size: number, defaultValue: T): T[] {
   if (arr.length < size) {
     return arr.concat(Array(size - arr.length).fill(defaultValue));
   }

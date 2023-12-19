@@ -1,16 +1,21 @@
 import { encodeAxiomV2CircuitMetadata } from "../../src/encoder";
+import { AxiomV2CircuitConstant } from "@axiom-crypto/tools";
 
 describe("Encoder", () => {
   test("Encode AxiomV2CircuitMetadata", () => {
+    const SUBQUERY_RESULT_LEN = 16;
     const DEFAULT_METADATA = {
       version: 0,
-      numAdvicePerPhase: [4],
-      numLookupAdvicePerPhase: [1],
+      numAdvicePerPhase: [AxiomV2CircuitConstant.UserAdviceCols],
+      numLookupAdvicePerPhase: [AxiomV2CircuitConstant.UserLookupAdviceCols],
       numRlcColumns: 0,
-      numFixed: 1,
-      numInstance: [128*2 + 128*16],
+      numFixed: AxiomV2CircuitConstant.UserFixedCols,
+      numInstance: [
+        AxiomV2CircuitConstant.UserMaxOutputs * AxiomV2CircuitConstant.UserResultFieldElements + 
+        AxiomV2CircuitConstant.UserMaxSubqueries * SUBQUERY_RESULT_LEN
+      ],
       numChallenge: [0],
-      maxOutputs: 128,
+      maxOutputs: AxiomV2CircuitConstant.UserMaxOutputs,
       isAggregation: false,
     }
     const encoded = encodeAxiomV2CircuitMetadata(DEFAULT_METADATA);

@@ -1,10 +1,11 @@
 import { CircuitConfig, Halo2LibWasm } from "@axiom-crypto/halo2-wasm/web";
 import { keccak256 } from "ethers";
 import { base64ToByteArray, byteArrayToBase64, convertToBytes, convertToBytes32 } from "./utils";
-import { encodePacked } from "viem";
+import { concat, encodePacked, zeroHash } from "viem";
 import { AxiomCircuitRunner } from "./circuitRunner";
 import {
   AxiomV2Callback,
+  AxiomV2CircuitConstant,
   AxiomV2ComputeQuery,
   DataSubquery,
 } from "@axiom-crypto/tools";
@@ -15,6 +16,7 @@ import {
 import { BaseCircuitScaffold } from "@axiom-crypto/halo2-wasm/shared/scaffold";
 import { DEFAULT_CIRCUIT_CONFIG } from "./constants";
 import { RawInput } from "./types";
+import { encodeAxiomV2CircuitMetadata } from "./js";
 
 export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   protected numInstances: number;
@@ -85,6 +87,24 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     return schema as string;
   }
 
+  prependCircuitMetadata(config: CircuitConfig, partialVk: string[]): string[] {
+    if (config.numInstance !== 1) {
+      throw new Error("`numInstance` only supported value is 1");
+    }
+    const encodedCircuitMetadata = encodeAxiomV2CircuitMetadata({
+      version: 0,
+      numInstance: [config.numInstance],
+      numChallenge: [0],
+      isAggregation: false,
+      numAdvicePerPhase: [config.numAdvice],
+      numLookupAdvicePerPhase: [config.numLookupAdvice],
+      numRlcColumns: 0,
+      numFixed: 1,
+      maxOutputs: AxiomV2CircuitConstant.UserMaxOutputs,
+    });
+    return [encodedCircuitMetadata, ...partialVk];
+  }
+
   async compile(inputs: RawInput<T>) {
     this.newCircuitFromConfig(this.config);
     this.timeStart("Witness generation");
@@ -133,11 +153,16 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   buildComputeQuery() {
     const vk = this.getPartialVk();
     const vkBytes = convertToBytes32(vk);
-    const computeProof = this.getComputeProof();
+    const onchainVkey = this.prependCircuitMetadata(this.config, vkBytes);
+    
+    const computeProofBase = this.getComputeProof() as `0x${string}`;
+    const computeAccumulator = concat([zeroHash, zeroHash]);
+    const computeProof = concat([computeAccumulator, computeProofBase]);
+
     const computeQuery: AxiomV2ComputeQuery = {
       k: this.config.k,
-      vkey: vkBytes,
-      computeProof: computeProof,
+      vkey: onchainVkey,
+      computeProof,
       resultLen: this.numInstances / 2,
     };
     this.computeQuery = computeQuery;

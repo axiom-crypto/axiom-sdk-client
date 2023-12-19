@@ -4,6 +4,10 @@ import { AxiomV2CircuitMetadataParams } from "../types";
 
 
 export const encodeAxiomV2CircuitMetadata = (params: AxiomV2CircuitMetadataParams): string => {
+  // JS client overrides
+  params.numChallenge = [0];
+  params.isAggregation = false;
+
   const encodedVersion = encodePacked(
     ["uint8"],
     [params.version]
@@ -44,7 +48,7 @@ export const encodeAxiomV2CircuitMetadata = (params: AxiomV2CircuitMetadataParam
     throw new Error("numAdvicePerPhase must be <= numPhase (numChallenge.length)");
   }
   let numAdviceCols = params.numAdvicePerPhase;
-  const resizedNumAdviceCols = resizeArray(numAdviceCols, numPhase, 0);
+  const resizedNumAdviceCols = resizeArray<number>(numAdviceCols, numPhase, 0);
   const encodedNumAdviceCols = resizedNumAdviceCols.map((adviceCols) => encodePacked(
     ["uint16"],
     [adviceCols]
@@ -55,7 +59,7 @@ export const encodeAxiomV2CircuitMetadata = (params: AxiomV2CircuitMetadataParam
     throw new Error("numLookupAdvicePerPhase must be <= numPhase (numChallenge.length)");
   }
   let numLookupAdviceCols = params.numLookupAdvicePerPhase;
-  const resizedNumLookupAdviceCols = resizeArray(numLookupAdviceCols, numPhase, 0);
+  const resizedNumLookupAdviceCols = resizeArray<number>(numLookupAdviceCols, numPhase, 0);
   const encodedNumLookupAdviceCols = resizedNumLookupAdviceCols.map((lookupAdviceCols) => encodePacked(
     ["uint8"],
     [lookupAdviceCols]

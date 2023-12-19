@@ -20,11 +20,11 @@ jobs:
         with:
           node-version: 18.x
 
-      - name: Install Harness dependencies
+      - name: Install dependencies
         working-directory: ./circuit/js
         run: npm install
 
-      - name: Run Integration Tests
+      - name: Run Unit Tests
         working-directory: ./circuit/js
         run: |
           export PROVIDER_URI_GOERLI=${{ secrets.PROVIDER_URI_GOERLI }}

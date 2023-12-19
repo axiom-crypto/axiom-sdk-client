@@ -81,7 +81,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     const vk = convertToBytes32(partialVk);
     const packed = encodePacked(
       ["uint8", "uint16", "uint8", "bytes32[]"],
-      [this.config.k, this.numInstances / 2, vk.length, vk],
+      [this.config.k, this.numInstances / 2, vk.length, vk as `0x${string}`[]],
     );
     const schema = keccak256(packed);
     return schema as string;

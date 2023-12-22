@@ -2,8 +2,7 @@ use axiom_codec::types::native::AxiomV2ComputeQuery;
 use axiom_eth::{Field, rlc::circuit::{RlcConfig, RlcCircuitParams}, halo2_base::gates::circuit::{BaseConfig, BaseCircuitParams}, utils::keccak::decorator::{RlcKeccakConfig, RlcKeccakCircuitParams}, snark_verifier_sdk::Snark};
 use ethers::types::H256;
 use serde::Serialize;
-
-use crate::subquery::types::{Subquery};
+use crate::subquery::types::Subquery;
 
 #[derive(Clone, Debug)]
 pub enum AxiomCircuitConfig<F: Field> {

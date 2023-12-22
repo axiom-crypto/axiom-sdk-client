@@ -1,16 +1,10 @@
-use crate::mock_test;
-use crate::run::inner::mock;
-use crate::scaffold::AxiomCircuit;
 use crate::scaffold::AxiomCircuitScaffold;
-use crate::single_instance_test;
 use crate::subquery::caller::SubqueryCaller;
+use crate::tests::shared_tests::{mock_test, single_instance_test};
 use crate::tests::utils::MyCircuitInput;
 use crate::tests::utils::MyCircuitVirtualInput;
 use crate::tests::utils::{account_call, header_call};
 use crate::types::AxiomCircuitParams;
-use crate::utils::get_provider;
-use axiom_codec::types::field_elements::FieldSubqueryResult;
-use axiom_codec::types::field_elements::SUBQUERY_RESULT_LEN;
 use axiom_codec::HiLo;
 use axiom_eth::rlc::circuit::RlcCircuitParams;
 use axiom_eth::{
@@ -21,8 +15,9 @@ use axiom_eth::{
     halo2curves::bn256::Fr,
     rlc::circuit::builder::RlcCircuitBuilder,
 };
-use ethers::providers::JsonRpcClient;
+use ethers::providers::{Http, JsonRpcClient};
 use std::sync::{Arc, Mutex};
+use test_case::test_case;
 
 macro_rules! rlc_test_struct {
     ($struct_name:ident, $subquery_call:ident) => {
@@ -62,16 +57,19 @@ fn get_rlc_test_params() -> AxiomCircuitParams {
     AxiomCircuitParams::Rlc(rlc_params)
 }
 
-mod account_tests {
-    use super::*;
-    rlc_test_struct!(AccountTest, account_call);
-    mock_test!(AccountTest, get_rlc_test_params);
-    single_instance_test!(AccountTest, get_rlc_test_params);
+rlc_test_struct!(AccountTest, account_call);
+rlc_test_struct!(HeaderTest, header_call);
+
+#[test_case(AccountTest)]
+#[test_case(HeaderTest)]
+pub fn mock<S: AxiomCircuitScaffold<Http, Fr>>(circuit: S) {
+    let params = get_rlc_test_params();
+    mock_test(params, circuit);
 }
 
-mod header_tests {
-    use super::*;
-    rlc_test_struct!(HeaderTest, header_call);
-    mock_test!(HeaderTest, get_rlc_test_params);
-    single_instance_test!(HeaderTest, get_rlc_test_params);
+#[test_case(AccountTest)]
+#[test_case(HeaderTest)]
+pub fn single_instance<S: AxiomCircuitScaffold<Http, Fr>>(circuit: S) {
+    let params = get_rlc_test_params();
+    single_instance_test(params, circuit);
 }

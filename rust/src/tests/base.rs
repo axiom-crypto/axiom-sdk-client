@@ -1,17 +1,14 @@
-use crate::mock_test;
-use crate::run::inner::mock;
-use crate::scaffold::AxiomCircuit;
 use crate::scaffold::AxiomCircuitScaffold;
-use crate::single_instance_test;
 use crate::subquery::caller::SubqueryCaller;
+use crate::tests::utils::account_call;
 use crate::tests::utils::MyCircuitInput;
 use crate::tests::utils::MyCircuitVirtualInput;
-use crate::tests::utils::account_call;
 use crate::types::AxiomCircuitParams;
-use crate::utils::get_provider;
+
 use axiom_codec::HiLo;
-use axiom_codec::types::field_elements::FieldSubqueryResult;
-use axiom_codec::types::field_elements::SUBQUERY_RESULT_LEN;
+
+use super::utils::header_call;
+use crate::tests::shared_tests::{mock_test, single_instance_test};
 use axiom_eth::{
     halo2_base::{
         gates::{circuit::BaseCircuitParams, RangeChip},
@@ -20,10 +17,9 @@ use axiom_eth::{
     halo2curves::bn256::Fr,
     rlc::circuit::builder::RlcCircuitBuilder,
 };
-use ethers::providers::JsonRpcClient;
+use ethers::providers::{Http, JsonRpcClient};
 use std::sync::{Arc, Mutex};
-
-use super::utils::header_call;
+use test_case::test_case;
 
 macro_rules! base_test_struct {
     ($struct_name:ident, $subquery_call:ident) => {
@@ -59,16 +55,19 @@ fn get_base_test_params() -> AxiomCircuitParams {
     AxiomCircuitParams::Base(params)
 }
 
-mod account_tests {
-    use super::*;
-    base_test_struct!(AccountTest, account_call);
-    mock_test!(AccountTest, get_base_test_params);
-    single_instance_test!(AccountTest, get_base_test_params);
+base_test_struct!(AccountTest, account_call);
+base_test_struct!(HeaderTest, header_call);
+
+#[test_case(AccountTest)]
+#[test_case(HeaderTest)]
+pub fn mock<S: AxiomCircuitScaffold<Http, Fr>>(circuit: S) {
+    let params = get_base_test_params();
+    mock_test(params, circuit);
 }
 
-mod header_tests {
-    use super::*;
-    base_test_struct!(HeaderTest, header_call);
-    mock_test!(HeaderTest, get_base_test_params);
-    single_instance_test!(HeaderTest, get_base_test_params);
+#[test_case(AccountTest)]
+#[test_case(HeaderTest)]
+pub fn single_instance<S: AxiomCircuitScaffold<Http, Fr>>(circuit: S) {
+    let params = get_base_test_params();
+    single_instance_test(params, circuit);
 }

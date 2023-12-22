@@ -35,15 +35,14 @@ export const buildSendQuery = async (input: {
     });
   }
   const {
+    sourceChainId,
     dataQueryHash,
-    dataQuery,
     computeQuery,
     callback,
-    maxFeePerGas,
-    callbackGasLimit,
-    sourceChainId,
+    feeData,
     userSalt,
     refundee,
+    dataQuery,
   } = await qb.build();
   const payment = await qb.calculateFee();
   const id = await qb.getQueryId(input.caller);
@@ -54,9 +53,8 @@ export const buildSendQuery = async (input: {
     dataQueryHash,
     computeQuery,
     callback,
+    feeData,
     userSalt,
-    maxFeePerGas,
-    callbackGasLimit,
     refundee,
     dataQuery,
   ];

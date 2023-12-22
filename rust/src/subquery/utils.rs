@@ -1,5 +1,8 @@
-use axiom_codec::types::native::{AnySubquery, SubqueryType};
-use axiom_eth::{halo2_base::utils::fe_to_biguint, Field};
+use axiom_codec::{
+    types::native::{AnySubquery, SubqueryType},
+    utils::native::decode_field_to_addr,
+};
+use axiom_eth::Field;
 use ethers::types::{H160, H256};
 
 pub fn usize_to_u8_array(value: usize) -> [u8; 32] {
@@ -26,12 +29,7 @@ pub fn h256_from_usize(value: usize) -> H256 {
 }
 
 pub fn fe_to_h160<F: Field>(fe: &F) -> H160 {
-    let fe_biguint = fe_to_biguint(fe);
-    let mut fe_bytes = fe_biguint.to_bytes_be();
-    fe_bytes.resize(32, 0);
-    let mut addr = [0u8; 20];
-    addr.copy_from_slice(&fe_bytes[12..]);
-    H160::from(&addr)
+    decode_field_to_addr(fe)
 }
 
 pub fn get_subquery_type_from_any_subquery(any_subquery: &AnySubquery) -> u64 {

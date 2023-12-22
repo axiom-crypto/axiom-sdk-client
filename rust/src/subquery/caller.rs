@@ -19,7 +19,10 @@ use ethers::{
 };
 use itertools::Itertools;
 
-use super::keccak::{KeccakSubquery, KeccakSubqueryTypes};
+use super::{
+    keccak::{KeccakSubquery, KeccakSubqueryTypes},
+    types::Subquery,
+};
 
 pub trait FetchSubquery<F: Field> {
     fn fetch<P: JsonRpcClient>(&self, p: &Provider<P>) -> Result<(H256, Vec<AssignedValue<F>>)>;
@@ -52,11 +55,17 @@ impl<P: JsonRpcClient, F: Field> SubqueryCaller<P, F> {
         self.keccak_var_len_calls.clear();
     }
 
-    pub fn data_query(&self) -> Vec<RawSubquery> {
-        let subqueries: Vec<RawSubquery> = self
-            .subqueries.values().flat_map(|val| {
+    pub fn data_query(&self) -> Vec<Subquery> {
+        let subqueries: Vec<Subquery> = self
+            .subqueries
+            .values()
+            .flat_map(|val| {
                 val.iter()
-                    .map(|(any_subquery, _)| RawSubquery::from(any_subquery.clone()))
+                    .map(|(any_subquery, result)| Subquery {
+                        subquery_type: get_subquery_type_from_any_subquery(&any_subquery.clone()),
+                        subquery_data: RawSubquery(any_subquery.clone()),
+                        val: *result,
+                    })
                     .collect_vec()
             })
             .collect_vec();
@@ -64,8 +73,10 @@ impl<P: JsonRpcClient, F: Field> SubqueryCaller<P, F> {
     }
 
     pub fn instances(&self) -> Vec<AssignedValue<F>> {
-        self.subquery_assigned_values.values()
-            .flatten().cloned()
+        self.subquery_assigned_values
+            .values()
+            .flatten()
+            .cloned()
             .collect_vec()
     }
 

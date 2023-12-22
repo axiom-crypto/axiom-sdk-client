@@ -1,17 +1,20 @@
 use axiom_codec::{
     constants::MAX_SOLIDITY_MAPPING_KEYS,
-    types::native::{
-        AccountSubquery, AnySubquery, HeaderSubquery, ReceiptSubquery,
-        SolidityNestedMappingSubquery, StorageSubquery, TxSubquery,
+    types::{
+        field_elements::FieldSubqueryResult,
+        native::{
+            AccountSubquery, AnySubquery, HeaderSubquery, ReceiptSubquery,
+            SolidityNestedMappingSubquery, StorageSubquery, TxSubquery,
+        },
     },
     utils::native::decode_hilo_to_h256,
     HiLo,
 };
 use axiom_eth::{halo2_base::AssignedValue, Field};
-use ethers::types::BigEndianHash;
+use ethers::types::{BigEndianHash, H256};
 use serde::{Serialize, Serializer};
 
-use super::utils::{fe_to_h160, get_subquery_type_from_any_subquery};
+use super::utils::fe_to_h160;
 
 #[derive(Clone, Copy)]
 pub struct AssignedHeaderSubquery<F: Field> {
@@ -145,8 +148,9 @@ impl<F: Field> From<AssignedSolidityNestedMappingSubquery<F>> for SolidityNested
 }
 
 #[derive(Debug, Clone)]
-pub(crate) struct Subquery(pub AnySubquery);
-impl Serialize for Subquery {
+pub(crate) struct RawSubquery(pub(crate) AnySubquery);
+
+impl Serialize for RawSubquery {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -164,19 +168,25 @@ impl Serialize for Subquery {
 }
 
 #[derive(Debug, Serialize, Clone)]
-pub struct RawSubquery {
+pub struct Subquery {
     #[serde(rename = "subqueryData")]
-    pub(crate) subquery_data: Subquery,
+    pub(crate) subquery_data: RawSubquery,
     #[serde(rename = "type")]
     pub(crate) subquery_type: u64,
+    pub(crate) val: H256,
 }
 
-impl From<AnySubquery> for RawSubquery {
-    fn from(subquery: AnySubquery) -> Self {
-        let subquery_type = get_subquery_type_from_any_subquery(&subquery);
-        Self {
-            subquery_data: Subquery(subquery),
-            subquery_type,
+impl From<Subquery> for AnySubquery {
+    fn from(subquery: Subquery) -> Self {
+        subquery.subquery_data.0
+    }
+}
+
+impl<F: Field> From<Subquery> for FieldSubqueryResult<F> {
+    fn from(value: Subquery) -> Self {
+        FieldSubqueryResult {
+            subquery: value.subquery_data.0.into(),
+            value: value.val.into(),
         }
     }
 }

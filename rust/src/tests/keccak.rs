@@ -1,4 +1,5 @@
-use crate::run::inner::mock;
+use crate::run::aggregation::{agg_circuit_keygen, agg_circuit_run};
+use crate::run::inner::{keygen, run};
 use crate::scaffold::AxiomCircuitScaffold;
 use crate::subquery::caller::SubqueryCaller;
 use crate::tests::utils::MyCircuitInput;
@@ -9,6 +10,7 @@ use crate::utils::get_provider;
 use crate::{ctx, witness};
 use axiom_codec::HiLo;
 use axiom_eth::rlc::circuit::RlcCircuitParams;
+use axiom_eth::snark_verifier_sdk::halo2::aggregation::AggregationConfigParams;
 use axiom_eth::utils::keccak::decorator::RlcKeccakCircuitParams;
 use axiom_eth::{
     halo2_base::{
@@ -74,8 +76,8 @@ macro_rules! keccak_test {
                     },
                 });
                 let client = get_provider();
-                let (_vk, pk) = keygen::<_, MyCircuit>(client.clone(), params.clone(), None);
-                let output = run::<_, MyCircuit>(client, params, None, pk);
+                let (_vk, pk) = keygen::<_, TestStruct>(client.clone(), params.clone(), None);
+                let output = run::<_, TestStruct>(client, params, None, pk);
                 let agg_circuit_params = AggregationConfigParams {
                     degree: 20,
                     num_advice: 23,

@@ -1,4 +1,4 @@
-use crate::constants::{SUBQUERY_NUM_INSTANCES, USER_OUTPUT_NUM_INSTANCES};
+
 use crate::subquery::caller::SubqueryCaller;
 use crate::types::{AxiomCircuitConfig, AxiomCircuitParams, AxiomV2DataAndResults};
 use axiom_codec::constants::{USER_MAX_OUTPUTS, USER_MAX_SUBQUERIES, USER_RESULT_FIELD_ELEMENTS};
@@ -17,7 +17,7 @@ use axiom_eth::utils::DEFAULT_RLC_CACHE_BITS;
 use axiom_eth::zkevm_hashes::keccak::component::circuit::shard::LoadedKeccakF;
 use axiom_eth::zkevm_hashes::keccak::vanilla::keccak_packed_multi::get_num_keccak_f;
 use axiom_eth::zkevm_hashes::keccak::vanilla::param::{NUM_ROUNDS, NUM_WORDS_TO_ABSORB};
-use axiom_eth::zkevm_hashes::keccak::vanilla::{KeccakCircuitConfig, KeccakConfigParams};
+use axiom_eth::zkevm_hashes::keccak::vanilla::{KeccakCircuitConfig};
 use axiom_eth::Field;
 use axiom_eth::{
     halo2_base::gates::RangeChip,
@@ -156,6 +156,14 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> AxiomCir
         self.builder.borrow().break_points()
     }
 
+    pub fn output_num_instances(&self) -> usize {
+        self.max_user_outputs * USER_RESULT_FIELD_ELEMENTS
+    }
+
+    pub fn subquery_num_instances(&self) -> usize {
+        self.max_user_subqueries * SUBQUERY_RESULT_LEN
+    }
+
     fn virtual_assign_phase0(&self) {
         if self.payload.borrow().is_some() {
             return;
@@ -181,12 +189,12 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> AxiomCir
             .into_iter()
             .flat_map(|hilo| hilo.flatten())
             .collect::<Vec<_>>();
-        flattened_callback.resize_with(self.max_user_outputs * USER_RESULT_FIELD_ELEMENTS, || {
+        flattened_callback.resize_with(self.output_num_instances(), || {
             self.builder.borrow_mut().base.main(0).load_witness(F::ZERO)
         });
 
         let mut subquery_instances = subquery_caller.lock().unwrap().instances().clone();
-        subquery_instances.resize_with(self.max_user_subqueries * SUBQUERY_RESULT_LEN, || {
+        subquery_instances.resize_with(self.subquery_num_instances(), || {
             self.builder.borrow_mut().base.main(0).load_witness(F::ZERO)
         });
 
@@ -438,7 +446,7 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F> + Default
     for AxiomCircuit<F, P, A>
 {
     fn num_instance(&self) -> Vec<usize> {
-        vec![SUBQUERY_NUM_INSTANCES + USER_OUTPUT_NUM_INSTANCES]
+        vec![self.output_num_instances() + self.subquery_num_instances()]
     }
 
     fn instances(&self) -> Vec<Vec<F>> {

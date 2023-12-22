@@ -3,7 +3,7 @@ use axiom_eth::{Field, rlc::circuit::{RlcConfig, RlcCircuitParams}, halo2_base::
 use ethers::types::H256;
 use serde::Serialize;
 
-use crate::subquery::types::RawSubquery;
+use crate::subquery::types::{Subquery};
 
 #[derive(Clone, Debug)]
 pub enum AxiomCircuitConfig<F: Field> {
@@ -28,7 +28,7 @@ impl Default for AxiomCircuitParams {
 #[derive(Debug, Serialize, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct AxiomV2DataAndResults {
-    pub(crate) data_query: Vec<RawSubquery>,
+    pub(crate) data_query: Vec<Subquery>,
     pub(crate) compute_results: Vec<H256>,
 }
 

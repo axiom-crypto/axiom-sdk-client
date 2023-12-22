@@ -12,5 +12,5 @@ pub mod macros;
 pub mod types;
 #[cfg(test)]
 pub mod test;
-// #[cfg(test)]
-// pub mod tests;
+#[cfg(test)]
+pub mod tests;

@@ -1,6 +1,5 @@
 import { DataSubqueryType, SolidityNestedMappingSubquery } from "@axiom-crypto/tools";
 import { CircuitValue, RawCircuitInput, CircuitValue256 } from "@axiom-crypto/halo2-lib-js";
-import { Halo2LibWasm } from "@axiom-crypto/halo2-lib-js/wasm/web";
 import { getCircuitValue256Constant, getCircuitValueConstant, getCircuitValue256FromCircuitValue } from "../utils";
 import { prepData } from "./data";
 

@@ -1,25 +1,24 @@
-use crate::{witness, ctx};
 use crate::run::inner::mock;
+use crate::scaffold::AxiomCircuitScaffold;
 use crate::subquery::caller::SubqueryCaller;
 use crate::tests::utils::MyCircuitInput;
 use crate::tests::utils::MyCircuitVirtualInput;
 use crate::tests::utils::{account_call, header_call};
 use crate::types::AxiomCircuitParams;
 use crate::utils::get_provider;
-use crate::scaffold::AxiomCircuitScaffold;
+use crate::{ctx, witness};
 use axiom_codec::HiLo;
 use axiom_eth::rlc::circuit::RlcCircuitParams;
 use axiom_eth::utils::keccak::decorator::RlcKeccakCircuitParams;
 use axiom_eth::{
     halo2_base::{
         gates::{circuit::BaseCircuitParams, RangeChip},
-        AssignedValue,
         safe_types::SafeTypeChip,
+        AssignedValue,
     },
     halo2curves::bn256::Fr,
-    rlc::circuit::builder::RlcCircuitBuilder,
     keccak::promise::KeccakFixLenCall,
-
+    rlc::circuit::builder::RlcCircuitBuilder,
 };
 use ethers::providers::JsonRpcClient;
 use std::sync::{Arc, Mutex};
@@ -75,7 +74,24 @@ macro_rules! keccak_test {
                     },
                 });
                 let client = get_provider();
-                mock::<_, TestStruct>(client, params, None);
+                let (_vk, pk) = keygen::<_, MyCircuit>(client.clone(), params.clone(), None);
+                let output = run::<_, MyCircuit>(client, params, None, pk);
+                let agg_circuit_params = AggregationConfigParams {
+                    degree: 20,
+                    num_advice: 23,
+                    num_lookup_advice: 2,
+                    num_fixed: 1,
+                    lookup_bits: 19,
+                };
+                let (_, agg_pk, break_points) =
+                    agg_circuit_keygen(agg_circuit_params, output.snark.clone());
+                agg_circuit_run(
+                    agg_circuit_params,
+                    output.snark,
+                    agg_pk,
+                    break_points,
+                    output.data,
+                );
             }
         }
     };

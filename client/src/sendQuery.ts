@@ -35,14 +35,14 @@ export const buildSendQuery = async (input: {
     });
   }
   const {
+    sourceChainId,
     dataQueryHash,
-    dataQuery,
     computeQuery,
     callback,
     feeData,
-    sourceChainId,
     userSalt,
     refundee,
+    dataQuery,
   } = await qb.build();
   const payment = await qb.calculateFee();
   const id = await qb.getQueryId(input.caller);

@@ -5,10 +5,11 @@ use axiom_codec::constants::{USER_MAX_OUTPUTS, USER_MAX_SUBQUERIES, USER_RESULT_
 use axiom_codec::types::field_elements::SUBQUERY_RESULT_LEN;
 use axiom_codec::utils::native::decode_hilo_to_h256;
 use axiom_codec::HiLo;
-use axiom_eth::halo2_base::gates::circuit::BaseConfig;
+use axiom_eth::halo2_base::gates::circuit::{BaseConfig, CircuitBuilderStage};
 use axiom_eth::halo2_base::safe_types::SafeTypeChip;
 use axiom_eth::halo2_base::virtual_region::manager::VirtualRegionManager;
 use axiom_eth::halo2_base::{AssignedValue, Context};
+use axiom_eth::rlc::virtual_region::RlcThreadBreakPoints;
 use axiom_eth::snark_verifier_sdk::CircuitExt;
 use axiom_eth::utils::keccak::decorator::KeccakCallCollector;
 use axiom_eth::utils::keccak::decorator::{RlcKeccakCircuitParams, RlcKeccakConfig};
@@ -32,10 +33,8 @@ use itertools::Itertools;
 use std::borrow::BorrowMut;
 use std::cell::RefCell;
 use std::fmt::Debug;
-use std::fs::File;
-use std::io::Write;
 use std::mem;
-use std::ops::{Deref, DerefMut};
+use std::ops::DerefMut;
 use std::sync::{Arc, Mutex};
 
 pub trait RawCircuitInput<F: Field, O> {
@@ -70,26 +69,35 @@ pub trait AxiomCircuitScaffold<P: JsonRpcClient, F: Field>: Default + Clone + De
 #[derive(Clone, Debug)]
 pub struct AxiomCircuit<F: Field, P: JsonRpcClient, A: AxiomCircuitScaffold<P, F>> {
     pub builder: RefCell<RlcCircuitBuilder<F>>,
-    pub range: RangeChip<F>,
     pub inputs: A::CircuitInput,
     pub provider: Provider<P>,
-    pub payload: RefCell<Option<A::FirstPhasePayload>>,
-    pub keccak_rows_per_round: usize,
+    range: RangeChip<F>,
+    payload: RefCell<Option<A::FirstPhasePayload>>,
     output: RefCell<AxiomV2DataAndResults>,
     keccak_call_collector: RefCell<KeccakCallCollector<F>>,
+    keccak_rows_per_round: usize,
     max_user_outputs: usize,
     max_user_subqueries: usize,
 }
 
 impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> AxiomCircuit<F, P, A> {
     pub fn new(provider: Provider<P>, circuit_params: AxiomCircuitParams) -> Self {
+        Self::from_stage(provider, circuit_params, CircuitBuilderStage::Mock)
+    }
+
+    pub fn from_stage(
+        provider: Provider<P>,
+        circuit_params: AxiomCircuitParams,
+        stage: CircuitBuilderStage,
+    ) -> Self {
         let params = RlcKeccakCircuitParams::from(circuit_params);
         let rlc_bits = if params.rlc.num_rlc_columns > 0 {
             DEFAULT_RLC_CACHE_BITS
         } else {
             0
         };
-        let builder = RlcCircuitBuilder::<F>::new(false, rlc_bits).use_params(params.rlc.clone());
+        let builder =
+            RlcCircuitBuilder::<F>::from_stage(stage, rlc_bits).use_params(params.rlc.clone());
         let range = RangeChip::new(
             params.rlc.base.lookup_bits.unwrap(),
             builder.base.lookup_manager().clone(),
@@ -112,8 +120,18 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> AxiomCir
         self.max_user_outputs = max_user_outputs;
     }
 
+    pub fn use_max_user_outputs(mut self, max_user_outputs: usize) -> Self {
+        self.set_max_user_outputs(max_user_outputs);
+        self
+    }
+
     pub fn set_max_user_subqueries(&mut self, max_user_subqueries: usize) {
         self.max_user_subqueries = max_user_subqueries;
+    }
+
+    pub fn use_max_user_subqueries(mut self, max_user_subqueries: usize) -> Self {
+        self.set_max_user_subqueries(max_user_subqueries);
+        self
     }
 
     pub fn set_inputs(&mut self, inputs: A::CircuitInput) {
@@ -123,6 +141,19 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> AxiomCir
     pub fn use_inputs(mut self, inputs: A::CircuitInput) -> Self {
         self.set_inputs(inputs);
         self
+    }
+
+    pub fn set_break_points(&mut self, break_points: RlcThreadBreakPoints) {
+        self.builder.borrow_mut().set_break_points(break_points);
+    }
+
+    pub fn use_break_points(mut self, break_points: RlcThreadBreakPoints) -> Self {
+        self.set_break_points(break_points);
+        self
+    }
+
+    pub fn break_points(&self) -> RlcThreadBreakPoints {
+        self.builder.borrow().break_points()
     }
 
     fn virtual_assign_phase0(&self) {
@@ -221,14 +252,10 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> AxiomCir
         self.virtual_assign_phase0();
         if let Some(keccak_config) = keccak_config {
             keccak_config.load_aux_tables(&mut layouter, k as u32)?;
-            let keccak_circuit_params = KeccakConfigParams {
-                k: k as u32,
-                rows_per_round: self.keccak_rows_per_round,
-            };
             let keccak_calls = mem::take(self.keccak_call_collector.borrow_mut().deref_mut());
 
             keccak_calls.assign_raw_and_constrain(
-                keccak_circuit_params,
+                keccak_config.parameters,
                 &keccak_config,
                 &mut layouter.namespace(|| "keccak sub-circuit"),
                 self.builder.borrow_mut().base.pool(0),
@@ -339,14 +366,6 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> AxiomCir
             .iter()
             .map(|instance| instance.iter().map(|x| *x.value()).collect())
             .collect()
-    }
-
-    pub fn write_output(&self, path: &str) {
-        self.virtual_assign_phase0();
-        let output = self.output.borrow();
-        let serialized = serde_json::to_string_pretty(output.deref()).unwrap();
-        let mut file = File::create(path).unwrap();
-        file.write_all(serialized.as_bytes()).unwrap();
     }
 
     pub fn scaffold_output(&self) -> AxiomV2DataAndResults {

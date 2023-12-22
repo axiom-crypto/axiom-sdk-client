@@ -7,13 +7,14 @@ use axiom_eth::halo2curves::bn256::G1Affine;
 use axiom_eth::halo2curves::ff::PrimeField;
 use axiom_eth::halo2curves::serde::SerdeObject;
 use axiom_eth::halo2curves::CurveAffine;
-use axiom_eth::rlc::circuit::RlcCircuitParams;
+
 use axiom_eth::snark_verifier::pcs::kzg::{KzgAccumulator, LimbsEncoding};
 use axiom_eth::snark_verifier::pcs::AccumulatorEncoding;
 use axiom_eth::snark_verifier::system::halo2::transcript_initial_state;
 use axiom_eth::snark_verifier::verifier::plonk::PlonkProtocol;
 use axiom_eth::snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
 use axiom_eth::snark_verifier_sdk::{CircuitExt, NativeLoader, Snark, BITS, LIMBS};
+use axiom_eth::utils::keccak::decorator::RlcKeccakCircuitParams;
 use axiom_eth::utils::snark_verifier::NUM_FE_ACCUMULATOR;
 use axiom_eth::Field;
 use axiom_query::utils::client_circuit::metadata::AxiomV2CircuitMetadata;
@@ -23,9 +24,10 @@ use ethers::providers::{Http, Provider};
 use ethers::types::H256;
 use itertools::Itertools;
 use std::env;
+use std::fs::File;
 use std::io::{Result, Write};
 
-use crate::types::AxiomV2DataAndResults;
+use crate::types::{AxiomV2DataAndResults, AxiomCircuitParams};
 
 fn write_field_le<F: Field>(writer: &mut impl Write, fe: F) -> Result<()> {
     let repr = ScalarField::to_bytes_le(&fe);
@@ -94,13 +96,15 @@ pub fn get_onchain_vk_from_protocol<C: CurveAffine>(
     }
 }
 
-/// Need to provide RlcCircuitParams for additional context, otherwise you have
-/// to parse the RlcCircuitParams data from the custom gate information in `protocol`
+/// Need to provide AxiomCircuitParams for additional context, otherwise you have
+/// to parse the AxiomCircuitParams data from the custom gate information in `protocol`
 pub fn get_metadata_from_protocol(
     protocol: &PlonkProtocol<G1Affine>,
-    rlc_params: RlcCircuitParams,
+    params: AxiomCircuitParams,
     max_outputs: usize,
 ) -> anyhow::Result<AxiomV2CircuitMetadata> {
+    let rlc_keccak_params = RlcKeccakCircuitParams::from(params);
+    let rlc_params = rlc_keccak_params.rlc;
     let num_advice_per_phase = rlc_params
         .base
         .num_advice_per_phase
@@ -157,9 +161,12 @@ pub fn get_metadata_from_protocol(
     }
     *last_challenge -= 1;
     let num_challenge: Vec<u8> = num_challenge_incl_system.iter().map(|x| *x as u8).collect();
-    if num_challenge != vec![0] && num_challenge != vec![1, 0] {
+    if num_challenge != vec![0] && num_challenge != vec![1, 0] && rlc_keccak_params.keccak_rows_per_round == 0 {
         log::debug!("num_challenge: {:?}", num_challenge);
         bail!("Only phase0 BaseCircuitBuilder or phase0+1 RlcCircuitBuilder supported right now");
+    }
+    if rlc_keccak_params.keccak_rows_per_round != 0 {
+        log::warn!("Circuit with keccak must be aggregated before submitting on chain");
     }
     metadata.num_challenge = num_challenge;
 
@@ -185,11 +192,12 @@ pub fn get_provider() -> Provider<Http> {
 
 pub fn build_axiom_v2_compute_query(
     snark: Snark,
-    params: RlcCircuitParams,
+    params: AxiomCircuitParams,
     results: AxiomV2DataAndResults,
 ) -> AxiomV2ComputeQuery {
     let metadata =
         get_metadata_from_protocol(&snark.protocol, params.clone(), USER_MAX_OUTPUTS).unwrap();
+    let k = RlcKeccakCircuitParams::from(params).k();
     let partial_vk = get_onchain_vk_from_protocol(&snark.protocol, metadata.clone());
     let partial_vk_output = write_onchain_vkey(&partial_vk).unwrap();
     let result_len = results.compute_results.len() as u16;
@@ -210,9 +218,15 @@ pub fn build_axiom_v2_compute_query(
         proof_transcript: snark.proof,
     };
     AxiomV2ComputeQuery {
-        k: params.base.k as u8,
+        k: k as u8,
         result_len,
         compute_proof: compute_proof.encode().unwrap().into(),
         vkey: partial_vk_output,
     }
+}
+
+pub fn write_output(output: AxiomV2DataAndResults, path: &str) {
+    let serialized = serde_json::to_string_pretty(&output).unwrap();
+    let mut file = File::create(path).unwrap();
+    file.write_all(serialized.as_bytes()).unwrap();
 }

@@ -27,7 +27,8 @@ pub fn h256_from_usize(value: usize) -> H256 {
 
 pub fn fe_to_h160<F: Field>(fe: &F) -> H160 {
     let fe_biguint = fe_to_biguint(fe);
-    let fe_bytes = fe_biguint.to_bytes_be();
+    let mut fe_bytes = fe_biguint.to_bytes_be();
+    fe_bytes.resize(32, 0);
     let mut addr = [0u8; 20];
     addr.copy_from_slice(&fe_bytes[12..]);
     H160::from(&addr)

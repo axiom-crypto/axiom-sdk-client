@@ -5,9 +5,7 @@ use std::{
 
 use crate::{
     constant, ctx,
-    run::aggregation::{
-        agg_circuit_keygen, agg_circuit_run, keccak_circuit_run,
-    },
+    run::aggregation::{agg_circuit_keygen, agg_circuit_run},
     run::inner::{keygen, mock, prove, run},
     scaffold::{AxiomCircuitScaffold, RawCircuitInput},
     subquery::{caller::SubqueryCaller, header::HeaderField, types::AssignedHeaderSubquery},
@@ -70,12 +68,12 @@ impl<P: JsonRpcClient> AxiomCircuitScaffold<P, Fr> for MyCircuit {
         let gate = GateChip::<Fr>::new();
         gate.add(ctx!(builder, 0), inputs.a, inputs.b);
         let bytes = SafeTypeChip::unsafe_to_fix_len_bytes_vec(vec![inputs.b, inputs.b], 2);
-        let _keccak_call = KeccakFixLenCall::new(bytes);
-        // let hilo = subquery_caller
-        //     .lock()
-        //     .unwrap()
-        //     .keccak(ctx!(builder, 0), keccak_call);
-        // callback.push(hilo);
+        let keccak_call = KeccakFixLenCall::new(bytes);
+        let hilo = subquery_caller
+            .lock()
+            .unwrap()
+            .keccak(ctx!(builder, 0), keccak_call);
+        callback.push(hilo);
         range.range_check(ctx!(builder, 0), inputs.a, 10);
         let subquery = AssignedHeaderSubquery {
             block_number: witness!(builder, Fr::from(9730000)),
@@ -196,7 +194,7 @@ pub fn test_aggregation() {
     });
     let client = get_provider();
     let (_vk, pk) = keygen::<_, MyCircuit>(client.clone(), params.clone(), None);
-    let output = keccak_circuit_run::<_, MyCircuit>(client, params, None, pk);
+    let output = run::<_, MyCircuit>(client, params, None, pk);
     let agg_circuit_params = AggregationConfigParams {
         degree: 20,
         num_advice: 23,
@@ -204,6 +202,6 @@ pub fn test_aggregation() {
         num_fixed: 1,
         lookup_bits: 19,
     };
-    let (_, agg_pk) = agg_circuit_keygen(agg_circuit_params, output.0.clone());
-    agg_circuit_run(agg_circuit_params, agg_pk, output.0, output.1);
+    let (_, agg_pk, break_points) = agg_circuit_keygen(agg_circuit_params, output.snark.clone());
+    agg_circuit_run(agg_circuit_params, output.snark, agg_pk, break_points, output.data);
 }

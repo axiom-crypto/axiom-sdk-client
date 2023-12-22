@@ -5,6 +5,7 @@
 pub mod constants;
 pub mod run;
 pub mod scaffold;
+pub mod aggregation;
 pub mod subquery;
 pub mod utils;
 pub mod macros;

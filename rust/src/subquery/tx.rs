@@ -18,9 +18,8 @@ use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 use tokio::runtime::Runtime;
 
-use crate::impl_fr_from;
-
 use super::{caller::FetchSubquery, types::AssignedTxSubquery, utils::pad_to_bytes32};
+use crate::impl_fr_from;
 
 #[derive(FromPrimitive)]
 pub enum TxField {
@@ -64,7 +63,8 @@ pub async fn get_tx_field_value<P: JsonRpcClient>(
     //todo: validate tx size
 
     if query.field_or_calldata_idx < TX_CALLDATA_IDX_OFFSET.try_into().unwrap() {
-        let tx_field_idx = TxField::from_u32(query.field_or_calldata_idx).expect("Invalid field index");
+        let tx_field_idx =
+            TxField::from_u32(query.field_or_calldata_idx).expect("Invalid field index");
 
         let val = match tx_field_idx {
             TxField::ChainId => H256::from_uint(&tx.chain_id.unwrap()),
@@ -94,7 +94,7 @@ pub async fn get_tx_field_value<P: JsonRpcClient>(
             TxField::FunctionSelector => {
                 let calldata = tx.input;
                 let to = tx.to;
-    
+
                 if calldata.len() == 0 {
                     H256::from_low_u64_be(TX_NO_CALLDATA_SELECTOR_VALUE as u64)
                 } else if calldata.len() > 0 && to.is_none() {
@@ -114,7 +114,7 @@ pub async fn get_tx_field_value<P: JsonRpcClient>(
             }
             TxField::DataLength => H256::from_low_u64_be(tx.input.len() as u64),
         };
-        return Ok(val)
+        return Ok(val);
     }
 
     if query.field_or_calldata_idx < TX_CONTRACT_DATA_IDX_OFFSET.try_into().unwrap() {
@@ -125,9 +125,8 @@ pub async fn get_tx_field_value<P: JsonRpcClient>(
             bail!("Invalid calldata index")
         }
         let calldata_bytes = &calldata[4 + calldata_idx * 32..4 + (calldata_idx + 1) * 32];
-        return Ok(H256::from_slice(calldata_bytes));
-    }
-    else {
+        Ok(H256::from_slice(calldata_bytes))
+    } else {
         let contract_data = tx.input;
         let contract_data_idx =
             (query.field_or_calldata_idx as usize) - TX_CONTRACT_DATA_IDX_OFFSET;
@@ -139,7 +138,7 @@ pub async fn get_tx_field_value<P: JsonRpcClient>(
         }
         let contract_data_bytes =
             &contract_data[contract_data_idx * 32..(contract_data_idx + 1) * 32];
-        return Ok(H256::from_slice(contract_data_bytes));
+        Ok(H256::from_slice(contract_data_bytes))
     }
 }
 

@@ -1,100 +1,33 @@
-use anyhow::bail;
-use axiom_codec::constants::USER_MAX_OUTPUTS;
-use axiom_codec::types::native::{AxiomV2ComputeQuery, AxiomV2ComputeSnark};
-use axiom_eth::halo2_base::utils::ScalarField;
-use axiom_eth::halo2_proofs::plonk::VerifyingKey;
-use axiom_eth::halo2curves::bn256::G1Affine;
-use axiom_eth::halo2curves::ff::PrimeField;
-use axiom_eth::halo2curves::serde::SerdeObject;
-use axiom_eth::halo2curves::CurveAffine;
+use std::{env, fs::File, io::Write};
 
-use axiom_eth::snark_verifier::pcs::kzg::{KzgAccumulator, LimbsEncoding};
-use axiom_eth::snark_verifier::pcs::AccumulatorEncoding;
-use axiom_eth::snark_verifier::system::halo2::transcript_initial_state;
-use axiom_eth::snark_verifier::verifier::plonk::PlonkProtocol;
-use axiom_eth::snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
-use axiom_eth::snark_verifier_sdk::{CircuitExt, NativeLoader, Snark, BITS, LIMBS};
-use axiom_eth::utils::keccak::decorator::RlcKeccakCircuitParams;
-use axiom_eth::utils::snark_verifier::NUM_FE_ACCUMULATOR;
-use axiom_eth::Field;
-use axiom_query::utils::client_circuit::metadata::AxiomV2CircuitMetadata;
-use axiom_query::utils::client_circuit::vkey::OnchainVerifyingKey;
+use anyhow::bail;
+use axiom_codec::{
+    constants::USER_MAX_OUTPUTS,
+    types::native::{AxiomV2ComputeQuery, AxiomV2ComputeSnark},
+};
+use axiom_eth::{
+    halo2curves::bn256::G1Affine,
+    snark_verifier::{
+        pcs::{
+            kzg::{KzgAccumulator, LimbsEncoding},
+            AccumulatorEncoding,
+        },
+        verifier::plonk::PlonkProtocol,
+    },
+    snark_verifier_sdk::{
+        halo2::aggregation::AggregationCircuit, CircuitExt, NativeLoader, Snark, BITS, LIMBS,
+    },
+    utils::{keccak::decorator::RlcKeccakCircuitParams, snark_verifier::NUM_FE_ACCUMULATOR},
+};
+use axiom_query::{
+    utils::client_circuit::metadata::AxiomV2CircuitMetadata,
+    verify_compute::utils::{get_onchain_vk_from_protocol, write_onchain_vkey},
+};
 use dotenv::dotenv;
 use ethers::providers::{Http, Provider};
-use ethers::types::H256;
 use itertools::Itertools;
-use std::env;
-use std::fs::File;
-use std::io::{Result, Write};
 
-use crate::types::{AxiomV2DataAndResults, AxiomCircuitParams};
-
-fn write_field_le<F: Field>(writer: &mut impl Write, fe: F) -> Result<()> {
-    let repr = ScalarField::to_bytes_le(&fe);
-    writer.write_all(&repr)?;
-    Ok(())
-}
-
-fn write_curve_compressed<C: CurveAffine>(writer: &mut impl Write, point: C) -> Result<()> {
-    let compressed = point.to_bytes();
-    writer.write_all(compressed.as_ref())?;
-    Ok(())
-}
-
-pub fn write_onchain_vkey<C>(vkey: &OnchainVerifyingKey<C>) -> anyhow::Result<Vec<H256>>
-where
-    C: CurveAffine + SerdeObject,
-    C::Scalar: Field + SerdeObject,
-{
-    let _metadata = vkey.circuit_metadata.encode()?;
-
-    let tmp = C::Repr::default();
-    let compressed_curve_bytes = tmp.as_ref().len();
-    let tmp = <C::Scalar as PrimeField>::Repr::default();
-    let field_bytes = tmp.as_ref().len();
-    let mut writer =
-        Vec::with_capacity(field_bytes + vkey.preprocessed.len() * compressed_curve_bytes);
-
-    // writer.write_all(&metadata.to_fixed_bytes())?;
-    write_field_le(&mut writer, vkey.transcript_initial_state)?;
-    for &point in &vkey.preprocessed {
-        write_curve_compressed(&mut writer, point)?;
-    }
-    Ok(writer.chunks_exact(32).map(H256::from_slice).collect())
-}
-
-/// Requires additional context about the Axiom circuit, in the form of the `circuit_metadata`.
-pub fn get_onchain_vk_from_vk<C: CurveAffine>(
-    vk: &VerifyingKey<C>,
-    circuit_metadata: AxiomV2CircuitMetadata,
-) -> OnchainVerifyingKey<C> {
-    let preprocessed = vk
-        .fixed_commitments()
-        .iter()
-        .chain(vk.permutation().commitments().iter())
-        .cloned()
-        .map(Into::into)
-        .collect();
-    let transcript_initial_state = transcript_initial_state(vk);
-    OnchainVerifyingKey {
-        circuit_metadata,
-        preprocessed,
-        transcript_initial_state,
-    }
-}
-
-pub fn get_onchain_vk_from_protocol<C: CurveAffine>(
-    protocol: &PlonkProtocol<C>,
-    circuit_metadata: AxiomV2CircuitMetadata,
-) -> OnchainVerifyingKey<C> {
-    let preprocessed = protocol.preprocessed.clone();
-    let transcript_initial_state = protocol.transcript_initial_state.unwrap();
-    OnchainVerifyingKey {
-        circuit_metadata,
-        preprocessed,
-        transcript_initial_state,
-    }
-}
+use crate::types::{AxiomCircuitParams, AxiomV2DataAndResults};
 
 /// Need to provide AxiomCircuitParams for additional context, otherwise you have
 /// to parse the AxiomCircuitParams data from the custom gate information in `protocol`
@@ -161,7 +94,10 @@ pub fn get_metadata_from_protocol(
     }
     *last_challenge -= 1;
     let num_challenge: Vec<u8> = num_challenge_incl_system.iter().map(|x| *x as u8).collect();
-    if num_challenge != vec![0] && num_challenge != vec![1, 0] && rlc_keccak_params.keccak_rows_per_round == 0 {
+    if num_challenge != vec![0]
+        && num_challenge != vec![1, 0]
+        && rlc_keccak_params.keccak_rows_per_round == 0
+    {
         log::debug!("num_challenge: {:?}", num_challenge);
         bail!("Only phase0 BaseCircuitBuilder or phase0+1 RlcCircuitBuilder supported right now");
     }
@@ -182,12 +118,6 @@ pub fn get_metadata_from_protocol(
     };
 
     Ok(metadata)
-}
-
-pub fn get_provider() -> Provider<Http> {
-    dotenv().ok();
-
-    Provider::<Http>::try_from(env::var("PROVIDER_URI").expect("PROVIDER_URI not set")).unwrap()
 }
 
 pub fn build_axiom_v2_compute_query(
@@ -229,4 +159,9 @@ pub fn write_output(output: AxiomV2DataAndResults, path: &str) {
     let serialized = serde_json::to_string_pretty(&output).unwrap();
     let mut file = File::create(path).unwrap();
     file.write_all(serialized.as_bytes()).unwrap();
+}
+
+pub fn get_provider() -> Provider<Http> {
+    dotenv().ok();
+    Provider::<Http>::try_from(env::var("PROVIDER_URI").expect("PROVIDER_URI not set")).unwrap()
 }

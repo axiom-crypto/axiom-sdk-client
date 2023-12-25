@@ -1,3 +1,19 @@
+use std::{
+    marker::PhantomData,
+    str::FromStr,
+    sync::{Arc, Mutex},
+};
+
+use axiom_codec::{constants::MAX_SOLIDITY_MAPPING_KEYS, HiLo};
+use axiom_eth::{
+    halo2_base::{AssignedValue, Context},
+    halo2curves::bn256::Fr,
+    rlc::circuit::builder::RlcCircuitBuilder,
+    utils::encode_addr_to_field,
+    Field,
+};
+use ethers::{providers::JsonRpcClient, types::H160};
+
 use crate::{
     constant, ctx,
     scaffold::RawCircuitInput,
@@ -12,24 +28,6 @@ use crate::{
         },
     },
     witness,
-};
-use axiom_codec::{constants::MAX_SOLIDITY_MAPPING_KEYS, HiLo};
-use axiom_eth::{
-    halo2_base::{utils::biguint_to_fe, AssignedValue, Context},
-    halo2curves::bn256::Fr,
-    rlc::circuit::builder::RlcCircuitBuilder,
-    utils::encode_addr_to_field,
-    Field,
-};
-use ethers::{
-    providers::JsonRpcClient,
-    types::{H160, H256},
-};
-use num_bigint::BigUint;
-use std::{
-    marker::PhantomData,
-    str::FromStr,
-    sync::{Arc, Mutex},
 };
 
 #[derive(Debug, Clone, Default)]
@@ -177,12 +175,13 @@ pub fn all_subqueries_call<P: JsonRpcClient>(
     builder: &mut RlcCircuitBuilder<Fr>,
     subquery_caller: Arc<Mutex<SubqueryCaller<P, Fr>>>,
 ) -> Vec<HiLo<AssignedValue<Fr>>> {
-    let mut vals = Vec::new();
-    vals.push(account_call(builder, subquery_caller.clone()));
-    vals.push(header_call(builder, subquery_caller.clone()));
-    vals.push(mapping_call(builder, subquery_caller.clone()));
-    vals.push(receipt_call(builder, subquery_caller.clone()));
-    vals.push(storage_call(builder, subquery_caller.clone()));
-    vals.push(tx_call(builder, subquery_caller.clone()));
+    let vals = vec![
+        account_call(builder, subquery_caller.clone()),
+        header_call(builder, subquery_caller.clone()),
+        mapping_call(builder, subquery_caller.clone()),
+        receipt_call(builder, subquery_caller.clone()),
+        storage_call(builder, subquery_caller.clone()),
+        tx_call(builder, subquery_caller.clone()),
+    ];
     vals
 }

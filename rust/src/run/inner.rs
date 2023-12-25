@@ -4,12 +4,6 @@ use std::{
     path::Path,
 };
 
-use crate::{
-    scaffold::{AxiomCircuit, AxiomCircuitScaffold},
-    types::{AxiomCircuitParams, AxiomV2CircuitOutput},
-    utils::build_axiom_v2_compute_query,
-};
-
 use axiom_eth::{
     halo2_base::utils::fs::gen_srs,
     halo2_proofs::{
@@ -22,6 +16,12 @@ use axiom_eth::{
     utils::keccak::decorator::RlcKeccakCircuitParams,
 };
 use ethers::providers::{JsonRpcClient, Provider};
+
+use crate::{
+    scaffold::{AxiomCircuit, AxiomCircuitScaffold},
+    types::{AxiomCircuitParams, AxiomV2CircuitOutput},
+    utils::build_axiom_v2_compute_query,
+};
 
 pub fn mock<P: JsonRpcClient + Clone, S: AxiomCircuitScaffold<P, Fr>>(
     provider: Provider<P>,

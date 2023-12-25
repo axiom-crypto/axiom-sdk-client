@@ -1,6 +1,5 @@
 use std::collections::BTreeMap;
 
-use crate::subquery::{types::RawSubquery, utils::get_subquery_type_from_any_subquery};
 use anyhow::Result;
 use axiom_codec::{
     constants::MAX_SUBQUERY_INPUTS,
@@ -23,6 +22,7 @@ use super::{
     keccak::{KeccakSubquery, KeccakSubqueryTypes},
     types::Subquery,
 };
+use crate::subquery::{types::RawSubquery, utils::get_subquery_type_from_any_subquery};
 
 pub trait FetchSubquery<F: Field> {
     fn fetch<P: JsonRpcClient>(&self, p: &Provider<P>) -> Result<(H256, Vec<AssignedValue<F>>)>;

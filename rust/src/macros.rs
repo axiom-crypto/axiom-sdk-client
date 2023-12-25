@@ -1,20 +1,14 @@
 #[macro_export]
 macro_rules! witness {
     ($builder:expr, $witness_value:expr) => {
-        $builder
-            .base
-            .main(0)
-            .load_witness($witness_value)
+        $builder.base.main(0).load_witness($witness_value)
     };
 }
 
 #[macro_export]
 macro_rules! constant {
     ($builder:expr, $witness_value:expr) => {
-        $builder
-            .base
-            .main(0)
-            .load_constant($witness_value)
+        $builder.base.main(0).load_constant($witness_value)
     };
 }
 

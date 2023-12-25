@@ -3,16 +3,6 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use crate::{
-    constant, ctx,
-    run::aggregation::{agg_circuit_keygen, agg_circuit_run},
-    run::inner::{keygen, mock, prove, run},
-    scaffold::{AxiomCircuitScaffold, RawCircuitInput},
-    subquery::{caller::SubqueryCaller, header::HeaderField, types::AssignedHeaderSubquery},
-    types::AxiomCircuitParams,
-    utils::get_provider,
-    witness,
-};
 use axiom_codec::HiLo;
 use axiom_eth::{
     halo2_base::{
@@ -30,6 +20,19 @@ use axiom_eth::{
     Field,
 };
 use ethers::providers::JsonRpcClient;
+
+use crate::{
+    constant, ctx,
+    run::{
+        aggregation::{agg_circuit_keygen, agg_circuit_run},
+        inner::{keygen, mock, prove, run},
+    },
+    scaffold::{AxiomCircuitScaffold, RawCircuitInput},
+    subquery::{caller::SubqueryCaller, header::HeaderField, types::AssignedHeaderSubquery},
+    types::AxiomCircuitParams,
+    utils::get_provider,
+    witness,
+};
 
 #[derive(Debug, Clone, Default)]
 struct MyCircuitInput {
@@ -203,5 +206,11 @@ pub fn test_aggregation() {
         lookup_bits: 19,
     };
     let (_, agg_pk, break_points) = agg_circuit_keygen(agg_circuit_params, output.snark.clone());
-    agg_circuit_run(agg_circuit_params, output.snark, agg_pk, break_points, output.data);
+    agg_circuit_run(
+        agg_circuit_params,
+        output.snark,
+        agg_pk,
+        break_points,
+        output.data,
+    );
 }

@@ -1,25 +1,27 @@
-use crate::scaffold::AxiomCircuitScaffold;
-use crate::subquery::caller::SubqueryCaller;
-use crate::tests::shared_tests::{mock_test, single_instance_test};
-use crate::tests::utils::MyCircuitInput;
-use crate::tests::utils::MyCircuitVirtualInput;
-use crate::tests::utils::{account_call, header_call};
-use crate::types::AxiomCircuitParams;
+use std::sync::{Arc, Mutex};
+
 use axiom_codec::HiLo;
-use axiom_eth::rlc::circuit::RlcCircuitParams;
 use axiom_eth::{
     halo2_base::{
         gates::{circuit::BaseCircuitParams, RangeChip},
         AssignedValue,
     },
     halo2curves::bn256::Fr,
-    rlc::circuit::builder::RlcCircuitBuilder,
+    rlc::circuit::{builder::RlcCircuitBuilder, RlcCircuitParams},
 };
 use ethers::providers::{Http, JsonRpcClient};
-use std::sync::{Arc, Mutex};
 use test_case::test_case;
 
-use super::utils::{receipt_call, storage_call, mapping_call, tx_call, all_subqueries_call};
+use super::utils::{all_subqueries_call, mapping_call, receipt_call, storage_call, tx_call};
+use crate::{
+    scaffold::AxiomCircuitScaffold,
+    subquery::caller::SubqueryCaller,
+    tests::{
+        shared_tests::{mock_test, single_instance_test},
+        utils::{account_call, header_call, MyCircuitInput, MyCircuitVirtualInput},
+    },
+    types::AxiomCircuitParams,
+};
 
 macro_rules! rlc_test_struct {
     ($struct_name:ident, $subquery_call:ident) => {

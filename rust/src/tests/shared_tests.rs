@@ -1,12 +1,13 @@
+use axiom_codec::types::field_elements::{FieldSubqueryResult, SUBQUERY_RESULT_LEN};
+use axiom_eth::halo2curves::bn256::Fr;
+use ethers::providers::Http;
+
 use crate::{
     run::inner::mock,
     scaffold::{AxiomCircuit, AxiomCircuitScaffold},
     types::AxiomCircuitParams,
     utils::get_provider,
 };
-use axiom_codec::types::field_elements::{FieldSubqueryResult, SUBQUERY_RESULT_LEN};
-use axiom_eth::halo2curves::bn256::Fr;
-use ethers::providers::Http;
 
 pub fn mock_test<S: AxiomCircuitScaffold<Http, Fr>>(params: AxiomCircuitParams, _circuit: S) {
     let client = get_provider();

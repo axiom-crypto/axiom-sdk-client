@@ -7,7 +7,7 @@ use axiom_codec::{
             SolidityNestedMappingSubquery, StorageSubquery, TxSubquery,
         },
     },
-    utils::native::{decode_hilo_to_h256, decode_field_to_addr},
+    utils::native::{decode_field_to_addr, decode_hilo_to_h256},
     HiLo,
 };
 use axiom_eth::{halo2_base::AssignedValue, Field};

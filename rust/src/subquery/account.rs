@@ -1,6 +1,3 @@
-use crate::impl_fr_from;
-
-use super::{caller::FetchSubquery, types::AssignedAccountSubquery};
 use anyhow::Result;
 use axiom_codec::types::native::{AccountSubquery, AnySubquery};
 use axiom_eth::{halo2_base::AssignedValue, Field};
@@ -11,6 +8,9 @@ use ethers::{
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 use tokio::runtime::Runtime;
+
+use super::{caller::FetchSubquery, types::AssignedAccountSubquery};
+use crate::impl_fr_from;
 
 #[derive(FromPrimitive)]
 pub enum AccountField {

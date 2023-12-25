@@ -1,7 +1,3 @@
-use super::{
-    caller::FetchSubquery, storage::get_storage_field_value,
-    types::AssignedSolidityNestedMappingSubquery,
-};
 use anyhow::Result;
 use axiom_codec::types::native::{AnySubquery, SolidityNestedMappingSubquery, StorageSubquery};
 use axiom_eth::{halo2_base::AssignedValue, Field};
@@ -11,6 +7,11 @@ use ethers::{
     utils::keccak256,
 };
 use tokio::runtime::Runtime;
+
+use super::{
+    caller::FetchSubquery, storage::get_storage_field_value,
+    types::AssignedSolidityNestedMappingSubquery,
+};
 
 pub async fn get_solidity_nested_mapping_field_value<P: JsonRpcClient>(
     provider: &Provider<P>,

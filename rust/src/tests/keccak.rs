@@ -1,18 +1,6 @@
-use crate::run::aggregation::{agg_circuit_keygen, agg_circuit_mock, agg_circuit_run};
-use crate::run::inner::{keygen, prove, run};
-use crate::scaffold::AxiomCircuitScaffold;
-use crate::subquery::caller::SubqueryCaller;
-use crate::tests::utils::MyCircuitInput;
-use crate::tests::utils::MyCircuitVirtualInput;
-use crate::tests::utils::{account_call, header_call};
-use crate::types::AxiomCircuitParams;
-use crate::utils::get_provider;
-use crate::{ctx, witness};
+use std::sync::{Arc, Mutex};
+
 use axiom_codec::HiLo;
-use axiom_eth::keccak;
-use axiom_eth::rlc::circuit::RlcCircuitParams;
-use axiom_eth::snark_verifier_sdk::halo2::aggregation::AggregationConfigParams;
-use axiom_eth::utils::keccak::decorator::RlcKeccakCircuitParams;
 use axiom_eth::{
     halo2_base::{
         gates::{circuit::BaseCircuitParams, RangeChip},
@@ -21,13 +9,27 @@ use axiom_eth::{
     },
     halo2curves::bn256::Fr,
     keccak::promise::KeccakFixLenCall,
-    rlc::circuit::builder::RlcCircuitBuilder,
+    rlc::circuit::{builder::RlcCircuitBuilder, RlcCircuitParams},
+    snark_verifier_sdk::halo2::aggregation::AggregationConfigParams,
+    utils::keccak::decorator::RlcKeccakCircuitParams,
 };
 use ethers::providers::{Http, JsonRpcClient};
-use std::sync::{Arc, Mutex};
 use test_case::test_case;
 
-use super::utils::{receipt_call, storage_call, mapping_call, tx_call, all_subqueries_call};
+use super::utils::{all_subqueries_call, mapping_call, receipt_call, storage_call, tx_call};
+use crate::{
+    ctx,
+    run::{
+        aggregation::agg_circuit_mock,
+        inner::{keygen, prove},
+    },
+    scaffold::AxiomCircuitScaffold,
+    subquery::caller::SubqueryCaller,
+    tests::utils::{account_call, header_call, MyCircuitInput, MyCircuitVirtualInput},
+    types::AxiomCircuitParams,
+    utils::get_provider,
+    witness,
+};
 
 macro_rules! keccak_test_struct {
     ($struct_name:ident, $subquery_call:ident) => {

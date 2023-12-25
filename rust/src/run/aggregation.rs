@@ -5,25 +5,25 @@ use std::{
 };
 
 use axiom_eth::{
-    halo2_base::{gates::{circuit::CircuitBuilderStage, flex_gate::MultiPhaseThreadBreakPoints}, utils::fs::gen_srs},
+    halo2_base::{
+        gates::{circuit::CircuitBuilderStage, flex_gate::MultiPhaseThreadBreakPoints},
+        utils::fs::gen_srs,
+    },
     halo2_proofs::{
         dev::MockProver,
         plonk::{keygen_pk, keygen_vk, ProvingKey, VerifyingKey},
         SerdeFormat,
     },
     halo2curves::bn256::G1Affine,
-    snark_verifier_sdk::Snark,
+    rlc::circuit::RlcCircuitParams,
+    snark_verifier_sdk::{halo2::gen_snark_shplonk, CircuitExt, Snark},
     utils::snark_verifier::AggregationCircuitParams,
 };
-use axiom_eth::{
-    rlc::circuit::RlcCircuitParams,
-    snark_verifier_sdk::{halo2::gen_snark_shplonk, CircuitExt},
-};
-
 
 use crate::{
+    aggregation::create_aggregation_circuit,
     types::{AxiomCircuitParams, AxiomV2CircuitOutput, AxiomV2DataAndResults},
-    utils::build_axiom_v2_compute_query, aggregation::create_aggregation_circuit,
+    utils::build_axiom_v2_compute_query,
 };
 
 pub fn agg_circuit_mock(agg_circuit_params: AggregationCircuitParams, snark: Snark) {
@@ -37,9 +37,14 @@ pub fn agg_circuit_mock(agg_circuit_params: AggregationCircuitParams, snark: Sna
 pub fn agg_circuit_keygen(
     agg_circuit_params: AggregationCircuitParams,
     snark: Snark,
-) -> (VerifyingKey<G1Affine>, ProvingKey<G1Affine>, MultiPhaseThreadBreakPoints) {
+) -> (
+    VerifyingKey<G1Affine>,
+    ProvingKey<G1Affine>,
+    MultiPhaseThreadBreakPoints,
+) {
     let params = gen_srs(agg_circuit_params.degree);
-    let circuit = create_aggregation_circuit(agg_circuit_params, snark, CircuitBuilderStage::Keygen);
+    let circuit =
+        create_aggregation_circuit(agg_circuit_params, snark, CircuitBuilderStage::Keygen);
     let vk = keygen_vk(&params, &circuit).expect("Failed to generate vk");
     let path = Path::new("data/agg_vk.bin");
     if let Some(parent) = path.parent() {
@@ -64,7 +69,8 @@ pub fn agg_circuit_prove(
     break_points: MultiPhaseThreadBreakPoints,
 ) -> Snark {
     let params = gen_srs(agg_circuit_params.degree);
-    let circuit = create_aggregation_circuit(agg_circuit_params, snark, CircuitBuilderStage::Prover);
+    let circuit =
+        create_aggregation_circuit(agg_circuit_params, snark, CircuitBuilderStage::Prover);
     let circuit = circuit.use_break_points(break_points);
     gen_snark_shplonk(&params, &pk, circuit, None::<&str>)
 }
@@ -77,7 +83,8 @@ pub fn agg_circuit_run(
     inner_output: AxiomV2DataAndResults,
 ) -> AxiomV2CircuitOutput {
     let params = gen_srs(agg_circuit_params.degree);
-    let circuit = create_aggregation_circuit(agg_circuit_params, inner_snark, CircuitBuilderStage::Prover);
+    let circuit =
+        create_aggregation_circuit(agg_circuit_params, inner_snark, CircuitBuilderStage::Prover);
     let circuit = circuit.use_break_points(break_points);
     let agg_circuit_params = circuit.builder.config_params.clone();
     let agg_snark = gen_snark_shplonk(&params, &pk, circuit, None::<&str>);

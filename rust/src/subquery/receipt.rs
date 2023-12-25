@@ -15,9 +15,8 @@ use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 use tokio::runtime::Runtime;
 
-use crate::impl_fr_from;
-
 use super::{caller::FetchSubquery, types::AssignedReceiptSubquery, utils::pad_to_bytes32};
+use crate::impl_fr_from;
 
 #[derive(FromPrimitive)]
 pub enum ReceiptField {

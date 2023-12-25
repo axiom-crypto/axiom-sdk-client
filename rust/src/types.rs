@@ -1,7 +1,14 @@
 use axiom_codec::types::native::AxiomV2ComputeQuery;
-use axiom_eth::{Field, rlc::circuit::{RlcConfig, RlcCircuitParams}, halo2_base::gates::circuit::{BaseConfig, BaseCircuitParams}, utils::keccak::decorator::{RlcKeccakConfig, RlcKeccakCircuitParams}, snark_verifier_sdk::Snark};
+use axiom_eth::{
+    halo2_base::gates::circuit::{BaseCircuitParams, BaseConfig},
+    rlc::circuit::{RlcCircuitParams, RlcConfig},
+    snark_verifier_sdk::Snark,
+    utils::keccak::decorator::{RlcKeccakCircuitParams, RlcKeccakConfig},
+    Field,
+};
 use ethers::types::H256;
 use serde::Serialize;
+
 use crate::subquery::types::Subquery;
 
 #[derive(Clone, Debug)]
@@ -38,7 +45,7 @@ pub struct AxiomV2CircuitOutput {
     #[serde(flatten)]
     pub data: AxiomV2DataAndResults,
     #[serde(skip_serializing)]
-    pub snark: Snark
+    pub snark: Snark,
 }
 
 impl From<AxiomCircuitParams> for RlcKeccakCircuitParams {

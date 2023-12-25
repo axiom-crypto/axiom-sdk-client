@@ -1,41 +1,58 @@
+use std::{
+    borrow::BorrowMut,
+    cell::RefCell,
+    fmt::Debug,
+    mem,
+    ops::DerefMut,
+    sync::{Arc, Mutex},
+};
 
-use crate::subquery::caller::SubqueryCaller;
-use crate::types::{AxiomCircuitConfig, AxiomCircuitParams, AxiomV2DataAndResults};
-use axiom_codec::constants::{USER_MAX_OUTPUTS, USER_MAX_SUBQUERIES, USER_RESULT_FIELD_ELEMENTS};
-use axiom_codec::types::field_elements::SUBQUERY_RESULT_LEN;
-use axiom_codec::utils::native::decode_hilo_to_h256;
-use axiom_codec::HiLo;
-use axiom_eth::halo2_base::gates::circuit::{BaseConfig, CircuitBuilderStage};
-use axiom_eth::halo2_base::safe_types::SafeTypeChip;
-use axiom_eth::halo2_base::virtual_region::manager::VirtualRegionManager;
-use axiom_eth::halo2_base::{AssignedValue, Context};
-use axiom_eth::rlc::virtual_region::RlcThreadBreakPoints;
-use axiom_eth::snark_verifier_sdk::CircuitExt;
-use axiom_eth::utils::keccak::decorator::KeccakCallCollector;
-use axiom_eth::utils::keccak::decorator::{RlcKeccakCircuitParams, RlcKeccakConfig};
-use axiom_eth::utils::DEFAULT_RLC_CACHE_BITS;
-use axiom_eth::zkevm_hashes::keccak::component::circuit::shard::LoadedKeccakF;
-use axiom_eth::zkevm_hashes::keccak::vanilla::keccak_packed_multi::get_num_keccak_f;
-use axiom_eth::zkevm_hashes::keccak::vanilla::param::{NUM_ROUNDS, NUM_WORDS_TO_ABSORB};
-use axiom_eth::zkevm_hashes::keccak::vanilla::{KeccakCircuitConfig};
-use axiom_eth::Field;
+use axiom_codec::{
+    constants::{USER_MAX_OUTPUTS, USER_MAX_SUBQUERIES, USER_RESULT_FIELD_ELEMENTS},
+    types::field_elements::SUBQUERY_RESULT_LEN,
+    utils::native::decode_hilo_to_h256,
+    HiLo,
+};
 use axiom_eth::{
-    halo2_base::gates::RangeChip,
+    halo2_base::{
+        gates::{
+            circuit::{BaseConfig, CircuitBuilderStage},
+            RangeChip,
+        },
+        safe_types::SafeTypeChip,
+        virtual_region::manager::VirtualRegionManager,
+        AssignedValue, Context,
+    },
     halo2_proofs::{
         circuit::{Layouter, SimpleFloorPlanner},
-        plonk::Error,
-        plonk::{Circuit, ConstraintSystem},
+        plonk::{Circuit, ConstraintSystem, Error},
     },
-    rlc::circuit::{builder::RlcCircuitBuilder, RlcConfig},
+    rlc::{
+        circuit::{builder::RlcCircuitBuilder, RlcConfig},
+        virtual_region::RlcThreadBreakPoints,
+    },
+    snark_verifier_sdk::CircuitExt,
+    utils::{
+        keccak::decorator::{KeccakCallCollector, RlcKeccakCircuitParams, RlcKeccakConfig},
+        DEFAULT_RLC_CACHE_BITS,
+    },
+    zkevm_hashes::keccak::{
+        component::circuit::shard::LoadedKeccakF,
+        vanilla::{
+            keccak_packed_multi::get_num_keccak_f,
+            param::{NUM_ROUNDS, NUM_WORDS_TO_ABSORB},
+            KeccakCircuitConfig,
+        },
+    },
+    Field,
 };
 use ethers::providers::{JsonRpcClient, Provider};
 use itertools::Itertools;
-use std::borrow::BorrowMut;
-use std::cell::RefCell;
-use std::fmt::Debug;
-use std::mem;
-use std::ops::DerefMut;
-use std::sync::{Arc, Mutex};
+
+use crate::{
+    subquery::caller::SubqueryCaller,
+    types::{AxiomCircuitConfig, AxiomCircuitParams, AxiomV2DataAndResults},
+};
 
 pub trait RawCircuitInput<F: Field, O> {
     fn assign(&self, ctx: &mut Context<F>) -> O;

@@ -137,7 +137,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       this.provider,
     ).run(this.f, inputs, this.inputSchema, this.results);
     this.timeEnd("Witness generation");
-    this.resultLen = Number(numUserInstances / 2);
+    this.resultLen = Math.floor(numUserInstances / 2);
     this.dataQuery = dataQuery;
   }
 

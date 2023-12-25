@@ -1,6 +1,5 @@
 import { AxiomV2FieldConstant, DataSubqueryType, HeaderField, HeaderSubquery } from "@axiom-crypto/tools";
 import { CircuitValue, RawCircuitInput, CircuitValue256 } from "@axiom-crypto/halo2-lib-js";
-import { Halo2LibWasm } from "@axiom-crypto/halo2-lib-js/wasm/web";
 import { getCircuitValueConstant, getCircuitValueWithOffset, lowercase } from "../utils";
 import { prepData } from "./data";
 

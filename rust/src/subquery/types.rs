@@ -7,14 +7,12 @@ use axiom_codec::{
             SolidityNestedMappingSubquery, StorageSubquery, TxSubquery,
         },
     },
-    utils::native::decode_hilo_to_h256,
+    utils::native::{decode_hilo_to_h256, decode_field_to_addr},
     HiLo,
 };
 use axiom_eth::{halo2_base::AssignedValue, Field};
 use ethers::types::{BigEndianHash, H256};
 use serde::{Serialize, Serializer};
-
-use super::utils::fe_to_h160;
 
 #[derive(Clone, Copy)]
 pub struct AssignedHeaderSubquery<F: Field> {
@@ -43,7 +41,7 @@ impl<F: Field> From<AssignedAccountSubquery<F>> for AccountSubquery {
         Self {
             block_number: subquery.block_number.value().get_lower_32(),
             field_idx: subquery.field_idx.value().get_lower_32(),
-            addr: fe_to_h160(subquery.addr.value()),
+            addr: decode_field_to_addr(subquery.addr.value()),
         }
     }
 }
@@ -63,7 +61,7 @@ impl<F: Field> From<AssignedStorageSubquery<F>> for StorageSubquery {
         let slot = decode_hilo_to_h256(hilo);
         Self {
             block_number: subquery.block_number.value().get_lower_32(),
-            addr: fe_to_h160(subquery.addr.value()),
+            addr: decode_field_to_addr(subquery.addr.value()),
             slot: slot.into_uint(),
         }
     }
@@ -139,7 +137,7 @@ impl<F: Field> From<AssignedSolidityNestedMappingSubquery<F>> for SolidityNested
             .collect();
         Self {
             block_number: subquery.block_number.value().get_lower_32(),
-            addr: fe_to_h160(subquery.addr.value()),
+            addr: decode_field_to_addr(subquery.addr.value()),
             mapping_slot: mapping_slot.into_uint(),
             mapping_depth: subquery.mapping_depth.value().get_lower_32() as u8,
             keys,

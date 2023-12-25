@@ -46,6 +46,7 @@ impl<F: Field> FetchSubquery<F> for AssignedSolidityNestedMappingSubquery<F> {
             self.addr,
             self.mapping_slot.hi(),
             self.mapping_slot.lo(),
+            self.mapping_depth,
         ];
         let hi_lo_keys = self
             .keys

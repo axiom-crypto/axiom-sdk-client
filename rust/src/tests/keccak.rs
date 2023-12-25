@@ -9,6 +9,7 @@ use crate::types::AxiomCircuitParams;
 use crate::utils::get_provider;
 use crate::{ctx, witness};
 use axiom_codec::HiLo;
+use axiom_eth::keccak;
 use axiom_eth::rlc::circuit::RlcCircuitParams;
 use axiom_eth::snark_verifier_sdk::halo2::aggregation::AggregationConfigParams;
 use axiom_eth::utils::keccak::decorator::RlcKeccakCircuitParams;
@@ -25,6 +26,8 @@ use axiom_eth::{
 use ethers::providers::{Http, JsonRpcClient};
 use std::sync::{Arc, Mutex};
 use test_case::test_case;
+
+use super::utils::{receipt_call, storage_call, mapping_call, tx_call, all_subqueries_call};
 
 macro_rules! keccak_test_struct {
     ($struct_name:ident, $subquery_call:ident) => {
@@ -77,9 +80,19 @@ fn get_keccak_test_params() -> AxiomCircuitParams {
 
 keccak_test_struct!(AccountTest, account_call);
 keccak_test_struct!(HeaderTest, header_call);
+keccak_test_struct!(ReceiptTest, receipt_call);
+keccak_test_struct!(StorageTest, storage_call);
+keccak_test_struct!(MappingTest, mapping_call);
+keccak_test_struct!(TxTest, tx_call);
+keccak_test_struct!(AllSubqueryTest, all_subqueries_call);
 
 #[test_case(AccountTest)]
 #[test_case(HeaderTest)]
+#[test_case(ReceiptTest)]
+#[test_case(StorageTest)]
+#[test_case(MappingTest)]
+#[test_case(TxTest)]
+#[test_case(AllSubqueryTest)]
 pub fn mock<S: AxiomCircuitScaffold<Http, Fr>>(_circuit: S) {
     let params = get_keccak_test_params();
     let agg_circuit_params = AggregationConfigParams {

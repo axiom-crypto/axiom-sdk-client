@@ -7,7 +7,12 @@ use crate::types::AxiomCircuitParams;
 
 use axiom_codec::HiLo;
 
+use super::utils::all_subqueries_call;
 use super::utils::header_call;
+use super::utils::mapping_call;
+use super::utils::receipt_call;
+use super::utils::storage_call;
+use super::utils::tx_call;
 use crate::tests::shared_tests::{mock_test, single_instance_test};
 use axiom_eth::{
     halo2_base::{
@@ -57,9 +62,19 @@ fn get_base_test_params() -> AxiomCircuitParams {
 
 base_test_struct!(AccountTest, account_call);
 base_test_struct!(HeaderTest, header_call);
+base_test_struct!(ReceiptTest, receipt_call);
+base_test_struct!(StorageTest, storage_call);
+base_test_struct!(MappingTest, mapping_call);
+base_test_struct!(TxTest, tx_call);
+base_test_struct!(AllSubqueryTest, all_subqueries_call);
 
 #[test_case(AccountTest)]
 #[test_case(HeaderTest)]
+#[test_case(ReceiptTest)]
+#[test_case(StorageTest)]
+#[test_case(MappingTest)]
+#[test_case(TxTest)]
+#[test_case(AllSubqueryTest)]
 pub fn mock<S: AxiomCircuitScaffold<Http, Fr>>(circuit: S) {
     let params = get_base_test_params();
     mock_test(params, circuit);
@@ -67,6 +82,10 @@ pub fn mock<S: AxiomCircuitScaffold<Http, Fr>>(circuit: S) {
 
 #[test_case(AccountTest)]
 #[test_case(HeaderTest)]
+#[test_case(ReceiptTest)]
+#[test_case(StorageTest)]
+#[test_case(MappingTest)]
+#[test_case(TxTest)]
 pub fn single_instance<S: AxiomCircuitScaffold<Http, Fr>>(circuit: S) {
     let params = get_base_test_params();
     single_instance_test(params, circuit);

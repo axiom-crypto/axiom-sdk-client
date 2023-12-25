@@ -19,6 +19,8 @@ use ethers::providers::{Http, JsonRpcClient};
 use std::sync::{Arc, Mutex};
 use test_case::test_case;
 
+use super::utils::{receipt_call, storage_call, mapping_call, tx_call, all_subqueries_call};
+
 macro_rules! rlc_test_struct {
     ($struct_name:ident, $subquery_call:ident) => {
         #[derive(Debug, Clone, Default)]
@@ -59,9 +61,19 @@ fn get_rlc_test_params() -> AxiomCircuitParams {
 
 rlc_test_struct!(AccountTest, account_call);
 rlc_test_struct!(HeaderTest, header_call);
+rlc_test_struct!(ReceiptTest, receipt_call);
+rlc_test_struct!(StorageTest, storage_call);
+rlc_test_struct!(MappingTest, mapping_call);
+rlc_test_struct!(TxTest, tx_call);
+rlc_test_struct!(AllSubqueryTest, all_subqueries_call);
 
 #[test_case(AccountTest)]
 #[test_case(HeaderTest)]
+#[test_case(ReceiptTest)]
+#[test_case(StorageTest)]
+#[test_case(MappingTest)]
+#[test_case(TxTest)]
+#[test_case(AllSubqueryTest)]
 pub fn mock<S: AxiomCircuitScaffold<Http, Fr>>(circuit: S) {
     let params = get_rlc_test_params();
     mock_test(params, circuit);
@@ -69,6 +81,10 @@ pub fn mock<S: AxiomCircuitScaffold<Http, Fr>>(circuit: S) {
 
 #[test_case(AccountTest)]
 #[test_case(HeaderTest)]
+#[test_case(ReceiptTest)]
+#[test_case(StorageTest)]
+#[test_case(MappingTest)]
+#[test_case(TxTest)]
 pub fn single_instance<S: AxiomCircuitScaffold<Http, Fr>>(circuit: S) {
     let params = get_rlc_test_params();
     single_instance_test(params, circuit);

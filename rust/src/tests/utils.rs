@@ -8,7 +8,7 @@ use crate::{
         receipt::ReceiptField,
         types::{
             AssignedAccountSubquery, AssignedHeaderSubquery, AssignedReceiptSubquery,
-            AssignedSolidityNestedMappingSubquery, AssignedStorageSubquery,
+            AssignedSolidityNestedMappingSubquery, AssignedStorageSubquery, AssignedTxSubquery,
         },
     },
     witness,
@@ -18,6 +18,7 @@ use axiom_eth::{
     halo2_base::{utils::biguint_to_fe, AssignedValue, Context},
     halo2curves::bn256::Fr,
     rlc::circuit::builder::RlcCircuitBuilder,
+    utils::encode_addr_to_field,
     Field,
 };
 use ethers::{
@@ -97,11 +98,9 @@ pub fn mapping_call<P: JsonRpcClient>(
         block_number: witness!(builder, Fr::from(9730000)),
         addr: witness!(
             builder,
-            Fr::from_bytes(
-                H256::from(H160::from_str("0x8dde5d4a8384f403f888e1419672d94c570440c9").unwrap())
-                    .as_fixed_bytes()
+            encode_addr_to_field(
+                &H160::from_str("0x8dde5d4a8384f403f888e1419672d94c570440c9").unwrap()
             )
-            .unwrap()
         ),
         mapping_depth: constant!(builder, Fr::from(1)),
         mapping_slot: HiLo::from_hi_lo([mapping_slot_hi, mapping_slot_lo]),
@@ -111,6 +110,7 @@ pub fn mapping_call<P: JsonRpcClient>(
         .lock()
         .unwrap()
         .call(ctx!(builder, 0), subquery);
+
     val
 }
 
@@ -139,8 +139,8 @@ pub fn storage_call<P: JsonRpcClient>(
     builder: &mut RlcCircuitBuilder<Fr>,
     subquery_caller: Arc<Mutex<SubqueryCaller<P, Fr>>>,
 ) -> HiLo<AssignedValue<Fr>> {
-    let address = biguint_to_fe::<Fr>(
-        &BigUint::parse_bytes(b"8dde5d4a8384f403f888e1419672d94c570440c9", 16).unwrap(),
+    let address = encode_addr_to_field(
+        &H160::from_str("0x8dde5d4a8384f403f888e1419672d94c570440c9").unwrap(),
     );
     let subquery = AssignedStorageSubquery {
         block_number: witness!(builder, Fr::from(9730000)),
@@ -155,4 +155,34 @@ pub fn storage_call<P: JsonRpcClient>(
         .unwrap()
         .call(ctx!(builder, 0), subquery);
     val
+}
+
+pub fn tx_call<P: JsonRpcClient>(
+    builder: &mut RlcCircuitBuilder<Fr>,
+    subquery_caller: Arc<Mutex<SubqueryCaller<P, Fr>>>,
+) -> HiLo<AssignedValue<Fr>> {
+    let subquery = AssignedTxSubquery {
+        block_number: witness!(builder, Fr::from(9730000)),
+        tx_idx: witness!(builder, Fr::from(10)),
+        field_or_calldata_idx: constant!(builder, Fr::from(0)),
+    };
+    let val = subquery_caller
+        .lock()
+        .unwrap()
+        .call(ctx!(builder, 0), subquery);
+    val
+}
+
+pub fn all_subqueries_call<P: JsonRpcClient>(
+    builder: &mut RlcCircuitBuilder<Fr>,
+    subquery_caller: Arc<Mutex<SubqueryCaller<P, Fr>>>,
+) -> Vec<HiLo<AssignedValue<Fr>>> {
+    let mut vals = Vec::new();
+    vals.push(account_call(builder, subquery_caller.clone()));
+    vals.push(header_call(builder, subquery_caller.clone()));
+    vals.push(mapping_call(builder, subquery_caller.clone()));
+    vals.push(receipt_call(builder, subquery_caller.clone()));
+    vals.push(storage_call(builder, subquery_caller.clone()));
+    vals.push(tx_call(builder, subquery_caller.clone()));
+    vals
 }

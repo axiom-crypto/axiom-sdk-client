@@ -18,7 +18,7 @@ use crate::impl_fr_from;
 use super::{
     caller::FetchSubquery,
     types::AssignedHeaderSubquery,
-    utils::{pad_to_bytes32, usize_to_u8_array},
+    utils::pad_to_bytes32,
 };
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
@@ -82,7 +82,7 @@ pub async fn get_header_field_value<P: JsonRpcClient>(
             H256::from(pad_to_bytes32(logs_bloom.as_fixed_bytes()))
         }
         HeaderField::Difficulty => H256::from_uint(&block.difficulty),
-        HeaderField::Number => H256::from(usize_to_u8_array(block.number.unwrap().as_usize())),
+        HeaderField::Number => H256::from_low_u64_be(block.number.unwrap().as_u64()),
         HeaderField::GasLimit => H256::from_uint(&block.gas_limit),
         HeaderField::GasUsed => H256::from_uint(&block.gas_used),
         HeaderField::Timestamp => H256::from_uint(&block.timestamp),
@@ -96,7 +96,7 @@ pub async fn get_header_field_value<P: JsonRpcClient>(
         HeaderField::WithdrawalsRoot => block.withdrawals_root.unwrap(),
         HeaderField::Hash => block.hash.unwrap(),
         HeaderField::Size => H256::from_uint(&block.size.unwrap()),
-        HeaderField::ExtraDataLen => H256::from(usize_to_u8_array(block.extra_data.len())),
+        HeaderField::ExtraDataLen => H256::from_low_u64_be(block.extra_data.len() as u64),
     };
 
     Ok(val)

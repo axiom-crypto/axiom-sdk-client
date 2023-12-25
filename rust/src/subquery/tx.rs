@@ -20,11 +20,7 @@ use tokio::runtime::Runtime;
 
 use crate::impl_fr_from;
 
-use super::{
-    caller::FetchSubquery,
-    types::AssignedTxSubquery,
-    utils::{h256_from_usize, pad_to_bytes32},
-};
+use super::{caller::FetchSubquery, types::AssignedTxSubquery, utils::pad_to_bytes32};
 
 #[derive(FromPrimitive)]
 pub enum TxField {
@@ -67,6 +63,60 @@ pub async fn get_tx_field_value<P: JsonRpcClient>(
     let tx = tx.unwrap();
     //todo: validate tx size
 
+    if query.field_or_calldata_idx < TX_CALLDATA_IDX_OFFSET.try_into().unwrap() {
+        let tx_field_idx = TxField::from_u32(query.field_or_calldata_idx).expect("Invalid field index");
+
+        let val = match tx_field_idx {
+            TxField::ChainId => H256::from_uint(&tx.chain_id.unwrap()),
+            TxField::Nonce => H256::from_uint(&tx.nonce),
+            TxField::MaxPriorityFeePerGas => H256::from_uint(&tx.max_priority_fee_per_gas.unwrap()),
+            TxField::MaxFeePerGas => H256::from_uint(&tx.max_fee_per_gas.unwrap()),
+            TxField::GasLimit => H256::from_uint(&tx.gas),
+            TxField::To => H256::from(tx.to.unwrap()),
+            TxField::Value => H256::from_uint(&tx.value),
+            TxField::Data => {
+                let padded = pad_to_bytes32(&tx.input);
+                H256::from(padded)
+            }
+            TxField::GasPrice => {
+                if tx.transaction_type.unwrap() == 2.into() {
+                    bail!("Gas Price not available for EIP-1559 transactions")
+                }
+                let gas_price = tx.gas_price.unwrap();
+                H256::from_uint(&gas_price)
+            }
+            TxField::V => H256::from_low_u64_be(tx.v.as_u64()),
+            TxField::R => H256::from_uint(&tx.r),
+            TxField::S => H256::from_uint(&tx.s),
+            TxField::TxType => H256::from_low_u64_be(tx.transaction_type.unwrap().as_u64()),
+            TxField::BlockNumber => H256::from_low_u64_be(tx.block_number.unwrap().as_u64()),
+            TxField::TxIndex => H256::from_low_u64_be(tx.transaction_index.unwrap().as_u64()),
+            TxField::FunctionSelector => {
+                let calldata = tx.input;
+                let to = tx.to;
+    
+                if calldata.len() == 0 {
+                    H256::from_low_u64_be(TX_NO_CALLDATA_SELECTOR_VALUE as u64)
+                } else if calldata.len() > 0 && to.is_none() {
+                    H256::from_low_u64_be(TX_CONTRACT_DEPLOY_SELECTOR_VALUE as u64)
+                } else {
+                    if calldata.len() < 4 {
+                        bail!("Invalid calldata")
+                    }
+                    let selector = &calldata[0..4];
+                    H256::from(pad_to_bytes32(selector))
+                }
+            }
+            TxField::CalldataHash => {
+                let calldata = tx.input;
+                let hash = keccak256(&calldata);
+                H256::from(hash)
+            }
+            TxField::DataLength => H256::from_low_u64_be(tx.input.len() as u64),
+        };
+        return Ok(val)
+    }
+
     if query.field_or_calldata_idx < TX_CONTRACT_DATA_IDX_OFFSET.try_into().unwrap() {
         let calldata = tx.input;
 
@@ -77,8 +127,7 @@ pub async fn get_tx_field_value<P: JsonRpcClient>(
         let calldata_bytes = &calldata[4 + calldata_idx * 32..4 + (calldata_idx + 1) * 32];
         return Ok(H256::from_slice(calldata_bytes));
     }
-
-    if query.field_or_calldata_idx >= TX_CONTRACT_DATA_IDX_OFFSET.try_into().unwrap() {
+    else {
         let contract_data = tx.input;
         let contract_data_idx =
             (query.field_or_calldata_idx as usize) - TX_CONTRACT_DATA_IDX_OFFSET;
@@ -92,58 +141,6 @@ pub async fn get_tx_field_value<P: JsonRpcClient>(
             &contract_data[contract_data_idx * 32..(contract_data_idx + 1) * 32];
         return Ok(H256::from_slice(contract_data_bytes));
     }
-
-    let tx_field_idx = TxField::from_u32(query.field_or_calldata_idx).expect("Invalid field index");
-
-    let val = match tx_field_idx {
-        TxField::ChainId => H256::from_uint(&tx.chain_id.unwrap()),
-        TxField::Nonce => H256::from_uint(&tx.nonce),
-        TxField::MaxPriorityFeePerGas => H256::from_uint(&tx.max_priority_fee_per_gas.unwrap()),
-        TxField::MaxFeePerGas => H256::from_uint(&tx.max_fee_per_gas.unwrap()),
-        TxField::GasLimit => H256::from_uint(&tx.gas),
-        TxField::To => H256::from(tx.to.unwrap()),
-        TxField::Value => H256::from_uint(&tx.value),
-        TxField::Data => {
-            let padded = pad_to_bytes32(&tx.input);
-            H256::from(padded)
-        }
-        TxField::GasPrice => {
-            if tx.transaction_type.unwrap() == 2.into() {
-                bail!("Gas Price not available for EIP-1559 transactions")
-            }
-            let gas_price = tx.gas_price.unwrap();
-            H256::from_uint(&gas_price)
-        }
-        TxField::V => h256_from_usize(tx.v.as_usize()),
-        TxField::R => H256::from_uint(&tx.r),
-        TxField::S => H256::from_uint(&tx.s),
-        TxField::TxType => h256_from_usize(tx.transaction_type.unwrap().as_usize()),
-        TxField::BlockNumber => h256_from_usize(tx.block_number.unwrap().as_usize()),
-        TxField::TxIndex => h256_from_usize(tx.transaction_index.unwrap().as_usize()),
-        TxField::FunctionSelector => {
-            let calldata = tx.input;
-            let to = tx.to;
-
-            if calldata.len() == 0 {
-                h256_from_usize(TX_NO_CALLDATA_SELECTOR_VALUE)
-            } else if calldata.len() > 0 && to.is_none() {
-                h256_from_usize(TX_CONTRACT_DEPLOY_SELECTOR_VALUE)
-            } else {
-                if calldata.len() < 4 {
-                    bail!("Invalid calldata")
-                }
-                let selector = &calldata[0..4];
-                H256::from(pad_to_bytes32(selector))
-            }
-        }
-        TxField::CalldataHash => {
-            let calldata = tx.input;
-            let hash = keccak256(&calldata);
-            H256::from(hash)
-        }
-        TxField::DataLength => h256_from_usize(tx.input.len()),
-    };
-    Ok(val)
 }
 
 impl<F: Field> FetchSubquery<F> for AssignedTxSubquery<F> {

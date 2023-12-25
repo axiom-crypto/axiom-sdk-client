@@ -17,11 +17,7 @@ use tokio::runtime::Runtime;
 
 use crate::impl_fr_from;
 
-use super::{
-    caller::FetchSubquery,
-    types::AssignedReceiptSubquery,
-    utils::{h256_from_usize, pad_to_bytes32},
-};
+use super::{caller::FetchSubquery, types::AssignedReceiptSubquery, utils::pad_to_bytes32};
 
 #[derive(FromPrimitive)]
 pub enum ReceiptField {
@@ -93,7 +89,7 @@ pub async fn get_receipt_field_value<P: JsonRpcClient>(
     let receipt_field_idx =
         ReceiptField::from_usize(field_or_log_idx).expect("Invalid field index");
     let val = match receipt_field_idx {
-        ReceiptField::Status => h256_from_usize(receipt.status.unwrap().as_usize()),
+        ReceiptField::Status => H256::from_low_u64_be(receipt.status.unwrap().as_u64()),
         ReceiptField::PostState => receipt.root.unwrap(),
         ReceiptField::CumulativeGas => H256::from_uint(&receipt.cumulative_gas_used),
         ReceiptField::LogsBloom => {
@@ -103,9 +99,9 @@ pub async fn get_receipt_field_value<P: JsonRpcClient>(
         ReceiptField::Logs => {
             bail!("Use log idx instead of logs field")
         }
-        ReceiptField::TxType => h256_from_usize(receipt.transaction_type.unwrap().as_usize()),
-        ReceiptField::BlockNumber => h256_from_usize(receipt.block_number.unwrap().as_usize()),
-        ReceiptField::TxIndex => h256_from_usize(receipt.transaction_index.as_usize()),
+        ReceiptField::TxType => H256::from_low_u64_be(receipt.transaction_type.unwrap().as_u64()),
+        ReceiptField::BlockNumber => H256::from_low_u64_be(receipt.block_number.unwrap().as_u64()),
+        ReceiptField::TxIndex => H256::from_low_u64_be(receipt.transaction_index.as_u64()),
     };
 
     Ok(val)

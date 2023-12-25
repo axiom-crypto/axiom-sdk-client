@@ -15,7 +15,6 @@ use axiom_eth::{
         SerdeFormat,
     },
     halo2curves::bn256::G1Affine,
-    rlc::circuit::RlcCircuitParams,
     snark_verifier_sdk::{halo2::gen_snark_shplonk, CircuitExt, Snark},
     utils::snark_verifier::AggregationCircuitParams,
 };
@@ -88,13 +87,9 @@ pub fn agg_circuit_run(
     let circuit = circuit.use_break_points(break_points);
     let agg_circuit_params = circuit.builder.config_params.clone();
     let agg_snark = gen_snark_shplonk(&params, &pk, circuit, None::<&str>);
-    let rlc_agg_circuit_params = RlcCircuitParams {
-        base: agg_circuit_params,
-        num_rlc_columns: 0,
-    };
     let compute_query = build_axiom_v2_compute_query(
         agg_snark.clone(),
-        AxiomCircuitParams::Rlc(rlc_agg_circuit_params),
+        AxiomCircuitParams::Base(agg_circuit_params),
         inner_output.clone(),
     );
     let output = AxiomV2CircuitOutput {

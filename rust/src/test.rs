@@ -182,8 +182,8 @@ pub fn test_run() {
 pub fn test_aggregation() {
     let base_params = BaseCircuitParams {
         k: 13,
-        num_advice_per_phase: vec![4],
-        num_lookup_advice_per_phase: vec![1],
+        num_advice_per_phase: vec![4, 1],
+        num_lookup_advice_per_phase: vec![1, 1],
         num_fixed: 1,
         num_instance_columns: 1,
         lookup_bits: Some(12),
@@ -192,7 +192,7 @@ pub fn test_aggregation() {
         keccak_rows_per_round: 20,
         rlc: RlcCircuitParams {
             base: base_params.clone(),
-            num_rlc_columns: 0,
+            num_rlc_columns: 1,
         },
     });
     let client = get_provider();

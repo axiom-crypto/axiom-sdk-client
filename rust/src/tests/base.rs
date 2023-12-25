@@ -12,17 +12,19 @@ use axiom_eth::{
 use ethers::providers::{Http, JsonRpcClient};
 use test_case::test_case;
 
-use super::utils::{
-    all_subqueries_call, header_call, mapping_call, receipt_call, storage_call, tx_call,
+use super::{
+    shared_tests::check_compute_proof_and_query_format,
+    utils::{all_subqueries_call, header_call, mapping_call, receipt_call, storage_call, tx_call},
 };
 use crate::{
-    scaffold::AxiomCircuitScaffold,
+    scaffold::{AxiomCircuit, AxiomCircuitScaffold},
     subquery::caller::SubqueryCaller,
     tests::{
         shared_tests::{mock_test, single_instance_test},
         utils::{account_call, MyCircuitInput, MyCircuitVirtualInput},
     },
     types::AxiomCircuitParams,
+    utils::get_provider,
 };
 
 macro_rules! base_test_struct {
@@ -67,16 +69,16 @@ base_test_struct!(MappingTest, mapping_call);
 base_test_struct!(TxTest, tx_call);
 base_test_struct!(AllSubqueryTest, all_subqueries_call);
 
-#[test_case(AccountTest)]
-#[test_case(HeaderTest)]
-#[test_case(ReceiptTest)]
-#[test_case(StorageTest)]
-#[test_case(MappingTest)]
-#[test_case(TxTest)]
+// #[test_case(AccountTest)]
+// #[test_case(HeaderTest)]
+// #[test_case(ReceiptTest)]
+// #[test_case(StorageTest)]
+// #[test_case(MappingTest)]
+// #[test_case(TxTest)]
 #[test_case(AllSubqueryTest)]
-pub fn mock<S: AxiomCircuitScaffold<Http, Fr>>(circuit: S) {
+pub fn mock<S: AxiomCircuitScaffold<Http, Fr>>(_circuit: S) {
     let params = get_base_test_params();
-    mock_test(params, circuit);
+    mock_test::<S>(params);
 }
 
 #[test_case(AccountTest)]
@@ -85,7 +87,25 @@ pub fn mock<S: AxiomCircuitScaffold<Http, Fr>>(circuit: S) {
 #[test_case(StorageTest)]
 #[test_case(MappingTest)]
 #[test_case(TxTest)]
-pub fn single_instance<S: AxiomCircuitScaffold<Http, Fr>>(circuit: S) {
+pub fn test_single_subquery_instances<S: AxiomCircuitScaffold<Http, Fr>>(_circuit: S) {
     let params = get_base_test_params();
-    single_instance_test(params, circuit);
+    let client = get_provider();
+    let runner = AxiomCircuit::<_, _, S>::new(client, params);
+    let instances = runner.instances();
+    let num_user_output_fe = runner.output_num_instances();
+    let subquery_fe = runner.subquery_num_instances();
+    let results = runner.scaffold_output();
+    single_instance_test(instances, num_user_output_fe, subquery_fe, results, None);
+}
+
+// #[test_case(AccountTest)]
+// #[test_case(HeaderTest)]
+// #[test_case(ReceiptTest)]
+// #[test_case(StorageTest)]
+// #[test_case(MappingTest)]
+// #[test_case(TxTest)]
+#[test_case(AllSubqueryTest)]
+pub fn test_compute_query<S: AxiomCircuitScaffold<Http, Fr>>(_circuit: S) {
+    let params = get_base_test_params();
+    check_compute_proof_and_query_format::<S>(params, false);
 }

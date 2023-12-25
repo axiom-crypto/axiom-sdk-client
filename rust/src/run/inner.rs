@@ -4,6 +4,7 @@ use std::{
     path::Path,
 };
 
+use axiom_codec::types::native::AxiomV2ComputeQuery;
 use axiom_eth::{
     halo2_base::utils::fs::gen_srs,
     halo2_proofs::{
@@ -15,7 +16,10 @@ use axiom_eth::{
     snark_verifier_sdk::{halo2::gen_snark_shplonk, Snark},
     utils::keccak::decorator::RlcKeccakCircuitParams,
 };
-use ethers::providers::{JsonRpcClient, Provider};
+use ethers::{
+    providers::{JsonRpcClient, Provider},
+    types::Bytes,
+};
 
 use crate::{
     scaffold::{AxiomCircuit, AxiomCircuitScaffold},
@@ -101,8 +105,23 @@ pub fn run<P: JsonRpcClient + Clone, S: AxiomCircuitScaffold<P, Fr>>(
         runner.calculate_params();
     }
     let snark = gen_snark_shplonk(&params, &pk, runner, None::<&str>);
-    let compute_query =
-        build_axiom_v2_compute_query(snark.clone(), raw_circuit_params, output.clone());
+    let compute_query = match raw_circuit_params {
+        AxiomCircuitParams::Base(_) => {
+            build_axiom_v2_compute_query(snark.clone(), raw_circuit_params, output.clone())
+        }
+        AxiomCircuitParams::Keccak(_) => {
+            log::warn!("Circuit with keccak must be aggregated before submitting on chain");
+            AxiomV2ComputeQuery {
+                k: k as u8,
+                result_len: output.compute_results.len() as u16,
+                vkey: vec![],
+                compute_proof: Bytes::default(),
+            }
+        }
+        AxiomCircuitParams::Rlc(_) => {
+            build_axiom_v2_compute_query(snark.clone(), raw_circuit_params, output.clone())
+        }
+    };
     let output = AxiomV2CircuitOutput {
         compute_query,
         data: output,

@@ -19,7 +19,7 @@ import { RawInput } from "./types";
 import { encodeAxiomV2CircuitMetadata } from "./js";
 
 export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
-  protected numInstances: number;
+  protected resultLen: number;
   protected halo2Lib!: Halo2LibWasm;
   protected provider: string;
   protected dataQuery: DataSubquery[];
@@ -40,7 +40,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     shouldTime?: boolean;
   }) {
     super();
-    this.numInstances = 0;
+    this.resultLen = 0;
     this.provider = inputs.provider;
     this.config = inputs.config ?? DEFAULT_CIRCUIT_CONFIG;
     this.dataQuery = [];
@@ -81,19 +81,16 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     const vk = convertToBytes32(partialVk);
     const packed = encodePacked(
       ["uint8", "uint16", "uint8", "bytes32[]"],
-      [this.config.k, this.numInstances / 2, vk.length, vk as `0x${string}`[]],
+      [this.config.k, this.resultLen, vk.length, vk as `0x${string}`[]],
     );
     const schema = keccak256(packed);
     return schema as string;
   }
 
   prependCircuitMetadata(config: CircuitConfig, partialVk: string[]): string[] {
-    if (config.numInstance !== 1) {
-      throw new Error("`numInstance` only supported value is 1");
-    }
     const encodedCircuitMetadata = encodeAxiomV2CircuitMetadata({
       version: 0,
-      numInstance: [config.numInstance],
+      numValuesPerInstanceColumn: [2 * this.resultLen + 16 * AxiomV2CircuitConstant.UserMaxSubqueries],
       numChallenge: [0],
       isAggregation: false,
       numAdvicePerPhase: [config.numAdvice],
@@ -140,7 +137,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       this.provider,
     ).run(this.f, inputs, this.inputSchema, this.results);
     this.timeEnd("Witness generation");
-    this.numInstances = numUserInstances;
+    this.resultLen = Number(numUserInstances / 2);
     this.dataQuery = dataQuery;
   }
 
@@ -163,7 +160,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       k: this.config.k,
       vkey: onchainVkey,
       computeProof,
-      resultLen: this.numInstances / 2,
+      resultLen: this.resultLen,
     };
     this.computeQuery = computeQuery;
     return computeQuery;
@@ -181,7 +178,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   getComputeResults() {
     const computeResults: string[] = [];
     const instances = this.getInstances();
-    for (let i = 0; i < this.numInstances / 2; i++) {
+    for (let i = 0; i < this.resultLen; i++) {
       const instanceHi = BigInt(instances[2 * i]);
       const instanceLo = BigInt(instances[2 * i + 1]);
       const instance = instanceHi * BigInt(2 ** 128) + instanceLo;

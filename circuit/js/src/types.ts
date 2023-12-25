@@ -12,7 +12,7 @@ export type RawInput<T> = {
 
 export interface AxiomV2CircuitMetadataParams {
     version: number;
-    numInstance: number[];
+    numValuesPerInstanceColumn: number[];
     numChallenge: number[];
     isAggregation: boolean;
     numAdvicePerPhase: number[];

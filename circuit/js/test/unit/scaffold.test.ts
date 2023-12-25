@@ -1,12 +1,13 @@
 import { concat, zeroHash } from "viem";
 import { AxiomBaseCircuit } from "../../src/js";
-import { circuit } from "./circuits/7_balance.circuit";
+import { circuit as seven_blance_circuit } from "./circuits/7_balance.circuit";
 
 describe("Scaffold", () => {
   test("Build computeQuery", async () => {
+    // This circuit gets a single account's balance 7 times and adds them to the results
     const testCircuit = new AxiomBaseCircuit({
       provider: process.env.PROVIDER_URI_GOERLI as string,
-      f: circuit,
+      f: seven_blance_circuit,
       inputSchema: `{
         "address": "CircuitValue",
         "claimedBlockNumber": "CircuitValue"
@@ -20,7 +21,9 @@ describe("Scaffold", () => {
     };
     const _artifact = await testCircuit.compile(defaultInputs);
     const computeQuery = await testCircuit.run(defaultInputs);
-    expect(computeQuery.vkey[0]).toEqual("0x0001000000010100000004010000010080000000000000000000000000000000");
+
+    // numValuesPerInstanceColumn: 2 * 7 + 16 * 128 = 2062 (0x80E)
+    expect(computeQuery.vkey[0]).toEqual("0x00010000080e0100000004010000010080000000000000000000000000000000");
     expect(computeQuery.computeProof.slice(2).slice(0,128)).toEqual(concat([zeroHash, zeroHash]).slice(2));
   }, 30000);
 });

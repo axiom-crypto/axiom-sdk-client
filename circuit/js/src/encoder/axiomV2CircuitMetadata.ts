@@ -2,7 +2,6 @@ import { concat, encodePacked, pad } from "viem";
 import { resizeArray } from "../utils";
 import { AxiomV2CircuitMetadataParams } from "../types";
 
-
 export const encodeAxiomV2CircuitMetadata = (params: AxiomV2CircuitMetadataParams): string => {
   // JS client overrides
   params.numChallenge = [0];
@@ -14,15 +13,15 @@ export const encodeAxiomV2CircuitMetadata = (params: AxiomV2CircuitMetadataParam
   );
   let encoded = concat([encodedVersion]);
 
-  const encodedNumInstanceLen = encodePacked(
+  const encodedNumValuesPerInstanceColumnLen = encodePacked(
     ["uint8"],
-    [params.numInstance.length]
+    [params.numValuesPerInstanceColumn.length]
   );
-  const encodedNumInstance = params.numInstance.map((numInstance) => encodePacked(
+  const encodedNumValuesPerInstanceColumn = params.numValuesPerInstanceColumn.map((values) => encodePacked(
     ["uint32"],
-    [numInstance]
+    [values]
   ));
-  encoded = concat([encoded, encodedNumInstanceLen, ...encodedNumInstance]);
+  encoded = concat([encoded, encodedNumValuesPerInstanceColumnLen, ...encodedNumValuesPerInstanceColumn]);
 
   const numPhase = params.numChallenge.length;
   if (numPhase === 0) {

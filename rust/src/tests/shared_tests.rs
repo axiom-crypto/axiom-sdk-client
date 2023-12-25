@@ -91,6 +91,7 @@ pub fn check_compute_proof_format(output: AxiomV2CircuitOutput, is_aggregation: 
     if !is_aggregation {
         assert_eq!(kzg_accumulators, &vec![0; NUM_BYTES_ACCUMULATOR]);
     } else {
+        //check that accumulator can be deserialized from instances
         let KzgAccumulator { lhs, rhs } =
             <LimbsEncoding<LIMBS, BITS> as AccumulatorEncoding<G1Affine, NativeLoader>>::from_repr(
                 &instances[..NUM_FE_ACCUMULATOR].iter().collect_vec(),

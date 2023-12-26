@@ -1,4 +1,5 @@
 .env
+.DS_Store
 node_modules
 dist
 data
@@ -7,3 +8,4 @@ target
 Cargo.lock
 params
 .DS_Store
+debug/

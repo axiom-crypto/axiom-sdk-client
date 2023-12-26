@@ -36,3 +36,15 @@ jobs:
           export PRIVATE_KEY=$ANVIL_PRIVATE_KEY # just needs to be in the correct format, no tx is sent in unit tests
           export PRIVATE_KEY_GOERLI=$ANVIL_PRIVATE_KEY
           npm run test
+  
+  axiom-sdk-rust-client:
+    runs-on: ubuntu-latest-64core-256ram
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build rust client
+        run: |
+          cargo build --verbose
+      - name: Test rust client
+        run: |
+            export PROVIDER_URI=${{ secrets.PROVIDER_URI_GOERLI }}
+            cargo test

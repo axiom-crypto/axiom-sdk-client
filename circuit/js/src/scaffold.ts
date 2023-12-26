@@ -88,9 +88,13 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   }
 
   prependCircuitMetadata(config: CircuitConfig, partialVk: string[]): string[] {
+    const SUBQUERY_RESULT_LEN = 1 + AxiomV2CircuitConstant.MaxSubqueryInputs + AxiomV2CircuitConstant.MaxSubqueryOutputs;
     const encodedCircuitMetadata = encodeAxiomV2CircuitMetadata({
       version: 0,
-      numValuesPerInstanceColumn: [2 * this.resultLen + 16 * AxiomV2CircuitConstant.UserMaxSubqueries],
+      numValuesPerInstanceColumn: [
+        AxiomV2CircuitConstant.UserMaxOutputs * AxiomV2CircuitConstant.UserResultFieldElements + 
+        AxiomV2CircuitConstant.UserMaxSubqueries * SUBQUERY_RESULT_LEN
+      ],
       numChallenge: [0],
       isAggregation: false,
       numAdvicePerPhase: [config.numAdvice],
@@ -137,6 +141,9 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       this.provider,
     ).run(this.f, inputs, this.inputSchema, this.results);
     this.timeEnd("Witness generation");
+    if (numUserInstances % 2 !== 0) {
+      throw new Error("numUserInstances must be even");
+    }
     this.resultLen = Math.floor(numUserInstances / 2);
     this.dataQuery = dataQuery;
   }

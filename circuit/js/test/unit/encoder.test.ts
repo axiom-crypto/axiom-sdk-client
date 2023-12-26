@@ -4,7 +4,7 @@ import { AxiomV2CircuitMetadataParams } from "../../src/types";
 
 describe("Encoder", () => {
   test("Encode AxiomV2CircuitMetadata", () => {
-    const SUBQUERY_RESULT_LEN = 16;
+    const SUBQUERY_RESULT_LEN = 1 + AxiomV2CircuitConstant.MaxSubqueryInputs + AxiomV2CircuitConstant.MaxSubqueryOutputs;
     const DEFAULT_METADATA: AxiomV2CircuitMetadataParams = {
       version: 0,
       numAdvicePerPhase: [AxiomV2CircuitConstant.UserAdviceCols],

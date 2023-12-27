@@ -8,7 +8,7 @@ harnessCli
   .version("0.1.4")
   .description("Axiom circuit harness");
 
-  harnessCli
+harnessCli
   .command("run")
   .description("Get circuit parameters from javascript circuit")
   .argument("<js circuit path>", "js circuit path")
@@ -17,6 +17,6 @@ harnessCli
   .option("-p, --provider [provider]", "provider")
   .action(run);
 
-  harnessCli.parseAsync(process.argv);
+harnessCli.parseAsync(process.argv);
 
 export { run as harness };

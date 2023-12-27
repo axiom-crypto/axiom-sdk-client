@@ -1,10 +1,11 @@
 import { CircuitConfig, Halo2LibWasm } from "@axiom-crypto/halo2-wasm/web";
 import { keccak256 } from "ethers";
 import { base64ToByteArray, byteArrayToBase64, convertToBytes, convertToBytes32 } from "./utils";
-import { encodePacked } from "viem";
+import { concat, encodePacked, zeroHash } from "viem";
 import { AxiomCircuitRunner } from "./circuitRunner";
 import {
   AxiomV2Callback,
+  AxiomV2CircuitConstant,
   AxiomV2ComputeQuery,
   DataSubquery,
 } from "@axiom-crypto/tools";
@@ -15,9 +16,10 @@ import {
 import { BaseCircuitScaffold } from "@axiom-crypto/halo2-wasm/shared/scaffold";
 import { DEFAULT_CIRCUIT_CONFIG } from "./constants";
 import { RawInput } from "./types";
+import { encodeAxiomV2CircuitMetadata } from "./js";
 
 export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
-  protected numInstances: number;
+  protected resultLen: number;
   protected halo2Lib!: Halo2LibWasm;
   protected provider: string;
   protected dataQuery: DataSubquery[];
@@ -38,7 +40,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     shouldTime?: boolean;
   }) {
     super();
-    this.numInstances = 0;
+    this.resultLen = 0;
     this.provider = inputs.provider;
     this.config = inputs.config ?? DEFAULT_CIRCUIT_CONFIG;
     this.dataQuery = [];
@@ -79,10 +81,29 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     const vk = convertToBytes32(partialVk);
     const packed = encodePacked(
       ["uint8", "uint16", "uint8", "bytes32[]"],
-      [this.config.k, this.numInstances / 2, vk.length, vk],
+      [this.config.k, this.resultLen, vk.length, vk as `0x${string}`[]],
     );
     const schema = keccak256(packed);
     return schema as string;
+  }
+
+  prependCircuitMetadata(config: CircuitConfig, partialVk: string[]): string[] {
+    const SUBQUERY_RESULT_LEN = 1 + AxiomV2CircuitConstant.MaxSubqueryInputs + AxiomV2CircuitConstant.MaxSubqueryOutputs;
+    const encodedCircuitMetadata = encodeAxiomV2CircuitMetadata({
+      version: 0,
+      numValuesPerInstanceColumn: [
+        AxiomV2CircuitConstant.UserMaxOutputs * AxiomV2CircuitConstant.UserResultFieldElements + 
+        AxiomV2CircuitConstant.UserMaxSubqueries * SUBQUERY_RESULT_LEN
+      ],
+      numChallenge: [0],
+      isAggregation: false,
+      numAdvicePerPhase: [config.numAdvice],
+      numLookupAdvicePerPhase: [config.numLookupAdvice],
+      numRlcColumns: 0,
+      numFixed: 1,
+      maxOutputs: AxiomV2CircuitConstant.UserMaxOutputs,
+    });
+    return [encodedCircuitMetadata, ...partialVk];
   }
 
   async compile(inputs: RawInput<T>) {
@@ -120,7 +141,10 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       this.provider,
     ).run(this.f, inputs, this.inputSchema, this.results);
     this.timeEnd("Witness generation");
-    this.numInstances = numUserInstances;
+    if (numUserInstances % 2 !== 0) {
+      throw new Error("numUserInstances must be even");
+    }
+    this.resultLen = Math.floor(numUserInstances / 2);
     this.dataQuery = dataQuery;
   }
 
@@ -133,12 +157,17 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   buildComputeQuery() {
     const vk = this.getPartialVk();
     const vkBytes = convertToBytes32(vk);
-    const computeProof = this.getComputeProof();
+    const onchainVkey = this.prependCircuitMetadata(this.config, vkBytes);
+    
+    const computeProofBase = this.getComputeProof() as `0x${string}`;
+    const computeAccumulator = concat([zeroHash, zeroHash]);
+    const computeProof = concat([computeAccumulator, computeProofBase]);
+
     const computeQuery: AxiomV2ComputeQuery = {
       k: this.config.k,
-      vkey: vkBytes,
-      computeProof: computeProof,
-      resultLen: this.numInstances / 2,
+      vkey: onchainVkey,
+      computeProof,
+      resultLen: this.resultLen,
     };
     this.computeQuery = computeQuery;
     return computeQuery;
@@ -156,7 +185,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   getComputeResults() {
     const computeResults: string[] = [];
     const instances = this.getInstances();
-    for (let i = 0; i < this.numInstances / 2; i++) {
+    for (let i = 0; i < this.resultLen; i++) {
       const instanceHi = BigInt(instances[2 * i]);
       const instanceLo = BigInt(instances[2 * i + 1]);
       const instance = instanceHi * BigInt(2 ** 128) + instanceLo;

@@ -1,6 +1,6 @@
 {
   "name": "@axiom-crypto/harness",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "author": "Intrinsic Technologies",
   "license": "MIT",
   "description": "Circuit harness for axiom-client",
@@ -9,7 +9,7 @@
     "test": "jest"
   },
   "bin": {
-    "harness": "./index.js"
+    "harness": "./cli/index.js"
   },
   "publishConfig": {
     "directory": "dist"

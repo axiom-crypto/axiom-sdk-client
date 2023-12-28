@@ -1,8 +1,8 @@
 import fs from 'fs';
 import { listDir, makeFileMap } from "../utils";
-import { run } from "../../src/run";
+import { harness } from "../../src/harness";
 
-describe("Run", () => {
+describe("Goerli tests", () => {
   if (process.env.PROVIDER_URI_GOERLI == undefined) {
     throw new Error("`PROVIDER_URI_GOERLI` environment variable must be defined");
   }
@@ -23,7 +23,7 @@ describe("Run", () => {
         console.log(`Running test: ${inputFile}`)
 
         // Run the circuit
-        await run(
+        await harness(
           inputFile,
           {
             output: outputBasePathType,

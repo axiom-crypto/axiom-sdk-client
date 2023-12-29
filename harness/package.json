@@ -9,7 +9,7 @@
     "test": "jest"
   },
   "bin": {
-    "harness": "./index.js"
+    "harness": "./cli/index.js"
   },
   "publishConfig": {
     "directory": "dist"
@@ -44,10 +44,6 @@
     "typescript": "^5.3.2"
   },
   "peerDependencies": {
-<<<<<<< HEAD
     "@axiom-crypto/client": "0.1.4-rc.0"
-=======
-    "@axiom-crypto/client": ">=0.1.4"
->>>>>>> 182cf95 (Update package deps)
   }
 }

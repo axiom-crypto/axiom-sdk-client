@@ -15,9 +15,9 @@ export const COMPUTE_NUM_INSTANCES = USER_COMPUTE_NUM_INSTANCES + SUBQUERY_NUM_I
 
 export const DEFAULT_CIRCUIT_CONFIG = {
     k: 14,
-    numAdvice: 4,
-    numLookupAdvice: 1,
-    numInstance: 1,
+    numAdvice: AxiomV2CircuitConstant.UserAdviceCols,
+    numLookupAdvice: AxiomV2CircuitConstant.UserLookupAdviceCols,
+    numInstance: AxiomV2CircuitConstant.UserInstanceCols,
     numLookupBits: 13,
     numVirtualInstance: 2,
 };

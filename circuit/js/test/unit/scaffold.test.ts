@@ -22,7 +22,7 @@ describe("Scaffold", () => {
     const _artifact = await testCircuit.compile(defaultInputs);
     const computeQuery = await testCircuit.run(defaultInputs);
 
-    expect(computeQuery.vkey[0]).toEqual("0x0001000009000100000004010000010080000000000000000000000000000000");
+    expect(computeQuery.vkey[0]).toEqual("0x0001000009000100000014030000010080000000000000000000000000000000");
     expect(computeQuery.computeProof.slice(2).slice(0,128)).toEqual(concat([zeroHash, zeroHash]).slice(2));
   }, 30000);
 });

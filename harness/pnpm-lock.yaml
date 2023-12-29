@@ -9,8 +9,8 @@ dependencies:
     specifier: 0.1.5-rc.0
     version: 0.1.5-rc.0(typescript@5.3.3)
   '@axiom-crypto/core':
-    specifier: ^2.2.50
-    version: 2.2.50
+    specifier: 2.2.51-rc.1
+    version: 2.2.51-rc.1
   '@axiom-crypto/halo2-lib-js':
     specifier: 0.2.13-alpha.1
     version: 0.2.13-alpha.1
@@ -18,8 +18,8 @@ dependencies:
     specifier: 0.2.10
     version: 0.2.10
   '@axiom-crypto/tools':
-    specifier: ^0.3.33
-    version: 0.3.33
+    specifier: 0.3.35-rc.1
+    version: 0.3.35-rc.1
   commander:
     specifier: ^11.1.0
     version: 11.1.0
@@ -111,12 +111,12 @@ packages:
       - zod
     dev: false
 
-  /@axiom-crypto/core@2.2.50:
-    resolution: {integrity: sha512-SWiTntwZsgpvnsCdGxajcnQ1H6sOil9L6l451B0892gSz1pC/XkyZ61JN+IwgUZFdNhF5B+hFdzK+WaMO7GAbw==}
+  /@axiom-crypto/core@2.2.51-alpha.1:
+    resolution: {integrity: sha512-LXw6t2Ihm+ohUpuPYkAy8z2NLM5v5opbhx2RmSgxEEEeYxmNGp1O7xQq0GWhLwUeRXNJ4Q50j7WnLerE15bSYA==}
     dependencies:
       '@axiom-crypto/halo2-lib-js': 0.2.10
       '@axiom-crypto/halo2-wasm': 0.2.7
-      '@axiom-crypto/tools': 0.3.33
+      '@axiom-crypto/tools': 0.3.34-alpha.2
       axios: 1.6.2
       bs58: 5.0.0
       ethers: 6.9.0
@@ -127,12 +127,12 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@axiom-crypto/core@2.2.51-alpha.1:
-    resolution: {integrity: sha512-LXw6t2Ihm+ohUpuPYkAy8z2NLM5v5opbhx2RmSgxEEEeYxmNGp1O7xQq0GWhLwUeRXNJ4Q50j7WnLerE15bSYA==}
+  /@axiom-crypto/core@2.2.51-rc.1:
+    resolution: {integrity: sha512-h2ngVtogCP/W7+Sl5yBHJR/2gcTB5cZjWCnKhNeHwsVkIdvBPrlfT8XrQthtZyJ9Vl+YXMeTYBQkDHttY+y27A==}
     dependencies:
       '@axiom-crypto/halo2-lib-js': 0.2.10
       '@axiom-crypto/halo2-wasm': 0.2.7
-      '@axiom-crypto/tools': 0.3.34-alpha.2
+      '@axiom-crypto/tools': 0.3.35-rc.1
       axios: 1.6.2
       bs58: 5.0.0
       ethers: 6.9.0
@@ -171,15 +171,6 @@ packages:
 
   /@axiom-crypto/halo2-wasm@0.2.7:
     resolution: {integrity: sha512-pmgFCkCJUlFgh5NCLR59WpWIiBegNxBRAAlA2UxPMga1Pba02ynZgf6SW0tbQaezMiWUdTA9SfpeosovcNI6Yg==}
-    dev: false
-
-  /@axiom-crypto/tools@0.3.33:
-    resolution: {integrity: sha512-1ABAgXIZ2bNqHKTBcYGsL0tNQrX6PLM/1fHnkuT6g4WgHBMCoZuXyuTQK/CdoxsK/L3y253v9YW/5WOD9FI0Og==}
-    dependencies:
-      ethers: 6.9.0
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
     dev: false
 
   /@axiom-crypto/tools@0.3.34-alpha.2:

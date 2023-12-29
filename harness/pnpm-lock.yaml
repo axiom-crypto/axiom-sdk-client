@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@axiom-crypto/client':
-    specifier: file:../client/dist
-    version: file:../client/dist(typescript@5.3.3)
+    specifier: 0.1.5-rc.0
+    version: 0.1.5-rc.0(typescript@5.3.3)
   '@axiom-crypto/core':
     specifier: ^2.2.50
     version: 2.2.50
@@ -73,13 +73,33 @@ packages:
       '@jridgewell/trace-mapping': 0.3.20
     dev: true
 
-  /@axiom-crypto/circuit@0.1.3(typescript@5.3.3):
-    resolution: {integrity: sha512-bUiRThj/6+WqMCq8vqBtolt1R7tJuJhlAZLcUIk1YzbXeTgR6ikz2CiY33yf8hJKxeaNY9fqjT3JgIxu38Z2SA==}
+  /@axiom-crypto/circuit@0.1.5-rc.0(typescript@5.3.3):
+    resolution: {integrity: sha512-cqDsnqxUFud8hYzp/VXDs+8DCkW7h/rCrMSy89RYjLracmupOcZi6az6k2kqHwxoD/IhwNxz/707nxGrHcw2dA==}
     dependencies:
-      '@axiom-crypto/core': 2.2.50
+      '@axiom-crypto/core': 2.2.51-alpha.1
       '@axiom-crypto/halo2-lib-js': 0.2.13-alpha.1
       '@axiom-crypto/halo2-wasm': 0.2.10
-      '@axiom-crypto/tools': 0.3.33
+      '@axiom-crypto/tools': 0.3.35-rc.1
+      commander: 11.1.0
+      ethers: 6.9.0
+      viem: 1.19.13(typescript@5.3.3)
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - typescript
+      - utf-8-validate
+      - zod
+    dev: false
+
+  /@axiom-crypto/client@0.1.5-rc.0(typescript@5.3.3):
+    resolution: {integrity: sha512-7dro6W+57Vu9Bdhu9Yry+PwUQqBu0tiH4+WdUUDmpYGENKnubTzQZ/I/46Tc/eo75KPweiFdK5DLspGiG2/zJQ==}
+    hasBin: true
+    dependencies:
+      '@axiom-crypto/circuit': 0.1.5-rc.0(typescript@5.3.3)
+      '@axiom-crypto/core': 2.2.51-alpha.1
+      '@axiom-crypto/halo2-lib-js': 0.2.13-alpha.1
+      '@axiom-crypto/halo2-wasm': 0.2.10
+      '@axiom-crypto/tools': 0.3.35-rc.1
       commander: 11.1.0
       ethers: 6.9.0
       viem: 1.19.13(typescript@5.3.3)
@@ -97,6 +117,22 @@ packages:
       '@axiom-crypto/halo2-lib-js': 0.2.10
       '@axiom-crypto/halo2-wasm': 0.2.7
       '@axiom-crypto/tools': 0.3.33
+      axios: 1.6.2
+      bs58: 5.0.0
+      ethers: 6.9.0
+      merkletreejs: 0.3.11
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - utf-8-validate
+    dev: false
+
+  /@axiom-crypto/core@2.2.51-alpha.1:
+    resolution: {integrity: sha512-LXw6t2Ihm+ohUpuPYkAy8z2NLM5v5opbhx2RmSgxEEEeYxmNGp1O7xQq0GWhLwUeRXNJ4Q50j7WnLerE15bSYA==}
+    dependencies:
+      '@axiom-crypto/halo2-lib-js': 0.2.10
+      '@axiom-crypto/halo2-wasm': 0.2.7
+      '@axiom-crypto/tools': 0.3.34-alpha.2
       axios: 1.6.2
       bs58: 5.0.0
       ethers: 6.9.0
@@ -139,6 +175,24 @@ packages:
 
   /@axiom-crypto/tools@0.3.33:
     resolution: {integrity: sha512-1ABAgXIZ2bNqHKTBcYGsL0tNQrX6PLM/1fHnkuT6g4WgHBMCoZuXyuTQK/CdoxsK/L3y253v9YW/5WOD9FI0Og==}
+    dependencies:
+      ethers: 6.9.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
+
+  /@axiom-crypto/tools@0.3.34-alpha.2:
+    resolution: {integrity: sha512-Do5+8K7n447lfyYS+rVslzDTFbuRHcStzj66h17Zk3yl85Althr7NqkSR6hedbaab1JHMKcpG6e94qCoCn+9IA==}
+    dependencies:
+      ethers: 6.9.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
+
+  /@axiom-crypto/tools@0.3.35-rc.1:
+    resolution: {integrity: sha512-BcROZuxpJhUJyLgw3LictHf3o+d3SHIxlobWnrVuMWCy7wNupU9o4UukU/d8khmD28UYj0KEyN+vVhukWwFbGw==}
     dependencies:
       ethers: 6.9.0
     transitivePeerDependencies:
@@ -3048,27 +3102,5 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
     dev: true
-
-  file:../client/dist(typescript@5.3.3):
-    resolution: {directory: ../client/dist, type: directory}
-    id: file:../client/dist
-    name: '@axiom-crypto/client'
-    hasBin: true
-    dependencies:
-      '@axiom-crypto/circuit': 0.1.3(typescript@5.3.3)
-      '@axiom-crypto/core': 2.2.50
-      '@axiom-crypto/halo2-lib-js': 0.2.13-alpha.1
-      '@axiom-crypto/halo2-wasm': 0.2.10
-      '@axiom-crypto/tools': 0.3.33
-      commander: 11.1.0
-      ethers: 6.9.0
-      viem: 1.19.13(typescript@5.3.3)
-    transitivePeerDependencies:
-      - bufferutil
-      - debug
-      - typescript
-      - utf-8-validate
-      - zod
-    dev: false
 
 publishDirectory: dist

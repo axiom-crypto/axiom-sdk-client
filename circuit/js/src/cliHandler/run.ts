@@ -27,6 +27,7 @@ export const run = async (path: string, options: { stats: boolean, build: string
         const computeResults = circuit.getComputeResults();
         const dataQuery = circuit.getDataQuery();
         const res = {
+            sourceChainId: circuit.getChainId(),
             computeQuery,
             computeResults,
             dataQuery,

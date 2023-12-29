@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - rc1
   pull_request:
 
 jobs:
@@ -54,11 +55,20 @@ jobs:
         working-directory: ./harness
         run: npm install
 
-      - name: Run Integration Tests
+      # - name: Run Integration Tests (Goerli)
+      #   working-directory: ./harness
+      #   run: |
+      #     export PROVIDER_URI_GOERLI=${{ secrets.PROVIDER_URI_GOERLI }}
+      #     ANVIL_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+      #     export PRIVATE_KEY=$ANVIL_PRIVATE_KEY # just needs to be in the correct format, no tx is sent in unit tests
+      #     export PRIVATE_KEY_GOERLI=$ANVIL_PRIVATE_KEY
+      #     npm run test test/integration/goerli.test.ts
+
+      - name: Run Integration Tests (Sepolia)
         working-directory: ./harness
         run: |
-          export PROVIDER_URI_GOERLI=${{ secrets.PROVIDER_URI_GOERLI }}
+          export PROVIDER_URI_SEPOLIA=${{ secrets.PROVIDER_URI_SEPOLIA }}
           ANVIL_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
           export PRIVATE_KEY=$ANVIL_PRIVATE_KEY # just needs to be in the correct format, no tx is sent in unit tests
-          export PRIVATE_KEY_GOERLI=$ANVIL_PRIVATE_KEY
-          npm run test
+          export PRIVATE_KEY_SEPOLIA=$ANVIL_PRIVATE_KEY
+          npm run test test/integration/sepolia.test.ts

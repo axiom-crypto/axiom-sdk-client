@@ -200,6 +200,10 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     return this.dataQuery;
   }
 
+  getChainId() {
+    return this.chainId;
+  }
+
   setMock(mock: boolean) {
     this.axiom = new Axiom({
       providerUri: this.provider,

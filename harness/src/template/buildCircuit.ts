@@ -25,14 +25,14 @@ const getCircuitInterfaceFromInput = (inputs: string) => {
   return newInputs;
 }
 
-export const buildCircuit = (circuitPath: string): string => {
+export const buildCircuit = (jsCircuitPath: string): string => {
   // Parse path
-  let parsedFilename = circuitPath.split("/").slice(-1)[0];
+  let parsedFilename = jsCircuitPath.split("/").slice(-1)[0];
   parsedFilename = parsedFilename.split(".js")[0] + ".circuit.ts";
 
   // Load the input circuit and template
   let circuit = fs.readFileSync(path.resolve(__dirname, "template.circuit")).toString();
-  let inputCircuit = fs.readFileSync(path.resolve(circuitPath)).toString();
+  let inputCircuit = fs.readFileSync(path.resolve(jsCircuitPath)).toString();
 
   // Check if inputCircuit defines an input object
   let inputObject = inputCircuit.match(/const input = {[\s\S]*}[;]*/);

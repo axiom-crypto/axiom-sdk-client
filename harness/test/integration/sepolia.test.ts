@@ -3,7 +3,7 @@ import { listDir, makeFileMap } from "../utils";
 import { harness } from "../../src/harness";
 
 describe("Sepolia tests", () => {
-  if (process.env.PROVIDER_URI_SEPOLIA == undefined) {
+  if (process.env.PROVIDER_URI_SEPOLIA === undefined) {
     throw new Error("`PROVIDER_URI_SEPOLIA` environment variable must be defined");
   }
 

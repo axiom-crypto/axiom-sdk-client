@@ -1,6 +1,6 @@
 {
   "name": "@axiom-crypto/harness",
-  "version": "0.1.6-rc.0",
+  "version": "0.1.7-rc.0",
   "author": "Intrinsic Technologies",
   "license": "MIT",
   "description": "Circuit harness for axiom-client",
@@ -23,7 +23,6 @@
     "crypto"
   ],
   "dependencies": {
-    "@axiom-crypto/client": "0.1.4",
     "@axiom-crypto/core": "^2.2.50",
     "@axiom-crypto/halo2-lib-js": "0.2.13-alpha.1",
     "@axiom-crypto/halo2-wasm": "0.2.10",
@@ -44,6 +43,6 @@
     "typescript": "^5.3.2"
   },
   "peerDependencies": {
-    "@axiom-crypto/client": "0.1.4-rc.0"
+    "@axiom-crypto/client": "0.1.5-rc.0"
   }
 }

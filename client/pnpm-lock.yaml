@@ -9,8 +9,8 @@ dependencies:
     specifier: 0.1.4-rc.0
     version: 0.1.4-rc.0(typescript@5.3.3)
   '@axiom-crypto/core':
-    specifier: 2.2.51-alpha.1
-    version: 2.2.51-alpha.1
+    specifier: 2.2.50
+    version: 2.2.50
   '@axiom-crypto/halo2-lib-js':
     specifier: 0.2.13-alpha.1
     version: 0.2.13-alpha.1
@@ -18,8 +18,8 @@ dependencies:
     specifier: 0.2.10
     version: 0.2.10
   '@axiom-crypto/tools':
-    specifier: 0.3.35-rc.1
-    version: 0.3.35-rc.1
+    specifier: 0.3.35
+    version: 0.3.35
   commander:
     specifier: ^11.1.0
     version: 11.1.0

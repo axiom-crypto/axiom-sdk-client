@@ -6,10 +6,10 @@ settings:
 
 dependencies:
   '@axiom-crypto/circuit':
-    specifier: 0.1.3
-    version: 0.1.3(typescript@5.3.3)
+    specifier: 0.1.4
+    version: 0.1.4(typescript@5.3.3)
   '@axiom-crypto/core':
-    specifier: ^2.2.50
+    specifier: 2.2.50
     version: 2.2.50
   '@axiom-crypto/halo2-lib-js':
     specifier: 0.2.13-alpha.1
@@ -18,8 +18,8 @@ dependencies:
     specifier: 0.2.10
     version: 0.2.10
   '@axiom-crypto/tools':
-    specifier: ^0.3.33
-    version: 0.3.33
+    specifier: 0.3.35
+    version: 0.3.35
   commander:
     specifier: ^11.1.0
     version: 11.1.0
@@ -67,13 +67,13 @@ packages:
       '@jridgewell/trace-mapping': 0.3.20
     dev: true
 
-  /@axiom-crypto/circuit@0.1.3(typescript@5.3.3):
-    resolution: {integrity: sha512-bUiRThj/6+WqMCq8vqBtolt1R7tJuJhlAZLcUIk1YzbXeTgR6ikz2CiY33yf8hJKxeaNY9fqjT3JgIxu38Z2SA==}
+  /@axiom-crypto/circuit@0.1.4(typescript@5.3.3):
+    resolution: {integrity: sha512-FjMLCVgYf2IrsQQD8aOQinALY0Z924T0BwOYaV9J7bYKSHJR9+p9uDqkkwSe2axny2VzTUXY+r1RsvQOZElPCA==}
     dependencies:
       '@axiom-crypto/core': 2.2.50
       '@axiom-crypto/halo2-lib-js': 0.2.13-alpha.1
       '@axiom-crypto/halo2-wasm': 0.2.10
-      '@axiom-crypto/tools': 0.3.33
+      '@axiom-crypto/tools': 0.3.35
       commander: 11.1.0
       ethers: 6.9.0
       viem: 1.19.11(typescript@5.3.3)
@@ -90,7 +90,7 @@ packages:
     dependencies:
       '@axiom-crypto/halo2-lib-js': 0.2.10
       '@axiom-crypto/halo2-wasm': 0.2.7
-      '@axiom-crypto/tools': 0.3.33
+      '@axiom-crypto/tools': 0.3.35
       axios: 1.6.2
       bs58: 5.0.0
       ethers: 6.9.0
@@ -131,8 +131,8 @@ packages:
     resolution: {integrity: sha512-pmgFCkCJUlFgh5NCLR59WpWIiBegNxBRAAlA2UxPMga1Pba02ynZgf6SW0tbQaezMiWUdTA9SfpeosovcNI6Yg==}
     dev: false
 
-  /@axiom-crypto/tools@0.3.33:
-    resolution: {integrity: sha512-1ABAgXIZ2bNqHKTBcYGsL0tNQrX6PLM/1fHnkuT6g4WgHBMCoZuXyuTQK/CdoxsK/L3y253v9YW/5WOD9FI0Og==}
+  /@axiom-crypto/tools@0.3.35:
+    resolution: {integrity: sha512-Id+mfqeRfAZJ+3UFcuRpJ5DH7A4vAAa5xg939eHGPFxq4sy5bwI8gQmhn4lTD896efgqv2RSTMvONi7N0G3Ayw==}
     dependencies:
       ethers: 6.9.0
     transitivePeerDependencies:
@@ -972,7 +972,7 @@ packages:
     resolution: {integrity: sha512-osvveYtyzdEVbt3OfwwXFr4P2iVBL5u1Q3q4ONBfDY/UpOuXmOlbgwc1xECEboY8wIays8Yt6onaWMUdUbfl0A==}
     dependencies:
       '@noble/curves': 1.1.0
-      '@noble/hashes': 1.3.1
+      '@noble/hashes': 1.3.2
       '@scure/base': 1.1.3
     dev: false
 

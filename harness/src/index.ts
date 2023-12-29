@@ -1,14 +1,14 @@
 import { Command } from "commander";
 import { run } from "./run";
 
-const harness = new Command('harness');
+const harnessCli = new Command('harness');
 
-harness
+harnessCli
   .name("harness")
   .version("0.1.4")
   .description("Axiom circuit harness");
 
-harness
+  harnessCli
   .command("run")
   .description("Get circuit parameters from javascript circuit")
   .argument("<js circuit path>", "js circuit path")
@@ -17,4 +17,6 @@ harness
   .option("-p, --provider [provider]", "provider")
   .action(run);
 
-harness.parseAsync(process.argv);
+  harnessCli.parseAsync(process.argv);
+
+export { run as harness };

@@ -15,8 +15,8 @@ dependencies:
     specifier: 0.2.10
     version: 0.2.10
   '@axiom-crypto/tools':
-    specifier: 0.3.34-alpha.2
-    version: 0.3.34-alpha.2
+    specifier: 0.3.35-rc.1
+    version: 0.3.35-rc.1
   commander:
     specifier: ^11.1.0
     version: 11.1.0
@@ -118,6 +118,15 @@ packages:
 
   /@axiom-crypto/tools@0.3.34-alpha.2:
     resolution: {integrity: sha512-Do5+8K7n447lfyYS+rVslzDTFbuRHcStzj66h17Zk3yl85Althr7NqkSR6hedbaab1JHMKcpG6e94qCoCn+9IA==}
+    dependencies:
+      ethers: 6.9.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
+
+  /@axiom-crypto/tools@0.3.35-rc.1:
+    resolution: {integrity: sha512-BcROZuxpJhUJyLgw3LictHf3o+d3SHIxlobWnrVuMWCy7wNupU9o4UukU/d8khmD28UYj0KEyN+vVhukWwFbGw==}
     dependencies:
       ethers: 6.9.0
     transitivePeerDependencies:

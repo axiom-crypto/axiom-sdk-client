@@ -50,7 +50,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       mock: inputs.mock,
       version: "v2",
     });
-    this.chainId = inputs.chainId?.toString() ?? "5";
+    this.chainId = inputs.chainId?.toString() ?? "undefined";
     this.shouldTime = inputs.shouldTime ?? false;
     this.loadedVk = false;
     this.f = inputs.f;

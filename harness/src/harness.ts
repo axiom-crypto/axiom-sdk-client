@@ -8,6 +8,7 @@ export const harness = async (
   options: {
     output: string,
     function: string,
+    chainId?: number | string | bigint;
     provider?: string,
   }
 ) => {
@@ -30,6 +31,7 @@ export const harness = async (
       stats: false,
       function: options.function,
       output: buildFile,
+      chainId: options.chainId,
       provider: options.provider,
     }
   );
@@ -43,6 +45,7 @@ export const harness = async (
       build: buildFile,
       function: options.function,
       output: outputFile,
+      chainId: options.chainId,
       provider: options.provider,
     }
   );

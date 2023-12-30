@@ -1,13 +1,24 @@
 import { AxiomBaseCircuit } from "../js";
 import { getFunctionFromTs, getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
 
-export const run = async (path: string, options: { stats: boolean, build: string, function: string, output: string, provider?: string, inputs?: string }) => {
+export const run = async (
+    path: string,
+    options: { stats: boolean,
+        build: string,
+        function: string,
+        output: string,
+        chainId?: number | string | bigint,
+        provider?: string,
+        inputs?: string
+    }
+) => {
     const f = await getFunctionFromTs(path, options.function);
     const provider = getProvider(options.provider);
     const buildJson = readJsonFromFile(options.build);
     const circuit = new AxiomBaseCircuit({
         f: f.circuit,
         mock: true,
+        chainId: options.chainId,
         provider,
         shouldTime: true,
         inputSchema: buildJson.inputSchema,

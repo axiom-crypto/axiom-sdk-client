@@ -19,9 +19,8 @@ describe("Encoder", () => {
       maxOutputs: AxiomV2CircuitConstant.UserMaxOutputs,
       isAggregation: false,
     }
-    console.log("DEFAULT_METADATA", DEFAULT_METADATA);
     const encoded = encodeAxiomV2CircuitMetadata(DEFAULT_METADATA);
-    const expected = "0x0001000009000100000014030000010080000000000000000000000000000000";
+    const expected = "0x0001000009000100000004010000010080000000000000000000000000000000";
     expect(encoded).toEqual(expected);
   });
 });

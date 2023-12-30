@@ -28,6 +28,7 @@ describe("Goerli tests", () => {
           {
             output: outputBasePathType,
             function: "circuit",
+            chainId: "5",
             provider: process.env.PROVIDER_URI_GOERLI,
           }
         );

@@ -1,20 +1,49 @@
-const { exec } = require('child_process');
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
 const versions = require('./versions');
 const packages = versions.versions();
 
-console.log("--- publishAll ---");
-for (const package of Object.keys(packages)) {
-  console.log(package);
+const tag = process.argv[2];
+
+const sleep = (ms = 0) => new Promise(resolve => setTimeout(resolve, ms));
+
+async function main() {
+  for (const package of Object.keys(packages)) {
+    console.log(packages[package]);
+
+    // Install dependencies
+    const { stdout: installStdout, stderr: installStderr, err: installErr } = await exec(`cd ${packages[package].path.slice(1)} && pnpm install && cd ..`);
+    if (installErr) {
+      // node couldn't execute the command
+      console.error(err);
+      return;
+    }
+    console.log(installStdout);
+    console.log(installStderr);
+
+    // Build
+    const { stdout: buildStdout, stderr: buildStderr, err: buildErr } = await exec(`cd ${packages[package].path.slice(1)} && pnpm build && cd ..`);
+    if (buildErr) {
+      // node couldn't execute the command
+      console.error(err);
+      return;
+    }
+    console.log(buildStdout);
+    console.log(buildStderr);
+
+    // Publish
+    const { stdout: publishStdout, stderr: publishStderr, err: publishErr } = await exec(`cd ${packages[package].path.slice(1)} && pnpm publish --tag ${tag} --no-git-checks && cd ..`);
+    if (publishErr) {
+      // node couldn't execute the command
+      console.error(err);
+      return;
+    }
+    console.log(publishStdout);
+    console.log(publishStderr);
+
+    // Pause for 10 seconds for package sync
+    await sleep(10000);
+  }
 }
 
-
-exec('cat *.js bad_file | wc -l', (err, stdout, stderr) => {
-  if (err) {
-    // node couldn't execute the command
-    return;
-  }
-
-  // the *entire* stdout and stderr (buffered)
-  console.log(`stdout: ${stdout}`);
-  console.log(`stderr: ${stderr}`);
-});
+main();

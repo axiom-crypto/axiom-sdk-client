@@ -33,7 +33,8 @@
     "dist",
     "node_modules",
     "scripts",
-    "test"
+    "test",
+    "src/scaffold/templates/*"
   ],
   "ts-node": {
     "esm": true

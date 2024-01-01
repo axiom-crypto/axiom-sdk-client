@@ -3,8 +3,9 @@ import { compile } from "@axiom-crypto/circuit";
 import { run } from "@axiom-crypto/circuit";
 import { init } from './init';
 import { sendQuery } from "./sendQuery";
+import { scaffoldNext } from "../scaffold/nextjs";
+import { scaffoldScript } from "../scaffold/script";
 import { CLIENT_VERSION } from "../version";
-import { scaffoldNext, scaffoldScript } from "./scaffold";
 
 const program = new Command('axiom');
 
@@ -12,8 +13,10 @@ program.name("axiom").version(CLIENT_VERSION).description("Axiom CLI");
 
 program
   .command("init")
-  .description("initialize Axiom circuit files")
-  .option("-p, --path [path]", "file path", "app/axiom")
+  .description("initialize Axiom project")
+  .option("-p, --path [path]", "file path")
+  .option("-s, --scaffold [type]", "type of scaffold (nextjs, script, none)")
+  .option("-m, --manager [name]", "package manager to use (npm, yarn, pnpm)")
   .action(init);
 
 const circuit = program.command("circuit")

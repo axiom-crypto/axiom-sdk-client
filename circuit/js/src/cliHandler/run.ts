@@ -1,20 +1,29 @@
+import path from 'path';
 import { AxiomBaseCircuit } from "../js";
 import { getFunctionFromTs, getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
 
 export const run = async (
-    path: string,
+    circuitPath: string,
     options: { stats: boolean,
-        build: string,
-        function: string,
-        output: string,
+        function?: string,
+        build?: string,
+        output?: string,
         chainId?: number | string | bigint,
         provider?: string,
         inputs?: string
     }
 ) => {
-    const f = await getFunctionFromTs(path, options.function);
+    let circuitFunction = "circuit.ts";
+    if (options.function !== undefined) {
+        circuitFunction = options.function;
+    }
+    const f = await getFunctionFromTs(circuitPath, circuitFunction);
     const provider = getProvider(options.provider);
-    const buildJson = readJsonFromFile(options.build);
+    let buildFile = path.join(path.dirname(circuitPath), "data", "build.json");
+    if (options.build !== undefined) {
+        buildFile = options.build;
+    }
+    const buildJson = readJsonFromFile(buildFile);
     const circuit = new AxiomBaseCircuit({
         f: f.circuit,
         mock: true,
@@ -43,7 +52,13 @@ export const run = async (
             computeResults,
             dataQuery,
         }
-        saveJsonToFile(res, options.output, "output.json");
+
+        let outfile = path.join(path.dirname(circuitPath), "data", "output.json");
+        if (options.output !== undefined) {
+            outfile = options.output;
+        }
+
+        saveJsonToFile(res, outfile);
     }
     catch (e) {
         console.error(e);

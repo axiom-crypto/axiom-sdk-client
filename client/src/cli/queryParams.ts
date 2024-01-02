@@ -2,7 +2,7 @@ import { Axiom } from "@axiom-crypto/core";
 import { getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
 import { buildSendQuery } from "../sendQuery";
 
-export const sendQuery = async (
+export const queryParams = async (
   callbackAddress: string,
   options: {
     refundAddress: string;

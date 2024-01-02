@@ -2,7 +2,7 @@ import { Command } from "commander";
 import { compile } from "@axiom-crypto/circuit";
 import { run } from "@axiom-crypto/circuit";
 import { init } from './init';
-import { sendQuery } from "./sendQuery";
+import { queryParams } from "./queryParams";
 import { scaffoldNext } from "../scaffold/nextjs";
 import { scaffoldScript } from "../scaffold/script";
 import { CLIENT_VERSION } from "../version";
@@ -29,8 +29,8 @@ circuit
   .option("-s, --stats", "print stats")
   .option("-p, --provider [provider]", "provider")
   .option("-i, --input [inputs]", "inputs")
-  .option("-o, --output [output]", "output", "data/build.json")
-  .option("-f, --function [function]", "function name", "circuit")
+  .option("-o, --output [output]", "output")
+  .option("-f, --function [function]", "function name in typescript circuit")
   .action(compile);
 
 circuit
@@ -38,12 +38,12 @@ circuit
   .description("prove an Axiom circuit")
   .argument("<circuit path>", "circuit path")
   .option("-s, --sourceChainId [sourceChainId]", "source chain id")
-  .option("-b, --build [build]", "build path", "data/build.json")
+  .option("-b, --build [build]", "build path")
   .option("-t, --stats", "print stats")
   .option("-p, --provider [provider]", "provider")
   .option("-i, --input [inputs]", "inputs")
-  .option("-o, --output [output]", "output", "data/output.json")
-  .option("-f, --function [function]", "function name", "circuit")
+  .option("-o, --output [output]", "output")
+  .option("-f, --function [function]", "function name in typescript circuit")
   .action(run);
 
 circuit
@@ -59,12 +59,8 @@ circuit
   .option("--callbackGasLimit [callbackGasLimit]", "callbackGasLimit")
   .option("-p, --provider [provider]", "provider")
   .option("-i, --input [input]", "circuit run output path", "data/output.json")
-  .option(
-    "-o, --output [output]",
-    "sendQueryArgs output path",
-    "data/sendQuery.json",
-  )
-  .action(sendQuery);
+  .option("-o, --output [output]", "query-params output path", "data/queryParams.json",)
+  .action(queryParams);
 
 const scaffold = program.command("scaffold")
   .description("Generate scaffolds for Axiom apps");

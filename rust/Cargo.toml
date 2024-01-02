@@ -6,8 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-axiom-codec = { git = "https://github.com/axiom-crypto/axiom-eth-working.git", branch = "develop" }
-axiom-query = { git = "https://github.com/axiom-crypto/axiom-eth-working.git", branch = "develop" }
+axiom-codec = { git = "ssh://git@github.com/axiom-crypto/axiom-eth-working.git", branch = "develop" }
+axiom-query = { git = "ssh://git@github.com/axiom-crypto/axiom-eth-working.git", branch = "develop" }
 ethers = "2.0"
 anyhow = "1.0.75"
 tokio = "1.34.0"

@@ -4,17 +4,19 @@ use axiom_codec::{
     constants::USER_MAX_OUTPUTS,
     types::native::{AxiomV2ComputeQuery, AxiomV2ComputeSnark},
 };
-use axiom_eth::{
-    halo2curves::bn256::G1Affine,
-    snark_verifier::pcs::{
-        kzg::{KzgAccumulator, LimbsEncoding},
-        AccumulatorEncoding,
+use axiom_query::{
+    axiom_eth::{
+        halo2curves::bn256::G1Affine,
+        snark_verifier::pcs::{
+            kzg::{KzgAccumulator, LimbsEncoding},
+            AccumulatorEncoding,
+        },
+        snark_verifier_sdk::{NativeLoader, Snark, BITS, LIMBS},
+        utils::{keccak::decorator::RlcKeccakCircuitParams, snark_verifier::NUM_FE_ACCUMULATOR},
     },
-    snark_verifier_sdk::{NativeLoader, Snark, BITS, LIMBS},
-    utils::{keccak::decorator::RlcKeccakCircuitParams, snark_verifier::NUM_FE_ACCUMULATOR},
-};
-use axiom_query::verify_compute::utils::{
-    get_metadata_from_protocol, get_onchain_vk_from_protocol, write_onchain_vkey,
+    verify_compute::utils::{
+        get_metadata_from_protocol, get_onchain_vk_from_protocol, write_onchain_vkey,
+    },
 };
 use dotenv::dotenv;
 use ethers::providers::{Http, Provider};

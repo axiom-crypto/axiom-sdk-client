@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use axiom_codec::HiLo;
-use axiom_eth::{
+use axiom_query::axiom_eth::{
     halo2_base::{
         gates::{circuit::BaseCircuitParams, RangeChip},
         AssignedValue,

@@ -5,7 +5,7 @@ use std::{
 };
 
 use axiom_codec::{constants::MAX_SOLIDITY_MAPPING_KEYS, HiLo};
-use axiom_eth::{
+use axiom_query::axiom_eth::{
     halo2_base::{AssignedValue, Context},
     halo2curves::bn256::Fr,
     rlc::circuit::builder::RlcCircuitBuilder,

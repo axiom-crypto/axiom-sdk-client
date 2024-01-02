@@ -13,7 +13,7 @@ use axiom_codec::{
     utils::native::decode_hilo_to_h256,
     HiLo,
 };
-use axiom_eth::{
+use axiom_query::axiom_eth::{
     halo2_base::{
         gates::{
             circuit::{BaseConfig, CircuitBuilderStage},

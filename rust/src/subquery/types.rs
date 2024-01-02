@@ -10,7 +10,7 @@ use axiom_codec::{
     utils::native::{decode_field_to_addr, decode_hilo_to_h256},
     HiLo,
 };
-use axiom_eth::{halo2_base::AssignedValue, Field};
+use axiom_query::axiom_eth::{halo2_base::AssignedValue, Field};
 use ethers::types::{BigEndianHash, H256};
 use serde::{Serialize, Serializer};
 

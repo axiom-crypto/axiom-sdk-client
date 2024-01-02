@@ -1,6 +1,6 @@
 use anyhow::Result;
 use axiom_codec::types::native::{AnySubquery, SolidityNestedMappingSubquery, StorageSubquery};
-use axiom_eth::{halo2_base::AssignedValue, Field};
+use axiom_query::axiom_eth::{halo2_base::AssignedValue, Field};
 use ethers::{
     providers::{JsonRpcClient, Provider},
     types::{BigEndianHash, H256},

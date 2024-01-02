@@ -1,5 +1,5 @@
 use axiom_codec::types::native::AxiomV2ComputeQuery;
-use axiom_eth::{
+use axiom_query::axiom_eth::{
     halo2_base::gates::circuit::{BaseCircuitParams, BaseConfig},
     rlc::circuit::{RlcCircuitParams, RlcConfig},
     snark_verifier_sdk::Snark,

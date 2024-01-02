@@ -1,4 +1,4 @@
-use axiom_eth::{
+use axiom_query::axiom_eth::{
     halo2_base::{gates::circuit::CircuitBuilderStage, utils::fs::gen_srs},
     snark_verifier_sdk::{
         halo2::aggregation::{AggregationCircuit, VerifierUniversality},

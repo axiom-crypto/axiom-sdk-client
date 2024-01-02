@@ -4,21 +4,23 @@ use axiom_codec::{
     utils::native::decode_hilo_to_h256,
     HiLo,
 };
-use axiom_eth::{
-    halo2_proofs::plonk::VerifyingKey,
-    halo2curves::{
-        bn256::{Fr, G1Affine},
-        group::GroupEncoding,
+use axiom_query::{
+    axiom_eth::{
+        halo2_proofs::plonk::VerifyingKey,
+        halo2curves::{
+            bn256::{Fr, G1Affine},
+            group::GroupEncoding,
+        },
+        snark_verifier::pcs::{
+            kzg::{KzgAccumulator, LimbsEncoding},
+            AccumulatorEncoding,
+        },
+        snark_verifier_sdk::{NativeLoader, Snark, BITS, LIMBS},
+        utils::{keccak::decorator::RlcKeccakCircuitParams, snark_verifier::NUM_FE_ACCUMULATOR},
     },
-    snark_verifier::pcs::{
-        kzg::{KzgAccumulator, LimbsEncoding},
-        AccumulatorEncoding,
+    verify_compute::utils::{
+        get_metadata_from_protocol, get_onchain_vk_from_vk, write_onchain_vkey,
     },
-    snark_verifier_sdk::{NativeLoader, Snark, BITS, LIMBS},
-    utils::{keccak::decorator::RlcKeccakCircuitParams, snark_verifier::NUM_FE_ACCUMULATOR},
-};
-use axiom_query::verify_compute::utils::{
-    get_metadata_from_protocol, get_onchain_vk_from_vk, write_onchain_vkey,
 };
 use ethers::providers::Http;
 use itertools::Itertools;

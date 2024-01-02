@@ -5,7 +5,7 @@ use std::{
 };
 
 use axiom_codec::types::native::AxiomV2ComputeQuery;
-use axiom_eth::{
+use axiom_query::axiom_eth::{
     halo2_base::utils::fs::gen_srs,
     halo2_proofs::{
         dev::MockProver,

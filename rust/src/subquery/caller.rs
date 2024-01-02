@@ -6,7 +6,7 @@ use axiom_codec::{
     types::{field_elements::SUBQUERY_RESULT_LEN, native::AnySubquery},
     HiLo,
 };
-use axiom_eth::{
+use axiom_query::axiom_eth::{
     halo2_base::{AssignedValue, Context, ContextTag},
     keccak::promise::{KeccakFixLenCall, KeccakVarLenCall},
     utils::encode_h256_to_hilo,

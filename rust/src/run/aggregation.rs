@@ -4,7 +4,7 @@ use std::{
     path::Path,
 };
 
-use axiom_eth::{
+use axiom_query::axiom_eth::{
     halo2_base::{
         gates::{circuit::CircuitBuilderStage, flex_gate::MultiPhaseThreadBreakPoints},
         utils::fs::gen_srs,

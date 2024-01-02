@@ -1,22 +1,26 @@
 use std::sync::{Arc, Mutex};
 
 use axiom_codec::HiLo;
-use axiom_eth::{
-    halo2_base::{
-        gates::{
-            circuit::{BaseCircuitParams, CircuitBuilderStage},
-            RangeChip,
+use axiom_query::{
+    axiom_eth::{
+        halo2_base::{
+            gates::{
+                circuit::{BaseCircuitParams, CircuitBuilderStage},
+                RangeChip,
+            },
+            safe_types::SafeTypeChip,
+            utils::fs::gen_srs,
+            AssignedValue,
         },
-        safe_types::SafeTypeChip,
-        AssignedValue,
+        halo2_proofs::poly::commitment::ParamsProver,
+        halo2curves::bn256::Fr,
+        keccak::promise::KeccakFixLenCall,
+        rlc::circuit::{builder::RlcCircuitBuilder, RlcCircuitParams},
+        snark_verifier_sdk::{halo2::aggregation::AggregationConfigParams, CircuitExt},
+        utils::keccak::decorator::RlcKeccakCircuitParams,
     },
-    halo2curves::bn256::Fr,
-    keccak::promise::KeccakFixLenCall,
-    rlc::circuit::{builder::RlcCircuitBuilder, RlcCircuitParams},
-    snark_verifier_sdk::{halo2::aggregation::AggregationConfigParams, CircuitExt},
-    utils::keccak::decorator::RlcKeccakCircuitParams,
+    verify_compute::utils::verify_snark,
 };
-use axiom_query::verify_compute::utils::verify_snark;
 use ethers::providers::{Http, JsonRpcClient};
 use test_case::test_case;
 
@@ -182,5 +186,8 @@ pub fn test_compute_query<S: AxiomCircuitScaffold<Http, Fr>>(_circuit: S) {
         AxiomCircuitParams::Base(circuit.builder.config_params),
         agg_vk,
     );
-    verify_snark(&final_output.snark);
+    // TEMP
+    let kzg_params = gen_srs(agg_circuit_params.degree);
+    let dk = (kzg_params.get_g()[0], kzg_params.g2(), kzg_params.s_g2());
+    verify_snark(&dk.into(), &final_output.snark).unwrap();
 }

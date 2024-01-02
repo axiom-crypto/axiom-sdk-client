@@ -23,7 +23,7 @@ macro_rules! ctx {
 #[macro_export]
 macro_rules! impl_fr_from {
     ($enum_type:ty) => {
-        use axiom_eth::halo2curves::bn256::Fr;
+        use axiom_query::axiom_eth::halo2curves::bn256::Fr;
         impl From<$enum_type> for Fr {
             fn from(field: $enum_type) -> Self {
                 Fr::from(field as u64)

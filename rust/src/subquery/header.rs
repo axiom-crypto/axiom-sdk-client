@@ -1,12 +1,12 @@
 use anyhow::{bail, Result};
 use axiom_codec::{
     special_values::{
-        HEADER_EXTRA_DATA_LEN_FIELD_IDX, HEADER_HASH_FIELD_IDX, HEADER_LOGS_BLOOM_FIELD_IDX_OFFSET,
-        HEADER_SIZE_FIELD_IDX,
+        HEADER_EXTRA_DATA_LEN_FIELD_IDX, HEADER_HASH_FIELD_IDX, HEADER_HEADER_SIZE_FIELD_IDX,
+        HEADER_LOGS_BLOOM_FIELD_IDX_OFFSET,
     },
     types::native::{AnySubquery, HeaderSubquery},
 };
-use axiom_eth::{halo2_base::AssignedValue, Field};
+use axiom_query::axiom_eth::{halo2_base::AssignedValue, Field};
 use ethers::{
     providers::{JsonRpcClient, Middleware, Provider},
     types::{BigEndianHash, BlockId, H256},
@@ -38,7 +38,7 @@ pub enum HeaderField {
     BaseFeePerGas,
     WithdrawalsRoot,
     Hash = HEADER_HASH_FIELD_IDX as isize,
-    Size = HEADER_SIZE_FIELD_IDX as isize,
+    Size = HEADER_HEADER_SIZE_FIELD_IDX as isize,
     ExtraDataLen = HEADER_EXTRA_DATA_LEN_FIELD_IDX as isize,
 }
 impl_fr_from!(HeaderField);

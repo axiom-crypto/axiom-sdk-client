@@ -1,4 +1,4 @@
-use axiom_eth::{
+use axiom_query::axiom_eth::{
     keccak::{
         promise::{KeccakFixLenCall, KeccakVarLenCall},
         types::KeccakLogicalInput,

@@ -2,6 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import util from 'util';
 import childProcess from 'child_process';
+import chalk from 'chalk';
 import { getInstallCmd } from './utils';
 const exec = util.promisify(childProcess.exec);
 
@@ -29,7 +30,7 @@ export class ScaffoldManager {
     const doesExist = fs.existsSync(path.join(this.fullPath, inputPath));
     this.actions.push({
       description,
-      status: doesExist ? "YES": "NO"
+      status: doesExist ? chalk.yellow("SKIP"): chalk.green("MAKE")
     });
     return doesExist;
   }
@@ -38,17 +39,26 @@ export class ScaffoldManager {
     const res = fs.mkdirSync(path.join(this.fullPath, dir), { recursive: true });
     this.actions.push({
       description,
-      status: res!.length === 0 ? "ERR" : "OK"
+      status: res!.length === 0 ? chalk.red("ERR") : chalk.green("OK")
     });
   }
 
   async exec(cmd: string, description: string) {
-    const { stdout, stderr } = await exec(`cd ${this.fullPath} && ${cmd}`);
+    let stdout;
+    let stderr;
+    let err;
+    try {
+      ({ stdout, stderr } = await exec(`cd ${this.fullPath} && ${cmd}`));
+    } catch (e) {
+      err = e;
+    }
+
     this.actions.push({
       description,
-      status: stderr.length > 0 ? "ERR" : "OK"
-    })
-    return { stdout, stderr };
+      status: err !== undefined ? chalk.red("ERR") : chalk.green("OK")
+    });
+    
+    return { stdout, stderr, err }
   }
 
   cpFromTemplate(src: string, dst: string, description: string) {
@@ -57,7 +67,7 @@ export class ScaffoldManager {
     const fileExists = fs.existsSync(fullDstPath);
     this.actions.push({
       description,
-      status: !fileExists ? "ERR" : "OK"
+      status: !fileExists ? chalk.red("ERR") : chalk.green("OK")
     })
   }
 
@@ -67,13 +77,14 @@ export class ScaffoldManager {
     const fileExists = fs.existsSync(fullFilePath);
     this.actions.push({
       description,
-      status: fileExists ? "ERR" : "OK"
+      status: fileExists ? chalk.red("ERR") : chalk.green("OK")
     });
   }
 
   report() {
+    console.log("\nSummary:")
     this.actions.forEach((action) => {
-      console.log(`${action.description} [${action.status}]`);
+      console.log(`[${chalk.bold(action.status)}]\t${action.description}`);
     })
   }
 }

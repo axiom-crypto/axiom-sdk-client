@@ -26,12 +26,14 @@ export const scaffoldProject = async (sm: ScaffoldManager) => {
   // Check if forge initialized at path and run forge init if not
   if (!sm.exists("foundry.toml", `${chalk.bold("foundry.toml")} exists?`)) {
     console.log("Initializing Foundry...");
-    await sm.exec("forge init --no-commit --force", "  - Initialize forge");
+    const { err } = await sm.exec("forge init --no-commit --force", "  - Initialize forge");
 
-    // Remove default foundry files in new project
-    sm.rm(path.join("src", "Counter.sol"), `  - Remove foundry default template file ${chalk.bold(path.join("src", "Counter.sol"))}`);
-    sm.rm(path.join("script", "Counter.s.sol"), `  - Remove foundry default template file ${chalk.bold(path.join("script", "Counter.s.sol"))}`);
-    sm.rm(path.join("test", "Counter.t.sol"), `  - Remove foundry default template file ${chalk.bold(path.join("test", "Counter.t.sol"))}`);
+    if (!err) {
+      // Remove default foundry files in new project
+      sm.rm(path.join("src", "Counter.sol"), `  - Remove foundry default template file ${chalk.bold(path.join("src", "Counter.sol"))}`);
+      sm.rm(path.join("script", "Counter.s.sol"), `  - Remove foundry default template file ${chalk.bold(path.join("script", "Counter.s.sol"))}`);
+      sm.rm(path.join("test", "Counter.t.sol"), `  - Remove foundry default template file ${chalk.bold(path.join("test", "Counter.t.sol"))}`);
+    }
   }
 
   // Add axiom-v2-contracts to forge 

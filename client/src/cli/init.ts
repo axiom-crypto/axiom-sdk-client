@@ -14,10 +14,10 @@ export const init = async (
     packageMgr?: string,
   }
 ) => {
-  // Check dependencies (forge)
+  // Check that user has installed forge
   await validateForge();
 
-  // List of questions for init
+  // List of questions
   let setupQuestions: PromptObject[] = [
     {
       name: "path",
@@ -96,6 +96,7 @@ export const init = async (
     ...options,
   }
 
+  // Validate that the package manager the user has selected is installed
   validatePackageManager(answers.packageMgr);
 
   // Initialize scaffold manager

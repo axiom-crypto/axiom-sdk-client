@@ -207,12 +207,20 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> AxiomCir
             .flat_map(|hilo| hilo.flatten())
             .collect::<Vec<_>>();
         flattened_callback.resize_with(self.output_num_instances(), || {
-            self.builder.borrow_mut().base.main(0).load_witness(F::ZERO)
+            self.builder
+                .borrow_mut()
+                .base
+                .main(0)
+                .load_constant(F::ZERO)
         });
 
         let mut subquery_instances = subquery_caller.lock().unwrap().instances().clone();
         subquery_instances.resize_with(self.subquery_num_instances(), || {
-            self.builder.borrow_mut().base.main(0).load_witness(F::ZERO)
+            self.builder
+                .borrow_mut()
+                .base
+                .main(0)
+                .load_constant(F::ZERO)
         });
 
         flattened_callback.extend(subquery_instances);

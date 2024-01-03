@@ -99,7 +99,7 @@ impl<P: JsonRpcClient, F: Field> SubqueryCaller<P, F> {
         let subquery_type_assigned_value = ctx.load_constant(F::from(subquery_type));
         let hi_lo_vec = vec![hi, lo];
         let mut input = result.1;
-        input.resize_with(MAX_SUBQUERY_INPUTS, || ctx.load_witness(F::ZERO));
+        input.resize_with(MAX_SUBQUERY_INPUTS, || ctx.load_constant(F::ZERO));
         let mut flattened_subquery = vec![subquery_type_assigned_value];
         flattened_subquery.extend(input);
         flattened_subquery.extend(hi_lo_vec);

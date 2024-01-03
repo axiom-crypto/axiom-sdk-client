@@ -1,0 +1,13 @@
+{
+  "name": "axiom-sdk-client",
+  "version": "0.0.1",
+  "description": "Axiom client SDK",
+  "scripts": {
+    "versions": "node -e 'require(\"./scripts/versions.js\").versions()'",
+    "local": "node scripts/testLocal.js",
+    "publish-all": "node scripts/publishAll.js"
+  },
+  "keywords": [],
+  "author": "Intrinsic Technologies",
+  "license": "MIT"
+}

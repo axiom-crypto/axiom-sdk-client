@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@axiom-crypto/circuit':
-    specifier: 0.1.5-rc.2
-    version: 0.1.5-rc.2(typescript@5.3.3)
+    specifier: 0.1.5-rc.3
+    version: 0.1.5-rc.3(typescript@5.3.3)
   '@axiom-crypto/core':
     specifier: 2.2.51-rc.3
     version: 2.2.51-rc.3
@@ -58,12 +58,12 @@ packages:
       '@jridgewell/trace-mapping': 0.3.20
     dev: true
 
-  /@axiom-crypto/circuit@0.1.5-rc.2(typescript@5.3.3):
-    resolution: {integrity: sha512-iU+l93Pe7sKRpDgV4Yyeo8Y7lvcF2OFnniwe0FL4jgoJH6kELnAi8qeCl8NQ5xqjG+okW9nRRvFz0gmcRIpUqg==}
+  /@axiom-crypto/circuit@0.1.5-rc.3(typescript@5.3.3):
+    resolution: {integrity: sha512-Nvbpl/s3munsjTyy3FqY9qARmTiXCgkq8/LeWG8kr+QOtIJ2J/sQaLZA5fVofsHHW9r8dxJWT11IAJk1+1uKnA==}
     dependencies:
       '@axiom-crypto/core': 2.2.51-rc.3
-      '@axiom-crypto/halo2-lib-js': 0.2.13-alpha.1
-      '@axiom-crypto/halo2-wasm': 0.2.10
+      '@axiom-crypto/halo2-lib-js': 0.2.14-rc.0
+      '@axiom-crypto/halo2-wasm': 0.2.11-rc.1
       '@axiom-crypto/tools': 0.3.35-rc.2
       commander: 11.1.0
       ethers: 6.9.0
@@ -103,10 +103,10 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@axiom-crypto/halo2-lib-js@0.2.13-alpha.1:
-    resolution: {integrity: sha512-RACC6uGkVNNZDJwsT7yrF/XEq9oSB/hylup78V8JYlYhp3/dZ6fAnbiEPuTe9xFMqDpIYeTN7KO/h6VEqktZfw==}
+  /@axiom-crypto/halo2-lib-js@0.2.14-rc.0:
+    resolution: {integrity: sha512-CkWp7VywU5JxXw8Hah/LLIm2oxYJzCKcPxNUo8j3t9wY4tkKVOwpPv2Kr5KuW2oeKOZvNlHmkemNcO6vfItS9Q==}
     dependencies:
-      '@axiom-crypto/halo2-wasm': 0.2.10
+      '@axiom-crypto/halo2-wasm': 0.2.11-rc.1
       ethers: 6.9.0
       prettier: 1.18.2
     transitivePeerDependencies:
@@ -114,8 +114,8 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@axiom-crypto/halo2-wasm@0.2.10:
-    resolution: {integrity: sha512-88VPIGeLUPYp+kIgKuJ4QBAKZ5SbwtJheBca5DuZdyb/9vGZ02gyeyQe6/2N7yVDIn3hupHhgfAc4mqm1/4ddw==}
+  /@axiom-crypto/halo2-wasm@0.2.11-rc.1:
+    resolution: {integrity: sha512-30yASHZXIIGILRJHvOPDZ43gATCgGzkl9wvbK+on1lC3lnMO5iF3aOsqIV8bPkTsh9OhpxsBA32FUkfZ+vZNyA==}
     dev: false
 
   /@axiom-crypto/halo2-wasm@0.2.7:

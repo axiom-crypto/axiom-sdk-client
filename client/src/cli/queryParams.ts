@@ -1,3 +1,4 @@
+import path from 'path';
 import { Axiom } from "@axiom-crypto/core";
 import { getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
 import { buildSendQuery } from "../sendQuery";
@@ -9,9 +10,9 @@ export const queryParams = async (
     sourceChainId: string;
     callbackExtraData: string;
     calldata: boolean;
-    output: string;
-    input: string;
     caller: string;
+    output?: string;
+    input?: string;
     provider?: string;
     maxFeePerGas?: string;
     callbackGasLimit?: number;
@@ -23,8 +24,13 @@ export const queryParams = async (
   if (!options.sourceChainId) {
     throw new Error("Please provide a source chain ID.");
   }
+  let defaultPath = path.resolve(path.join("app", "axiom"));
+  let inputFile = path.join(defaultPath, "data", "output.json");
+  if (options.input !== undefined) {
+      inputFile = options.input;
+  }
+  const outputJson = readJsonFromFile(inputFile);
   const provider = getProvider(options.provider);
-  const outputJson = readJsonFromFile(options.input);
   const axiom = new Axiom({
     providerUri: provider,
     chainId: options.sourceChainId,
@@ -62,7 +68,11 @@ export const queryParams = async (
         queryId: build.queryId,
       };
     }
-    saveJsonToFile(res, options.output, "sendQuery.json");
+    let outputFile = path.join(defaultPath, "data", "sendQuery.json");
+    if (options.output !== undefined) {
+        outputFile = options.output;
+    }
+    saveJsonToFile(res, outputFile);
   } catch (e) {
     console.error(e);
   }

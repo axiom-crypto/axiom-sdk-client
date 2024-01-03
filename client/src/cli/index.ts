@@ -25,7 +25,7 @@ const circuit = program.command("circuit")
 circuit
   .command("compile")
   .description("compile an Axiom circuit")
-  .argument("<circuit path>", "circuit path")
+  .argument("<circuitPath>", "path to the typescript circuit file")
   .option("-s, --stats", "print stats")
   .option("-p, --provider [provider]", "provider")
   .option("-i, --input [inputs]", "inputs")
@@ -36,7 +36,7 @@ circuit
 circuit
   .command("prove")
   .description("prove an Axiom circuit")
-  .argument("<circuit path>", "circuit path")
+  .argument("<circuitPath>", "path to the typescript circuit file")
   .option("-s, --sourceChainId [sourceChainId]", "source chain id")
   .option("-b, --build [build]", "build path")
   .option("-t, --stats", "print stats")
@@ -58,8 +58,8 @@ circuit
   .option("--maxFeePerGas [maxFeePerGas]", "maxFeePerGas")
   .option("--callbackGasLimit [callbackGasLimit]", "callbackGasLimit")
   .option("-p, --provider [provider]", "provider")
-  .option("-i, --input [input]", "circuit run output path", "data/output.json")
-  .option("-o, --output [output]", "query-params output path", "data/queryParams.json",)
+  .option("-i, --input [input]", "circuit run output path")
+  .option("-o, --output [output]", "query-params output path")
   .action(queryParams);
 
 const scaffold = program.command("scaffold")

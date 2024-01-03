@@ -13,7 +13,7 @@ export const run = async (
         inputs?: string
     }
 ) => {
-    let circuitFunction = "circuit.ts";
+    let circuitFunction = "circuit";
     if (options.function !== undefined) {
         circuitFunction = options.function;
     }

@@ -25,14 +25,17 @@ export async function getFunctionFromTs(relativePath: string, functionName: stri
     const customRequire = (moduleName: string) => {
         try {
             if (moduleName === "@axiom-crypto/halo2-lib-js") {
-                return require("@axiom-crypto/halo2-lib-js");
+                return import("@axiom-crypto/halo2-lib-js");
             }
             else if (moduleName === "@axiom-crypto/client") {
-                return require("../index");
+                return import("../index");
+            }
+            else if (moduleName === "@axiom-crypto/circuit") {
+                return import("../index");
             }
             else {
                 const npmRoot = execSync('npm root').toString().trim();
-                return require(`${npmRoot}/${moduleName}`);
+                return import(`${npmRoot}/${moduleName}`);
             }
 
         } catch (e) {

@@ -21,7 +21,7 @@ use axiom_query::axiom_eth::{
         },
         safe_types::SafeTypeChip,
         virtual_region::manager::VirtualRegionManager,
-        AssignedValue, Context,
+        AssignedValue,
     },
     halo2_proofs::{
         circuit::{Layouter, SimpleFloorPlanner},
@@ -54,28 +54,28 @@ use crate::{
     types::{AxiomCircuitConfig, AxiomCircuitParams, AxiomV2DataAndResults},
 };
 
-pub trait RawCircuitInput<F: Field, O> {
-    fn assign(&self, ctx: &mut Context<F>) -> O;
+pub trait InputFlatten<T: Copy>: Sized {
+    const NUM_FE: usize;
+    fn flatten_vec(&self) -> Vec<T>;
+    fn unflatten(vec: Vec<T>) -> anyhow::Result<Self>;
 }
 
 pub trait AxiomCircuitScaffold<P: JsonRpcClient, F: Field>: Default + Clone + Debug {
-    type VirtualCircuitInput: Clone + Debug;
-    type CircuitInput: Clone + Debug + Default + RawCircuitInput<F, Self::VirtualCircuitInput>;
+    type InputValue: Clone + Debug + Default + InputFlatten<F>;
+    type InputWitness: Clone + Debug + InputFlatten<AssignedValue<F>>;
     type FirstPhasePayload: Clone = ();
 
     fn virtual_assign_phase0(
-        &self,
         builder: &mut RlcCircuitBuilder<F>,
         range: &RangeChip<F>,
         subquery_caller: Arc<Mutex<SubqueryCaller<P, F>>>,
         callback: &mut Vec<HiLo<AssignedValue<F>>>,
-        unassigned_inputs: Self::VirtualCircuitInput,
+        assigned_inputs: Self::InputWitness,
     ) -> Self::FirstPhasePayload;
 
     /// Most people should not use this
     #[allow(unused_variables)]
     fn virtual_assign_phase1(
-        &self,
         builder: &mut RlcCircuitBuilder<F>,
         range: &RangeChip<F>,
         payload: Self::FirstPhasePayload,
@@ -86,7 +86,7 @@ pub trait AxiomCircuitScaffold<P: JsonRpcClient, F: Field>: Default + Clone + De
 #[derive(Clone, Debug)]
 pub struct AxiomCircuit<F: Field, P: JsonRpcClient, A: AxiomCircuitScaffold<P, F>> {
     pub builder: RefCell<RlcCircuitBuilder<F>>,
-    pub inputs: A::CircuitInput,
+    pub inputs: A::InputValue,
     pub provider: Provider<P>,
     range: RangeChip<F>,
     payload: RefCell<Option<A::FirstPhasePayload>>,
@@ -151,11 +151,11 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> AxiomCir
         self
     }
 
-    pub fn set_inputs(&mut self, inputs: A::CircuitInput) {
+    pub fn set_inputs(&mut self, inputs: A::InputValue) {
         self.inputs = inputs;
     }
 
-    pub fn use_inputs(mut self, inputs: A::CircuitInput) -> Self {
+    pub fn use_inputs(mut self, inputs: A::InputValue) -> Self {
         self.set_inputs(inputs);
         self
     }
@@ -185,14 +185,13 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> AxiomCir
         if self.payload.borrow().is_some() {
             return;
         }
-        let assigned_inputs = self
-            .inputs
-            .assign(self.builder.borrow_mut().base.borrow_mut().main(0));
+        let flattened_inputs = self.inputs.flatten_vec();
+        let assigned_input_vec = self.builder.borrow_mut().base.borrow_mut().main(0).assign_witnesses(flattened_inputs);
+        let assigned_inputs = A::InputWitness::unflatten(assigned_input_vec).unwrap();
 
         let subquery_caller = Arc::new(Mutex::new(SubqueryCaller::new(self.provider.clone())));
         let mut callback = Vec::new();
         let payload = A::virtual_assign_phase0(
-            &A::default(),
             &mut self.builder.borrow_mut(),
             &self.range,
             subquery_caller.clone(),
@@ -249,12 +248,7 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> AxiomCir
             .take()
             .expect("FirstPhase witness generation was not run");
         self.builder.borrow_mut().base.main(1);
-        A::virtual_assign_phase1(
-            &A::default(),
-            &mut self.builder.borrow_mut(),
-            &self.range,
-            payload,
-        );
+        A::virtual_assign_phase1(&mut self.builder.borrow_mut(), &self.range, payload);
     }
 
     fn synthesize_without_rlc(

@@ -3,6 +3,7 @@
 #![feature(int_roundings)]
 #![feature(custom_test_frameworks)]
 
+pub use axiom_query::axiom_eth;
 pub mod aggregation;
 pub mod constants;
 pub mod macros;

@@ -21,7 +21,7 @@ use crate::{
     subquery::caller::SubqueryCaller,
     tests::{
         shared_tests::{mock_test, single_instance_test},
-        utils::{account_call, header_call, MyCircuitInput, MyCircuitVirtualInput},
+        utils::{account_call, header_call, EmptyCircuitInput},
     },
     types::AxiomCircuitParams,
     utils::get_provider,
@@ -32,16 +32,15 @@ macro_rules! rlc_test_struct {
         #[derive(Debug, Clone, Default)]
         struct $struct_name;
         impl<P: JsonRpcClient> AxiomCircuitScaffold<P, Fr> for $struct_name {
-            type CircuitInput = MyCircuitInput;
-            type VirtualCircuitInput = MyCircuitVirtualInput<Fr>;
+            type InputValue = EmptyCircuitInput<Fr>;
+            type InputWitness = EmptyCircuitInput<AssignedValue<Fr>>;
 
             fn virtual_assign_phase0(
-                &self,
                 builder: &mut RlcCircuitBuilder<Fr>,
                 _range: &RangeChip<Fr>,
                 subquery_caller: Arc<Mutex<SubqueryCaller<P, Fr>>>,
                 _callback: &mut Vec<HiLo<AssignedValue<Fr>>>,
-                _inputs: Self::VirtualCircuitInput,
+                _inputs: Self::InputWitness,
             ) {
                 $subquery_call(builder, subquery_caller);
             }

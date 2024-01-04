@@ -30,7 +30,7 @@ use crate::{
 pub fn mock<P: JsonRpcClient + Clone, S: AxiomCircuitScaffold<P, Fr>>(
     provider: Provider<P>,
     raw_circuit_params: AxiomCircuitParams,
-    inputs: Option<S::CircuitInput>,
+    inputs: Option<S::InputValue>,
 ) {
     let circuit_params = RlcKeccakCircuitParams::from(raw_circuit_params.clone());
     let k = circuit_params.k();
@@ -48,7 +48,7 @@ pub fn mock<P: JsonRpcClient + Clone, S: AxiomCircuitScaffold<P, Fr>>(
 pub fn keygen<P: JsonRpcClient + Clone, S: AxiomCircuitScaffold<P, Fr>>(
     provider: Provider<P>,
     raw_circuit_params: AxiomCircuitParams,
-    inputs: Option<S::CircuitInput>,
+    inputs: Option<S::InputValue>,
 ) -> (VerifyingKey<G1Affine>, ProvingKey<G1Affine>) {
     let circuit_params = RlcKeccakCircuitParams::from(raw_circuit_params.clone());
     let params = gen_srs(circuit_params.k() as u32);
@@ -76,7 +76,7 @@ pub fn keygen<P: JsonRpcClient + Clone, S: AxiomCircuitScaffold<P, Fr>>(
 pub fn prove<P: JsonRpcClient + Clone, S: AxiomCircuitScaffold<P, Fr>>(
     provider: Provider<P>,
     raw_circuit_params: AxiomCircuitParams,
-    inputs: Option<S::CircuitInput>,
+    inputs: Option<S::InputValue>,
     pk: ProvingKey<G1Affine>,
 ) -> Snark {
     let circuit_params = RlcKeccakCircuitParams::from(raw_circuit_params.clone());
@@ -92,7 +92,7 @@ pub fn prove<P: JsonRpcClient + Clone, S: AxiomCircuitScaffold<P, Fr>>(
 pub fn run<P: JsonRpcClient + Clone, S: AxiomCircuitScaffold<P, Fr>>(
     provider: Provider<P>,
     raw_circuit_params: AxiomCircuitParams,
-    inputs: Option<S::CircuitInput>,
+    inputs: Option<S::InputValue>,
     pk: ProvingKey<G1Affine>,
 ) -> AxiomV2CircuitOutput {
     let circuit_params = RlcKeccakCircuitParams::from(raw_circuit_params.clone());

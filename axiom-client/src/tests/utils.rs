@@ -6,17 +6,15 @@ use std::{
 
 use axiom_codec::{constants::MAX_SOLIDITY_MAPPING_KEYS, HiLo};
 use axiom_query::axiom_eth::{
-    halo2_base::{AssignedValue, Context},
+    halo2_base::AssignedValue,
     halo2curves::bn256::Fr,
     rlc::circuit::builder::RlcCircuitBuilder,
     utils::encode_addr_to_field,
-    Field,
 };
 use ethers::{providers::JsonRpcClient, types::H160};
 
 use crate::{
     constant, ctx,
-    scaffold::RawCircuitInput,
     subquery::{
         account::AccountField,
         caller::SubqueryCaller,
@@ -27,20 +25,21 @@ use crate::{
             AssignedSolidityNestedMappingSubquery, AssignedStorageSubquery, AssignedTxSubquery,
         },
     },
-    witness,
+    witness, scaffold::InputFlatten,
 };
 
 #[derive(Debug, Clone, Default)]
-pub struct MyCircuitInput;
+pub struct EmptyCircuitInput<T: Copy>(PhantomData<T>);
 
-#[derive(Debug, Clone)]
-pub struct MyCircuitVirtualInput<F: Field> {
-    a: PhantomData<F>,
-}
+impl<T: Copy> InputFlatten<T> for EmptyCircuitInput<T> {
+    const NUM_FE: usize = 0;
 
-impl RawCircuitInput<Fr, MyCircuitVirtualInput<Fr>> for MyCircuitInput {
-    fn assign(&self, _ctx: &mut Context<Fr>) -> MyCircuitVirtualInput<Fr> {
-        MyCircuitVirtualInput { a: PhantomData }
+    fn flatten_vec(&self) -> Vec<T> {
+        vec![]
+    }
+
+    fn unflatten(_vec: Vec<T>) -> anyhow::Result<Self> {
+        Ok(Self(PhantomData))
     }
 }
 

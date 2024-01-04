@@ -30,9 +30,6 @@ export async function getFunctionFromTs(relativePath: string, functionName: stri
             else if (moduleName === "@axiom-crypto/client") {
                 return require("../index");
             }
-            else if (moduleName === "@axiom-crypto/circuit") {
-                return require("../index");
-            }
             else {
                 const npmRoot = execSync('npm root').toString().trim();
                 return require(`${npmRoot}/${moduleName}`);

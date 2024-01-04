@@ -19,10 +19,10 @@ export const queryParams = async (
   },
 ) => {
   if (!options.refundAddress) {
-    throw new Error("Please provide a refund address.");
+    throw new Error("Please provide a refund address (--refundAddress <address>)");
   }
   if (!options.sourceChainId) {
-    throw new Error("Please provide a source chain ID.");
+    throw new Error("Please provide a source chain ID (--sourceChainId <id>)");
   }
   let defaultPath = path.resolve(path.join("app", "axiom"));
   let inputFile = path.join(defaultPath, "data", "output.json");

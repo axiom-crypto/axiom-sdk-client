@@ -22,5 +22,13 @@ function copyReadme() {
   fs.copyFileSync("./readme.md", "./dist/readme.md");
 }
 
+function copyTemplates() {
+  const src = "./src/scaffold/templates";
+  const dest = "./dist/scaffold/templates";
+  fs.mkdirSync(dest);
+  fs.cpSync(src, dest, { recursive: true });
+}
+
 copyPackageJson();
 copyReadme();
+copyTemplates();

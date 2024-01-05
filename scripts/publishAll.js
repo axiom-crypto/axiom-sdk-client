@@ -3,6 +3,9 @@ const exec = util.promisify(require('child_process').exec);
 const versions = require('./versions');
 const packages = versions.versions();
 
+if (process.argv.length < 2) {
+  throw new Error("Please include a tag value as an argument: `pnpm publish-all tagname`");
+}
 const tag = process.argv[2];
 
 const sleep = (ms = 0) => new Promise(resolve => setTimeout(resolve, ms));

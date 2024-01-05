@@ -2,6 +2,6 @@
 
 import { compile } from "@axiom-crypto/circuit";
 import { run } from "@axiom-crypto/circuit";
-import { sendQuery } from "./sendQuery";
+import { queryParams } from "./queryParams";
 
-export { compile, run, sendQuery };
+export { compile, run, queryParams };

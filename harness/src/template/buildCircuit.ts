@@ -1,33 +1,43 @@
 import fs from 'fs';
 import path from 'path';
 
-const getCircuitInterfaceFromInput = (inputs: string) => {
-  let inputNames = inputs.split("\n").map((line) => line.split(":")[0].trim());
-  let inputTypes = inputs.split("\n").map((line) => line.split(":")[1].trim());
-  let circuitValueTypes: string[] = [];
-  for (let val of inputTypes) {
-    if (Array.isArray(val)) {
-      if (String(val[0]).length == 66) {
-        circuitValueTypes.push("CircuitValue256[]");
-      }
-      else {
-        circuitValueTypes.push("CircuitValue[]");
-      }
-    }
-    else if (String(val).length == 66) {
-      circuitValueTypes.push("CircuitValue256");
-    }
-    else {
-      circuitValueTypes.push("CircuitValue");
-    }
+const parseStringToObject = (str: string) => {
+  const inputVars = str.split(":").slice(0,-1).map((line) => line.split(" ").slice(-1)[0]);
+  for (const inputVar of inputVars) {
+    str = str.replace(inputVar, `"${inputVar}"`);
   }
-  let newInputs = inputNames.map((name, i) => `  ${name}: ${circuitValueTypes[i]}`).join(";\n").concat(";");
-  return newInputs;
+  let parsed = str.replace(/ /g,"").replace(/\n/g,"");
+  parsed = parsed.replace(/;/g, "");
+  parsed = parsed.replace(/,\]/g, "]");
+  parsed = parsed.replace(/,\}/g, "}");
+  return JSON.parse(parsed);
+}
+
+const getCircuitInterfaceFromInput = (jsonInput: object) => {
+  const keys = Object.keys(jsonInput);
+  const values = Object.values(jsonInput);
+  let inputTypes: string[] = [];
+  for (let i = 0; i < keys.length; i++) {
+    let inputType = "";
+    if (Array.isArray(values[i])) {
+      // Check if any array value is a 32-byte string and if so it should be a CircuitValue256
+      const contains32ByteString = values[i].reduce((acc: boolean, value: any) => acc && (String(value).length === 66), false);
+      inputType = contains32ByteString ? "CircuitValue256[]" : "CircuitValue[]";
+    } else {
+      if (String(values[i]).length == 66) {
+        inputType = "CircuitValue256";
+      } else {
+        inputType = "CircuitValue";
+      }
+    }
+    inputTypes.push(`  ${keys[i]}: ${inputType};`);
+  }
+  return inputTypes.join("\n");
 }
 
 export const buildCircuit = (jsCircuitPath: string): string => {
   // Parse path
-  let parsedFilename = jsCircuitPath.split("/").slice(-1)[0];
+  let parsedFilename = path.basename(jsCircuitPath);
   parsedFilename = parsedFilename.split(".js")[0] + ".circuit.ts";
 
   // Load the input circuit and template
@@ -38,10 +48,11 @@ export const buildCircuit = (jsCircuitPath: string): string => {
   let inputObject = inputCircuit.match(/const input = {[\s\S]*}[;]*/);
   if (inputObject) {
     // Split out extraneous lines in input
-    let inputs = inputObject[0].split("\n").slice(1, -1).join("\n");
+    let inputs = parseStringToObject(inputObject[0].split("const input = ")[1]);//inputObject[0].split("\n").slice(1, -1).join("\n");
+    console.log("inputs", inputs);
 
     // Replace the input object in the template with the input object from the input circuit
-    circuit = circuit.replace("  // $input", inputs);
+    circuit = circuit.replace("  // $input", JSON.stringify(inputs, null, 2).slice(2,-2));
 
     // Remove the input object from the input circuit
     inputCircuit = inputCircuit.replace(inputObject[0], "");
@@ -50,7 +61,8 @@ export const buildCircuit = (jsCircuitPath: string): string => {
     const circuitValueInputs = getCircuitInterfaceFromInput(inputs);
     circuit = circuit.replace("  // $typeInputs", circuitValueInputs);
 
-    let inputNames = inputs.split("\n").map((line) => line.split(":")[0]).join(",\n").concat(",");
+    // Get circuitvalue input names
+    let inputNames = Object.keys(inputs).map((input) => `  ${input},`).join("\n");
     circuit = circuit.replace("  // $cvInputs", inputNames);
   }
 

@@ -38,7 +38,7 @@ pub fn impl_new_struct(ast: &ItemStruct) -> Result<TokenStream, TokenStream> {
     let mut new_impl_generics = Generics::default();
 
     // Add the `T: Copy` generic as the first generic
-    let copy_generic: GenericParam = parse_quote! { T: axiom_client::axiom_eth::Field };
+    let copy_generic: GenericParam = parse_quote! { T: Copy };
     new_impl_generics.params.push(copy_generic);
 
     // Append existing generics
@@ -55,7 +55,7 @@ pub fn impl_new_struct(ast: &ItemStruct) -> Result<TokenStream, TokenStream> {
             // let new_type = convert_raw_type_to_fe(&field_type_str).expect("not supported");
             // let new_type_ident = Ident::new(&new_type, Span::call_site());
             quote! {
-                #name: <#field_type as axiom_client::input::raw_input::RawInput<T>>::FEType,
+                #name: <#field_type as axiom_client::input::raw_input::RawInput<crate::Fr>>::FEType<T>,
             }
         })
         .collect();
@@ -121,15 +121,15 @@ pub fn impl_flatten_and_raw_input(ast: &DeriveInput) -> TokenStream {
 
     let (_, old_ty_generics, _) = old_generics.split_for_impl();
 
-    let (impl_generics, _, _) = ast.generics.split_for_impl();
+    let (impl_generics, ty_generics, _) = ast.generics.split_for_impl();
 
     let mut new_generics = ast.generics.clone();
     for param in &mut new_generics.params {
         if let GenericParam::Type(type_param) = param {
-            if type_param.ident == "F" {
+            if type_param.ident == "T" {
                 // Change the bound of `T` to `axiom_eth::Field`
-                type_param.ident = parse_quote! { T };
-                type_param.bounds = parse_quote! { Copy };
+                type_param.ident = parse_quote! { F };
+                type_param.bounds = parse_quote! { axiom_client::axiom_eth::Field };
                 break;
             }
         }
@@ -162,7 +162,7 @@ pub fn impl_flatten_and_raw_input(ast: &DeriveInput) -> TokenStream {
         .collect();
 
     quote! {
-        impl #new_impl_generics axiom_client::input::flatten::InputFlatten<T> for #name #new_ty_generics {
+        impl #impl_generics axiom_client::input::flatten::InputFlatten<T> for #name #ty_generics {
             const NUM_FE: usize = #(#num_fe_tokens + )* 0;
             fn flatten_vec(&self) -> Vec<T> {
                 let flattened = vec![#(#flatten_tokens)*];
@@ -193,9 +193,9 @@ pub fn impl_flatten_and_raw_input(ast: &DeriveInput) -> TokenStream {
             }
         }
 
-        impl #impl_generics axiom_client::input::raw_input::RawInput<T> for #raw_circuit_name_ident #old_ty_generics {
-            type FEType = #name #new_ty_generics;
-            fn convert(&self) -> Self::FEType {
+        impl #new_impl_generics axiom_client::input::raw_input::RawInput<F> for #raw_circuit_name_ident #old_ty_generics {
+            type FEType<T: Copy> = #name #new_ty_generics;
+            fn convert(&self) -> Self::FEType<F> {
                 #name {
                     #(#field_names: self.#field_names.convert(),)*
                 }

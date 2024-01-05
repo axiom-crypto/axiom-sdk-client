@@ -23,6 +23,7 @@ pub fn AxiomComputeInput(_args: TokenStream, input: TokenStream) -> TokenStream 
     let new_ast = parse_macro_input!(new_derive_input as DeriveInput);
     let flatten = impl_flatten_and_raw_input(&new_ast);
     quote! {
+        #[derive(Debug, Clone, Default)]
         #ast
         #new_struct
         #flatten

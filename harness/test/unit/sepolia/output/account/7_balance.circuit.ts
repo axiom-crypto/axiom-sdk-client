@@ -8,7 +8,8 @@ or,
 } from "@axiom-crypto/client";
 
 export const inputs = {
-"address":"0xB392448932F6ef430555631f765Df0dfaE34efF3","claimedBlockNumber":4917000
+  "address": "0xB392448932F6ef430555631f765Df0dfaE34efF3",
+  "claimedBlockNumber": 4917000
 };
 export type CircuitInputType = typeof inputs;
 export interface CircuitInputs extends CircuitInputType { }

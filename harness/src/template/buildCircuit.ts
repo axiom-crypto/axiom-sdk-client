@@ -52,7 +52,7 @@ export const buildCircuit = (jsCircuitPath: string): string => {
     console.log("inputs", inputs);
 
     // Replace the input object in the template with the input object from the input circuit
-    circuit = circuit.replace("  // $input", JSON.stringify(inputs).slice(1,-1));
+    circuit = circuit.replace("  // $input", JSON.stringify(inputs, null, 2).slice(2,-2));
 
     // Remove the input object from the input circuit
     inputCircuit = inputCircuit.replace(inputObject[0], "");

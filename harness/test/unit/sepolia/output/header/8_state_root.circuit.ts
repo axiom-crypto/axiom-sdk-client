@@ -8,7 +8,7 @@ or,
 } from "@axiom-crypto/client";
 
 export const inputs = {
-"claimedBlockNumber":3000000
+  "claimedBlockNumber": 3000000
 };
 export type CircuitInputType = typeof inputs;
 export interface CircuitInputs extends CircuitInputType { }

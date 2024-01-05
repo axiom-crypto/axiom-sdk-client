@@ -68,8 +68,11 @@ pub fn impl_new_struct(ast: &ItemStruct) -> Result<TokenStream, TokenStream> {
     })
 }
 
-pub fn impl_flatten(ast: &DeriveInput) -> TokenStream {
+pub fn impl_flatten_and_raw_input(ast: &DeriveInput) -> TokenStream {
     let name = &ast.ident;
+
+    let raw_circuit_name = name.to_string().trim_end_matches("CircuitInput").to_string() + "Input";
+    let raw_circuit_name_ident = Ident::new(&raw_circuit_name, Span::call_site());
 
     let fields = match ast.data {
         Data::Struct(ref data_struct) => &data_struct.fields,
@@ -97,7 +100,28 @@ pub fn impl_flatten(ast: &DeriveInput) -> TokenStream {
         })
         .collect();
 
-    // let (impl_generics, ty_generics, _) = ast.generics.split_for_impl();
+    let mut old_generics = Generics::default();
+    for param in &ast.generics.params {
+        match param {
+            GenericParam::Type(type_param) => {
+                if type_param.ident != "T" {
+                    old_generics.params.push(param.clone());
+                }
+            }
+            GenericParam::Const(type_param) => {
+                if type_param.ident != "T" {
+                    old_generics.params.push(param.clone());
+                }
+            }
+            _ => {
+                old_generics.params.push(param.clone());
+            }
+        }
+    }
+
+    let (_, old_ty_generics, _) = old_generics.split_for_impl();
+
+    let (impl_generics, _, _) = ast.generics.split_for_impl();
 
     let mut new_generics = ast.generics.clone();
     for param in &mut new_generics.params {
@@ -111,7 +135,7 @@ pub fn impl_flatten(ast: &DeriveInput) -> TokenStream {
         }
     }
 
-    let (new_impl_generics, ty_generics, _) = new_generics.split_for_impl();
+    let (new_impl_generics, new_ty_generics, _) = new_generics.split_for_impl();
 
     let num_fe_tokens = field_types.iter().map(|ident| {
         quote! {
@@ -138,7 +162,7 @@ pub fn impl_flatten(ast: &DeriveInput) -> TokenStream {
         .collect();
 
     quote! {
-        impl #new_impl_generics axiom_client::input::flatten::InputFlatten<T> for #name #ty_generics {
+        impl #new_impl_generics axiom_client::input::flatten::InputFlatten<T> for #name #new_ty_generics {
             const NUM_FE: usize = #(#num_fe_tokens + )* 0;
             fn flatten_vec(&self) -> Vec<T> {
                 let flattened = vec![#(#flatten_tokens)*];
@@ -166,6 +190,15 @@ pub fn impl_flatten(ast: &DeriveInput) -> TokenStream {
                 Ok(#name {
                     #(#create_struct_tokens)*
                 })
+            }
+        }
+
+        impl #impl_generics axiom_client::input::raw_input::RawInput<T> for #raw_circuit_name_ident #old_ty_generics {
+            type FEType = #name #new_ty_generics;
+            fn convert(&self) -> Self::FEType {
+                #name {
+                    #(#field_names: self.#field_names.convert(),)*
+                }
             }
         }
 

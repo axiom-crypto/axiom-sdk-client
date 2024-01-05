@@ -2,4 +2,3 @@
 #![feature(associated_type_defaults)]
 pub mod compute;
 pub mod example;
-mod input;

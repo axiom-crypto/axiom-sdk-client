@@ -1,4 +1,4 @@
-use input::{impl_flatten, impl_new_struct};
+use input::{impl_new_struct, impl_flatten_and_raw_input};
 use proc_macro::TokenStream;
 use syn::{parse_macro_input, DeriveInput, ItemStruct};
 
@@ -15,13 +15,13 @@ pub fn AxiomComputeInput(_args: TokenStream, input: TokenStream) -> TokenStream 
     let input_clone = input.clone();
     let ast = parse_macro_input!(input_clone as ItemStruct);
     let new_struct = impl_new_struct(&ast);
-    if new_struct.is_err() {
-        return new_struct.unwrap_err().into();
+    if let Err(err) = new_struct {
+        return err.into();
     }
     let new_struct = new_struct.unwrap();
     let new_derive_input: TokenStream = new_struct.clone().into();
     let new_ast = parse_macro_input!(new_derive_input as DeriveInput);
-    let flatten = impl_flatten(&new_ast);
+    let flatten = impl_flatten_and_raw_input(&new_ast);
     quote! {
         #ast
         #new_struct

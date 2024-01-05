@@ -7,8 +7,8 @@ describe("Sepolia tests", () => {
     throw new Error("`PROVIDER_URI_SEPOLIA` environment variable must be defined");
   }
 
-  const inputBasePath = "./test/integration/sepolia/input";
-  const outputBasePath = "./test/integration/sepolia/output";
+  const inputBasePath = "./test/unit/sepolia/input";
+  const outputBasePath = "./test/unit/sepolia/output";
   const files = listDir(inputBasePath);
   const fileMap = makeFileMap(files);
 

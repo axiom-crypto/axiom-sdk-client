@@ -62,7 +62,7 @@ jobs:
       #     ANVIL_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
       #     export PRIVATE_KEY=$ANVIL_PRIVATE_KEY # just needs to be in the correct format, no tx is sent in unit tests
       #     export PRIVATE_KEY_GOERLI=$ANVIL_PRIVATE_KEY
-      #     npm run test test/integration/goerli.test.ts
+      #     npm run test test/unit/goerli.test.ts
 
       - name: Run Integration Tests (Sepolia)
         working-directory: ./harness
@@ -71,4 +71,4 @@ jobs:
           ANVIL_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
           export PRIVATE_KEY=$ANVIL_PRIVATE_KEY # just needs to be in the correct format, no tx is sent in unit tests
           export PRIVATE_KEY_SEPOLIA=$ANVIL_PRIVATE_KEY
-          npm run test test/integration/sepolia.test.ts
+          npm run test test/unit/sepolia.test.ts

@@ -7,8 +7,8 @@ describe("Goerli tests", () => {
     throw new Error("`PROVIDER_URI_GOERLI` environment variable must be defined");
   }
 
-  const inputBasePath = "./test/integration/goerli/input";
-  const outputBasePath = "./test/integration/goerli/output";
+  const inputBasePath = "./test/unit/goerli/input";
+  const outputBasePath = "./test/unit/goerli/output";
   const files = listDir(inputBasePath);
   const fileMap = makeFileMap(files);
 

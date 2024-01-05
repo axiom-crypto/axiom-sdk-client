@@ -50,15 +50,10 @@ use ethers::providers::{JsonRpcClient, Provider};
 use itertools::Itertools;
 
 use crate::{
+    input::flatten::InputFlatten,
     subquery::caller::SubqueryCaller,
     types::{AxiomCircuitConfig, AxiomCircuitParams, AxiomV2DataAndResults},
 };
-
-pub trait InputFlatten<T: Copy>: Sized {
-    const NUM_FE: usize;
-    fn flatten_vec(&self) -> Vec<T>;
-    fn unflatten(vec: Vec<T>) -> anyhow::Result<Self>;
-}
 
 pub trait AxiomCircuitScaffold<P: JsonRpcClient, F: Field>: Default + Clone + Debug {
     type InputValue: Clone + Debug + Default + InputFlatten<F>;
@@ -186,7 +181,13 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> AxiomCir
             return;
         }
         let flattened_inputs = self.inputs.flatten_vec();
-        let assigned_input_vec = self.builder.borrow_mut().base.borrow_mut().main(0).assign_witnesses(flattened_inputs);
+        let assigned_input_vec = self
+            .builder
+            .borrow_mut()
+            .base
+            .borrow_mut()
+            .main(0)
+            .assign_witnesses(flattened_inputs);
         let assigned_inputs = A::InputWitness::unflatten(assigned_input_vec).unwrap();
 
         let subquery_caller = Arc::new(Mutex::new(SubqueryCaller::new(self.provider.clone())));

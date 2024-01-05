@@ -6,15 +6,14 @@ use std::{
 
 use axiom_codec::{constants::MAX_SOLIDITY_MAPPING_KEYS, HiLo};
 use axiom_query::axiom_eth::{
-    halo2_base::AssignedValue,
-    halo2curves::bn256::Fr,
-    rlc::circuit::builder::RlcCircuitBuilder,
+    halo2_base::AssignedValue, halo2curves::bn256::Fr, rlc::circuit::builder::RlcCircuitBuilder,
     utils::encode_addr_to_field,
 };
 use ethers::{providers::JsonRpcClient, types::H160};
 
 use crate::{
     constant, ctx,
+    input::flatten::InputFlatten,
     subquery::{
         account::AccountField,
         caller::SubqueryCaller,
@@ -25,7 +24,7 @@ use crate::{
             AssignedSolidityNestedMappingSubquery, AssignedStorageSubquery, AssignedTxSubquery,
         },
     },
-    witness, scaffold::InputFlatten,
+    witness,
 };
 
 #[derive(Debug, Clone, Default)]

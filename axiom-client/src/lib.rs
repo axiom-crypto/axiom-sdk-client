@@ -6,6 +6,7 @@
 pub use axiom_query::axiom_eth;
 pub mod aggregation;
 pub mod constants;
+pub mod input;
 pub mod macros;
 pub mod run;
 pub mod scaffold;

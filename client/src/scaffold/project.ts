@@ -37,13 +37,13 @@ export const scaffoldProject = async (sm: ScaffoldManager) => {
   }
 
   // Add axiom-v2-contracts to forge 
-  console.log("Installing Axiom Solidity libraries...");
+  console.log("Installing Axiom Solidity library...");
   await sm.exec("forge install https://github.com/axiom-crypto/axiom-v2-contracts.git --no-commit", `Add ${chalk.bold("axiom-v2-contracts")} library to forge`);
 
   // Create forge src files
   const fileAvgBal = path.join("src", "AverageBalance.sol");
   if (!sm.exists(fileAvgBal, `${chalk.bold(fileAvgBal)} exists?`)) {
-    console.log("Generating Solidity test files...");
+    console.log("Generating Solidity source files...");
     sm.cpFromTemplate(fileAvgBal, fileAvgBal, `  - Copy template ${chalk.bold(fileAvgBal)}`);
   }
 

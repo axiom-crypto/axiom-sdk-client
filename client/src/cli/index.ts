@@ -1,6 +1,6 @@
 import { Command } from "commander";
-import { compile } from "@axiom-crypto/circuit";
-import { run } from "@axiom-crypto/circuit";
+import { compile } from "@axiom-crypto/circuit/cliHandler";
+import { run } from "@axiom-crypto/circuit/cliHandler";
 import { init } from './init';
 import { queryParams } from "./queryParams";
 import { scaffoldNext } from "../scaffold/nextjs";

@@ -16,7 +16,7 @@ import {
 import { BaseCircuitScaffold } from "@axiom-crypto/halo2-wasm/shared/scaffold";
 import { DEFAULT_CIRCUIT_CONFIG } from "./constants";
 import { RawInput } from "./types";
-import { encodeAxiomV2CircuitMetadata } from "./js";
+import { encodeAxiomV2CircuitMetadata } from "./encoder";
 
 export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   protected resultLen: number;

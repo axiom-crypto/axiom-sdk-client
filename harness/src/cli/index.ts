@@ -1,11 +1,12 @@
 import { Command } from "commander";
 import { harness } from '../harness';
+import { HARNESS_VERSION } from "../version";
 
 const harnessCli = new Command('harness');
 
 harnessCli
   .name("harness")
-  .version("0.1.5")
+  .version(HARNESS_VERSION)
   .description("Axiom circuit harness");
 
 harnessCli

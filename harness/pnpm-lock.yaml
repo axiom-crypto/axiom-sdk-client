@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@axiom-crypto/client':
-    specifier: 0.1.5-rc.5
-    version: 0.1.5-rc.5(typescript@5.3.3)
+    specifier: 0.1.5-rc.6
+    version: 0.1.5-rc.6(typescript@5.3.3)
   commander:
     specifier: ^11.1.0
     version: 11.1.0
@@ -61,8 +61,8 @@ packages:
       '@jridgewell/trace-mapping': 0.3.20
     dev: true
 
-  /@axiom-crypto/circuit@0.1.5-rc.5(typescript@5.3.3):
-    resolution: {integrity: sha512-BgowKV7+27tzXcByrzUVH10tNQ3o9YHAudbobMWfDGntpAHFP/NLST8JZbW/fWO4oN/NctN8Qb/H9LrCEuXm6g==}
+  /@axiom-crypto/circuit@0.1.5-rc.6(typescript@5.3.3):
+    resolution: {integrity: sha512-JwfDSu8hoEUtZFL5LqXXYLeyeXWxmFTA+CSU2TY+GJPxe+yRB/5RjFPAlQkuFYmb6bPJv2xx739dRVDfI3VULw==}
     dependencies:
       '@axiom-crypto/core': 2.2.51-rc.3
       '@axiom-crypto/halo2-lib-js': 0.2.14-rc.0
@@ -79,11 +79,11 @@ packages:
       - zod
     dev: false
 
-  /@axiom-crypto/client@0.1.5-rc.5(typescript@5.3.3):
-    resolution: {integrity: sha512-9AMBIV/woyjN3fxvodsWZ+6dPLed7pJ6l+0eF4zZyEkFMDO8Q6NitcN6RuFKjQ0/K8cLhznwAoaLTm4BBgmFjg==}
+  /@axiom-crypto/client@0.1.5-rc.6(typescript@5.3.3):
+    resolution: {integrity: sha512-4ET5zDRkFiqzrBK1oZgxB3yvb3DPPZXQA7RRtwLLjnMDBagemJw0GEcbQAMEiAFPTEJM5HpOZ35ZlcVK0lijdQ==}
     hasBin: true
     dependencies:
-      '@axiom-crypto/circuit': 0.1.5-rc.5(typescript@5.3.3)
+      '@axiom-crypto/circuit': 0.1.5-rc.6(typescript@5.3.3)
       '@axiom-crypto/core': 2.2.51-rc.3
       chalk: 4.1.2
       commander: 11.1.0
@@ -104,7 +104,7 @@ packages:
       '@axiom-crypto/halo2-lib-js': 0.2.10
       '@axiom-crypto/halo2-wasm': 0.2.7
       '@axiom-crypto/tools': 0.3.35-rc.2
-      axios: 1.6.3
+      axios: 1.6.5
       bs58: 5.0.0
       ethers: 6.9.0
       merkletreejs: 0.3.11
@@ -1161,10 +1161,10 @@ packages:
     resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
     dev: false
 
-  /axios@1.6.3:
-    resolution: {integrity: sha512-fWyNdeawGam70jXSVlKl+SUNVcL6j6W79CuSIPfi6HnDUmSCH6gyUys/HrqHeA/wU0Az41rRgean494d0Jb+ww==}
+  /axios@1.6.5:
+    resolution: {integrity: sha512-Ii012v05KEVuUoFWmMW/UQv9aRIc3ZwkWDcM+h5Il8izZCtRVpDUfwpoFf7eOtajT3QiGR4yDUx7lPqHJULgbg==}
     dependencies:
-      follow-redirects: 1.15.3
+      follow-redirects: 1.15.4
       form-data: 4.0.0
       proxy-from-env: 1.1.0
     transitivePeerDependencies:
@@ -1673,8 +1673,8 @@ packages:
       path-exists: 4.0.0
     dev: true
 
-  /follow-redirects@1.15.3:
-    resolution: {integrity: sha512-1VzOtuEM8pC9SFU1E+8KfTjZyMztRsgEfwQl44z8A25uy13jSzTj6dyK2Df52iV0vgHCfBwLhDWevLn95w5v6Q==}
+  /follow-redirects@1.15.4:
+    resolution: {integrity: sha512-Cr4D/5wlrb0z9dgERpUL3LrmPKVDsETIJhaCMeDfuFYcqa5bldGV6wBsAN6X/vxlXQtFBMrXdXxdL8CbDTGniw==}
     engines: {node: '>=4.0'}
     peerDependencies:
       debug: '*'

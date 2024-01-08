@@ -164,8 +164,33 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> AxiomCir
         self
     }
 
+    pub fn set_params(&mut self, params: AxiomCircuitParams) {
+        let params = RlcKeccakCircuitParams::from(params);
+        let mut builder = self.builder.borrow_mut();
+        builder.set_params(params.rlc.clone());
+        self.keccak_rows_per_round = params.keccak_rows_per_round;
+    }
+
+    pub fn use_params(mut self, params: AxiomCircuitParams) -> Self {
+        self.set_params(params);
+        self
+    }
+
+    pub fn set_provider(&mut self, provider: Provider<P>) {
+        self.provider = provider;
+    }
+
+    pub fn use_provider(mut self, provider: Provider<P>) -> Self {
+        self.set_provider(provider);
+        self
+    }
+
     pub fn break_points(&self) -> RlcThreadBreakPoints {
         self.builder.borrow().break_points()
+    }
+
+    pub fn k(&self) -> usize {
+        self.builder.borrow().params().base.k
     }
 
     pub fn output_num_instances(&self) -> usize {
@@ -185,7 +210,6 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> AxiomCir
             .builder
             .borrow_mut()
             .base
-            .borrow_mut()
             .main(0)
             .assign_witnesses(flattened_inputs);
         let assigned_inputs = A::InputWitness::unflatten(assigned_input_vec).unwrap();

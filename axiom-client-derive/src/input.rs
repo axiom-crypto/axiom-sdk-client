@@ -37,11 +37,9 @@ pub fn impl_new_struct(ast: &ItemStruct) -> Result<TokenStream, TokenStream> {
 
     let mut new_impl_generics = Generics::default();
 
-    // Add the `T: Copy` generic as the first generic
     let copy_generic: GenericParam = parse_quote! { T: Copy };
     new_impl_generics.params.push(copy_generic);
 
-    // Append existing generics
     let existing_generics = ast.generics.clone();
     for param in existing_generics.params {
         new_impl_generics.params.push(param);
@@ -51,9 +49,6 @@ pub fn impl_new_struct(ast: &ItemStruct) -> Result<TokenStream, TokenStream> {
         .iter()
         .zip(field_types.iter())
         .map(|(name, field_type)| {
-            // let field_type_str = field_type.to_string();
-            // let new_type = convert_raw_type_to_fe(&field_type_str).expect("not supported");
-            // let new_type_ident = Ident::new(&new_type, Span::call_site());
             quote! {
                 #name: <#field_type as axiom_client::input::raw_input::RawInput<crate::Fr>>::FEType<T>,
             }
@@ -62,6 +57,7 @@ pub fn impl_new_struct(ast: &ItemStruct) -> Result<TokenStream, TokenStream> {
 
     Ok(quote! {
         // #original_struct
+        #[derive(Debug, Clone)]
         pub struct #circuit_input_name_ident #new_impl_generics {
             #(#input_struct_tokens)*
         }
@@ -71,7 +67,11 @@ pub fn impl_new_struct(ast: &ItemStruct) -> Result<TokenStream, TokenStream> {
 pub fn impl_flatten_and_raw_input(ast: &DeriveInput) -> TokenStream {
     let name = &ast.ident;
 
-    let raw_circuit_name = name.to_string().trim_end_matches("CircuitInput").to_string() + "Input";
+    let raw_circuit_name = name
+        .to_string()
+        .trim_end_matches("CircuitInput")
+        .to_string()
+        + "Input";
     let raw_circuit_name_ident = Ident::new(&raw_circuit_name, Span::call_site());
 
     let fields = match ast.data {
@@ -119,7 +119,7 @@ pub fn impl_flatten_and_raw_input(ast: &DeriveInput) -> TokenStream {
         }
     }
 
-    let (_, old_ty_generics, _) = old_generics.split_for_impl();
+    let (old_impl_generics, old_ty_generics, _) = old_generics.split_for_impl();
 
     let (impl_generics, ty_generics, _) = ast.generics.split_for_impl();
 
@@ -127,7 +127,6 @@ pub fn impl_flatten_and_raw_input(ast: &DeriveInput) -> TokenStream {
     for param in &mut new_generics.params {
         if let GenericParam::Type(type_param) = param {
             if type_param.ident == "T" {
-                // Change the bound of `T` to `axiom_eth::Field`
                 type_param.ident = parse_quote! { F };
                 type_param.bounds = parse_quote! { axiom_client::axiom_eth::Field };
                 break;
@@ -196,10 +195,32 @@ pub fn impl_flatten_and_raw_input(ast: &DeriveInput) -> TokenStream {
         impl #new_impl_generics axiom_client::input::raw_input::RawInput<F> for #raw_circuit_name_ident #old_ty_generics {
             type FEType<T: Copy> = #name #new_ty_generics;
             fn convert(&self) -> Self::FEType<F> {
+                use axiom_client::input::raw_input::RawInput;
                 #name {
                     #(#field_names: self.#field_names.convert(),)*
                 }
             }
+        }
+
+        impl #new_impl_generics From<#raw_circuit_name_ident #old_ty_generics> for #name #new_ty_generics {
+            fn from(input: #raw_circuit_name_ident #old_ty_generics) -> Self {
+                use axiom_client::input::raw_input::RawInput;
+                #name {
+                    #(#field_names: input.#field_names.convert(),)*
+                }
+            }
+        }
+
+        impl #new_impl_generics Default for #name #new_ty_generics {
+            fn default() -> Self {
+                let raw: #raw_circuit_name_ident #old_ty_generics = Default::default();
+                raw.into()
+            }
+        }
+
+        impl #old_impl_generics crate::compute::AxiomComputeInput for #raw_circuit_name_ident #old_ty_generics {
+            type LogicInput = #raw_circuit_name_ident #old_ty_generics;
+            type Input<T: Copy> = #name #ty_generics;
         }
 
     }

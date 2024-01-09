@@ -34,11 +34,11 @@ describe("Goerli tests", () => {
         );
 
         // Check build file exists
-        const buildFile = `${outputFileBase}.build.json`;
+        const buildFile = `${outputFileBase}.compiled.json`;
         expect(fs.existsSync(buildFile)).toBe(true);
 
         // Check output file exists
-        const outputFile = `${outputFileBase}.output.json`;
+        const outputFile = `${outputFileBase}.proven.json`;
         expect(fs.existsSync(outputFile)).toBe(true);
       }, 180000);
     }

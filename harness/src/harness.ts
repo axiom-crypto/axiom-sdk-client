@@ -24,7 +24,7 @@ export const harness = async (
   fs.writeFileSync(circuitPath, circuit);
 
   // Compile the circuit
-  const buildFile = `${outputFileBase}.compiled.json`;
+  const buildFile = `${outputFileBase}.build.json`;
   await compile(
     circuitPath, 
     {
@@ -37,7 +37,7 @@ export const harness = async (
   );
 
   // Run the circuit
-  const outputFile = `${outputFileBase}.proven.json`;
+  const outputFile = `${outputFileBase}.output.json`;
   await run(
     circuitPath, 
     {

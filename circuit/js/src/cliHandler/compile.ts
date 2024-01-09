@@ -46,7 +46,7 @@ export const compile = async (
             circuit: Buffer.from(circuitBuild).toString('base64'),
         }
         
-        let outfile = path.join(path.dirname(circuitPath), "data", "compiled.json");
+        let outfile = path.join(path.dirname(circuitPath), "data", "build.json");
         if (options.output !== undefined) {
             outfile = options.output;
         }

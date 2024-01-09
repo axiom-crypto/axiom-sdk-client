@@ -15,14 +15,14 @@ export class AxiomCircuit<T> extends AxiomBaseCircuit<T> {
   }
 
   async getSendQueryArgs(input: {
-    callbackTarget: string;
+    callbackAddress: string;
     callbackExtraData: string;
     callerAddress: string;
     options: AxiomV2QueryOptions;
   }) {
     if (!this.computeQuery) throw new Error("No compute query generated");
     const axiomCallback: AxiomV2Callback = {
-      target: input.callbackTarget,
+      target: input.callbackAddress,
       extraData: input.callbackExtraData,
     };
     return await buildSendQuery({
@@ -35,3 +35,5 @@ export class AxiomCircuit<T> extends AxiomBaseCircuit<T> {
     });
   }
 }
+
+export * from "../index";

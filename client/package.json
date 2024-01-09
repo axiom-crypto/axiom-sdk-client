@@ -1,16 +1,15 @@
 {
   "name": "@axiom-crypto/client",
-  "version": "0.2.0-rc2.0",
+  "version": "0.1.5-rc.6",
   "author": "Intrinsic Technologies",
   "license": "MIT",
   "description": "Client SDK to write custom queries for Axiom, the ZK Coprocessor for Ethereum.",
-  "main": "index.js",
+  "main": "js/index.js",
   "browser": "web/index.js",
   "types": "web/index.d.ts",
   "scripts": {
     "build": "rm -rf ./dist/* && node scripts/preTsc.js && tsc && node scripts/postTsc.js",
-    "build:docs": "./scripts/buildDocs.sh",
-    "test": "jest"
+    "build:docs": "./scripts/buildDocs.sh"
   },
   "publishConfig": {
     "directory": "dist"
@@ -24,8 +23,8 @@
     "crypto"
   ],
   "dependencies": {
-    "@axiom-crypto/circuit": "link:../circuit/js/dist",
-    "@axiom-crypto/core": "2.3.0-rc2.0",
+    "@axiom-crypto/circuit": "0.1.5-rc.6",
+    "@axiom-crypto/core": "2.2.51-rc.3",
     "chalk": "^4.1.2",
     "commander": "^11.1.0",
     "ethers": "^6.8.1",
@@ -38,7 +37,6 @@
     "@types/prompts": "^2.4.9",
     "dts-bundle-generator": "^9.0.0",
     "jest": "^29.7.0",
-    "ts-jest": "^29.1.1",
     "tslib": "^2.6.2",
     "tsx": "^4.6.2",
     "typescript": "^5.3.2"

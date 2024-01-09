@@ -1,5 +1,5 @@
 import {
-  AxiomSdkCore,
+  Axiom,
   AxiomV2Callback,
   AxiomV2ComputeQuery,
   AxiomV2QueryOptions,
@@ -10,7 +10,7 @@ import {
 import { encodeFunctionData } from "viem";
 
 export const buildSendQuery = async (input: {
-  axiom: AxiomSdkCore;
+  axiom: Axiom;
   dataQuery: DataSubquery[];
   computeQuery: AxiomV2ComputeQuery;
   callback: AxiomV2Callback;

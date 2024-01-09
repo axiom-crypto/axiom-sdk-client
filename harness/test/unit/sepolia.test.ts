@@ -34,11 +34,11 @@ describe("Sepolia tests", () => {
         );
 
         // Check build file exists
-        const buildFile = `${outputFileBase}.compiled.json`;
+        const buildFile = `${outputFileBase}.build.json`;
         expect(fs.existsSync(buildFile)).toBe(true);
 
         // Check output file exists
-        const outputFile = `${outputFileBase}.proven.json`;
+        const outputFile = `${outputFileBase}.output.json`;
         expect(fs.existsSync(outputFile)).toBe(true);
       }, 220000);
     }

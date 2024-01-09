@@ -1,10 +1,10 @@
 import path from 'path';
-import { AxiomSdkCore } from "@axiom-crypto/core";
+import { Axiom } from "@axiom-crypto/core";
 import { getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
 import { buildSendQuery } from "../sendQuery";
 
 export const queryParams = async (
-  callbackTarget: string,
+  callbackAddress: string,
   options: {
     refundAddress: string;
     sourceChainId: string;
@@ -16,7 +16,6 @@ export const queryParams = async (
     provider?: string;
     maxFeePerGas?: string;
     callbackGasLimit?: number;
-    mock?: boolean;
   },
 ) => {
   if (!options.refundAddress) {
@@ -26,17 +25,17 @@ export const queryParams = async (
     throw new Error("Please provide a source chain ID (--sourceChainId <id>)");
   }
   let defaultPath = path.resolve(path.join("app", "axiom"));
-  let inputFile = path.join(defaultPath, "data", "proven.json");
+  let inputFile = path.join(defaultPath, "data", "output.json");
   if (options.input !== undefined) {
       inputFile = options.input;
   }
   const outputJson = readJsonFromFile(inputFile);
   const provider = getProvider(options.provider);
-  const axiom = new AxiomSdkCore({
+  const axiom = new Axiom({
     providerUri: provider,
     chainId: options.sourceChainId,
     version: "v2",
-    mock: options.mock ?? false,
+    // mock? does not change behavior here
   });
   try {
     let build = await buildSendQuery({
@@ -44,7 +43,7 @@ export const queryParams = async (
       dataQuery: outputJson.dataQuery,
       computeQuery: outputJson.computeQuery,
       callback: {
-        target: callbackTarget,
+        target: callbackAddress,
         extraData: options.callbackExtraData ?? "0x",
       },
       options: {

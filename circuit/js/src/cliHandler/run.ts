@@ -19,7 +19,7 @@ export const run = async (
     }
     const f = await getFunctionFromTs(circuitPath, circuitFunction);
     const provider = getProvider(options.provider);
-    let buildFile = path.join(path.dirname(circuitPath), "data", "compiled.json");
+    let buildFile = path.join(path.dirname(circuitPath), "data", "build.json");
     if (options.build !== undefined) {
         buildFile = options.build;
     }
@@ -53,7 +53,7 @@ export const run = async (
             dataQuery,
         }
 
-        let outfile = path.join(path.dirname(circuitPath), "data", "proven.json");
+        let outfile = path.join(path.dirname(circuitPath), "data", "output.json");
         if (options.output !== undefined) {
             outfile = options.output;
         }

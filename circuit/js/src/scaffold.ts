@@ -10,7 +10,7 @@ import {
   DataSubquery,
 } from "@axiom-crypto/tools";
 import {
-  AxiomSdkCore,
+  Axiom,
   AxiomV2QueryOptions,
 } from "@axiom-crypto/core";
 import { BaseCircuitScaffold } from "@axiom-crypto/halo2-wasm/shared/scaffold";
@@ -23,7 +23,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   protected halo2Lib!: Halo2LibWasm;
   protected provider: string;
   protected dataQuery: DataSubquery[];
-  protected axiom: AxiomSdkCore;
+  protected axiom: Axiom;
   protected computeQuery: AxiomV2ComputeQuery | undefined;
   protected chainId: string;
   protected f: (inputs: T) => Promise<void>;
@@ -44,7 +44,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     this.provider = inputs.provider;
     this.config = inputs.config ?? DEFAULT_CIRCUIT_CONFIG;
     this.dataQuery = [];
-    this.axiom = new AxiomSdkCore({
+    this.axiom = new Axiom({
       providerUri: inputs.provider,
       chainId: inputs.chainId,
       mock: inputs.mock,
@@ -205,7 +205,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   }
 
   setMock(mock: boolean) {
-    this.axiom = new AxiomSdkCore({
+    this.axiom = new Axiom({
       providerUri: this.provider,
       chainId: this.chainId,
       mock,

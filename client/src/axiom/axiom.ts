@@ -73,7 +73,7 @@ export class Axiom<T> {
       transport: http(this.config.provider),
     })
     const { request } = await publicClient.simulateContract({
-      address: args.address,
+      address: args.address as `0x${string}`,
       abi: args.abi,
       functionName: args.functionName,
       args: args.args,

@@ -154,11 +154,47 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     return this.buildComputeQuery();
   }
 
+  async mockProve(inputs: RawInput<T>) {
+    await this.populateCircuit(inputs);
+    this.mock();
+    return this.buildMockComputeQuery();
+  }
+
   buildComputeQuery() {
     const vk = this.getPartialVk();
     const vkBytes = convertToBytes32(vk);
     const onchainVkey = this.prependCircuitMetadata(this.config, vkBytes);
     
+    const computeProofBase = this.getComputeProof() as `0x${string}`;
+    const computeAccumulator = concat([zeroHash, zeroHash]);
+    const computeProof = concat([computeAccumulator, computeProofBase]);
+
+    const computeQuery: AxiomV2ComputeQuery = {
+      k: this.config.k,
+      vkey: onchainVkey,
+      computeProof,
+      resultLen: this.resultLen,
+    };
+    this.computeQuery = computeQuery;
+    return computeQuery;
+  }
+
+  buildMockComputeQuery() {
+    // Mock compute query only works for the following DEFAULT_CIRCUIT_CONFIG:
+    if (
+      DEFAULT_CIRCUIT_CONFIG.k !== 14 ||
+      DEFAULT_CIRCUIT_CONFIG.numAdvice !== 4 ||
+      DEFAULT_CIRCUIT_CONFIG.numLookupAdvice !== 1 ||
+      DEFAULT_CIRCUIT_CONFIG.numInstance !== 1 ||
+      DEFAULT_CIRCUIT_CONFIG.numLookupBits !== 13 ||
+      DEFAULT_CIRCUIT_CONFIG.numVirtualInstance !== 2
+    ) {
+      throw new Error(`MockComputeQuery not valid for this DEFAULT_CIRCUIT_CONFIG`);
+    }
+    const emptyVk = new Array(14).fill(zeroHash);
+    const onchainVkey = this.prependCircuitMetadata(this.config, emptyVk);
+
+    this.proof = new Uint8Array(2080);
     const computeProofBase = this.getComputeProof() as `0x${string}`;
     const computeAccumulator = concat([zeroHash, zeroHash]);
     const computeProof = concat([computeAccumulator, computeProofBase]);

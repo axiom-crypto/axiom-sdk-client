@@ -59,14 +59,16 @@ export const queryParams = async (
     if (!options.calldata) {
       res = {
         value: build.value,
-        args: build.args,
+        mock: build.mock,
         queryId: build.queryId,
+        args: build.args,
       };
     } else {
       res = {
         value: build.value,
-        calldata: build.calldata,
+        mock: build.mock,
         queryId: build.queryId,
+        calldata: build.calldata,
       };
     }
     let outputFile = path.join(defaultPath, "data", "sendQuery.json");

@@ -10,7 +10,8 @@ export const prove = async (
         output?: string,
         chainId?: number | string | bigint,
         provider?: string,
-        inputs?: string
+        inputs?: string,
+        mock?: boolean,
     }
 ) => {
     let circuitFunction = "circuit";
@@ -26,7 +27,7 @@ export const prove = async (
     const buildJson = readJsonFromFile(buildFile);
     const circuit = new AxiomBaseCircuit({
         f: f.circuit,
-        mock: true,
+        mock: options.mock,
         chainId: options.chainId,
         provider,
         shouldTime: true,
@@ -43,11 +44,19 @@ export const prove = async (
     }
     try {
         circuit.loadSaved(buildJson);
-        const computeQuery = await circuit.run(circuitInputs);
-        const computeResults = circuit.getComputeResults();
+        let computeQuery;
+        let computeResults;
+        if (options.mock === true) {
+            computeQuery = await circuit.mockProve(circuitInputs);
+            computeResults = circuit.getComputeResults();
+        } else {
+            computeQuery = await circuit.run(circuitInputs);
+            computeResults = circuit.getComputeResults();
+        }
         const dataQuery = circuit.getDataQuery();
         const res = {
             sourceChainId: circuit.getChainId(),
+            mock: options.mock ?? false,
             computeQuery,
             computeResults,
             dataQuery,

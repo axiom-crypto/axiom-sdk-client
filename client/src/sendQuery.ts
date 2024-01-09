@@ -65,6 +65,7 @@ export const buildSendQuery = async (input: {
     value: BigInt(payment),
     args,
     queryId: id,
+    mock: input.axiom.config.mock,
   };
 
   const calldata = encodeFunctionData(sendQueryArgs);

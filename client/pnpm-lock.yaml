@@ -6,11 +6,11 @@ settings:
 
 dependencies:
   '@axiom-crypto/circuit':
-    specifier: 0.1.5-rc.6
-    version: 0.1.5-rc.6(typescript@5.3.3)
+    specifier: 0.1.5-rc.7
+    version: 0.1.5-rc.7(typescript@5.3.3)
   '@axiom-crypto/core':
-    specifier: 2.2.51-rc.3
-    version: 2.2.51-rc.3
+    specifier: 2.2.52-rc2.1
+    version: 2.2.52-rc2.1
   chalk:
     specifier: ^4.1.2
     version: 4.1.2
@@ -67,13 +67,13 @@ packages:
       '@jridgewell/trace-mapping': 0.3.20
     dev: true
 
-  /@axiom-crypto/circuit@0.1.5-rc.6(typescript@5.3.3):
-    resolution: {integrity: sha512-JwfDSu8hoEUtZFL5LqXXYLeyeXWxmFTA+CSU2TY+GJPxe+yRB/5RjFPAlQkuFYmb6bPJv2xx739dRVDfI3VULw==}
+  /@axiom-crypto/circuit@0.1.5-rc.7(typescript@5.3.3):
+    resolution: {integrity: sha512-TxOQzKZhNxZUS8OqZvfdyisobZr8wM3WG5FPUnY1VRzWyCA7v6bPwOQ0zrsvhlokr5YQ50pgJ+UcZGu7RnF4FA==}
     dependencies:
-      '@axiom-crypto/core': 2.2.51-rc.3
+      '@axiom-crypto/core': 2.2.52-rc2.1
       '@axiom-crypto/halo2-lib-js': 0.2.14-rc.0
       '@axiom-crypto/halo2-wasm': 0.2.11-rc.1
-      '@axiom-crypto/tools': 0.3.35-rc.2
+      '@axiom-crypto/tools': 0.3.36-rc2.0
       commander: 11.1.0
       ethers: 6.9.0
       viem: 1.19.11(typescript@5.3.3)
@@ -85,12 +85,12 @@ packages:
       - zod
     dev: false
 
-  /@axiom-crypto/core@2.2.51-rc.3:
-    resolution: {integrity: sha512-/8GgcrI8/jAw0WA+m0zc3C4LFjTnhKcZfel7BWRnSzmsahfsQnc45BUHtAbaYxfiqi5aHYCaKF5701v6aJuNCw==}
+  /@axiom-crypto/core@2.2.52-rc2.1:
+    resolution: {integrity: sha512-cSgwmDwPNLDUsQEy5F/rn/M3AilEYeRdQtgS4ifMRBw5CnnbOkCDZyjCa4h9GjVn0dRqH95z9GVujK0+N1OcDA==}
     dependencies:
       '@axiom-crypto/halo2-lib-js': 0.2.10
       '@axiom-crypto/halo2-wasm': 0.2.7
-      '@axiom-crypto/tools': 0.3.35-rc.2
+      '@axiom-crypto/tools': 0.3.36-rc2.0
       axios: 1.6.3
       bs58: 5.0.0
       ethers: 6.9.0
@@ -131,8 +131,8 @@ packages:
     resolution: {integrity: sha512-pmgFCkCJUlFgh5NCLR59WpWIiBegNxBRAAlA2UxPMga1Pba02ynZgf6SW0tbQaezMiWUdTA9SfpeosovcNI6Yg==}
     dev: false
 
-  /@axiom-crypto/tools@0.3.35-rc.2:
-    resolution: {integrity: sha512-KGUIvr7maN7H0WrOo+L6M11n9tBNrUv6O54csY3Za1McLeGaSsA6iteh0zi9A9AVqBraigDgvxywwTGQjzFv+Q==}
+  /@axiom-crypto/tools@0.3.36-rc2.0:
+    resolution: {integrity: sha512-3uKlDqMEsPXqt+33Cwb6/L9IHOvR4FTakISpXJApKUCHB3jQ8a/6o06MkUD1lgPKzboO7RfAffde6rxak/8ZEg==}
     dependencies:
       ethers: 6.9.0
     transitivePeerDependencies:

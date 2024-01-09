@@ -2,12 +2,12 @@ import fs from 'fs';
 import { listDir, makeFileMap } from "../utils";
 import { harness } from "../../src/harness";
 
-describe("Goerli tests", () => {
+describe("Goerli unit tests", () => {
   if (process.env.PROVIDER_URI_GOERLI === undefined) {
     throw new Error("`PROVIDER_URI_GOERLI` environment variable must be defined");
   }
 
-  const inputBasePath = "./test/unit/goerli/input";
+  const inputBasePath = "./test/circuits/goerli/input";
   const outputBasePath = "./test/unit/goerli/output";
   const files = listDir(inputBasePath);
   const fileMap = makeFileMap(files);

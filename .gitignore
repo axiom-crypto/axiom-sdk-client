@@ -5,3 +5,4 @@ dist
 data
 build
 debug/
+output/

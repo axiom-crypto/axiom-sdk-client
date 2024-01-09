@@ -24,9 +24,12 @@ use super::{
 };
 use crate::subquery::{types::RawSubquery, utils::get_subquery_type_from_any_subquery};
 
-pub trait FetchSubquery<F: Field> {
+pub trait FetchSubquery<F: Field>: Clone {
     fn fetch<P: JsonRpcClient>(&self, p: &Provider<P>) -> Result<(H256, Vec<AssignedValue<F>>)>;
     fn any_subquery(&self) -> AnySubquery;
+    fn call<P: JsonRpcClient>(&self, ctx: &mut Context<F>, caller: &mut SubqueryCaller<P, F>) -> HiLo<AssignedValue<F>> {
+        caller.call(ctx, self.clone())
+    }
 }
 
 pub struct SubqueryCaller<P: JsonRpcClient, F: Field> {

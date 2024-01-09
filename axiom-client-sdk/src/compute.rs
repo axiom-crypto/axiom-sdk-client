@@ -37,7 +37,7 @@ pub trait AxiomComputeFn: AxiomComputeInput {
     fn compute(
         ctx: &mut Context<Fr>,
         range: &RangeChip<Fr>,
-        caller: &SubqueryCaller<Self::Provider, Fr>,
+        caller: Arc<Mutex<SubqueryCaller<Self::Provider, Fr>>>,
         assigned_inputs: Self::Input<AssignedValue<Fr>>,
     ) -> Vec<AxiomResult>;
 }
@@ -75,8 +75,8 @@ where
         assigned_inputs: Self::InputWitness,
     ) {
         let ctx = builder.base.main(0);
-        let caller = subquery_caller.lock().unwrap();
-        let result = A::compute(ctx, range, &caller, assigned_inputs);
+        // let mut caller = subquery_caller.lock().unwrap();
+        let result = A::compute(ctx, range, subquery_caller, assigned_inputs);
         let hilo_output = result
             .into_iter()
             .map(|result| match result {

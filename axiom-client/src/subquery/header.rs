@@ -18,7 +18,7 @@ use tokio::runtime::Runtime;
 use super::{caller::FetchSubquery, types::AssignedHeaderSubquery, utils::pad_to_bytes32};
 use crate::impl_fr_from;
 
-#[derive(FromPrimitive)]
+#[derive(FromPrimitive, Clone)]
 pub enum HeaderField {
     ParentHash,
     Sha3Uncles,

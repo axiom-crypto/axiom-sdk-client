@@ -121,10 +121,9 @@ pub fn check_hi_lo<F: Field>(
 pub fn from_hi_lo<F: Field>(
     ctx: &mut Context<F>,
     range: &RangeChip<F>,
-    hi: AssignedValue<F>,
-    lo: AssignedValue<F>,
+    hilo: HiLo<AssignedValue<F>>,
 ) -> AssignedValue<F> {
-    check_hi_lo(ctx, range, hi, lo)
+    check_hi_lo(ctx, range, hilo.hi(), hilo.lo())
 }
 
 /// Returns a 256-bit hi-lo pair from a single CircuitValue

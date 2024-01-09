@@ -12,7 +12,7 @@ use tokio::runtime::Runtime;
 use super::{caller::FetchSubquery, types::AssignedAccountSubquery};
 use crate::impl_fr_from;
 
-#[derive(FromPrimitive)]
+#[derive(FromPrimitive, Copy, Clone)]
 pub enum AccountField {
     Nonce,
     Balance,

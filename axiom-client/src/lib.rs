@@ -4,6 +4,7 @@
 #![feature(custom_test_frameworks)]
 
 pub use axiom_query::axiom_eth;
+pub use axiom_codec;
 pub mod aggregation;
 pub mod constants;
 pub mod input;

@@ -1,7 +1,7 @@
 import { buildCircuit } from "./template/buildCircuit";
 import path from 'path';
 import fs from 'fs';
-import { compile, run } from "@axiom-crypto/client/cli/components";
+import { compile, prove } from "@axiom-crypto/client/cli/components";
 
 export const harness = async (
   inputPath: string,
@@ -38,7 +38,7 @@ export const harness = async (
 
   // Run the circuit
   const outputFile = `${outputFileBase}.proven.json`;
-  await run(
+  await prove(
     circuitPath, 
     {
       stats: false,

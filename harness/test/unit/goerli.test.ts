@@ -1,4 +1,5 @@
 import fs from 'fs';
+import path from 'path';
 import { listDir, makeFileMap } from "../utils";
 import { harness } from "../../src/harness";
 
@@ -7,10 +8,13 @@ describe("Goerli tests", () => {
     throw new Error("`PROVIDER_URI_GOERLI` environment variable must be defined");
   }
 
-  const inputBasePath = "./test/unit/goerli/input";
-  const outputBasePath = "./test/unit/goerli/output";
+  const inputBasePath = path.resolve("./test/unit/goerli/input");
+  const outputBasePath = path.resolve("./test/unit/goerli/output");
   const files = listDir(inputBasePath);
   const fileMap = makeFileMap(files);
+
+  // Delete output files
+  fs.rmSync(outputBasePath, { recursive: true, force: true });
 
   for (let [folder, files] of Object.entries(fileMap)) {
     for (let file of files) {

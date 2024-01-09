@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { compile } from "@axiom-crypto/circuit/cliHandler";
-import { run } from "@axiom-crypto/circuit/cliHandler";
+import { prove } from "@axiom-crypto/circuit/cliHandler";
 import { init } from './init';
 import { queryParams } from "./queryParams";
 import { scaffoldNext } from "../scaffold/nextjs";
@@ -44,7 +44,7 @@ circuit
   .option("-i, --input [inputs]", "inputs")
   .option("-o, --output [output]", "output")
   .option("-f, --function [function]", "function name in typescript circuit")
-  .action(run);
+  .action(prove);
 
 circuit
   .command("query-params")
@@ -59,7 +59,7 @@ circuit
   .option("--callbackGasLimit [callbackGasLimit]", "callbackGasLimit")
   .option("-m, --mock [mock]", "generate a mock query", false)
   .option("-p, --provider [provider]", "provider")
-  .option("-i, --input [input]", "circuit run output path")
+  .option("-i, --input [input]", "`axiom circuit prove` output path")
   .option("-o, --output [output]", "query-params output path")
   .action(queryParams);
 

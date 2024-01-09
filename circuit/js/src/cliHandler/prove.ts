@@ -2,7 +2,7 @@ import path from 'path';
 import { AxiomBaseCircuit } from "../js";
 import { getFunctionFromTs, getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
 
-export const run = async (
+export const prove = async (
     circuitPath: string,
     options: { stats: boolean,
         function?: string,

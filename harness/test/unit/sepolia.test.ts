@@ -1,4 +1,5 @@
 import fs from 'fs';
+import path from 'path';
 import { listDir, makeFileMap } from "../utils";
 import { harness } from "../../src/harness";
 
@@ -7,10 +8,13 @@ describe("Sepolia tests", () => {
     throw new Error("`PROVIDER_URI_SEPOLIA` environment variable must be defined");
   }
 
-  const inputBasePath = "./test/unit/sepolia/input";
-  const outputBasePath = "./test/unit/sepolia/output";
+  const inputBasePath = path.resolve("./test/unit/sepolia/input");
+  const outputBasePath = path.resolve("./test/unit/sepolia/output");
   const files = listDir(inputBasePath);
   const fileMap = makeFileMap(files);
+
+  // Delete output files
+  fs.rmSync(outputBasePath, { recursive: true, force: true });
 
   for (let [folder, files] of Object.entries(fileMap)) {
     for (let file of files) {

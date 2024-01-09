@@ -1,3 +1,5 @@
+use std::sync::{Arc, Mutex};
+
 use axiom_client::{
     axiom_codec::{
         special_values::{TX_CALLDATA_IDX_OFFSET, TX_CONTRACT_DATA_IDX_OFFSET},
@@ -7,24 +9,25 @@ use axiom_client::{
         gates::{GateChip, GateInstructions},
         AssignedValue, Context,
     },
-    subquery::{tx::TxField, types::AssignedTxSubquery},
+    subquery::{caller::SubqueryCaller, tx::TxField, types::AssignedTxSubquery},
 };
+use ethers::providers::JsonRpcClient;
 
-use crate::{Fr, SubqueryCaller};
+use crate::Fr;
 
-pub struct Tx<'a> {
+pub struct Tx<'a, P: JsonRpcClient> {
     pub block_number: AssignedValue<Fr>,
     pub tx_idx: AssignedValue<Fr>,
     ctx: &'a mut Context<Fr>,
-    caller: SubqueryCaller,
+    caller: Arc<Mutex<SubqueryCaller<P, Fr>>>,
 }
 
-pub fn get_tx(
+pub fn get_tx<P: JsonRpcClient>(
     ctx: &mut Context<Fr>,
-    caller: SubqueryCaller,
+    caller: Arc<Mutex<SubqueryCaller<P, Fr>>>,
     block_number: AssignedValue<Fr>,
     tx_idx: AssignedValue<Fr>,
-) -> Tx {
+) -> Tx<P> {
     Tx {
         block_number,
         tx_idx,
@@ -33,7 +36,7 @@ pub fn get_tx(
     }
 }
 
-impl<'a> Tx<'a> {
+impl<'a, P: JsonRpcClient> Tx<'a, P> {
     pub fn call(self, field: TxField) -> HiLo<AssignedValue<Fr>> {
         let field_constant = self.ctx.load_constant(Fr::from(field));
         let mut subquery_caller = self.caller.lock().unwrap();

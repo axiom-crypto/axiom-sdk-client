@@ -7,7 +7,7 @@ use axiom_client::{
     axiom_eth::{
         halo2_base::{
             gates::{circuit::BaseCircuitParams, RangeChip},
-            AssignedValue, Context,
+            AssignedValue,
         },
         halo2_proofs::plonk::{ProvingKey, VerifyingKey},
         halo2curves::bn256::G1Affine,
@@ -24,7 +24,7 @@ use axiom_client::{
 };
 use ethers::providers::{Http, JsonRpcClient, Provider};
 
-use crate::Fr;
+use crate::{api::AxiomAPI, Fr};
 
 pub trait AxiomComputeInput: Clone + Default + Debug {
     type LogicInput: Clone + Debug + Default + Into<Self::Input<Fr>>;
@@ -35,9 +35,7 @@ pub trait AxiomComputeInput: Clone + Default + Debug {
 pub trait AxiomComputeFn: AxiomComputeInput {
     type Provider: JsonRpcClient + Clone = Self::ProviderType;
     fn compute(
-        ctx: &mut Context<Fr>,
-        range: &RangeChip<Fr>,
-        caller: Arc<Mutex<SubqueryCaller<Self::Provider, Fr>>>,
+        api: &mut AxiomAPI<Self::Provider>,
         assigned_inputs: Self::Input<AssignedValue<Fr>>,
     ) -> Vec<AxiomResult>;
 }
@@ -74,14 +72,13 @@ where
         callback: &mut Vec<HiLo<AssignedValue<Fr>>>,
         assigned_inputs: Self::InputWitness,
     ) {
-        let ctx = builder.base.main(0);
-        // let mut caller = subquery_caller.lock().unwrap();
-        let result = A::compute(ctx, range, subquery_caller, assigned_inputs);
+        let mut api = AxiomAPI::new(builder, range, subquery_caller);
+        let result = A::compute(&mut api, assigned_inputs);
         let hilo_output = result
             .into_iter()
             .map(|result| match result {
                 AxiomResult::HiLo(hilo) => hilo,
-                AxiomResult::AssignedValue(val) => to_hi_lo(ctx, range, val),
+                AxiomResult::AssignedValue(val) => to_hi_lo(api.ctx(), range, val),
             })
             .collect::<Vec<_>>();
         callback.extend(hilo_output);

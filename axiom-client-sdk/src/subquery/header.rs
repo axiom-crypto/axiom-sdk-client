@@ -1,22 +1,25 @@
+use std::sync::{Arc, Mutex};
+
 use axiom_client::{
     axiom_codec::{special_values::HEADER_LOGS_BLOOM_FIELD_IDX_OFFSET, HiLo},
     axiom_eth::halo2_base::{AssignedValue, Context},
-    subquery::{header::HeaderField, types::AssignedHeaderSubquery},
+    subquery::{caller::SubqueryCaller, header::HeaderField, types::AssignedHeaderSubquery},
 };
+use ethers::providers::JsonRpcClient;
 
-use crate::{Fr, SubqueryCaller};
+use crate::Fr;
 
-pub struct Header<'a> {
+pub struct Header<'a, P: JsonRpcClient> {
     pub block_number: AssignedValue<Fr>,
     ctx: &'a mut Context<Fr>,
-    caller: SubqueryCaller,
+    caller: Arc<Mutex<SubqueryCaller<P, Fr>>>,
 }
 
-pub fn get_header(
+pub fn get_header<P: JsonRpcClient>(
     ctx: &mut Context<Fr>,
-    caller: SubqueryCaller,
+    caller: Arc<Mutex<SubqueryCaller<P, Fr>>>,
     block_number: AssignedValue<Fr>,
-) -> Header {
+) -> Header<P> {
     Header {
         block_number,
         ctx,
@@ -24,7 +27,7 @@ pub fn get_header(
     }
 }
 
-impl<'a> Header<'a> {
+impl<'a, P: JsonRpcClient> Header<'a, P> {
     pub fn call(self, field: HeaderField) -> HiLo<AssignedValue<Fr>> {
         let field_constant = self.ctx.load_constant(Fr::from(field));
         let mut subquery_caller = self.caller.lock().unwrap();

@@ -1,26 +1,29 @@
+use std::sync::{Arc, Mutex};
+
 use axiom_client::{
     axiom_codec::{constants::MAX_SOLIDITY_MAPPING_KEYS, HiLo},
     axiom_eth::halo2_base::{AssignedValue, Context},
-    subquery::types::AssignedSolidityNestedMappingSubquery,
+    subquery::{caller::SubqueryCaller, types::AssignedSolidityNestedMappingSubquery},
 };
+use ethers::providers::JsonRpcClient;
 
-use crate::{Fr, SubqueryCaller};
+use crate::Fr;
 
-pub struct SolidityMapping<'a> {
+pub struct SolidityMapping<'a, P: JsonRpcClient> {
     pub block_number: AssignedValue<Fr>,
     pub addr: AssignedValue<Fr>,
     pub mapping_slot: HiLo<AssignedValue<Fr>>,
     ctx: &'a mut Context<Fr>,
-    caller: SubqueryCaller,
+    caller: Arc<Mutex<SubqueryCaller<P, Fr>>>,
 }
 
-pub fn get_mapping(
+pub fn get_mapping<P: JsonRpcClient>(
     ctx: &mut Context<Fr>,
-    caller: SubqueryCaller,
+    caller: Arc<Mutex<SubqueryCaller<P, Fr>>>,
     block_number: AssignedValue<Fr>,
     addr: AssignedValue<Fr>,
     mapping_slot: HiLo<AssignedValue<Fr>>,
-) -> SolidityMapping {
+) -> SolidityMapping<P> {
     SolidityMapping {
         block_number,
         addr,
@@ -30,7 +33,7 @@ pub fn get_mapping(
     }
 }
 
-impl<'a> SolidityMapping<'a> {
+impl<'a, P: JsonRpcClient> SolidityMapping<'a, P> {
     pub fn nested(self, keys: Vec<HiLo<AssignedValue<Fr>>>) -> HiLo<AssignedValue<Fr>> {
         if keys.is_empty() || keys.len() > MAX_SOLIDITY_MAPPING_KEYS {
             panic!(

@@ -1,24 +1,27 @@
+use std::sync::{Arc, Mutex};
+
 use axiom_client::{
     axiom_codec::HiLo,
     axiom_eth::halo2_base::{AssignedValue, Context},
-    subquery::types::AssignedStorageSubquery,
+    subquery::{caller::SubqueryCaller, types::AssignedStorageSubquery},
 };
+use ethers::providers::JsonRpcClient;
 
-use crate::{Fr, SubqueryCaller};
+use crate::Fr;
 
-pub struct Storage<'a> {
+pub struct Storage<'a, P: JsonRpcClient> {
     pub block_number: AssignedValue<Fr>,
     pub addr: AssignedValue<Fr>,
     ctx: &'a mut Context<Fr>,
-    caller: SubqueryCaller,
+    caller: Arc<Mutex<SubqueryCaller<P, Fr>>>,
 }
 
-pub fn get_storage(
+pub fn get_storage<P: JsonRpcClient>(
     ctx: &mut Context<Fr>,
-    caller: SubqueryCaller,
+    caller: Arc<Mutex<SubqueryCaller<P, Fr>>>,
     block_number: AssignedValue<Fr>,
     addr: AssignedValue<Fr>,
-) -> Storage {
+) -> Storage<P> {
     Storage {
         block_number,
         addr,
@@ -27,7 +30,7 @@ pub fn get_storage(
     }
 }
 
-impl<'a> Storage<'a> {
+impl<'a, P: JsonRpcClient> Storage<'a, P> {
     pub fn slot(self, slot: HiLo<AssignedValue<Fr>>) -> HiLo<AssignedValue<Fr>> {
         let mut subquery_caller = self.caller.lock().unwrap();
         let subquery = AssignedStorageSubquery {

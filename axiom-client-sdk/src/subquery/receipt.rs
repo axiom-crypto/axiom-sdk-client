@@ -1,3 +1,5 @@
+use std::sync::{Arc, Mutex};
+
 use axiom_client::{
     axiom_codec::{
         special_values::{
@@ -6,36 +8,40 @@ use axiom_client::{
         },
         HiLo,
     },
-    axiom_eth::halo2_base::{
-        gates::{GateChip, GateInstructions},
-        AssignedValue, Context,
+    axiom_eth::{
+        halo2_base::{
+            gates::{GateChip, GateInstructions},
+            AssignedValue, Context,
+        },
+        utils::encode_h256_to_hilo,
     },
-    subquery::{receipt::ReceiptField, types::AssignedReceiptSubquery},
+    subquery::{caller::SubqueryCaller, receipt::ReceiptField, types::AssignedReceiptSubquery},
 };
+use ethers::{providers::JsonRpcClient, types::H256};
 
-use crate::{Fr, SubqueryCaller};
+use crate::Fr;
 
-pub struct Receipt<'a> {
+pub struct Receipt<'a, P: JsonRpcClient> {
     pub block_number: AssignedValue<Fr>,
     pub tx_idx: AssignedValue<Fr>,
     ctx: &'a mut Context<Fr>,
-    caller: SubqueryCaller,
+    caller: Arc<Mutex<SubqueryCaller<P, Fr>>>,
 }
 
-pub struct Log<'a> {
+pub struct Log<'a, P: JsonRpcClient> {
     pub block_number: AssignedValue<Fr>,
     pub tx_idx: AssignedValue<Fr>,
     pub field_or_log_idx: AssignedValue<Fr>,
     ctx: &'a mut Context<Fr>,
-    caller: SubqueryCaller,
+    caller: Arc<Mutex<SubqueryCaller<P, Fr>>>,
 }
 
-pub fn get_receipt(
+pub fn get_receipt<P: JsonRpcClient>(
     ctx: &mut Context<Fr>,
-    caller: SubqueryCaller,
+    caller: Arc<Mutex<SubqueryCaller<P, Fr>>>,
     block_number: AssignedValue<Fr>,
     tx_idx: AssignedValue<Fr>,
-) -> Receipt {
+) -> Receipt<P> {
     Receipt {
         block_number,
         tx_idx,
@@ -44,7 +50,7 @@ pub fn get_receipt(
     }
 }
 
-impl<'a> Receipt<'a> {
+impl<'a, P: JsonRpcClient> Receipt<'a, P> {
     pub fn call(self, field: ReceiptField) -> HiLo<AssignedValue<Fr>> {
         let field_constant = self.ctx.load_constant(Fr::from(field));
         let mut subquery_caller = self.caller.lock().unwrap();
@@ -61,7 +67,7 @@ impl<'a> Receipt<'a> {
         subquery_caller.call(self.ctx, subquery)
     }
 
-    pub fn log(self, log_idx: AssignedValue<Fr>) -> Log<'a> {
+    pub fn log(self, log_idx: AssignedValue<Fr>) -> Log<'a, P> {
         let log_offset = self
             .ctx
             .load_constant(Fr::from(RECEIPT_LOG_IDX_OFFSET as u64));
@@ -97,17 +103,19 @@ impl<'a> Receipt<'a> {
     }
 }
 
-impl<'a> Log<'a> {
+impl<'a, P: JsonRpcClient> Log<'a, P> {
     pub fn topic(
         self,
         topic_idx: AssignedValue<Fr>,
-        event_schema: Option<HiLo<AssignedValue<Fr>>>,
+        event_schema: Option<H256>,
     ) -> HiLo<AssignedValue<Fr>> {
         let mut subquery_caller = self.caller.lock().unwrap();
-        let event_schema = event_schema.unwrap_or_else(|| {
-            let zero_event_schema = self.ctx.load_constants(&[Fr::zero(), Fr::zero()]);
-            HiLo::from_hi_lo([zero_event_schema[0], zero_event_schema[1]])
-        });
+        let event_schema = event_schema.unwrap_or_else(H256::zero);
+        let event_schema_hilo = encode_h256_to_hilo::<Fr>(&event_schema);
+        let assigned_event_schema = self
+            .ctx
+            .load_constants(&[event_schema_hilo.hi(), event_schema_hilo.lo()]);
+        let event_schema = HiLo::from_hi_lo([assigned_event_schema[0], assigned_event_schema[1]]);
         let subquery = AssignedReceiptSubquery {
             block_number: self.block_number,
             tx_idx: self.tx_idx,
@@ -121,13 +129,15 @@ impl<'a> Log<'a> {
     pub fn data(
         self,
         data_idx: AssignedValue<Fr>,
-        event_schema: Option<HiLo<AssignedValue<Fr>>>,
+        event_schema: Option<H256>,
     ) -> HiLo<AssignedValue<Fr>> {
         let mut subquery_caller = self.caller.lock().unwrap();
-        let event_schema = event_schema.unwrap_or_else(|| {
-            let zero_event_schema = self.ctx.load_constants(&[Fr::zero(), Fr::zero()]);
-            HiLo::from_hi_lo([zero_event_schema[0], zero_event_schema[1]])
-        });
+        let event_schema = event_schema.unwrap_or_else(H256::zero);
+        let event_schema_hilo = encode_h256_to_hilo::<Fr>(&event_schema);
+        let assigned_event_schema = self
+            .ctx
+            .load_constants(&[event_schema_hilo.hi(), event_schema_hilo.lo()]);
+        let event_schema = HiLo::from_hi_lo([assigned_event_schema[0], assigned_event_schema[1]]);
         let data_offset = self
             .ctx
             .load_constant(Fr::from(RECEIPT_DATA_IDX_OFFSET as u64));

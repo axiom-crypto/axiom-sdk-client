@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "target": "ES2020",
     "module": "CommonJS",
     "moduleResolution": "node",
@@ -26,14 +27,18 @@
   },
   "include": [
     "src/**/*.ts",
-    "src/**/*.json"
+    "src/**/*.json",
+    "test/**/*.circuit.ts"
   ],
   "exclude": [
     "dist",
     "node_modules",
-    "scripts"
+    "scripts",
+    "test",
+    "src/scaffold/templates/*"
   ],
   "ts-node": {
     "esm": true
   }
 }
+  

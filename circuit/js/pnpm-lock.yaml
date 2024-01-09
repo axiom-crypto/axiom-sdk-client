@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@axiom-crypto/core':
-    specifier: 2.2.51-rc.3
-    version: 2.2.51-rc.3
+    specifier: 2.3.0-rc2.0
+    version: 2.3.0-rc2.0
   '@axiom-crypto/halo2-lib-js':
     specifier: 0.2.14-rc.0
     version: 0.2.14-rc.0
@@ -15,8 +15,8 @@ dependencies:
     specifier: 0.2.11-rc.1
     version: 0.2.11-rc.1
   '@axiom-crypto/tools':
-    specifier: 0.3.35-rc.2
-    version: 0.3.35-rc.2
+    specifier: 0.3.36-rc2.1
+    version: 0.3.36-rc2.1
   commander:
     specifier: ^11.1.0
     version: 11.1.0
@@ -70,12 +70,12 @@ packages:
       '@jridgewell/trace-mapping': 0.3.20
     dev: true
 
-  /@axiom-crypto/core@2.2.51-rc.3:
-    resolution: {integrity: sha512-/8GgcrI8/jAw0WA+m0zc3C4LFjTnhKcZfel7BWRnSzmsahfsQnc45BUHtAbaYxfiqi5aHYCaKF5701v6aJuNCw==}
+  /@axiom-crypto/core@2.3.0-rc2.0:
+    resolution: {integrity: sha512-mpELfCPkE8+2jdY2njVORv8pt2ooa2n/HageyHDBu6O60OIWWP/k5HU+7+mdYbhYzqCZF00q45JED175BNzROQ==}
     dependencies:
       '@axiom-crypto/halo2-lib-js': 0.2.10
       '@axiom-crypto/halo2-wasm': 0.2.7
-      '@axiom-crypto/tools': 0.3.35-rc.2
+      '@axiom-crypto/tools': 0.3.36-rc2.1
       axios: 1.6.3
       bs58: 5.0.0
       ethers: 6.9.0
@@ -116,8 +116,8 @@ packages:
     resolution: {integrity: sha512-pmgFCkCJUlFgh5NCLR59WpWIiBegNxBRAAlA2UxPMga1Pba02ynZgf6SW0tbQaezMiWUdTA9SfpeosovcNI6Yg==}
     dev: false
 
-  /@axiom-crypto/tools@0.3.35-rc.2:
-    resolution: {integrity: sha512-KGUIvr7maN7H0WrOo+L6M11n9tBNrUv6O54csY3Za1McLeGaSsA6iteh0zi9A9AVqBraigDgvxywwTGQjzFv+Q==}
+  /@axiom-crypto/tools@0.3.36-rc2.1:
+    resolution: {integrity: sha512-XZ/kLX2jvReSu5/Mmu0ZAx2kmNGBr9AemrRCgA4D3rgYWk9JZqQmoYq2NFozHsMCt5XCc7niLUXGbEHjEG2PAg==}
     dependencies:
       ethers: 6.9.0
     transitivePeerDependencies:

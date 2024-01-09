@@ -13,7 +13,7 @@ export type CircuitInputType = typeof solidityInputTypes[number];
 export interface AxiomV2ClientConfig<T> {
   circuit: (inputs: T) => Promise<void>;
   compiledCircuit: AxiomV2CompiledCircuit;
-  inputArgs: {[arg: string]: CircuitInputType};
+  inputSchema: {[arg: string]: CircuitInputType};
   chainId: string;
   provider: string;
   privateKey?: string;

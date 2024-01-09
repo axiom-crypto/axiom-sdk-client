@@ -2,7 +2,7 @@ import { getByteLength } from "@axiom-crypto/core";
 import { CircuitInputType } from "./types";
 import { mainnet, goerli, sepolia } from 'viem/chains';
 
-export function convertInputArgsToSchemaString(args: {[arg: string]: CircuitInputType}): string {
+export function convertInputSchemaToJsonString(args: {[arg: string]: CircuitInputType}): string {
   const inputs = Object.keys(args).map((key: string) => {
     let argType = args[key];
     let postfix = "";

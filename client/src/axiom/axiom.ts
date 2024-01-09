@@ -7,7 +7,7 @@ import {
   CircuitInputType,
 } from "./types";
 import { RawInput } from "@axiom-crypto/circuit/types";
-import { convertChainIdToViemChain, convertInputArgsToSchemaString } from "./utils";
+import { convertChainIdToViemChain, convertInputSchemaToJsonString } from "./utils";
 import { TransactionReceipt, createPublicClient, createWalletClient, http, zeroAddress, zeroHash } from "viem";
 import { privateKeyToAccount } from 'viem/accounts'
 import { AxiomV2QueryOptions } from "@axiom-crypto/core";
@@ -20,7 +20,7 @@ export class Axiom<T> {
 
   constructor(config: AxiomV2ClientConfig<T>) {
     this.config = config;
-    const inputSchema = convertInputArgsToSchemaString(config.inputArgs);
+    const inputSchema = convertInputSchemaToJsonString(config.inputSchema);
     this.compiledCircuit = config.compiledCircuit;
     this.axiomCircuit = new AxiomCircuit({
       f: config.circuit,
@@ -72,7 +72,6 @@ export class Axiom<T> {
       account,
       transport: http(this.config.provider),
     })
-    console.log("account", account);
     const { request } = await publicClient.simulateContract({
       address: args.address,
       abi: args.abi,
@@ -82,7 +81,6 @@ export class Axiom<T> {
       value: args.value,
     });
     const hash = await walletClient.writeContract(request);
-    console.log("txHash", hash);
-    return await publicClient.getTransactionReceipt({ hash });
+    return await publicClient.waitForTransactionReceipt({ hash });
   }
 }

@@ -39,6 +39,6 @@
     "typescript": "^5.3.2"
   },
   "peerDependencies": {
-    "@axiom-crypto/client": "link:../client/dist"
+    "@axiom-crypto/client": "0.2.0-rc2.0"
   }
 }

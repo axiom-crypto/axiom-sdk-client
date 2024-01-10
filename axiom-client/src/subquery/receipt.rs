@@ -1,8 +1,9 @@
 use anyhow::{bail, Result};
 use axiom_codec::{
     special_values::{
-        RECEIPT_BLOCK_NUMBER_FIELD_IDX, RECEIPT_DATA_IDX_OFFSET, RECEIPT_LOGS_BLOOM_IDX_OFFSET,
-        RECEIPT_LOG_IDX_OFFSET, RECEIPT_TX_INDEX_FIELD_IDX, RECEIPT_TX_TYPE_FIELD_IDX, RECEIPT_ADDRESS_IDX,
+        RECEIPT_ADDRESS_IDX, RECEIPT_BLOCK_NUMBER_FIELD_IDX, RECEIPT_DATA_IDX_OFFSET,
+        RECEIPT_LOGS_BLOOM_IDX_OFFSET, RECEIPT_LOG_IDX_OFFSET, RECEIPT_TX_INDEX_FIELD_IDX,
+        RECEIPT_TX_TYPE_FIELD_IDX,
     },
     types::native::{AnySubquery, ReceiptSubquery},
 };
@@ -66,8 +67,7 @@ pub async fn get_receipt_field_value<P: JsonRpcClient>(
 
         if topic_or_data_or_address_idx == RECEIPT_ADDRESS_IDX {
             return Ok(log.address.into());
-        }
-        else if topic_or_data_or_address_idx < RECEIPT_DATA_IDX_OFFSET {
+        } else if topic_or_data_or_address_idx < RECEIPT_DATA_IDX_OFFSET {
             if topic_or_data_or_address_idx > topics.len() {
                 bail!("Topic does not exist")
             }

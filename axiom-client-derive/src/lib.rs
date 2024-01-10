@@ -1,6 +1,6 @@
 use input::{impl_flatten_and_raw_input, impl_new_struct};
 use proc_macro::TokenStream;
-use syn::{parse_macro_input, DeriveInput, Ident, ItemFn, ItemStruct, Visibility, FnArg, Type};
+use syn::{parse_macro_input, DeriveInput, FnArg, Ident, ItemFn, ItemStruct, Type, Visibility};
 
 extern crate proc_macro;
 extern crate syn;
@@ -42,14 +42,16 @@ pub fn AxiomCompute(_attr: TokenStream, item: TokenStream) -> TokenStream {
     trait_fn.sig.ident = Ident::new("compute", input_fn.sig.ident.span());
     trait_fn.vis = Visibility::Inherited;
 
-    
-    let fourth_input_type = if let Some(FnArg::Typed(pat_type)) = input_fn.sig.inputs.iter().nth(3) {
+    let fourth_input_type = if let Some(FnArg::Typed(pat_type)) = input_fn.sig.inputs.iter().nth(3)
+    {
         match &*pat_type.ty {
-            Type::Path(type_path) => {
-                type_path.path.segments.first()
-                    .expect("Type path should have at least one segment")
-                    .ident.to_string()
-            },
+            Type::Path(type_path) => type_path
+                .path
+                .segments
+                .first()
+                .expect("Type path should have at least one segment")
+                .ident
+                .to_string(),
             _ => panic!("Unsupported type format for the fourth input"),
         }
     } else {
@@ -60,7 +62,10 @@ pub fn AxiomCompute(_attr: TokenStream, item: TokenStream) -> TokenStream {
         panic!("The assigned input name must end with `CircuitInput`");
     }
 
-    let input_name = fourth_input_type.trim_end_matches("CircuitInput").to_string() + "Input";
+    let input_name = fourth_input_type
+        .trim_end_matches("CircuitInput")
+        .to_string()
+        + "Input";
     let input_name_ident = Ident::new(&input_name, input_fn.sig.ident.span());
 
     quote! {

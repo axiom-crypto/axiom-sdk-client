@@ -3,8 +3,8 @@
 #![feature(int_roundings)]
 #![feature(custom_test_frameworks)]
 
-pub use axiom_query::axiom_eth;
 pub use axiom_codec;
+pub use axiom_query::axiom_eth;
 pub mod aggregation;
 pub mod constants;
 pub mod input;

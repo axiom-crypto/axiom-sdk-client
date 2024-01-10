@@ -215,7 +215,10 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> AxiomCir
             .assign_witnesses(flattened_inputs);
         let assigned_inputs = A::InputWitness::unflatten(assigned_input_vec).unwrap();
 
-        let subquery_caller = Arc::new(Mutex::new(SubqueryCaller::new(self.provider.clone(), is_inputs)));
+        let subquery_caller = Arc::new(Mutex::new(SubqueryCaller::new(
+            self.provider.clone(),
+            is_inputs,
+        )));
         let mut callback = Vec::new();
         let payload = A::virtual_assign_phase0(
             &mut self.builder.borrow_mut(),

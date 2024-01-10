@@ -10,7 +10,7 @@ export const prove = async (
         output?: string,
         chainId?: number | string | bigint,
         provider?: string,
-        inputs?: string,
+        input?: string,
         mock?: boolean,
     }
 ) => {
@@ -34,8 +34,8 @@ export const prove = async (
         inputSchema: compiledJson.inputSchema,
     })
     let circuitInputs = f.inputs;
-    if (options.inputs) {
-        circuitInputs = readJsonFromFile(options.inputs);
+    if (options.input) {
+        circuitInputs = readJsonFromFile(options.input);
     }
     else {
         if (circuitInputs === undefined) {

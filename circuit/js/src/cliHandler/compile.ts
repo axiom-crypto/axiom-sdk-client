@@ -10,7 +10,7 @@ export const compile = async (
         output?: string,
         chainId?: number | string | bigint,
         provider?: string,
-        inputs?: string
+        input?: string
     }
 ) => {
     let circuitFunction = "circuit";
@@ -28,8 +28,8 @@ export const compile = async (
         inputSchema: f.inputSchema,
     })
     let circuitInputs = f.inputs;
-    if (options.inputs) {
-        circuitInputs = readJsonFromFile(options.inputs);
+    if (options.input) {
+        circuitInputs = readJsonFromFile(options.input);
     }
     else {
         if (circuitInputs === undefined) {

@@ -50,7 +50,7 @@ pub fn impl_new_struct(ast: &ItemStruct) -> Result<TokenStream, TokenStream> {
         .zip(field_types.iter())
         .map(|(name, field_type)| {
             quote! {
-                #name: <#field_type as axiom_client::input::raw_input::RawInput<crate::Fr>>::FEType<T>,
+                #name: <#field_type as axiom_client::input::raw_input::RawInput<axiom_client_sdk::Fr>>::FEType<T>,
             }
         })
         .collect();
@@ -218,7 +218,7 @@ pub fn impl_flatten_and_raw_input(ast: &DeriveInput) -> TokenStream {
             }
         }
 
-        impl #old_impl_generics crate::compute::AxiomComputeInput for #raw_circuit_name_ident #old_ty_generics {
+        impl #old_impl_generics axiom_client_sdk::compute::AxiomComputeInput for #raw_circuit_name_ident #old_ty_generics {
             type LogicInput = #raw_circuit_name_ident #old_ty_generics;
             type Input<T: Copy> = #name #ty_generics;
         }

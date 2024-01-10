@@ -1,9 +1,14 @@
-pub mod account;
-pub mod header;
-pub mod mapping;
-pub mod receipt;
-pub mod storage;
-pub mod tx;
+pub(crate) mod account;
+pub(crate) mod header;
+pub(crate) mod mapping;
+pub(crate) mod receipt;
+pub(crate) mod storage;
+pub(crate) mod tx;
+
+pub use account::AccountField;
+pub use header::HeaderField;
+pub use receipt::ReceiptField;
+pub use tx::TxField;
 
 pub mod caller;
 pub mod keccak;

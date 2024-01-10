@@ -15,33 +15,33 @@ use axiom_client::{
         },
         utils::encode_h256_to_hilo,
     },
-    subquery::{caller::SubqueryCaller, receipt::ReceiptField, types::AssignedReceiptSubquery},
+    subquery::{caller::SubqueryCaller, types::AssignedReceiptSubquery, ReceiptField},
 };
-use ethers::{providers::JsonRpcClient, types::H256};
+use ethers::{providers::Http, types::H256};
 
 use crate::Fr;
 
-pub struct Receipt<'a, P: JsonRpcClient> {
+pub struct Receipt<'a> {
     pub block_number: AssignedValue<Fr>,
     pub tx_idx: AssignedValue<Fr>,
     ctx: &'a mut Context<Fr>,
-    caller: Arc<Mutex<SubqueryCaller<P, Fr>>>,
+    caller: Arc<Mutex<SubqueryCaller<Http, Fr>>>,
 }
 
-pub struct Log<'a, P: JsonRpcClient> {
+pub struct Log<'a> {
     pub block_number: AssignedValue<Fr>,
     pub tx_idx: AssignedValue<Fr>,
     pub field_or_log_idx: AssignedValue<Fr>,
     ctx: &'a mut Context<Fr>,
-    caller: Arc<Mutex<SubqueryCaller<P, Fr>>>,
+    caller: Arc<Mutex<SubqueryCaller<Http, Fr>>>,
 }
 
-pub fn get_receipt<P: JsonRpcClient>(
+pub fn get_receipt(
     ctx: &mut Context<Fr>,
-    caller: Arc<Mutex<SubqueryCaller<P, Fr>>>,
+    caller: Arc<Mutex<SubqueryCaller<Http, Fr>>>,
     block_number: AssignedValue<Fr>,
     tx_idx: AssignedValue<Fr>,
-) -> Receipt<P> {
+) -> Receipt {
     Receipt {
         block_number,
         tx_idx,
@@ -50,7 +50,7 @@ pub fn get_receipt<P: JsonRpcClient>(
     }
 }
 
-impl<'a, P: JsonRpcClient> Receipt<'a, P> {
+impl<'a> Receipt<'a> {
     pub fn call(self, field: ReceiptField) -> HiLo<AssignedValue<Fr>> {
         let field_constant = self.ctx.load_constant(Fr::from(field));
         let mut subquery_caller = self.caller.lock().unwrap();
@@ -67,7 +67,7 @@ impl<'a, P: JsonRpcClient> Receipt<'a, P> {
         subquery_caller.call(self.ctx, subquery)
     }
 
-    pub fn log(self, log_idx: AssignedValue<Fr>) -> Log<'a, P> {
+    pub fn log(self, log_idx: AssignedValue<Fr>) -> Log<'a> {
         let log_offset = self
             .ctx
             .load_constant(Fr::from(RECEIPT_LOG_IDX_OFFSET as u64));
@@ -103,7 +103,7 @@ impl<'a, P: JsonRpcClient> Receipt<'a, P> {
     }
 }
 
-impl<'a, P: JsonRpcClient> Log<'a, P> {
+impl<'a> Log<'a> {
     pub fn topic(
         self,
         topic_idx: AssignedValue<Fr>,

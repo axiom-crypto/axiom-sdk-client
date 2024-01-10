@@ -9,7 +9,7 @@ use axiom_client::{
     subquery::caller::SubqueryCaller,
     utils::{from_hi_lo, to_hi_lo},
 };
-use ethers::providers::JsonRpcClient;
+use ethers::providers::Http;
 
 use crate::{
     subquery::{
@@ -23,17 +23,17 @@ use crate::{
     Fr,
 };
 
-pub struct AxiomAPI<'a, P: JsonRpcClient> {
+pub struct AxiomAPI<'a> {
     pub builder: &'a mut RlcCircuitBuilder<Fr>,
     pub range: &'a RangeChip<Fr>,
-    pub subquery_caller: Arc<Mutex<SubqueryCaller<P, Fr>>>,
+    pub subquery_caller: Arc<Mutex<SubqueryCaller<Http, Fr>>>,
 }
 
-impl<'a, P: JsonRpcClient> AxiomAPI<'a, P> {
+impl<'a> AxiomAPI<'a> {
     pub fn new(
         builder: &'a mut RlcCircuitBuilder<Fr>,
         range: &'a RangeChip<Fr>,
-        subquery_caller: Arc<Mutex<SubqueryCaller<P, Fr>>>,
+        subquery_caller: Arc<Mutex<SubqueryCaller<Http, Fr>>>,
     ) -> Self {
         Self {
             builder,
@@ -42,7 +42,7 @@ impl<'a, P: JsonRpcClient> AxiomAPI<'a, P> {
         }
     }
 
-    pub fn subquery_caller(&self) -> Arc<Mutex<SubqueryCaller<P, Fr>>> {
+    pub fn subquery_caller(&self) -> Arc<Mutex<SubqueryCaller<Http, Fr>>> {
         self.subquery_caller.clone()
     }
 
@@ -64,12 +64,12 @@ impl<'a, P: JsonRpcClient> AxiomAPI<'a, P> {
         &mut self,
         block_number: AssignedValue<Fr>,
         addr: AssignedValue<Fr>,
-    ) -> Account<P> {
+    ) -> Account {
         let ctx = self.builder.base.main(0);
         get_account(ctx, self.subquery_caller.clone(), block_number, addr)
     }
 
-    pub fn get_header(&mut self, block_number: AssignedValue<Fr>) -> Header<P> {
+    pub fn get_header(&mut self, block_number: AssignedValue<Fr>) -> Header {
         let ctx = self.builder.base.main(0);
         get_header(ctx, self.subquery_caller.clone(), block_number)
     }
@@ -79,7 +79,7 @@ impl<'a, P: JsonRpcClient> AxiomAPI<'a, P> {
         block_number: AssignedValue<Fr>,
         addr: AssignedValue<Fr>,
         mapping_slot: HiLo<AssignedValue<Fr>>,
-    ) -> SolidityMapping<P> {
+    ) -> SolidityMapping {
         let ctx = self.builder.base.main(0);
         get_mapping(
             ctx,
@@ -94,7 +94,7 @@ impl<'a, P: JsonRpcClient> AxiomAPI<'a, P> {
         &mut self,
         block_number: AssignedValue<Fr>,
         tx_idx: AssignedValue<Fr>,
-    ) -> Receipt<P> {
+    ) -> Receipt {
         let ctx = self.builder.base.main(0);
         get_receipt(ctx, self.subquery_caller.clone(), block_number, tx_idx)
     }
@@ -103,12 +103,12 @@ impl<'a, P: JsonRpcClient> AxiomAPI<'a, P> {
         &mut self,
         block_number: AssignedValue<Fr>,
         addr: AssignedValue<Fr>,
-    ) -> Storage<P> {
+    ) -> Storage {
         let ctx = self.builder.base.main(0);
         get_storage(ctx, self.subquery_caller.clone(), block_number, addr)
     }
 
-    pub fn get_tx(&mut self, block_number: AssignedValue<Fr>, tx_idx: AssignedValue<Fr>) -> Tx<P> {
+    pub fn get_tx(&mut self, block_number: AssignedValue<Fr>, tx_idx: AssignedValue<Fr>) -> Tx {
         let ctx = self.builder.base.main(0);
         get_tx(ctx, self.subquery_caller.clone(), block_number, tx_idx)
     }

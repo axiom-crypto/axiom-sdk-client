@@ -1,20 +1,15 @@
 use std::fmt::Debug;
 
-use axiom_client::{
-    axiom_eth::halo2_base::{
+use axiom_client_sdk::{
+    axiom::{AxiomAPI, AxiomComputeFn, AxiomResult},
+    halo2_base::{
         gates::{GateChip, GateInstructions, RangeInstructions},
         AssignedValue,
     },
-    subquery::account::AccountField,
+    subquery::AccountField,
+    AxiomComputeInput, Fr,
 };
-use axiom_client_derive::AxiomComputeInput;
 use ethers::types::Address;
-
-use crate::{
-    api::AxiomAPI,
-    compute::{AxiomComputeFn, AxiomResult},
-    Fr,
-};
 
 #[AxiomComputeInput]
 pub struct AccountAgeInput {
@@ -24,7 +19,7 @@ pub struct AccountAgeInput {
 
 impl AxiomComputeFn for AccountAgeInput {
     fn compute(
-        api: &mut AxiomAPI<Self::Provider>,
+        api: &mut AxiomAPI,
         assigned_inputs: AccountAgeCircuitInput<AssignedValue<Fr>>,
     ) -> Vec<AxiomResult> {
         let gate = GateChip::new();
@@ -48,21 +43,4 @@ impl AxiomComputeFn for AccountAgeInput {
             assigned_inputs.claimed_block_number.into(),
         ]
     }
-}
-
-#[cfg(test)]
-mod tests {
-    use std::str::FromStr;
-
-    use super::*;
-    use crate::axiom_compute_tests;
-
-    fn inputs() -> AccountAgeInput {
-        AccountAgeInput {
-            addr: Address::from_str("0x897dDbe14c9C7736EbfDC58461355697FbF70048").unwrap(),
-            claimed_block_number: 9173677,
-        }
-    }
-
-    axiom_compute_tests!(AccountAgeInput, inputs, 12);
 }

@@ -1,11 +1,3 @@
-use std::env;
-
-use ethers::providers::{Http, Provider};
-
-pub fn provider() -> Provider<Http> {
-    Provider::<Http>::try_from(env::var("PROVIDER_URI").expect("PROVIDER_URI not set")).unwrap()
-}
-
 #[macro_export]
 macro_rules! axiom_compute_tests {
     ($input_struct:ident, $inputs:ident, $k: expr) => {
@@ -18,6 +10,15 @@ macro_rules! axiom_compute_tests {
                 lookup_bits: Some($k - 1),
                 num_instance_columns: 1,
             }
+        }
+
+        use std::env;
+
+        use ethers::providers::{Http, Provider};
+
+        pub fn provider() -> Provider<Http> {
+            Provider::<Http>::try_from(env::var("PROVIDER_URI").expect("PROVIDER_URI not set"))
+                .unwrap()
         }
 
         #[test]

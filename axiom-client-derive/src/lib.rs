@@ -14,6 +14,7 @@ mod input;
 pub fn AxiomComputeInput(_args: TokenStream, input: TokenStream) -> TokenStream {
     let input_clone = input.clone();
     let ast = parse_macro_input!(input_clone as ItemStruct);
+    let name = ast.ident.clone();
     let new_struct = impl_new_struct(&ast);
     if let Err(err) = new_struct {
         return err.into();
@@ -27,6 +28,10 @@ pub fn AxiomComputeInput(_args: TokenStream, input: TokenStream) -> TokenStream 
         #ast
         #new_struct
         #flatten
+
+        fn main() {
+            axiom_client_sdk::cmd::run_cli::<#name>();
+        }
     }
     .into()
 }

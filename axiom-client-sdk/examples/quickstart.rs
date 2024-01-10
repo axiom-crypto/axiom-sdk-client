@@ -1,18 +1,12 @@
 use std::{fmt::Debug, str::FromStr};
 
-use axiom_client::{
-    axiom_codec::HiLo,
-    axiom_eth::halo2_base::AssignedValue,
-    subquery::{account::AccountField, header::HeaderField, tx::TxField},
+use axiom_client_sdk::{
+    axiom::{AxiomAPI, AxiomComputeFn, AxiomResult},
+    halo2_base::AssignedValue,
+    subquery::{AccountField, HeaderField, TxField},
+    AxiomComputeInput, Fr, HiLo,
 };
-use axiom_client_derive::AxiomComputeInput;
 use ethers::types::{Address, H256};
-
-use crate::{
-    api::AxiomAPI,
-    compute::{AxiomComputeFn, AxiomResult},
-    Fr,
-};
 
 #[AxiomComputeInput]
 pub struct QuickstartInput {
@@ -26,7 +20,7 @@ pub struct QuickstartInput {
 
 impl AxiomComputeFn for QuickstartInput {
     fn compute(
-        api: &mut AxiomAPI<Self::Provider>,
+        api: &mut AxiomAPI,
         assigned_inputs: QuickstartCircuitInput<AssignedValue<Fr>>,
     ) -> Vec<AxiomResult> {
         // fetch block header data
@@ -104,25 +98,4 @@ impl AxiomComputeFn for QuickstartInput {
 
         vec![]
     }
-}
-
-#[cfg(test)]
-mod tests {
-    use std::str::FromStr;
-
-    use super::*;
-    use crate::axiom_compute_tests;
-
-    fn inputs() -> QuickstartInput {
-        QuickstartInput {
-            addr: Address::from_str("0x8dde5d4a8384f403f888e1419672d94c570440c9").unwrap(),
-            block: 9730000,
-            tx_block_number: 9728956,
-            tx_idx: 10,
-            slot: H256::from_low_u64_be(2),
-            mapping_slot: H256::from_low_u64_be(1),
-        }
-    }
-
-    axiom_compute_tests!(QuickstartInput, inputs, 12);
 }

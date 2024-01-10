@@ -9,25 +9,25 @@ use axiom_client::{
         gates::{GateChip, GateInstructions},
         AssignedValue, Context,
     },
-    subquery::{caller::SubqueryCaller, tx::TxField, types::AssignedTxSubquery},
+    subquery::{caller::SubqueryCaller, types::AssignedTxSubquery, TxField},
 };
-use ethers::providers::JsonRpcClient;
+use ethers::providers::Http;
 
 use crate::Fr;
 
-pub struct Tx<'a, P: JsonRpcClient> {
+pub struct Tx<'a> {
     pub block_number: AssignedValue<Fr>,
     pub tx_idx: AssignedValue<Fr>,
     ctx: &'a mut Context<Fr>,
-    caller: Arc<Mutex<SubqueryCaller<P, Fr>>>,
+    caller: Arc<Mutex<SubqueryCaller<Http, Fr>>>,
 }
 
-pub fn get_tx<P: JsonRpcClient>(
+pub fn get_tx(
     ctx: &mut Context<Fr>,
-    caller: Arc<Mutex<SubqueryCaller<P, Fr>>>,
+    caller: Arc<Mutex<SubqueryCaller<Http, Fr>>>,
     block_number: AssignedValue<Fr>,
     tx_idx: AssignedValue<Fr>,
-) -> Tx<P> {
+) -> Tx {
     Tx {
         block_number,
         tx_idx,
@@ -36,7 +36,7 @@ pub fn get_tx<P: JsonRpcClient>(
     }
 }
 
-impl<'a, P: JsonRpcClient> Tx<'a, P> {
+impl<'a> Tx<'a> {
     pub fn call(self, field: TxField) -> HiLo<AssignedValue<Fr>> {
         let field_constant = self.ctx.load_constant(Fr::from(field));
         let mut subquery_caller = self.caller.lock().unwrap();

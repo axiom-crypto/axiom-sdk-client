@@ -22,27 +22,28 @@ use axiom_client::{
     types::{AxiomCircuitParams, AxiomV2CircuitOutput},
     utils::to_hi_lo,
 };
-use ethers::providers::{Http, JsonRpcClient, Provider};
+use ethers::providers::{Http, Provider};
+use serde::{de::DeserializeOwned, Serialize};
 
 use crate::{api::AxiomAPI, Fr};
 
 pub trait AxiomComputeInput: Clone + Default + Debug {
-    type LogicInput: Clone + Debug + Into<Self::Input<Fr>>;
+    type LogicInput: Clone + Debug + Serialize + DeserializeOwned + Into<Self::Input<Fr>>;
     type Input<T: Copy>: Clone + InputFlatten<T>;
-    type ProviderType: JsonRpcClient + Clone = Http;
+    // type ProviderType: JsonRpcClient + Clone = Http;
 }
 
 pub trait AxiomComputeFn: AxiomComputeInput {
-    type Provider: JsonRpcClient + Clone = Self::ProviderType;
+    // type Provider: JsonRpcClient + Clone = Self::ProviderType;
     fn compute(
-        api: &mut AxiomAPI<Self::Provider>,
+        api: &mut AxiomAPI,
         assigned_inputs: Self::Input<AssignedValue<Fr>>,
     ) -> Vec<AxiomResult>;
 }
 
 #[derive(Debug, Clone)]
 pub struct AxiomCompute<A: AxiomComputeFn> {
-    provider: Option<Provider<A::Provider>>,
+    provider: Option<Provider<Http>>,
     params: Option<BaseCircuitParams>,
     input: Option<A::LogicInput>,
 }
@@ -57,7 +58,7 @@ impl<A: AxiomComputeFn> Default for AxiomCompute<A> {
     }
 }
 
-impl<A: AxiomComputeFn> AxiomCircuitScaffold<A::Provider, Fr> for AxiomCompute<A>
+impl<A: AxiomComputeFn> AxiomCircuitScaffold<Http, Fr> for AxiomCompute<A>
 where
     A::Input<Fr>: Default + Debug,
     A::Input<AssignedValue<Fr>>: Debug,
@@ -68,7 +69,7 @@ where
     fn virtual_assign_phase0(
         builder: &mut RlcCircuitBuilder<Fr>,
         range: &RangeChip<Fr>,
-        subquery_caller: Arc<Mutex<SubqueryCaller<A::Provider, Fr>>>,
+        subquery_caller: Arc<Mutex<SubqueryCaller<Http, Fr>>>,
         callback: &mut Vec<HiLo<AssignedValue<Fr>>>,
         assigned_inputs: Self::InputWitness,
     ) {
@@ -94,7 +95,7 @@ where
         Self::default()
     }
 
-    pub fn set_provider(&mut self, provider: Provider<A::Provider>) {
+    pub fn set_provider(&mut self, provider: Provider<Http>) {
         self.provider = Some(provider);
     }
 
@@ -106,7 +107,7 @@ where
         self.input = Some(input);
     }
 
-    pub fn use_provider(mut self, provider: Provider<A::Provider>) -> Self {
+    pub fn use_provider(mut self, provider: Provider<Http>) -> Self {
         self.set_provider(provider);
         self
     }
@@ -137,14 +138,14 @@ where
         let provider = self.provider.clone().unwrap();
         let params = self.params.clone().unwrap();
         let converted_input = self.input.clone().map(|input| input.into());
-        mock::<A::Provider, Self>(provider, AxiomCircuitParams::Base(params), converted_input);
+        mock::<Http, Self>(provider, AxiomCircuitParams::Base(params), converted_input);
     }
 
     pub fn keygen(&self) -> (VerifyingKey<G1Affine>, ProvingKey<G1Affine>) {
         self.check_provider_and_params_set();
         let provider = self.provider.clone().unwrap();
         let params = self.params.clone().unwrap();
-        keygen::<A::Provider, Self>(provider, AxiomCircuitParams::Base(params), None)
+        keygen::<Http, Self>(provider, AxiomCircuitParams::Base(params), None)
     }
 
     pub fn prove(&self, pk: ProvingKey<G1Affine>) -> Snark {
@@ -152,7 +153,7 @@ where
         let provider = self.provider.clone().unwrap();
         let params = self.params.clone().unwrap();
         let converted_input = self.input.clone().map(|input| input.into());
-        prove::<A::Provider, Self>(
+        prove::<Http, Self>(
             provider,
             AxiomCircuitParams::Base(params),
             converted_input,
@@ -165,7 +166,7 @@ where
         let provider = self.provider.clone().unwrap();
         let params = self.params.clone().unwrap();
         let converted_input = self.input.clone().map(|input| input.into());
-        run::<A::Provider, Self>(
+        run::<Http, Self>(
             provider,
             AxiomCircuitParams::Base(params),
             converted_input,
@@ -173,7 +174,7 @@ where
         )
     }
 
-    pub fn circuit(&self) -> AxiomCircuit<Fr, A::Provider, Self> {
+    pub fn circuit(&self) -> AxiomCircuit<Fr, Http, Self> {
         self.check_provider_and_params_set();
         let provider = self.provider.clone().unwrap();
         let params = self.params.clone().unwrap();

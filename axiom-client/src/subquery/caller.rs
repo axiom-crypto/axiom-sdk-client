@@ -25,9 +25,14 @@ use super::{
 use crate::subquery::{types::RawSubquery, utils::get_subquery_type_from_any_subquery};
 
 pub trait FetchSubquery<F: Field>: Clone {
-    fn fetch<P: JsonRpcClient>(&self, p: &Provider<P>) -> Result<(H256, Vec<AssignedValue<F>>)>;
+    fn flatten(&self) -> Vec<AssignedValue<F>>;
+    fn fetch<P: JsonRpcClient>(&self, p: &Provider<P>) -> Result<H256>;
     fn any_subquery(&self) -> AnySubquery;
-    fn call<P: JsonRpcClient>(&self, ctx: &mut Context<F>, caller: &mut SubqueryCaller<P, F>) -> HiLo<AssignedValue<F>> {
+    fn call<P: JsonRpcClient>(
+        &self,
+        ctx: &mut Context<F>,
+        caller: &mut SubqueryCaller<P, F>,
+    ) -> HiLo<AssignedValue<F>> {
         caller.call(ctx, self.clone())
     }
 }
@@ -38,16 +43,19 @@ pub struct SubqueryCaller<P: JsonRpcClient, F: Field> {
     pub subquery_assigned_values: BTreeMap<ContextTag, Vec<AssignedValue<F>>>,
     pub keccak_fix_len_calls: Vec<(KeccakFixLenCall<F>, HiLo<AssignedValue<F>>)>,
     pub keccak_var_len_calls: Vec<(KeccakVarLenCall<F>, HiLo<AssignedValue<F>>)>,
+    // if true, the fetched subquery will always be H256::zero()
+    mock_subquery_call: bool,
 }
 
 impl<P: JsonRpcClient, F: Field> SubqueryCaller<P, F> {
-    pub fn new(provider: Provider<P>) -> Self {
+    pub fn new(provider: Provider<P>, mock: bool) -> Self {
         Self {
             provider,
             subqueries: BTreeMap::new(),
             subquery_assigned_values: BTreeMap::new(),
             keccak_fix_len_calls: Vec::new(),
             keccak_var_len_calls: Vec::new(),
+            mock_subquery_call: mock,
         }
     }
 
@@ -88,20 +96,24 @@ impl<P: JsonRpcClient, F: Field> SubqueryCaller<P, F> {
         ctx: &mut Context<F>,
         subquery: T,
     ) -> HiLo<AssignedValue<F>> {
-        let result = subquery.fetch(&self.provider).unwrap();
+        let result = if self.mock_subquery_call {
+            H256::zero()
+        } else {
+            subquery.fetch(&self.provider).unwrap()
+        };
         let any_subquery = subquery.any_subquery();
-        let val = (any_subquery.clone(), result.0);
+        let val = (any_subquery.clone(), result);
         self.subqueries
             .entry(ctx.tag())
             .and_modify(|thread| thread.push(val.clone()))
             .or_insert(vec![val]);
         let subquery_type = get_subquery_type_from_any_subquery(&any_subquery);
-        let hilo = encode_h256_to_hilo(&result.0);
+        let hilo = encode_h256_to_hilo(&result);
         let hi = ctx.load_witness(hilo.hi());
         let lo = ctx.load_witness(hilo.lo());
         let subquery_type_assigned_value = ctx.load_constant(F::from(subquery_type));
         let hi_lo_vec = vec![hi, lo];
-        let mut input = result.1;
+        let mut input = subquery.flatten();
         input.resize_with(MAX_SUBQUERY_INPUTS, || ctx.load_constant(F::ZERO));
         let mut flattened_subquery = vec![subquery_type_assigned_value];
         flattened_subquery.extend(input);

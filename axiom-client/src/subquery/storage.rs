@@ -14,22 +14,6 @@ pub async fn get_storage_field_value<P: JsonRpcClient>(
     query: StorageSubquery,
 ) -> Result<H256> {
     let block_id = BlockId::from(query.block_number as u64);
-    // let block = provider.get_block(block_id).await?;
-    // if block.is_none() {
-    //     bail!("Block does not exist")
-    // }
-
-    // let block = block.unwrap();
-    // let slot = query.slot;
-    // let slots = vec![H256::from_uint(&slot)];
-    // let account = provider.get_proof(query.addr, slots, Some(block_id)).await;
-
-    // if account.is_err() {
-    //     bail!("Account does not exist")
-    // }
-    // let account = account.unwrap();
-    // let accountProof = account.account_proof;
-
     let val = provider
         .get_storage_at(query.addr, H256::from_uint(&query.slot), Some(block_id))
         .await?;
@@ -38,14 +22,17 @@ pub async fn get_storage_field_value<P: JsonRpcClient>(
 }
 
 impl<F: Field> FetchSubquery<F> for AssignedStorageSubquery<F> {
-    fn fetch<P: JsonRpcClient>(&self, p: &Provider<P>) -> Result<(H256, Vec<AssignedValue<F>>)> {
+    fn fetch<P: JsonRpcClient>(&self, p: &Provider<P>) -> Result<H256> {
         let rt = Runtime::new()?;
         let val = rt.block_on(get_storage_field_value(p, (*self).into()))?;
-        let flattened = vec![self.block_number, self.addr, self.slot.hi(), self.slot.lo()];
-        Ok((val, flattened))
+        Ok(val)
     }
 
     fn any_subquery(&self) -> AnySubquery {
         AnySubquery::Storage((*self).into())
+    }
+
+    fn flatten(&self) -> Vec<AssignedValue<F>> {
+        vec![self.block_number, self.addr, self.slot.hi(), self.slot.lo()]
     }
 }

@@ -98,14 +98,17 @@ pub async fn get_header_field_value<P: JsonRpcClient>(
 }
 
 impl<F: Field> FetchSubquery<F> for AssignedHeaderSubquery<F> {
-    fn fetch<P: JsonRpcClient>(&self, p: &Provider<P>) -> Result<(H256, Vec<AssignedValue<F>>)> {
+    fn fetch<P: JsonRpcClient>(&self, p: &Provider<P>) -> Result<H256> {
         let rt = Runtime::new()?;
         let val = rt.block_on(get_header_field_value(p, (*self).into()))?;
-        let flattened = vec![self.block_number, self.field_idx];
-        Ok((val, flattened))
+        Ok(val)
     }
 
     fn any_subquery(&self) -> AnySubquery {
         AnySubquery::Header((*self).into())
+    }
+
+    fn flatten(&self) -> Vec<AssignedValue<F>> {
+        vec![self.block_number, self.field_idx]
     }
 }

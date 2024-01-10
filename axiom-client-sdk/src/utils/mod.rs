@@ -32,7 +32,6 @@ macro_rules! axiom_compute_tests {
         #[test]
         fn keygen() {
             $crate::compute::AxiomCompute::<$input_struct>::new()
-                .use_inputs($inputs())
                 .use_params(params())
                 .use_provider($crate::utils::provider())
                 .keygen();
@@ -41,21 +40,19 @@ macro_rules! axiom_compute_tests {
         #[test]
         fn prove() {
             let compute = $crate::compute::AxiomCompute::<$input_struct>::new()
-                .use_inputs($inputs())
                 .use_params(params())
                 .use_provider($crate::utils::provider());
             let (_vk, pk) = compute.keygen();
-            compute.prove(pk);
+            compute.use_inputs($inputs()).prove(pk);
         }
 
         #[test]
         fn run() {
             let compute = $crate::compute::AxiomCompute::<$input_struct>::new()
-                .use_inputs($inputs())
                 .use_params(params())
                 .use_provider($crate::utils::provider());
             let (_vk, pk) = compute.keygen();
-            compute.run(pk);
+            compute.use_inputs($inputs()).run(pk);
         }
     };
 }

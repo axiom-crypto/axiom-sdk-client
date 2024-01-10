@@ -39,9 +39,17 @@ pub async fn get_solidity_nested_mapping_field_value<P: JsonRpcClient>(
 }
 
 impl<F: Field> FetchSubquery<F> for AssignedSolidityNestedMappingSubquery<F> {
-    fn fetch<P: JsonRpcClient>(&self, p: &Provider<P>) -> Result<(H256, Vec<AssignedValue<F>>)> {
+    fn fetch<P: JsonRpcClient>(&self, p: &Provider<P>) -> Result<H256> {
         let rt = Runtime::new()?;
         let val = rt.block_on(get_solidity_nested_mapping_field_value(p, (*self).into()))?;
+        Ok(val)
+    }
+
+    fn any_subquery(&self) -> AnySubquery {
+        AnySubquery::SolidityNestedMapping((*self).into())
+    }
+
+    fn flatten(&self) -> Vec<AssignedValue<F>> {
         let mut flattened = vec![
             self.block_number,
             self.addr,
@@ -55,10 +63,6 @@ impl<F: Field> FetchSubquery<F> for AssignedSolidityNestedMappingSubquery<F> {
             .flat_map(|k| [k.hi(), k.lo()])
             .collect::<Vec<_>>();
         flattened.extend(hi_lo_keys);
-        Ok((val, flattened))
-    }
-
-    fn any_subquery(&self) -> AnySubquery {
-        AnySubquery::SolidityNestedMapping((*self).into())
+        flattened
     }
 }

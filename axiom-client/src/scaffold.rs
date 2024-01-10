@@ -81,7 +81,7 @@ pub trait AxiomCircuitScaffold<P: JsonRpcClient, F: Field>: Default + Clone + De
 #[derive(Clone, Debug)]
 pub struct AxiomCircuit<F: Field, P: JsonRpcClient, A: AxiomCircuitScaffold<P, F>> {
     pub builder: RefCell<RlcCircuitBuilder<F>>,
-    pub inputs: A::InputValue,
+    pub inputs: Option<A::InputValue>,
     pub provider: Provider<P>,
     range: RangeChip<F>,
     payload: RefCell<Option<A::FirstPhasePayload>>,
@@ -117,7 +117,7 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> AxiomCir
         Self {
             builder: RefCell::new(builder),
             range,
-            inputs: Default::default(),
+            inputs: None,
             provider,
             payload: RefCell::new(None),
             keccak_rows_per_round: params.keccak_rows_per_round,
@@ -146,11 +146,11 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> AxiomCir
         self
     }
 
-    pub fn set_inputs(&mut self, inputs: A::InputValue) {
+    pub fn set_inputs(&mut self, inputs: Option<A::InputValue>) {
         self.inputs = inputs;
     }
 
-    pub fn use_inputs(mut self, inputs: A::InputValue) -> Self {
+    pub fn use_inputs(mut self, inputs: Option<A::InputValue>) -> Self {
         self.set_inputs(inputs);
         self
     }
@@ -205,7 +205,8 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> AxiomCir
         if self.payload.borrow().is_some() {
             return;
         }
-        let flattened_inputs = self.inputs.flatten_vec();
+        let is_inputs = self.inputs.is_none();
+        let flattened_inputs = self.inputs.clone().unwrap_or_default().flatten_vec();
         let assigned_input_vec = self
             .builder
             .borrow_mut()
@@ -214,7 +215,7 @@ impl<F: Field, P: JsonRpcClient + Clone, A: AxiomCircuitScaffold<P, F>> AxiomCir
             .assign_witnesses(flattened_inputs);
         let assigned_inputs = A::InputWitness::unflatten(assigned_input_vec).unwrap();
 
-        let subquery_caller = Arc::new(Mutex::new(SubqueryCaller::new(self.provider.clone())));
+        let subquery_caller = Arc::new(Mutex::new(SubqueryCaller::new(self.provider.clone(), is_inputs)));
         let mut callback = Vec::new();
         let payload = A::virtual_assign_phase0(
             &mut self.builder.borrow_mut(),

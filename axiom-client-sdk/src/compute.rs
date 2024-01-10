@@ -27,7 +27,7 @@ use ethers::providers::{Http, JsonRpcClient, Provider};
 use crate::{api::AxiomAPI, Fr};
 
 pub trait AxiomComputeInput: Clone + Default + Debug {
-    type LogicInput: Clone + Debug + Default + Into<Self::Input<Fr>>;
+    type LogicInput: Clone + Debug + Into<Self::Input<Fr>>;
     type Input<T: Copy>: Clone + InputFlatten<T>;
     type ProviderType: JsonRpcClient + Clone = Http;
 }

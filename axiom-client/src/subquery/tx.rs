@@ -143,14 +143,17 @@ pub async fn get_tx_field_value<P: JsonRpcClient>(
 }
 
 impl<F: Field> FetchSubquery<F> for AssignedTxSubquery<F> {
-    fn fetch<P: JsonRpcClient>(&self, p: &Provider<P>) -> Result<(H256, Vec<AssignedValue<F>>)> {
+    fn fetch<P: JsonRpcClient>(&self, p: &Provider<P>) -> Result<H256> {
         let rt = Runtime::new()?;
         let val = rt.block_on(get_tx_field_value(p, (*self).into()))?;
-        let flattened = vec![self.block_number, self.tx_idx, self.field_or_calldata_idx];
-        Ok((val, flattened))
+        Ok(val)
     }
 
     fn any_subquery(&self) -> AnySubquery {
         AnySubquery::Transaction((*self).into())
+    }
+
+    fn flatten(&self) -> Vec<AssignedValue<F>> {
+        vec![self.block_number, self.tx_idx, self.field_or_calldata_idx]
     }
 }

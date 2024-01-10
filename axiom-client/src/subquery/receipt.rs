@@ -2,7 +2,7 @@ use anyhow::{bail, Result};
 use axiom_codec::{
     special_values::{
         RECEIPT_BLOCK_NUMBER_FIELD_IDX, RECEIPT_DATA_IDX_OFFSET, RECEIPT_LOGS_BLOOM_IDX_OFFSET,
-        RECEIPT_LOG_IDX_OFFSET, RECEIPT_TX_INDEX_FIELD_IDX, RECEIPT_TX_TYPE_FIELD_IDX,
+        RECEIPT_LOG_IDX_OFFSET, RECEIPT_TX_INDEX_FIELD_IDX, RECEIPT_TX_TYPE_FIELD_IDX, RECEIPT_ADDRESS_IDX,
     },
     types::native::{AnySubquery, ReceiptSubquery},
 };
@@ -63,7 +63,11 @@ pub async fn get_receipt_field_value<P: JsonRpcClient>(
         }
 
         let topic_or_data_or_address_idx = query.topic_or_data_or_address_idx as usize;
-        if topic_or_data_or_address_idx < RECEIPT_DATA_IDX_OFFSET {
+
+        if topic_or_data_or_address_idx == RECEIPT_ADDRESS_IDX {
+            return Ok(log.address.into());
+        }
+        else if topic_or_data_or_address_idx < RECEIPT_DATA_IDX_OFFSET {
             if topic_or_data_or_address_idx > topics.len() {
                 bail!("Topic does not exist")
             }
@@ -107,21 +111,24 @@ pub async fn get_receipt_field_value<P: JsonRpcClient>(
 }
 
 impl<F: Field> FetchSubquery<F> for AssignedReceiptSubquery<F> {
-    fn fetch<P: JsonRpcClient>(&self, p: &Provider<P>) -> Result<(H256, Vec<AssignedValue<F>>)> {
+    fn fetch<P: JsonRpcClient>(&self, p: &Provider<P>) -> Result<H256> {
         let rt = Runtime::new()?;
         let val = rt.block_on(get_receipt_field_value(p, (*self).into()))?;
-        let flattened = vec![
+        Ok(val)
+    }
+
+    fn any_subquery(&self) -> AnySubquery {
+        AnySubquery::Receipt((*self).into())
+    }
+
+    fn flatten(&self) -> Vec<AssignedValue<F>> {
+        vec![
             self.block_number,
             self.tx_idx,
             self.field_or_log_idx,
             self.topic_or_data_or_address_idx,
             self.event_schema.hi(),
             self.event_schema.lo(),
-        ];
-        Ok((val, flattened))
-    }
-
-    fn any_subquery(&self) -> AnySubquery {
-        AnySubquery::Receipt((*self).into())
+        ]
     }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@axiom-crypto/harness",
-  "version": "0.1.7-rc.6",
+  "version": "0.1.7-rc.7",
   "author": "Intrinsic Technologies",
   "license": "MIT",
   "description": "Circuit harness for axiom-client",
@@ -39,6 +39,6 @@
     "typescript": "^5.3.2"
   },
   "peerDependencies": {
-    "@axiom-crypto/client": "0.1.5-rc.6"
+    "@axiom-crypto/client": "0.1.5-rc.7"
   }
 }

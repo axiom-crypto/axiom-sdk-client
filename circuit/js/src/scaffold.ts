@@ -182,16 +182,15 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   buildMockComputeQuery() {
     // Mock compute query only works for the following DEFAULT_CIRCUIT_CONFIG:
     if (
-      DEFAULT_CIRCUIT_CONFIG.k !== 14 ||
       DEFAULT_CIRCUIT_CONFIG.numAdvice !== 4 ||
       DEFAULT_CIRCUIT_CONFIG.numLookupAdvice !== 1 ||
       DEFAULT_CIRCUIT_CONFIG.numInstance !== 1 ||
-      DEFAULT_CIRCUIT_CONFIG.numLookupBits !== 13 ||
       DEFAULT_CIRCUIT_CONFIG.numVirtualInstance !== 2
     ) {
       throw new Error(`MockComputeQuery not valid for this DEFAULT_CIRCUIT_CONFIG`);
     }
-    const emptyVk = new Array(14).fill(zeroHash);
+    const vkLen = 6 + 2 * DEFAULT_CIRCUIT_CONFIG.numAdvice + DEFAULT_CIRCUIT_CONFIG.numLookupAdvice;
+    const emptyVk = new Array(vkLen).fill(zeroHash);
     const onchainVkey = this.prependCircuitMetadata(this.config, emptyVk);
 
     this.proof = new Uint8Array(2080);

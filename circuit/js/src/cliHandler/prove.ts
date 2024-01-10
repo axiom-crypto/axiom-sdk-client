@@ -6,7 +6,7 @@ export const prove = async (
     circuitPath: string,
     options: { stats: boolean,
         function?: string,
-        build?: string,
+        compiled?: string,
         output?: string,
         chainId?: number | string | bigint,
         provider?: string,
@@ -20,18 +20,18 @@ export const prove = async (
     }
     const f = await getFunctionFromTs(circuitPath, circuitFunction);
     const provider = getProvider(options.provider);
-    let buildFile = path.join(path.dirname(circuitPath), "data", "compiled.json");
-    if (options.build !== undefined) {
-        buildFile = options.build;
+    let compiledFile = path.join(path.dirname(circuitPath), "data", "compiled.json");
+    if (options.compiled !== undefined) {
+        compiledFile = options.compiled;
     }
-    const buildJson = readJsonFromFile(buildFile);
+    const compiledJson = readJsonFromFile(compiledFile);
     const circuit = new AxiomBaseCircuit({
         f: f.circuit,
         mock: options.mock,
         chainId: options.chainId,
         provider,
         shouldTime: true,
-        inputSchema: buildJson.inputSchema,
+        inputSchema: compiledJson.inputSchema,
     })
     let circuitInputs = f.inputs;
     if (options.inputs) {
@@ -43,7 +43,7 @@ export const prove = async (
         }
     }
     try {
-        circuit.loadSaved(buildJson);
+        circuit.loadSaved(compiledJson);
         let computeQuery;
         let computeResults;
         if (options.mock === true) {

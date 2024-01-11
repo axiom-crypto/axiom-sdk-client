@@ -1,4 +1,5 @@
 import fs from 'fs';
+import path from 'path';
 import { listDir, makeFileMap } from "../utils";
 import { harness } from "../../src/harness";
 
@@ -7,10 +8,13 @@ describe("Goerli unit tests", () => {
     throw new Error("`PROVIDER_URI_GOERLI` environment variable must be defined");
   }
 
-  const inputBasePath = "./test/circuits/goerli/input";
-  const outputBasePath = "./test/unit/goerli/output";
+  const inputBasePath = path.resolve("./test/circuits/goerli/input");
+  const outputBasePath = path.resolve("./test/unit/goerli/output");
   const files = listDir(inputBasePath);
   const fileMap = makeFileMap(files);
+
+  // Delete output files
+  fs.rmSync(outputBasePath, { recursive: true, force: true });
 
   for (let [folder, files] of Object.entries(fileMap)) {
     for (let file of files) {
@@ -26,7 +30,7 @@ describe("Goerli unit tests", () => {
         await harness(
           inputFile,
           {
-            output: outputBasePathType,
+            outputs: outputBasePathType,
             function: "circuit",
             chainId: "5",
             provider: process.env.PROVIDER_URI_GOERLI,
@@ -34,11 +38,11 @@ describe("Goerli unit tests", () => {
         );
 
         // Check build file exists
-        const buildFile = `${outputFileBase}.build.json`;
+        const buildFile = `${outputFileBase}.compiled.json`;
         expect(fs.existsSync(buildFile)).toBe(true);
 
         // Check output file exists
-        const outputFile = `${outputFileBase}.output.json`;
+        const outputFile = `${outputFileBase}.proven.json`;
         expect(fs.existsSync(outputFile)).toBe(true);
       }, 180000);
     }

@@ -1,2 +1,2 @@
 export * from './compile';
-export * from './run';
+export * from './prove';

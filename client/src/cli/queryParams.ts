@@ -1,21 +1,22 @@
 import path from 'path';
-import { Axiom } from "@axiom-crypto/core";
+import { AxiomSdkCore } from "@axiom-crypto/core";
 import { getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
 import { buildSendQuery } from "../sendQuery";
 
 export const queryParams = async (
-  callbackAddress: string,
+  callbackTarget: string,
   options: {
     refundAddress: string;
     sourceChainId: string;
     callbackExtraData: string;
     calldata: boolean;
     caller: string;
-    output?: string;
-    input?: string;
+    outputs?: string;
+    proven?: string;
     provider?: string;
     maxFeePerGas?: string;
     callbackGasLimit?: number;
+    mock?: boolean;
   },
 ) => {
   if (!options.refundAddress) {
@@ -25,25 +26,25 @@ export const queryParams = async (
     throw new Error("Please provide a source chain ID (--sourceChainId <id>)");
   }
   let defaultPath = path.resolve(path.join("app", "axiom"));
-  let inputFile = path.join(defaultPath, "data", "output.json");
-  if (options.input !== undefined) {
-      inputFile = options.input;
+  let provenFile = path.join(defaultPath, "data", "proven.json");
+  if (options.proven !== undefined) {
+      provenFile = options.proven;
   }
-  const outputJson = readJsonFromFile(inputFile);
+  const outputsJson = readJsonFromFile(provenFile);
   const provider = getProvider(options.provider);
-  const axiom = new Axiom({
+  const axiom = new AxiomSdkCore({
     providerUri: provider,
     chainId: options.sourceChainId,
     version: "v2",
-    // mock? does not change behavior here
+    mock: options.mock ?? false,
   });
   try {
     let build = await buildSendQuery({
       axiom,
-      dataQuery: outputJson.dataQuery,
-      computeQuery: outputJson.computeQuery,
+      dataQuery: outputsJson.dataQuery,
+      computeQuery: outputsJson.computeQuery,
       callback: {
-        target: callbackAddress,
+        target: callbackTarget,
         extraData: options.callbackExtraData ?? "0x",
       },
       options: {
@@ -58,21 +59,23 @@ export const queryParams = async (
     if (!options.calldata) {
       res = {
         value: build.value,
-        args: build.args,
+        mock: build.mock,
         queryId: build.queryId,
+        args: build.args,
       };
     } else {
       res = {
         value: build.value,
-        calldata: build.calldata,
+        mock: build.mock,
         queryId: build.queryId,
+        calldata: build.calldata,
       };
     }
-    let outputFile = path.join(defaultPath, "data", "sendQuery.json");
-    if (options.output !== undefined) {
-        outputFile = options.output;
+    let outputsFile = path.join(defaultPath, "data", "sendQuery.json");
+    if (options.outputs !== undefined) {
+        outputsFile = options.outputs;
     }
-    saveJsonToFile(res, outputFile);
+    saveJsonToFile(res, outputsFile);
   } catch (e) {
     console.error(e);
   }

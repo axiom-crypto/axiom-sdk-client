@@ -1,4 +1,5 @@
 import fs from 'fs';
+import path from 'path';
 import { listDir, makeFileMap } from "../utils";
 import { harness } from "../../src/harness";
 
@@ -7,10 +8,13 @@ describe("Sepolia unit tests", () => {
     throw new Error("`PROVIDER_URI_SEPOLIA` environment variable must be defined");
   }
 
-  const inputBasePath = "./test/circuits/sepolia/input";
-  const outputBasePath = "./test/unit/sepolia/output";
+  const inputBasePath = path.resolve("./test/circuits/sepolia/input");
+  const outputBasePath = path.resolve("./test/unit/sepolia/output");
   const files = listDir(inputBasePath);
   const fileMap = makeFileMap(files);
+
+  // Delete output files
+  fs.rmSync(outputBasePath, { recursive: true, force: true });
 
   for (let [folder, files] of Object.entries(fileMap)) {
     for (let file of files) {
@@ -26,7 +30,7 @@ describe("Sepolia unit tests", () => {
         await harness(
           inputFile,
           {
-            output: outputBasePathType,
+            outputs: outputBasePathType,
             function: "circuit",
             chainId: "11155111",
             provider: process.env.PROVIDER_URI_SEPOLIA,
@@ -34,11 +38,11 @@ describe("Sepolia unit tests", () => {
         );
 
         // Check build file exists
-        const buildFile = `${outputFileBase}.build.json`;
+        const buildFile = `${outputFileBase}.compiled.json`;
         expect(fs.existsSync(buildFile)).toBe(true);
 
         // Check output file exists
-        const outputFile = `${outputFileBase}.output.json`;
+        const outputFile = `${outputFileBase}.proven.json`;
         expect(fs.existsSync(outputFile)).toBe(true);
       }, 220000);
     }

@@ -2,15 +2,17 @@ import path from 'path';
 import { AxiomBaseCircuit } from "../js";
 import { getFunctionFromTs, getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
 
-export const compile = async (
+export const prove = async (
     circuitPath: string,
     options: { 
         stats: boolean,
         function?: string,
+        compiled?: string,
         outputs?: string,
         chainId?: number | string | bigint,
         provider?: string,
-        inputs?: string
+        inputs?: string,
+        mock?: boolean,
     }
 ) => {
     let circuitFunction = "circuit";
@@ -19,13 +21,18 @@ export const compile = async (
     }
     const f = await getFunctionFromTs(circuitPath, circuitFunction);
     const provider = getProvider(options.provider);
+    let compiledFile = path.join(path.dirname(circuitPath), "data", "compiled.json");
+    if (options.compiled !== undefined) {
+        compiledFile = options.compiled;
+    }
+    const compiledJson = readJsonFromFile(compiledFile);
     const circuit = new AxiomBaseCircuit({
         f: f.circuit,
-        mock: true,
+        mock: options.mock,
         chainId: options.chainId,
         provider,
         shouldTime: options.stats,
-        inputSchema: f.inputSchema,
+        inputSchema: compiledJson.inputSchema,
     })
     let circuitInputs = f.inputs;
     if (options.inputs) {
@@ -37,21 +44,31 @@ export const compile = async (
         }
     }
     try {
-        const res = await circuit.compile(circuitInputs);
-        const circuitFn = `const ${f.importName} = AXIOM_CLIENT_IMPORT\n${f.circuit.toString()}`;
-        const encoder = new TextEncoder();
-        const circuitBuild = encoder.encode(circuitFn);
-        const build = {
-            ...res,
-            circuit: Buffer.from(circuitBuild).toString('base64'),
+        circuit.loadSaved(compiledJson);
+        let computeQuery;
+        let computeResults;
+        if (options.mock === true) {
+            computeQuery = await circuit.mockProve(circuitInputs);
+            computeResults = circuit.getComputeResults();
+        } else {
+            computeQuery = await circuit.run(circuitInputs);
+            computeResults = circuit.getComputeResults();
         }
-        
-        let outfile = path.join(path.dirname(circuitPath), "data", "compiled.json");
+        const dataQuery = circuit.getDataQuery();
+        const res = {
+            sourceChainId: circuit.getChainId(),
+            mock: options.mock ?? false,
+            computeQuery,
+            computeResults,
+            dataQuery,
+        }
+
+        let outfile = path.join(path.dirname(circuitPath), "data", "proven.json");
         if (options.outputs !== undefined) {
             outfile = options.outputs;
         }
 
-        saveJsonToFile(build, outfile);
+        saveJsonToFile(res, outfile);
     }
     catch (e) {
         console.error(e);

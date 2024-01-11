@@ -1,12 +1,14 @@
 {
   "name": "@axiom-crypto/harness",
-  "version": "0.1.7-rc.7",
+  "version": "0.2.0-alpha.8",
   "author": "Intrinsic Technologies",
   "license": "MIT",
   "description": "Circuit harness for axiom-client",
   "scripts": {
     "build": "rm -rf dist && node scripts/preBuild.js && tsc && node scripts/postBuild.js",
-    "test": "jest"
+    "test": "jest",
+    "test:goerli": "jest test/unit/goerli.test.ts",
+    "test:sepolia": "jest test/unit/sepolia.test.ts"
   },
   "bin": {
     "harness": "./cli/index.js"
@@ -39,6 +41,6 @@
     "typescript": "^5.3.2"
   },
   "peerDependencies": {
-    "@axiom-crypto/client": "0.1.5-rc.7"
+    "@axiom-crypto/client": "0.2.0-alpha.8"
   }
 }

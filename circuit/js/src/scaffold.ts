@@ -10,7 +10,7 @@ import {
   DataSubquery,
 } from "@axiom-crypto/tools";
 import {
-  Axiom,
+  AxiomSdkCore,
   AxiomV2QueryOptions,
 } from "@axiom-crypto/core";
 import { BaseCircuitScaffold } from "@axiom-crypto/halo2-wasm/shared/scaffold";
@@ -23,7 +23,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   protected halo2Lib!: Halo2LibWasm;
   protected provider: string;
   protected dataQuery: DataSubquery[];
-  protected axiom: Axiom;
+  protected axiom: AxiomSdkCore;
   protected computeQuery: AxiomV2ComputeQuery | undefined;
   protected chainId: string;
   protected f: (inputs: T) => Promise<void>;
@@ -44,7 +44,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     this.provider = inputs.provider;
     this.config = inputs.config ?? DEFAULT_CIRCUIT_CONFIG;
     this.dataQuery = [];
-    this.axiom = new Axiom({
+    this.axiom = new AxiomSdkCore({
       providerUri: inputs.provider,
       chainId: inputs.chainId,
       mock: inputs.mock,
@@ -154,11 +154,46 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     return this.buildComputeQuery();
   }
 
+  async mockProve(inputs: RawInput<T>) {
+    await this.populateCircuit(inputs);
+    this.mock();
+    return this.buildMockComputeQuery();
+  }
+
   buildComputeQuery() {
     const vk = this.getPartialVk();
     const vkBytes = convertToBytes32(vk);
     const onchainVkey = this.prependCircuitMetadata(this.config, vkBytes);
     
+    const computeProofBase = this.getComputeProof() as `0x${string}`;
+    const computeAccumulator = concat([zeroHash, zeroHash]);
+    const computeProof = concat([computeAccumulator, computeProofBase]);
+
+    const computeQuery: AxiomV2ComputeQuery = {
+      k: this.config.k,
+      vkey: onchainVkey,
+      computeProof,
+      resultLen: this.resultLen,
+    };
+    this.computeQuery = computeQuery;
+    return computeQuery;
+  }
+
+  buildMockComputeQuery() {
+    // Mock compute query only works for the following DEFAULT_CIRCUIT_CONFIG:
+    if (
+      DEFAULT_CIRCUIT_CONFIG.numAdvice !== 4 ||
+      DEFAULT_CIRCUIT_CONFIG.numLookupAdvice !== 1 ||
+      DEFAULT_CIRCUIT_CONFIG.numInstance !== 1 ||
+      DEFAULT_CIRCUIT_CONFIG.numVirtualInstance !== 2
+    ) {
+      throw new Error(`MockComputeQuery not valid for this DEFAULT_CIRCUIT_CONFIG`);
+    }
+    const vkLen = 6 + 2 * DEFAULT_CIRCUIT_CONFIG.numAdvice + DEFAULT_CIRCUIT_CONFIG.numLookupAdvice;
+    const emptyVk = new Array(vkLen).fill(zeroHash);
+    const onchainVkey = this.prependCircuitMetadata(this.config, emptyVk);
+
+    this.proof = new Uint8Array(2080);
     const computeProofBase = this.getComputeProof() as `0x${string}`;
     const computeAccumulator = concat([zeroHash, zeroHash]);
     const computeProof = concat([computeAccumulator, computeProofBase]);
@@ -205,7 +240,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   }
 
   setMock(mock: boolean) {
-    this.axiom = new Axiom({
+    this.axiom = new AxiomSdkCore({
       providerUri: this.provider,
       chainId: this.chainId,
       mock,

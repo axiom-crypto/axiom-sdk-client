@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { compile } from "@axiom-crypto/circuit/cliHandler";
-import { run } from "@axiom-crypto/circuit/cliHandler";
+import { prove } from "@axiom-crypto/circuit/cliHandler";
 import { init } from './init';
 import { queryParams } from "./queryParams";
 import { scaffoldNext } from "../scaffold/nextjs";
@@ -26,10 +26,10 @@ circuit
   .command("compile")
   .description("compile an Axiom circuit")
   .argument("<circuitPath>", "path to the typescript circuit file")
-  .option("-s, --stats", "print stats")
+  .option("-st, --stats", "print stats")
   .option("-p, --provider [provider]", "provider")
-  .option("-i, --input [inputs]", "inputs")
-  .option("-o, --output [output]", "output")
+  .option("-i, --inputs [inputs]", "inputs")
+  .option("-o, --outputs [outputs]", "outputs")
   .option("-f, --function [function]", "function name in typescript circuit")
   .action(compile);
 
@@ -38,13 +38,14 @@ circuit
   .description("prove an Axiom circuit")
   .argument("<circuitPath>", "path to the typescript circuit file")
   .option("-s, --sourceChainId [sourceChainId]", "source chain id")
-  .option("-b, --build [build]", "build path")
-  .option("-t, --stats", "print stats")
+  .option("-c, --compiled [compiled]", "path of the compiled circuit json file")
+  .option("-m, --mock", "generate a mock compute proof")
+  .option("-st, --stats", "print stats")
   .option("-p, --provider [provider]", "provider")
-  .option("-i, --input [inputs]", "inputs")
-  .option("-o, --output [output]", "output")
+  .option("-i, --inputs [inputs]", "inputs")
+  .option("-o, --outputs [outputs]", "outputs")
   .option("-f, --function [function]", "function name in typescript circuit")
-  .action(run);
+  .action(prove);
 
 circuit
   .command("query-params")
@@ -57,9 +58,10 @@ circuit
   .option("--caller [caller]", "caller (defaults to refundAddress)")
   .option("--maxFeePerGas [maxFeePerGas]", "maxFeePerGas")
   .option("--callbackGasLimit [callbackGasLimit]", "callbackGasLimit")
+  .option("-m, --mock", "generate a mock query")
   .option("-p, --provider [provider]", "provider")
-  .option("-i, --input [input]", "circuit run output path")
-  .option("-o, --output [output]", "query-params output path")
+  .option("-pv, --proven [proven]", "`axiom circuit prove` outputs path")
+  .option("-o, --outputs [outputs]", "query-params outputs path")
   .action(queryParams);
 
 const scaffold = program.command("scaffold")

@@ -7,7 +7,7 @@ export const prove = async (
     options: { stats: boolean,
         function?: string,
         compiled?: string,
-        output?: string,
+        outputs?: string,
         chainId?: number | string | bigint,
         provider?: string,
         inputs?: string,
@@ -63,8 +63,8 @@ export const prove = async (
         }
 
         let outfile = path.join(path.dirname(circuitPath), "data", "proven.json");
-        if (options.output !== undefined) {
-            outfile = options.output;
+        if (options.outputs !== undefined) {
+            outfile = options.outputs;
         }
 
         saveJsonToFile(res, outfile);

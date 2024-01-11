@@ -28,8 +28,8 @@ circuit
   .argument("<circuitPath>", "path to the typescript circuit file")
   .option("-s, --stats", "print stats")
   .option("-p, --provider [provider]", "provider")
-  .option("-i, --input [inputs]", "inputs")
-  .option("-o, --output [output]", "output")
+  .option("-i, --inputs [inputs]", "inputs")
+  .option("-o, --outputs [outputs]", "outputs")
   .option("-f, --function [function]", "function name in typescript circuit")
   .action(compile);
 
@@ -42,8 +42,8 @@ circuit
   .option("-m, --mock", "generate a mock compute proof")
   .option("-t, --stats", "print stats")
   .option("-p, --provider [provider]", "provider")
-  .option("-i, --input [inputs]", "inputs")
-  .option("-o, --output [output]", "output")
+  .option("-i, --inputs [inputs]", "inputs")
+  .option("-o, --outputs [outputs]", "outputs")
   .option("-f, --function [function]", "function name in typescript circuit")
   .action(prove);
 
@@ -60,8 +60,8 @@ circuit
   .option("--callbackGasLimit [callbackGasLimit]", "callbackGasLimit")
   .option("-m, --mock", "generate a mock query")
   .option("-p, --provider [provider]", "provider")
-  .option("-i, --input [input]", "`axiom circuit prove` output path")
-  .option("-o, --output [output]", "query-params output path")
+  .option("-i, --inputs [inputs]", "`axiom circuit prove` outputs path")
+  .option("-o, --outputs [outputs]", "query-params outputs path")
   .action(queryParams);
 
 const scaffold = program.command("scaffold")

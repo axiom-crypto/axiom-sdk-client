@@ -7,7 +7,7 @@ export const compile = async (
     options: { 
         stats: boolean,
         function?: string,
-        output?: string,
+        outputs?: string,
         chainId?: number | string | bigint,
         provider?: string,
         inputs?: string
@@ -47,8 +47,8 @@ export const compile = async (
         }
         
         let outfile = path.join(path.dirname(circuitPath), "data", "compiled.json");
-        if (options.output !== undefined) {
-            outfile = options.output;
+        if (options.outputs !== undefined) {
+            outfile = options.outputs;
         }
 
         saveJsonToFile(build, outfile);

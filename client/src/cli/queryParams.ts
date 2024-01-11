@@ -12,7 +12,7 @@ export const queryParams = async (
     calldata: boolean;
     caller: string;
     outputs?: string;
-    inputs?: string;
+    proven?: string;
     provider?: string;
     maxFeePerGas?: string;
     callbackGasLimit?: number;
@@ -26,11 +26,11 @@ export const queryParams = async (
     throw new Error("Please provide a source chain ID (--sourceChainId <id>)");
   }
   let defaultPath = path.resolve(path.join("app", "axiom"));
-  let inputsFile = path.join(defaultPath, "data", "proven.json");
-  if (options.inputs !== undefined) {
-      inputsFile = options.inputs;
+  let provenFile = path.join(defaultPath, "data", "proven.json");
+  if (options.proven !== undefined) {
+      provenFile = options.proven;
   }
-  const outputsJson = readJsonFromFile(inputsFile);
+  const outputsJson = readJsonFromFile(provenFile);
   const provider = getProvider(options.provider);
   const axiom = new AxiomSdkCore({
     providerUri: provider,

@@ -24,7 +24,7 @@ export const compile = async (
         mock: true,
         chainId: options.chainId,
         provider,
-        shouldTime: true,
+        shouldTime: options.stats,
         inputSchema: f.inputSchema,
     })
     let circuitInputs = f.inputs;

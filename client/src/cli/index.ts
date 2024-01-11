@@ -26,7 +26,7 @@ circuit
   .command("compile")
   .description("compile an Axiom circuit")
   .argument("<circuitPath>", "path to the typescript circuit file")
-  .option("-s, --stats", "print stats")
+  .option("-st, --stats", "print stats")
   .option("-p, --provider [provider]", "provider")
   .option("-i, --inputs [inputs]", "inputs")
   .option("-o, --outputs [outputs]", "outputs")
@@ -40,7 +40,7 @@ circuit
   .option("-s, --sourceChainId [sourceChainId]", "source chain id")
   .option("-c, --compiled [compiled]", "path of the compiled circuit json file")
   .option("-m, --mock", "generate a mock compute proof")
-  .option("-t, --stats", "print stats")
+  .option("-st, --stats", "print stats")
   .option("-p, --provider [provider]", "provider")
   .option("-i, --inputs [inputs]", "inputs")
   .option("-o, --outputs [outputs]", "outputs")
@@ -60,7 +60,7 @@ circuit
   .option("--callbackGasLimit [callbackGasLimit]", "callbackGasLimit")
   .option("-m, --mock", "generate a mock query")
   .option("-p, --provider [provider]", "provider")
-  .option("-i, --inputs [inputs]", "`axiom circuit prove` outputs path")
+  .option("-pv, --proven [proven]", "`axiom circuit prove` outputs path")
   .option("-o, --outputs [outputs]", "query-params outputs path")
   .action(queryParams);
 

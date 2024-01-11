@@ -4,7 +4,8 @@ import { getFunctionFromTs, getProvider, readJsonFromFile, saveJsonToFile } from
 
 export const prove = async (
     circuitPath: string,
-    options: { stats: boolean,
+    options: { 
+        stats: boolean,
         function?: string,
         compiled?: string,
         outputs?: string,
@@ -30,7 +31,7 @@ export const prove = async (
         mock: options.mock,
         chainId: options.chainId,
         provider,
-        shouldTime: true,
+        shouldTime: options.stats,
         inputSchema: compiledJson.inputSchema,
     })
     let circuitInputs = f.inputs;

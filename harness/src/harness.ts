@@ -12,7 +12,7 @@ export const harness = async (
     provider?: string,
   }
 ) => {
-  const fileName = inputPath.split("/").slice(-1)[0].split(".js")[0];
+  const fileName = path.basename(inputPath).split(".js")[0];
   const outputFileBase = `${options.output}/${fileName}`;
 
   // Build the typescript circuit

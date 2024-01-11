@@ -3,12 +3,12 @@ import path from 'path';
 import { listDir, makeFileMap } from "../utils";
 import { harness } from "../../src/harness";
 
-describe("Sepolia tests", () => {
+describe("Sepolia unit tests", () => {
   if (process.env.PROVIDER_URI_SEPOLIA === undefined) {
     throw new Error("`PROVIDER_URI_SEPOLIA` environment variable must be defined");
   }
 
-  const inputBasePath = path.resolve("./test/unit/sepolia/input");
+  const inputBasePath = path.resolve("./test/circuits/sepolia/input");
   const outputBasePath = path.resolve("./test/unit/sepolia/output");
   const files = listDir(inputBasePath);
   const fileMap = makeFileMap(files);

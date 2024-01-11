@@ -30,7 +30,7 @@ describe("Goerli unit tests", () => {
         await harness(
           inputFile,
           {
-            output: outputBasePathType,
+            outputs: outputBasePathType,
             function: "circuit",
             chainId: "5",
             provider: process.env.PROVIDER_URI_GOERLI,

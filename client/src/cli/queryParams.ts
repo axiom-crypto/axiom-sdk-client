@@ -11,8 +11,8 @@ export const queryParams = async (
     callbackExtraData: string;
     calldata: boolean;
     caller: string;
-    output?: string;
-    input?: string;
+    outputs?: string;
+    inputs?: string;
     provider?: string;
     maxFeePerGas?: string;
     callbackGasLimit?: number;
@@ -26,11 +26,11 @@ export const queryParams = async (
     throw new Error("Please provide a source chain ID (--sourceChainId <id>)");
   }
   let defaultPath = path.resolve(path.join("app", "axiom"));
-  let inputFile = path.join(defaultPath, "data", "proven.json");
-  if (options.input !== undefined) {
-      inputFile = options.input;
+  let inputsFile = path.join(defaultPath, "data", "proven.json");
+  if (options.inputs !== undefined) {
+      inputsFile = options.inputs;
   }
-  const outputJson = readJsonFromFile(inputFile);
+  const outputsJson = readJsonFromFile(inputsFile);
   const provider = getProvider(options.provider);
   const axiom = new AxiomSdkCore({
     providerUri: provider,
@@ -41,8 +41,8 @@ export const queryParams = async (
   try {
     let build = await buildSendQuery({
       axiom,
-      dataQuery: outputJson.dataQuery,
-      computeQuery: outputJson.computeQuery,
+      dataQuery: outputsJson.dataQuery,
+      computeQuery: outputsJson.computeQuery,
       callback: {
         target: callbackTarget,
         extraData: options.callbackExtraData ?? "0x",
@@ -71,11 +71,11 @@ export const queryParams = async (
         calldata: build.calldata,
       };
     }
-    let outputFile = path.join(defaultPath, "data", "sendQuery.json");
-    if (options.output !== undefined) {
-        outputFile = options.output;
+    let outputsFile = path.join(defaultPath, "data", "sendQuery.json");
+    if (options.outputs !== undefined) {
+        outputsFile = options.outputs;
     }
-    saveJsonToFile(res, outputFile);
+    saveJsonToFile(res, outputsFile);
   } catch (e) {
     console.error(e);
   }

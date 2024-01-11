@@ -30,7 +30,7 @@ describe("Sepolia unit tests", () => {
         await harness(
           inputFile,
           {
-            output: outputBasePathType,
+            outputs: outputBasePathType,
             function: "circuit",
             chainId: "11155111",
             provider: process.env.PROVIDER_URI_SEPOLIA,

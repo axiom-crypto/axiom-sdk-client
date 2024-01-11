@@ -6,45 +6,45 @@ import { compile, prove } from "@axiom-crypto/client/cli/components";
 export const harness = async (
   inputPath: string,
   options: {
-    output: string,
+    outputs: string,
     function: string,
     chainId?: number | string | bigint;
     provider?: string,
   }
 ) => {
   const fileName = path.basename(inputPath).split(".js")[0];
-  const outputFileBase = `${options.output}/${fileName}`;
+  const outputsFileBase = `${options.outputs}/${fileName}`;
 
   // Build the typescript circuit
   const circuit = buildCircuit(inputPath);
-  const circuitPath = path.resolve(`${outputFileBase}.circuit.ts`);
+  const circuitPath = path.resolve(`${outputsFileBase}.circuit.ts`);
 
   // Write the typescript circuit
-  fs.mkdirSync(path.resolve(options.output), { recursive: true });
+  fs.mkdirSync(path.resolve(options.outputs), { recursive: true });
   fs.writeFileSync(circuitPath, circuit);
 
   // Compile the circuit
-  const buildFile = `${outputFileBase}.compiled.json`;
+  const buildFile = `${outputsFileBase}.compiled.json`;
   await compile(
     circuitPath, 
     {
       stats: false,
       function: options.function,
-      output: buildFile,
+      outputs: buildFile,
       chainId: options.chainId,
       provider: options.provider,
     }
   );
 
   // Run the circuit
-  const outputFile = `${outputFileBase}.proven.json`;
+  const outputsFile = `${outputsFileBase}.proven.json`;
   await prove(
     circuitPath, 
     {
       stats: false,
       build: buildFile,
       function: options.function,
-      output: outputFile,
+      outputs: outputsFile,
       chainId: options.chainId,
       provider: options.provider,
     }

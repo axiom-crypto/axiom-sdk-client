@@ -54,7 +54,7 @@ describe("Send Sepolia queries on-chain", () => {
             callbackExtraData: ethers.ZeroHash,
             calldata: false,
             caller: senderAddress,
-            inputs: `${unitTestFilePath}.output.json`,
+            proven: `${unitTestFilePath}.output.json`,
             outputs: sendQueryJsonPath,
             provider: process.env.PROVIDER_URI_SEPOLIA as string,
             maxFeePerGas: "50000000000", // need to set this on Sepolia since the network is busy

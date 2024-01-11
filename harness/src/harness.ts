@@ -24,13 +24,13 @@ export const harness = async (
   fs.writeFileSync(circuitPath, circuit);
 
   // Compile the circuit
-  const buildFile = `${outputsFileBase}.compiled.json`;
+  const compiledFile = `${outputsFileBase}.compiled.json`;
   await compile(
     circuitPath, 
     {
       stats: false,
       function: options.function,
-      outputs: buildFile,
+      outputs: compiledFile,
       chainId: options.chainId,
       provider: options.provider,
     }
@@ -42,7 +42,7 @@ export const harness = async (
     circuitPath, 
     {
       stats: false,
-      build: buildFile,
+      compiled: compiledFile,
       function: options.function,
       outputs: outputsFile,
       chainId: options.chainId,

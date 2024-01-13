@@ -2,6 +2,7 @@ import path from 'path';
 import { AxiomSdkCore } from "@axiom-crypto/core";
 import { getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
 import { buildSendQuery } from "../sendQuery";
+import { argsArrToObj } from '../axiom/utils';
 
 export const queryParams = async (
   callbackTarget: string,
@@ -9,8 +10,8 @@ export const queryParams = async (
     refundAddress: string;
     sourceChainId: string;
     callbackExtraData: string;
-    calldata: boolean;
     caller: string;
+    argsMap: boolean;
     outputs?: string;
     proven?: string;
     provider?: string;
@@ -55,22 +56,13 @@ export const queryParams = async (
       caller: options.caller ?? options.refundAddress,
     });
     build.value = build.value.toString() as any;
-    let res: any;
-    if (!options.calldata) {
-      res = {
-        value: build.value,
-        mock: build.mock,
-        queryId: build.queryId,
-        args: build.args,
-      };
-    } else {
-      res = {
-        value: build.value,
-        mock: build.mock,
-        queryId: build.queryId,
-        calldata: build.calldata,
-      };
-    }
+    const res = {
+      value: build.value,
+      mock: build.mock,
+      queryId: build.queryId,
+      args: options.argsMap ? argsArrToObj(build.args) : build.args,
+      calldata: build.calldata,
+    };
     let outputsFile = path.join(defaultPath, "data", "sendQuery.json");
     if (options.outputs !== undefined) {
         outputsFile = options.outputs;

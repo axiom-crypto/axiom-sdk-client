@@ -6,11 +6,11 @@ settings:
 
 dependencies:
   '@axiom-crypto/circuit':
-    specifier: 0.2.0-rc2.0
-    version: 0.2.0-rc2.0(typescript@5.3.3)
+    specifier: 0.2.2-rc2.0
+    version: 0.2.2-rc2.0(typescript@5.3.3)
   '@axiom-crypto/core':
-    specifier: 2.3.0-rc2.1
-    version: 2.3.0-rc2.1
+    specifier: 2.3.0-rc2.2
+    version: 2.3.0-rc2.2
   chalk:
     specifier: ^4.1.2
     version: 4.1.2
@@ -70,10 +70,10 @@ packages:
       '@jridgewell/trace-mapping': 0.3.20
     dev: true
 
-  /@axiom-crypto/circuit@0.2.0-rc2.0(typescript@5.3.3):
-    resolution: {integrity: sha512-VowVttVL9a010BkXnfPJz6FdR5OgI9s/AHcBGq9qUzjBk7AGAAbM4LrT4KGz6lJtWQdpldSGc9Jxccvrx1WKdA==}
+  /@axiom-crypto/circuit@0.2.2-rc2.0(typescript@5.3.3):
+    resolution: {integrity: sha512-ed7f0B6Am+cVY98M109eVWbuP7mnf1EXnVmd+70WjHb2gmSYqF0R/uxX0IFnoyGS0EqY1mFsoJTU+U9ugC8/nQ==}
     dependencies:
-      '@axiom-crypto/core': 2.3.0-rc2.1
+      '@axiom-crypto/core': 2.3.0-rc2.2
       '@axiom-crypto/halo2-lib-js': 0.2.14-rc.0
       '@axiom-crypto/halo2-wasm': 0.2.11-rc.1
       '@axiom-crypto/tools': 0.3.36-rc2.1
@@ -88,8 +88,8 @@ packages:
       - zod
     dev: false
 
-  /@axiom-crypto/core@2.3.0-rc2.1:
-    resolution: {integrity: sha512-UCzZ0GZBxIxJGb4IGhgKaPpZLNAqsLFanfULUqgM3q0cE3ua6/a98XQsYAdAYePuI30YXr8L/c6rj3wndQiTZg==}
+  /@axiom-crypto/core@2.3.0-rc2.2:
+    resolution: {integrity: sha512-Cl941locX9dLuwAY7rV8U2THQE/rWfJVu75WghzDUgoAZVq5KTI5VUr+DrkZ5PY6duIp7hWHwiRrJRozuf7RMg==}
     dependencies:
       '@axiom-crypto/halo2-lib-js': 0.2.10
       '@axiom-crypto/halo2-wasm': 0.2.7

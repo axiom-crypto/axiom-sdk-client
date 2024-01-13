@@ -6,10 +6,10 @@ import { compile, prove } from "@axiom-crypto/client/cli/components";
 export const harness = async (
   inputPath: string,
   options: {
-    outputs: string,
-    function: string,
+    outputs: string;
+    function: string;
     chainId?: number | string | bigint;
-    provider?: string,
+    provider?: string;
   }
 ) => {
   const fileName = path.basename(inputPath).split(".js")[0];

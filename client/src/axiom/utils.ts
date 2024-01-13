@@ -1,5 +1,5 @@
-import { getByteLength } from "@axiom-crypto/core";
-import { CircuitInputType } from "./types";
+import { AxiomV2Callback, AxiomV2ComputeQuery, AxiomV2FeeData, getByteLength } from "@axiom-crypto/core";
+import { AxiomV2SendQueryArgsParams, CircuitInputType } from "./types";
 import { mainnet, goerli, sepolia } from 'viem/chains';
 
 export function convertInputSchemaToJsonString(args: {[arg: string]: CircuitInputType}): string {
@@ -29,4 +29,34 @@ export function convertChainIdToViemChain(chainId: string) {
     default:
       throw new Error(`Unsupported chainId ${chainId}`);
   }
+}
+
+export function argsArrToObj(
+  args: (string | AxiomV2Callback | AxiomV2ComputeQuery | AxiomV2FeeData)[]
+): AxiomV2SendQueryArgsParams {
+  return {
+    sourceChainId: args[0] as string,
+    dataQueryHash: args[1] as string,
+    computeQuery: args[2] as AxiomV2ComputeQuery,
+    callback: args[3] as AxiomV2Callback,
+    feeData: args[4] as AxiomV2FeeData,
+    userSalt: args[5] as string,
+    refundee: args[6] as string,
+    dataQuery: args[7] as string,
+  };
+}
+
+export function argsObjToArr(
+  args: AxiomV2SendQueryArgsParams
+): (string | AxiomV2Callback | AxiomV2ComputeQuery | AxiomV2FeeData)[] {
+  return [
+    args.sourceChainId,
+    args.dataQueryHash,
+    args.computeQuery,
+    args.callback,
+    args.feeData,
+    args.userSalt,
+    args.refundee,
+    args.dataQuery,
+  ]
 }

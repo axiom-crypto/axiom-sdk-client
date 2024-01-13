@@ -2,6 +2,7 @@ import path from 'path';
 import { AxiomSdkCore } from "@axiom-crypto/core";
 import { getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
 import { buildSendQuery } from "../sendQuery";
+import { argsArrToObj } from '../axiom/utils';
 
 export const queryParams = async (
   callbackTarget: string,
@@ -10,6 +11,7 @@ export const queryParams = async (
     sourceChainId: string;
     callbackExtraData: string;
     caller: string;
+    argsMap: boolean;
     outputs?: string;
     proven?: string;
     provider?: string;
@@ -18,6 +20,7 @@ export const queryParams = async (
     mock?: boolean;
   },
 ) => {
+  console.log("argsMap", options.argsMap);
   if (!options.refundAddress) {
     throw new Error("Please provide a refund address (--refundAddress <address>)");
   }
@@ -54,21 +57,11 @@ export const queryParams = async (
       caller: options.caller ?? options.refundAddress,
     });
     build.value = build.value.toString() as any;
-    const args = {
-      sourceChainId: build.args[0],
-      dataQueryHash: build.args[1],
-      computeQuery: build.args[2],
-      callback: build.args[3],
-      feeData: build.args[4],
-      userSalt: build.args[5],
-      refundee: build.args[6],
-      dataQuery: build.args[7],
-    }; 
     const res = {
       value: build.value,
       mock: build.mock,
       queryId: build.queryId,
-      args,
+      args: options.argsMap ? argsArrToObj(build.args) : build.args,
       calldata: build.calldata,
     };
     let outputsFile = path.join(defaultPath, "data", "sendQuery.json");

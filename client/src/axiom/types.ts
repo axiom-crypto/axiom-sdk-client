@@ -53,3 +53,14 @@ export interface AxiomV2SendQueryArgs {
   queryId: string;
   calldata: string;
 }
+
+export interface AxiomV2SendQueryArgsParams {
+  sourceChainId: string,
+  dataQueryHash: string,
+  computeQuery: AxiomV2ComputeQuery,
+  callback: AxiomV2Callback,
+  feeData: AxiomV2FeeData,
+  userSalt: string,
+  refundee: string,
+  dataQuery: string,
+}

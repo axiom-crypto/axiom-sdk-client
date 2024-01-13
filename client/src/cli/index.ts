@@ -61,6 +61,7 @@ circuit
   .option("-p, --provider [provider]", "JSON-RPC provider (https)")
   .option("-pv, --proven [proven]", "`axiom circuit prove` outputs path")
   .option("-o, --outputs [outputs]", "query-params outputs path")
+  .option("-a, --args-map", "sendQuery argments output as mapping for use with Forge")
   .action(queryParams);
 
 const scaffold = program.command("scaffold")

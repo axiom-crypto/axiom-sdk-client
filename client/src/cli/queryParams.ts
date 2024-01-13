@@ -20,7 +20,6 @@ export const queryParams = async (
     mock?: boolean;
   },
 ) => {
-  console.log("argsMap", options.argsMap);
   if (!options.refundAddress) {
     throw new Error("Please provide a refund address (--refundAddress <address>)");
   }

@@ -51,7 +51,6 @@ circuit
   .command("query-params")
   .description("generate parameters to send a Query into Axiom")
   .argument("<callback address>", "callback address")
-  .option("-c, --calldata", "output encoded calldata")
   .option("-s, --sourceChainId [sourceChainId]", "source chain id")
   .option("-r, --refundAddress [refundAddress]", "refundAddress")
   .option("-e, --callbackExtraData [callbackExtraData]", "callback extra data")
@@ -59,7 +58,7 @@ circuit
   .option("--maxFeePerGas [maxFeePerGas]", "maxFeePerGas")
   .option("--callbackGasLimit [callbackGasLimit]", "callbackGasLimit")
   .option("-m, --mock", "generate a mock query")
-  .option("-p, --provider [provider]", "provider")
+  .option("-p, --provider [provider]", "JSON-RPC provider (https)")
   .option("-pv, --proven [proven]", "`axiom circuit prove` outputs path")
   .option("-o, --outputs [outputs]", "query-params outputs path")
   .action(queryParams);

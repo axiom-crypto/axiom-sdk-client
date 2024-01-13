@@ -9,7 +9,6 @@ export const queryParams = async (
     refundAddress: string;
     sourceChainId: string;
     callbackExtraData: string;
-    calldata: boolean;
     caller: string;
     outputs?: string;
     proven?: string;
@@ -55,22 +54,23 @@ export const queryParams = async (
       caller: options.caller ?? options.refundAddress,
     });
     build.value = build.value.toString() as any;
-    let res: any;
-    if (!options.calldata) {
-      res = {
-        value: build.value,
-        mock: build.mock,
-        queryId: build.queryId,
-        args: build.args,
-      };
-    } else {
-      res = {
-        value: build.value,
-        mock: build.mock,
-        queryId: build.queryId,
-        calldata: build.calldata,
-      };
-    }
+    const args = {
+      sourceChainId: build.args[0],
+      dataQueryHash: build.args[1],
+      computeQuery: build.args[2],
+      callback: build.args[3],
+      feeData: build.args[4],
+      userSalt: build.args[5],
+      refundee: build.args[6],
+      dataQuery: build.args[7],
+    }; 
+    const res = {
+      value: build.value,
+      mock: build.mock,
+      queryId: build.queryId,
+      args,
+      calldata: build.calldata,
+    };
     let outputsFile = path.join(defaultPath, "data", "sendQuery.json");
     if (options.outputs !== undefined) {
         outputsFile = options.outputs;

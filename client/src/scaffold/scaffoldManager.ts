@@ -35,6 +35,10 @@ export class ScaffoldManager {
     return doesExist;
   }
 
+  readFile(filePath: string): string {
+    return fs.readFileSync(path.join(this.fullPath, filePath), 'utf8');
+  }
+
   mkdir(dir: string, description: string) {
     const res = fs.mkdirSync(path.join(this.fullPath, dir), { recursive: true });
     this.actions.push({

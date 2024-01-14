@@ -28,8 +28,8 @@ circuit
   .argument("<circuitPath>", "path to the typescript circuit file")
   .option("-st, --stats", "print stats")
   .option("-p, --provider [provider]", "JSON-RPC provider (https)")
-  .option("-i, --inputs [inputs]", "inputs")
-  .option("-o, --outputs [outputs]", "outputs")
+  .option("-i, --inputs [inputs]", "inputs json file")
+  .option("-o, --outputs [outputs]", "outputs json file")
   .option("-f, --function [function]", "function name in typescript circuit")
   .action(compile);
 
@@ -42,8 +42,8 @@ circuit
   .option("-m, --mock", "generate a mock compute proof")
   .option("-st, --stats", "print stats")
   .option("-p, --provider [provider]", "JSON-RPC provider (https)")
-  .option("-i, --inputs [inputs]", "inputs")
-  .option("-o, --outputs [outputs]", "outputs")
+  .option("-i, --inputs [inputs]", "inputs json file")
+  .option("-o, --outputs [outputs]", "outputs json file")
   .option("-f, --function [function]", "function name in typescript circuit")
   .action(prove);
 

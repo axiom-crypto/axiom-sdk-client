@@ -1,6 +1,6 @@
 import path from 'path';
 import { AxiomBaseCircuit } from "../js";
-import { getFunctionFromTs, getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
+import { fileExists, getFunctionFromTs, getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
 
 export const compile = async (
     circuitPath: string,
@@ -27,11 +27,14 @@ export const compile = async (
         shouldTime: options.stats,
         inputSchema: f.inputSchema,
     })
-    let circuitInputs = f.inputs;
-    if (options.inputs) {
-        circuitInputs = readJsonFromFile(options.inputs);
+    let inputFile = path.join(path.dirname(circuitPath), "data", "inputs.json");
+    if (options.inputs !== undefined) {
+        inputFile = options.inputs;
     }
-    else {
+    let circuitInputs = f.inputs;
+    if (fileExists(inputFile)) {
+        circuitInputs = readJsonFromFile(inputFile);
+    } else {
         if (circuitInputs === undefined) {
             throw new Error("No inputs provided. Either export `inputs` from your circuit file or provide a path to a json file with inputs.");
         }

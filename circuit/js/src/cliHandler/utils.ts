@@ -89,3 +89,7 @@ export function saveJsonToFile(json: any, filePath: string) {
 export function readJsonFromFile(relativePath: string) {
     return JSON.parse(fs.readFileSync(path.resolve(relativePath), 'utf8'))
 }
+
+export function fileExists(relativePath: string) {
+    return fs.existsSync(path.resolve(relativePath));
+}

@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@axiom-crypto/client':
-    specifier: 0.2.2-rc2.0
-    version: 0.2.2-rc2.0(typescript@5.3.3)
+    specifier: 0.2.2-rc2.1
+    version: 0.2.2-rc2.1(typescript@5.3.3)
   commander:
     specifier: ^11.1.0
     version: 11.1.0
@@ -61,8 +61,8 @@ packages:
       '@jridgewell/trace-mapping': 0.3.20
     dev: true
 
-  /@axiom-crypto/circuit@0.2.2-rc2.0(typescript@5.3.3):
-    resolution: {integrity: sha512-ed7f0B6Am+cVY98M109eVWbuP7mnf1EXnVmd+70WjHb2gmSYqF0R/uxX0IFnoyGS0EqY1mFsoJTU+U9ugC8/nQ==}
+  /@axiom-crypto/circuit@0.2.2-rc2.1(typescript@5.3.3):
+    resolution: {integrity: sha512-U7j7mfy0ZO9Ky/sHEYi43HDAEBQV6+h1EZd9nB7KpfHmDm2eLOXolro8zznC9ot+vivJ9HyWzc+Dwp/MSXComw==}
     dependencies:
       '@axiom-crypto/core': 2.3.0-rc2.2
       '@axiom-crypto/halo2-lib-js': 0.2.14-rc.0
@@ -79,11 +79,11 @@ packages:
       - zod
     dev: false
 
-  /@axiom-crypto/client@0.2.2-rc2.0(typescript@5.3.3):
-    resolution: {integrity: sha512-O1EKaD/whs3rSHKx7JfOVKr8FVS4wLAJdrSzzmPgxmG7v5bcZyJ3dcZJMUIiKUaY7KpAnL2IB3UJbfOcC7HrHQ==}
+  /@axiom-crypto/client@0.2.2-rc2.1(typescript@5.3.3):
+    resolution: {integrity: sha512-9EkO9goz55ZubRmFmzSrxQwsBhI5PaIlgVSXQj6QlcpIqPr28CkUQ+d2qVufvYKu5IwCN/SL7CpSQLOiVREBdw==}
     hasBin: true
     dependencies:
-      '@axiom-crypto/circuit': 0.2.2-rc2.0(typescript@5.3.3)
+      '@axiom-crypto/circuit': 0.2.2-rc2.1(typescript@5.3.3)
       '@axiom-crypto/core': 2.3.0-rc2.2
       chalk: 4.1.2
       commander: 11.1.0
@@ -1173,7 +1173,7 @@ packages:
   /axios@1.6.5:
     resolution: {integrity: sha512-Ii012v05KEVuUoFWmMW/UQv9aRIc3ZwkWDcM+h5Il8izZCtRVpDUfwpoFf7eOtajT3QiGR4yDUx7lPqHJULgbg==}
     dependencies:
-      follow-redirects: 1.15.4
+      follow-redirects: 1.15.5
       form-data: 4.0.0
       proxy-from-env: 1.1.0
     transitivePeerDependencies:
@@ -1683,8 +1683,8 @@ packages:
       path-exists: 4.0.0
     dev: true
 
-  /follow-redirects@1.15.4:
-    resolution: {integrity: sha512-Cr4D/5wlrb0z9dgERpUL3LrmPKVDsETIJhaCMeDfuFYcqa5bldGV6wBsAN6X/vxlXQtFBMrXdXxdL8CbDTGniw==}
+  /follow-redirects@1.15.5:
+    resolution: {integrity: sha512-vSFWUON1B+yAw1VN4xMfxgn5fTUiaOzAJCKBwIIgT/+7CuGy9+r+5gITvP62j3RmaD5Ph65UaERdOSRGUzZtgw==}
     engines: {node: '>=4.0'}
     peerDependencies:
       debug: '*'

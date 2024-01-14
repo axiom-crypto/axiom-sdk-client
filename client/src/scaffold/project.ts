@@ -17,6 +17,17 @@ export const scaffoldProject = async (sm: ScaffoldManager) => {
   if (!sm.exists("package.json", `${chalk.bold("package.json")} exists?`)) {
     console.log("Initializing node package...");
     await sm.exec(`${sm.packageMgr} init${sm.packageMgr === "pnpm" ? "" : " -y"}`, "  - Initialize node project");
+    await sm.exec(`echo "node_modules" >> .gitignore`, "  - Add node_modules to .gitignore");
+  }
+
+  // Check if `node_modules` is in .gitignore and if not then add
+  if (!sm.exists(".gitignore", `${chalk.bold(".gitignore")} exists?`)) {
+    await sm.exec(`echo "node_modules" >> .gitignore`, "  - Add node_modules to .gitignore");
+  } else {
+    const gitignore = sm.readFile(".gitignore");
+    if (!gitignore.includes("node_modules")) {
+      await sm.exec(`echo "node_modules" >> .gitignore`, "  - Add node_modules to .gitignore");
+    }
   }
 
   // Install package dependencies
@@ -28,6 +39,8 @@ export const scaffoldProject = async (sm: ScaffoldManager) => {
     console.log("Initializing Foundry...");
     const { err } = await sm.exec("forge init --no-commit --force", "  - Initialize forge");
 
+    sm.cpFromTemplate("foundry.toml", "foundry.toml", `  - Copy template ${chalk.bold("foundry.toml")}`);
+
     if (!err) {
       // Remove default foundry files in new project
       sm.rm(path.join("src", "Counter.sol"), `  - Remove foundry default template file ${chalk.bold(path.join("src", "Counter.sol"))}`);
@@ -36,9 +49,9 @@ export const scaffoldProject = async (sm: ScaffoldManager) => {
     }
   }
 
-  // Add axiom-v2-contracts to forge 
-  console.log("Installing Axiom Solidity library...");
-  await sm.exec("forge install https://github.com/axiom-crypto/axiom-v2-contracts.git --no-commit", `Add ${chalk.bold("axiom-v2-contracts")} library to forge`);
+  // Add axiom-v2-client to Foundry 
+  console.log("Installing @axiom-v2-client Solidity library to Foundry...");
+  await sm.exec("forge install axiom-crypto/axiom-v2-client --no-commit", `Add ${chalk.bold("axiom-v2-client")} library to Foundry`);
 
   // Create forge src files
   const fileAvgBal = path.join("src", "AverageBalance.sol");

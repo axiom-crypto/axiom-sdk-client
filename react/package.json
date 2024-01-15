@@ -21,7 +21,7 @@
     "directory": "dist"
   },
   "dependencies": {
-    "@axiom-crypto/client": "0.2.2-rc2.1",
+    "@axiom-crypto/client": "link:../client/dist",
     "comlink": "^4.4.1"
   },
   "peerDependencies": {

@@ -46,7 +46,7 @@ function main() {
             continue;
           }
           if (key === packageSearchStr) {
-            console.log(package, key, packageJson[dependencyType][packageSearchStr]);
+            console.log(`Found ${key}: Setting local`);
             packageJson[dependencyType][packageSearchStr] = packages[packageSearchStr].version;
           }
         }

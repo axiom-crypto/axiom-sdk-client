@@ -1,9 +1,9 @@
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
-const versions = require('./versions');
-const packages = versions.versions();
+const setRemote = require('./setRemote');
+const packages = setRemote.setRemote();
 
-if (process.argv.length < 2) {
+if (process.argv.length < 3) {
   throw new Error("Please include a tag value as an argument: `pnpm publish-all tagname`");
 }
 const tag = process.argv[2];

@@ -1,16 +1,21 @@
+const { execSync } = require("child_process");
 const fs = require("fs");
 
 const packages = {
   "@axiom-crypto/circuit": {
     path: "../circuit/js",
-    version: "",
+    version: "link:../circuit/js/dist",
   },
   "@axiom-crypto/client": {
     path: "../client",
-    version: "",
+    version: "link:../client/dist",
   },
   "@axiom-crypto/harness": {
     path: "../harness",
+    version: "",
+  },
+  "@axiom-crypto/react": {
+    path: "../react",
     version: "",
   },
 };
@@ -21,17 +26,11 @@ const dependencyTypes = [
   "peerDependencies",
 ];
 
-function versions() {
-  // Get all package versions
-  for (const package of Object.keys(packages)) {
-    const packageJsonPath = packages[package].path + "/package.json";
-    const packageJson = require(packageJsonPath);
-    packages[package].version = packageJson.version;
-  }
-
+function main() {
   // Substitute package versions 
   for (const package of Object.keys(packages)) {
     const packageJsonPath = packages[package].path + "/package.json";
+    console.log("Processing", packageJsonPath);
     let packageJson = require(packageJsonPath);
 
     // Check for existence of each dependencyType
@@ -47,15 +46,17 @@ function versions() {
             continue;
           }
           if (key === packageSearchStr) {
+            console.log(package, key, packageJson[dependencyType][packageSearchStr]);
             packageJson[dependencyType][packageSearchStr] = packages[packageSearchStr].version;
           }
         }
       });
     }
     fs.writeFileSync(packageJsonPath.slice(1), JSON.stringify(packageJson, null, 2));
-  }
 
-  return packages;
+    // Install dependencies & build 
+    execSync(`cd ${packages[package].path.slice(1)} && pnpm i && pnpm build && cd ..`);
+  }
 }
 
-exports.versions = versions;
+main();

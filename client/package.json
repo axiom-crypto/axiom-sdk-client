@@ -25,7 +25,7 @@
   ],
   "dependencies": {
     "@axiom-crypto/circuit": "link:../circuit/js/dist",
-    "@axiom-crypto/core": "2.3.0-rc2.2",
+    "@axiom-crypto/core": "2.3.0-rc2.3",
     "chalk": "^4.1.2",
     "commander": "^11.1.0",
     "ethers": "^6.8.1",

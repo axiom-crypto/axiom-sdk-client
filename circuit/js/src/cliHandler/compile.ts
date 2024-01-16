@@ -41,7 +41,7 @@ export const compile = async (
         }
     }
     try {
-        const res = options.mock ? await circuit.compile(circuitInputs) : await circuit.mockCompile(circuitInputs);
+        const res = options.mock ? await circuit.mockCompile(circuitInputs) : await circuit.compile(circuitInputs);
         const circuitFn = `const ${f.importName} = AXIOM_CLIENT_IMPORT\n${f.circuit.toString()}`;
         const encoder = new TextEncoder();
         const circuitBuild = encoder.encode(circuitFn);

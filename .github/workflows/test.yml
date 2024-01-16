@@ -48,13 +48,17 @@ jobs:
         with:
           node-version: 18.x
 
-      - name: Build Client
-        working-directory: ./client
-        run: npm install && npm run build
+      - name: Set all packages to local and build
+        working-directory: ./
+        run: npm run local
 
-      - name: Install Harness dependencies
-        working-directory: ./harness
-        run: npm install
+      # - name: Build Client
+      #   working-directory: ./client
+      #   run: npm install && npm run build
+
+      # - name: Install Harness dependencies
+      #   working-directory: ./harness
+      #   run: npm install
 
       # - name: Run Integration Tests (Goerli)
       #   working-directory: ./harness

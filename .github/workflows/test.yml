@@ -50,7 +50,7 @@ jobs:
 
       - name: Set all packages to local and build
         working-directory: ./
-        run: npm run local --ci
+        run: npm run local ci
 
       # - name: Build Client
       #   working-directory: ./client

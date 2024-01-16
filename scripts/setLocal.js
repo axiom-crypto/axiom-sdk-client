@@ -2,7 +2,7 @@ const { execSync } = require("child_process");
 const fs = require("fs");
 
 let ci = false;
-if (process.argv[3] === "--ci") {
+if (process.argv[2].toLowerCase() === "ci") {
   ci = true;
 }
 

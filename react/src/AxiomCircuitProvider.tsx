@@ -43,14 +43,14 @@ const useAxiomCircuit = <T,>(): AxiomCircuitContextType<T> => {
 }
 
 function AxiomCircuitProvider({
-  providerUri,
+  provider,
   compiledCircuit,
   chainId,
   mock,
   children,
 }: {
   compiledCircuit: AxiomV2CompiledCircuit,
-  providerUri: string,
+  provider: string,
   chainId?: number | string | bigint,
   mock?: boolean,
   children: React.ReactNode,
@@ -75,7 +75,7 @@ function AxiomCircuitProvider({
       const worker = new Worker(new URL("./worker", import.meta.url), { type: "module" });
       const MyAxiomCircuit = wrap<typeof AxiomCircuit>(worker);
       workerApi.current = await new MyAxiomCircuit({
-        provider: providerUri,
+        provider,
         inputSchema: compiledCircuit.inputSchema,
         mock,
         chainId,

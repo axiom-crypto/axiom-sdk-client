@@ -2,11 +2,10 @@ const { execSync } = require("child_process");
 const fs = require("fs");
 
 let ci = false;
-if (process.argv[2].toLowerCase() === "ci") {
+if (process.argv[2] === "ci") {
   ci = true;
 }
 
-console.log("Is running CI?", ci, process.argv);
 const packageManager = ci ? "npm" : "pnpm";
 const localPrefix = ci ? "file:" : "link:";
 
@@ -64,7 +63,7 @@ function main() {
     fs.writeFileSync(packageJsonPath.slice(1), JSON.stringify(packageJson, null, 2));
 
     // Install dependencies & build 
-    execSync(`cd ${packages[package].path.slice(1)} && ${packageManager} i && ${packageManager} build && cd ..`);
+    execSync(`cd ${packages[package].path.slice(1)} && ${packageManager} i && ${packageManager} run build && cd ..`);
   }
 }
 

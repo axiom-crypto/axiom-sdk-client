@@ -2,11 +2,11 @@ const { execSync } = require("child_process");
 const fs = require("fs");
 
 let ci = false;
-if (process.argv[2] === "--ci") {
+if (process.argv[3] === "--ci") {
   ci = true;
 }
 
-console.log("Is running CI?", ci);
+console.log("Is running CI?", ci, process.argv);
 const packageManager = ci ? "npm" : "pnpm";
 const localPrefix = ci ? "file:" : "link:";
 

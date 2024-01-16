@@ -5,13 +5,13 @@ import React, {
   useRef,
   useState,
 } from "react";
-import {
-  AxiomV2Callback,
-  AxiomV2QueryOptions,
-} from "@axiom-crypto/core";
 import { Remote, wrap } from "comlink";
 import { AxiomCircuit } from "./worker";
-import { AxiomV2CompiledCircuit } from "@axiom-crypto/client";
+import { 
+  AxiomV2CompiledCircuit,
+  AxiomV2Callback,
+  AxiomV2QueryOptions,
+} from "@axiom-crypto/client";
 
 type BuiltQuery = {
   calldata: `0x${string}`;

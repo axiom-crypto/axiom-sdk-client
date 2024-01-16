@@ -21,7 +21,6 @@
     "directory": "dist"
   },
   "dependencies": {
-    "@axiom-crypto/core": "2.3.0-rc2.3",
     "comlink": "^4.4.1"
   },
   "peerDependencies": {

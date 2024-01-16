@@ -1,22 +1,30 @@
 const { execSync } = require("child_process");
 const fs = require("fs");
 
+let ci = false;
+if (process.argv[2] === "--ci") {
+  ci = true;
+}
+
+const packageManager = ci ? "npm" : "pnpm";
+const localPrefix = ci ? "file:" : "link:";
+
 const packages = {
   "@axiom-crypto/circuit": {
     path: "../circuit/js",
-    version: "link:../circuit/js/dist",
+    version: `${localPrefix}../circuit/js/dist`,
   },
   "@axiom-crypto/client": {
     path: "../client",
-    version: "link:../client/dist",
+    version: `${localPrefix}../client/dist`,
   },
   "@axiom-crypto/harness": {
     path: "../harness",
-    version: "",
+    version: `${localPrefix}../harness/dist`,
   },
   "@axiom-crypto/react": {
     path: "../react",
-    version: "",
+    version: `${localPrefix}../react/dist`,
   },
 };
 
@@ -55,7 +63,7 @@ function main() {
     fs.writeFileSync(packageJsonPath.slice(1), JSON.stringify(packageJson, null, 2));
 
     // Install dependencies & build 
-    execSync(`cd ${packages[package].path.slice(1)} && pnpm i && pnpm build && cd ..`);
+    execSync(`cd ${packages[package].path.slice(1)} && ${packageManager} i && ${packageManager} build && cd ..`);
   }
 }
 

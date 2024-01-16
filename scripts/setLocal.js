@@ -6,6 +6,7 @@ if (process.argv[2] === "--ci") {
   ci = true;
 }
 
+console.log("Is running CI?", ci);
 const packageManager = ci ? "npm" : "pnpm";
 const localPrefix = ci ? "file:" : "link:";
 

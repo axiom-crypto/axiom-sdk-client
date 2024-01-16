@@ -131,6 +131,29 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     };
   }
 
+  async mockCompile(inputs: RawInput<T>) {
+    this.newCircuitFromConfig(this.config);
+    this.timeStart("Witness generation");
+    const { config, results } = await AxiomCircuitRunner(
+      this.halo2wasm,
+      this.halo2Lib,
+      this.config,
+      this.provider,
+    ).compile(this.f, inputs, this.inputSchema);
+    this.timeEnd("Witness generation");
+    this.config = config;
+    this.results = results;
+    const vk = this.getMockVk().map(e => e.slice(2)).join('');
+    const encoder = new TextEncoder();
+    const inputSchema = encoder.encode(this.inputSchema);
+    return {
+      vk,
+      config,
+      querySchema: "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+      inputSchema: byteArrayToBase64(inputSchema),
+    };
+  }
+
   async populateCircuit(inputs: RawInput<T>) {
     this.newCircuitFromConfig(this.config);
     this.timeStart("Witness generation");
@@ -179,6 +202,12 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     return computeQuery;
   }
 
+  private getMockVk(): string[] {
+    const vkLen = 6 + 2 * DEFAULT_CIRCUIT_CONFIG.numAdvice + DEFAULT_CIRCUIT_CONFIG.numLookupAdvice;
+    const emptyVk = new Array(vkLen).fill(zeroHash);
+    return emptyVk;
+  }
+
   buildMockComputeQuery() {
     // Mock compute query only works for the following DEFAULT_CIRCUIT_CONFIG:
     if (
@@ -189,8 +218,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     ) {
       throw new Error(`MockComputeQuery not valid for this DEFAULT_CIRCUIT_CONFIG`);
     }
-    const vkLen = 6 + 2 * DEFAULT_CIRCUIT_CONFIG.numAdvice + DEFAULT_CIRCUIT_CONFIG.numLookupAdvice;
-    const emptyVk = new Array(vkLen).fill(zeroHash);
+    const emptyVk = this.getMockVk();
     const onchainVkey = this.prependCircuitMetadata(this.config, emptyVk);
 
     this.proof = new Uint8Array(2080);

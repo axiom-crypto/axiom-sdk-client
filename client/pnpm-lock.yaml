@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@axiom-crypto/circuit':
-    specifier: 0.2.2-rc2.2-alpha
-    version: 0.2.2-rc2.2-alpha(typescript@5.3.3)
+    specifier: 0.2.2-rc2.2-alpha.1
+    version: 0.2.2-rc2.2-alpha.1(typescript@5.3.3)
   '@axiom-crypto/core':
     specifier: 2.3.0-rc2.2
     version: 2.3.0-rc2.2
@@ -70,8 +70,8 @@ packages:
       '@jridgewell/trace-mapping': 0.3.20
     dev: true
 
-  /@axiom-crypto/circuit@0.2.2-rc2.2-alpha(typescript@5.3.3):
-    resolution: {integrity: sha512-/w3528kvp2u8/sJS4tB/3ZfIktm03xAWpzLevmfu6uly0fiXVCkl8cMZTl1lXTY6uYyvOUYUlJmt/UUGhKmC9Q==}
+  /@axiom-crypto/circuit@0.2.2-rc2.2-alpha.1(typescript@5.3.3):
+    resolution: {integrity: sha512-MC1vR579g/D4r8BtDzJZnea64dZxnZFJ13A+VHnQTKD89G0KdbxPBWyuJnG6WsaQdJ1EvuFWkQsijrgJNovS9w==}
     dependencies:
       '@axiom-crypto/core': 2.3.0-rc2.2
       '@axiom-crypto/halo2-lib-js': 0.2.14-rc.0

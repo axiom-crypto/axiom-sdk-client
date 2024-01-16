@@ -47,13 +47,14 @@ export const prove = async (
         }
     }
     try {
-        circuit.loadSaved(compiledJson);
         let computeQuery;
         let computeResults;
         if (options.mock === true) {
+            circuit.loadSavedMock(compiledJson);
             computeQuery = await circuit.mockProve(circuitInputs);
             computeResults = circuit.getComputeResults();
         } else {
+            circuit.loadSaved(compiledJson);
             computeQuery = await circuit.run(circuitInputs);
             computeResults = circuit.getComputeResults();
         }

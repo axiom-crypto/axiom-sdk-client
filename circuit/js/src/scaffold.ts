@@ -76,6 +76,10 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     await this.loadParamsAndVk(base64ToByteArray(input.vk));
   }
 
+  loadSavedMock(input: {config: CircuitConfig}) {
+    this.config = input.config;
+  }
+
   getQuerySchema() {
     const partialVk = this.getPartialVk();
     const vk = convertToBytes32(partialVk);
@@ -92,7 +96,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     const encodedCircuitMetadata = encodeAxiomV2CircuitMetadata({
       version: 0,
       numValuesPerInstanceColumn: [
-        AxiomV2CircuitConstant.UserMaxOutputs * AxiomV2CircuitConstant.UserResultFieldElements + 
+        AxiomV2CircuitConstant.UserMaxOutputs * AxiomV2CircuitConstant.UserResultFieldElements +
         AxiomV2CircuitConstant.UserMaxSubqueries * SUBQUERY_RESULT_LEN
       ],
       numChallenge: [0],
@@ -187,7 +191,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     const vk = this.getPartialVk();
     const vkBytes = convertToBytes32(vk);
     const onchainVkey = this.prependCircuitMetadata(this.config, vkBytes);
-    
+
     const computeProofBase = this.getComputeProof() as `0x${string}`;
     const computeAccumulator = concat([zeroHash, zeroHash]);
     const computeProof = concat([computeAccumulator, computeProofBase]);

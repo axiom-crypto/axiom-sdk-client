@@ -18,6 +18,8 @@ import { DEFAULT_CIRCUIT_CONFIG } from "./constants";
 import { RawInput } from "./types";
 import { encodeAxiomV2CircuitMetadata } from "./encoder";
 
+const DEADBEEF_BYTES32 = "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef";
+
 export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   protected resultLen: number;
   protected halo2Lib!: Halo2LibWasm;
@@ -153,7 +155,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     return {
       vk,
       config,
-      querySchema: "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+      querySchema: DEADBEEF_BYTES32,
       inputSchema: byteArrayToBase64(inputSchema),
     };
   }
@@ -208,7 +210,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
 
   private getMockVk(): string[] {
     const vkLen = 6 + 2 * DEFAULT_CIRCUIT_CONFIG.numAdvice + DEFAULT_CIRCUIT_CONFIG.numLookupAdvice;
-    const emptyVk = new Array(vkLen).fill(zeroHash);
+    const emptyVk = new Array(vkLen).fill(DEADBEEF_BYTES32);
     return emptyVk;
   }
 

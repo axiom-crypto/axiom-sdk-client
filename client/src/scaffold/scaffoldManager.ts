@@ -75,6 +75,17 @@ export class ScaffoldManager {
     })
   }
 
+  cp(src: string, dst: string, description: string) {
+    const fullSrcPath = path.join(this.fullPath, src);
+    const fullDstPath = path.join(this.fullPath, dst);
+    fs.cpSync(fullSrcPath, fullDstPath);
+    const fileExists = fs.existsSync(fullDstPath);
+    this.actions.push({
+      description,
+      status: !fileExists ? chalk.red("ERR") : chalk.green("OK")
+    })
+  }
+
   rm(filePath: string, description: string) {
     const fullFilePath = path.join(this.fullPath, filePath);
     fs.rmSync(fullFilePath);

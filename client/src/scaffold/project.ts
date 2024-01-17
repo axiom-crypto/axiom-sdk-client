@@ -20,6 +20,10 @@ export const scaffoldProject = async (sm: ScaffoldManager) => {
     await sm.exec(`echo "node_modules" >> .gitignore`, "  - Add node_modules to .gitignore");
   }
 
+  const tempDir = `.axiom-temp-${Date.now()}`;
+  console.log("Fetching Axiom quickstart template...");
+  await sm.exec(`git clone -b staging https://github.com/axiom-crypto/axiom-quickstart.git ${tempDir}`, "Clone Axiom quickstart template");
+
   // Check if `node_modules` is in .gitignore and if not then add
   if (!sm.exists(".gitignore", `${chalk.bold(".gitignore")} exists?`)) {
     await sm.exec(`echo "node_modules" >> .gitignore`, "  - Add node_modules to .gitignore");
@@ -39,7 +43,7 @@ export const scaffoldProject = async (sm: ScaffoldManager) => {
     console.log("Initializing Foundry...");
     const { err } = await sm.exec("forge init --no-commit --force", "  - Initialize forge");
 
-    sm.cpFromTemplate("foundry.toml", "foundry.toml", `  - Copy template ${chalk.bold("foundry.toml")}`);
+    sm.cp(`${tempDir}/foundry.toml`, "foundry.toml", `  - Copy template ${chalk.bold("foundry.toml")}`);
 
     if (!err) {
       // Remove default foundry files in new project
@@ -57,21 +61,21 @@ export const scaffoldProject = async (sm: ScaffoldManager) => {
   const fileAvgBal = path.join("src", "AverageBalance.sol");
   if (!sm.exists(fileAvgBal, `${chalk.bold(fileAvgBal)} exists?`)) {
     console.log("Generating Solidity source files...");
-    sm.cpFromTemplate(fileAvgBal, fileAvgBal, `  - Copy template ${chalk.bold(fileAvgBal)}`);
+    sm.cp(`${tempDir}/${fileAvgBal}`, fileAvgBal, `  - Copy template ${chalk.bold(fileAvgBal)}`);
   }
 
   // Create forge test files
   const fileAvgBalTest = path.join("test", "AverageBalance.t.sol");
   if (!sm.exists(fileAvgBalTest, `${chalk.bold(fileAvgBalTest)} exists?`)) {
     console.log("Generating Solidity test files...");
-    sm.cpFromTemplate(fileAvgBalTest, fileAvgBalTest, `  - Copy template ${chalk.bold(fileAvgBalTest)}`);
+    sm.cp(`${tempDir}/${fileAvgBalTest}`, fileAvgBalTest, `  - Copy template ${chalk.bold(fileAvgBalTest)}`);
   }
 
   // Create circuit test files
   const inputFile = path.join("test", "input.json");
   if (!sm.exists(inputFile, `${chalk.bold(inputFile)} exists?`)) {
     console.log("Generating input file...");
-    sm.cpFromTemplate(inputFile, inputFile, `  - Copy template ${chalk.bold(inputFile)}`);
+    sm.cp(`${tempDir}/${inputFile}`, inputFile, `  - Copy template ${chalk.bold(inputFile)}`);
   }
 
   // Create Axiom circuit folder
@@ -85,13 +89,15 @@ export const scaffoldProject = async (sm: ScaffoldManager) => {
   const axiomCircuitFile = path.join(axiomPath, "average.circuit.ts");
   if (!sm.exists(axiomCircuitFile, `${chalk.bold(axiomCircuitFile)} exists?`)) {
     console.log("Generating Axiom example circuit...");
-    sm.cpFromTemplate(axiomCircuitFile, axiomCircuitFile, `  - Copy template ${chalk.bold(axiomCircuitFile)}`);
+    sm.cp(`${tempDir}/${axiomCircuitFile}`, axiomCircuitFile, `  - Copy template ${chalk.bold(axiomCircuitFile)}`);
   }
 
   // Create .env file
   if (!sm.exists(".env", `${chalk.bold(".env")} exists?`)) {
     console.log("Generating .env file...");
-    sm.cpFromTemplate("env.example", ".env", `  - Copy template ${chalk.bold(".env")}`);
+    sm.cp(`${tempDir}/.env.example`, ".env", `  - Copy template ${chalk.bold(".env")}`);
     console.log("Fill in .env with your environment variables.");
   }
+
+  await sm.exec(`rm -rf ${tempDir}`, "Clean up build files");
 }

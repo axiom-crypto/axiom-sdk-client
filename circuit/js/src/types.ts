@@ -20,4 +20,4 @@ export interface AxiomV2CircuitMetadataParams {
     numRlcColumns: number;
     numFixed: number;
     maxOutputs: number;
-  };
+};

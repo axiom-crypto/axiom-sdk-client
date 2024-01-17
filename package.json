@@ -3,8 +3,9 @@
   "version": "0.0.1",
   "description": "Axiom client SDK",
   "scripts": {
-    "versions": "node -e 'require(\"./scripts/versions.js\").versions()'",
-    "local": "node scripts/testLocal.js",
+    "remote": "node -e 'require(\"./scripts/setRemote.js\").setRemote()'",
+    "local": "node scripts/setLocal.js",
+    "versions": "node scripts/setVersions.js",
     "publish-all": "node scripts/publishAll.js"
   },
   "keywords": [],

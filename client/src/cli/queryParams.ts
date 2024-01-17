@@ -31,7 +31,8 @@ export const queryParams = async (
   if (options.proven !== undefined) {
       provenFile = options.proven;
   }
-  const outputsJson = readJsonFromFile(provenFile);
+  console.log(`Reading proven circuit JSON from: ${provenFile}`)
+  const provenJson = readJsonFromFile(provenFile);
   const provider = getProvider(options.provider);
   const axiom = new AxiomSdkCore({
     providerUri: provider,
@@ -42,8 +43,8 @@ export const queryParams = async (
   try {
     let build = await buildSendQuery({
       axiom,
-      dataQuery: outputsJson.dataQuery,
-      computeQuery: outputsJson.computeQuery,
+      dataQuery: provenJson.dataQuery,
+      computeQuery: provenJson.computeQuery,
       callback: {
         target: callbackTarget,
         extraData: options.callbackExtraData ?? "0x",

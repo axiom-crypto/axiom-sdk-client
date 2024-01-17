@@ -75,6 +75,19 @@ export function getProvider(provider: string | undefined): string {
     return providerToUse;
 }
 
+export function readInputs(inputFile: string, circuitInputs: any) {
+    if (fileExists(inputFile)) {
+        circuitInputs = readJsonFromFile(inputFile);
+        console.log(`Reading JSON inputs from: ${inputFile}`);
+        return circuitInputs
+    } 
+    if (circuitInputs === undefined) {
+        throw new Error("No inputs provided. Either export `inputs` from your circuit file or provide a path to a json file with inputs.");
+    }
+    console.log(`Reading inputs from circuit file`);
+    return circuitInputs;
+}
+
 export function saveJsonToFile(json: any, filePath: string) {
     const fullPath = path.resolve(filePath);
     const filename = path.basename(fullPath);

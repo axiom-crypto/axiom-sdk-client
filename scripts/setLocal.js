@@ -1,17 +1,30 @@
+const { execSync } = require("child_process");
 const fs = require("fs");
+
+let ci = false;
+if (process.argv[2] === "ci") {
+  ci = true;
+}
+
+const packageManager = ci ? "npm" : "pnpm";
+const localPrefix = ci ? "file:" : "link:";
 
 const packages = {
   "@axiom-crypto/circuit": {
     path: "../circuit/js",
-    version: "",
+    version: `${localPrefix}../circuit/js/dist`,
   },
   "@axiom-crypto/client": {
     path: "../client",
-    version: "",
+    version: `${localPrefix}../client/dist`,
   },
   "@axiom-crypto/harness": {
     path: "../harness",
-    version: "",
+    version: `${localPrefix}../harness/dist`,
+  },
+  "@axiom-crypto/react": {
+    path: "../react",
+    version: `${localPrefix}../react/dist`,
   },
 };
 
@@ -21,17 +34,11 @@ const dependencyTypes = [
   "peerDependencies",
 ];
 
-function versions() {
-  // Get all package versions
-  for (const package of Object.keys(packages)) {
-    const packageJsonPath = packages[package].path + "/package.json";
-    const packageJson = require(packageJsonPath);
-    packages[package].version = packageJson.version;
-  }
-
+function main() {
   // Substitute package versions 
   for (const package of Object.keys(packages)) {
     const packageJsonPath = packages[package].path + "/package.json";
+    console.log("Processing", packageJsonPath);
     let packageJson = require(packageJsonPath);
 
     // Check for existence of each dependencyType
@@ -47,15 +54,17 @@ function versions() {
             continue;
           }
           if (key === packageSearchStr) {
+            console.log(`Found ${key}: Setting local`);
             packageJson[dependencyType][packageSearchStr] = packages[packageSearchStr].version;
           }
         }
       });
     }
     fs.writeFileSync(packageJsonPath.slice(1), JSON.stringify(packageJson, null, 2));
-  }
 
-  return packages;
+    // Install dependencies & build 
+    execSync(`cd ${packages[package].path.slice(1)} && ${packageManager} i && ${packageManager} run build && cd ..`);
+  }
 }
 
-exports.versions = versions;
+main();

@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@axiom-crypto/core':
-    specifier: 2.3.0-rc2.3
-    version: 2.3.0-rc2.3
+    specifier: 2.3.1
+    version: 2.3.1
   '@axiom-crypto/halo2-lib-js':
     specifier: 0.2.14-rc.0
     version: 0.2.14-rc.0
@@ -70,10 +70,10 @@ packages:
       '@jridgewell/trace-mapping': 0.3.20
     dev: true
 
-  /@axiom-crypto/core@2.3.0-rc2.3:
-    resolution: {integrity: sha512-qs5KFwdpYBjFQEHvyUXRiTTC9b5ptPblvDKZhEqlb+SgcIydoMekm7mniPThn4WKcxaBHKKYJKXWjhbMc+p71g==}
+  /@axiom-crypto/core@2.3.1:
+    resolution: {integrity: sha512-+X1CrAW23aQxi/EEG4bxROVoUWCHOtEeEtQHmEwQvvzYcPwRUhrJ8q7Ca5PFQ1B2uUnWi9jXaCOYJDvnaEEvBQ==}
     dependencies:
-      '@axiom-crypto/tools': 0.3.36-rc2.3
+      '@axiom-crypto/tools': 2.0.0
       axios: 1.6.3
       bs58: 5.0.0
       ethers: 6.9.0
@@ -97,15 +97,6 @@ packages:
 
   /@axiom-crypto/halo2-wasm@0.2.11-rc.1:
     resolution: {integrity: sha512-30yASHZXIIGILRJHvOPDZ43gATCgGzkl9wvbK+on1lC3lnMO5iF3aOsqIV8bPkTsh9OhpxsBA32FUkfZ+vZNyA==}
-    dev: false
-
-  /@axiom-crypto/tools@0.3.36-rc2.3:
-    resolution: {integrity: sha512-2oUtSkeyQCGwmTei9HdUUHiFdzV88SB3StVgev7kdfAWriZ9zuPdvbmr072FrXC7nNEsRnzKsJbmjQgYXrNKmg==}
-    dependencies:
-      ethers: 6.9.0
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
     dev: false
 
   /@axiom-crypto/tools@2.0.0:

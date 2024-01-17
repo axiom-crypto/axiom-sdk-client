@@ -43,7 +43,7 @@ export const buildSendQuery = async (input: {
     userSalt,
     refundee,
     dataQuery,
-  } = await qb.build();
+  } = await qb.build(true);
   const payment = await qb.calculateFee();
   const id = await qb.getQueryId(input.caller);
   const abi = input.axiom.getAxiomQueryAbi();

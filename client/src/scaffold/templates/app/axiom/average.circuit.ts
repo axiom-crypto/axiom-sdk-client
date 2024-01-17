@@ -16,8 +16,9 @@ export interface CircuitInputs {
   address: CircuitValue;
 }
 
+// Example inputs that the circuit will use for testing
 export const inputs = {
-  blockNumber: 10105939,
+  blockNumber: 4105938,
   address: "0x8018fe32fCFd3d166E8b4c4E37105318A84BA11b"
 }
 
@@ -31,7 +32,7 @@ export const circuit = async ({
 
   // Number of samples to take. Note that this must be a constant value and NOT an input because the size of the circuit 
   // must be known at compile time.
-  const samples = 10; 
+  const samples = 10;
 
   // Number of blocks between each sample.
   const spacing = 100;
@@ -43,7 +44,7 @@ export const circuit = async ({
 
   // Create an array of block numbers to sample from
   const blockNumbers = Array.from(
-    {length: samples}, 
+    { length: samples },
     (_: any, i: number) => blockNumber.number() - (spacing * i)
   );
 

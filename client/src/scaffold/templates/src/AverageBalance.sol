@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import {AxiomV2Client} from "@axiom-v2-client/client/AxiomV2Client.sol";
+import { AxiomV2Client } from "@axiom-v2-client/client/AxiomV2Client.sol";
 
 contract AverageBalance is AxiomV2Client {
     /// @dev The unique identifier of the circuit accepted by this contract.
@@ -58,7 +58,7 @@ contract AverageBalance is AxiomV2Client {
         address addr = address(uint160(uint256(axiomResults[1])));
         uint256 averageBalance = uint256(axiomResults[2]);
 
-        // You can do whatever you'd like with the results here. In this example, we just store it the value 
+        // You can do whatever you'd like with the results here. In this example, we just store it the value
         // directly in the contract.
         provenAverageBalances[blockNumber][addr] = averageBalance;
 

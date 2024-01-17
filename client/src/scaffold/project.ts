@@ -32,7 +32,7 @@ export const scaffoldProject = async (sm: ScaffoldManager) => {
 
   // Install package dependencies
   console.log("Installing node dependencies...");
-  await sm.exec(`${sm.packageMgr} ${sm.installCmd} @axiom-crypto/client`, `Install ${chalk.bold("@axiom-crypto/client")}`);
+  await sm.exec(`${sm.packageMgr} ${sm.installCmd} @axiom-crypto/client@0.2.2-rc2.2-alpha.1`, `Install ${chalk.bold("@axiom-crypto/client")}`);
 
   // Check if forge initialized at path and run forge init if not
   if (!sm.exists("foundry.toml", `${chalk.bold("foundry.toml")} exists?`)) {
@@ -67,6 +67,13 @@ export const scaffoldProject = async (sm: ScaffoldManager) => {
     sm.cpFromTemplate(fileAvgBalTest, fileAvgBalTest, `  - Copy template ${chalk.bold(fileAvgBalTest)}`);
   }
 
+  // Create circuit test files
+  const inputFile = path.join("test", "input.json");
+  if (!sm.exists(inputFile, `${chalk.bold(inputFile)} exists?`)) {
+    console.log("Generating input file...");
+    sm.cpFromTemplate(inputFile, inputFile, `  - Copy template ${chalk.bold(inputFile)}`);
+  }
+
   // Create Axiom circuit folder
   const axiomPath = path.join("app", "axiom");
   if (!sm.exists(axiomPath, `${chalk.bold(axiomPath)} path exists?`)) {
@@ -79,5 +86,18 @@ export const scaffoldProject = async (sm: ScaffoldManager) => {
   if (!sm.exists(axiomCircuitFile, `${chalk.bold(axiomCircuitFile)} exists?`)) {
     console.log("Generating Axiom example circuit...");
     sm.cpFromTemplate(axiomCircuitFile, axiomCircuitFile, `  - Copy template ${chalk.bold(axiomCircuitFile)}`);
+  }
+
+  // Add remappings.txt to folder
+  if (!sm.exists("remappings.txt", `${chalk.bold("remappings.txt")} exists?`)) {
+    console.log("Generating remappings.txt...");
+    sm.cpFromTemplate("remappings.txt", "remappings.txt", `  - Copy template ${chalk.bold("remappings.txt")}`);
+  }
+
+  // Create .env file
+  if (!sm.exists(".env", `${chalk.bold(".env")} exists?`)) {
+    console.log("Generating .env file...");
+    sm.cpFromTemplate("env.example", ".env", `  - Copy template ${chalk.bold(".env")}`);
+    console.log("Fill in .env with your environment variables.");
   }
 }

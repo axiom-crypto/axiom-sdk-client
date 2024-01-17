@@ -88,12 +88,6 @@ export const scaffoldProject = async (sm: ScaffoldManager) => {
     sm.cpFromTemplate(axiomCircuitFile, axiomCircuitFile, `  - Copy template ${chalk.bold(axiomCircuitFile)}`);
   }
 
-  // Add remappings.txt to folder
-  if (!sm.exists("remappings.txt", `${chalk.bold("remappings.txt")} exists?`)) {
-    console.log("Generating remappings.txt...");
-    sm.cpFromTemplate("remappings.txt", "remappings.txt", `  - Copy template ${chalk.bold("remappings.txt")}`);
-  }
-
   // Create .env file
   if (!sm.exists(".env", `${chalk.bold(".env")} exists?`)) {
     console.log("Generating .env file...");

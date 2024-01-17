@@ -1,6 +1,6 @@
 import { CircuitConfig } from "@axiom-crypto/halo2-lib-js";
 import { AxiomBaseCircuitScaffold } from "../scaffold";
-import { getHalo2LibWasm, getHalo2Wasm } from "@axiom-crypto/halo2-wasm/web";
+import { getHalo2LibWasm, getHalo2Wasm, getKzgParams } from "@axiom-crypto/halo2-lib-js/wasm/web";
 
 export class AxiomBaseCircuit<T> extends AxiomBaseCircuitScaffold<T> {
     constructor(inputs: {
@@ -12,6 +12,9 @@ export class AxiomBaseCircuit<T> extends AxiomBaseCircuitScaffold<T> {
         shouldTime?: boolean
     }) {
         super(inputs);
+        this.setContext({
+            getKzgParams,
+        });
     }
 
     async setup(numThreads: number) {

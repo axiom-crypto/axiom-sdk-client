@@ -1,6 +1,6 @@
 import path from 'path';
 import { AxiomBaseCircuit } from "../js";
-import { fileExists, getFunctionFromTs, getProvider, readInputs, readJsonFromFile, saveJsonToFile } from "./utils";
+import { getFunctionFromTs, getProvider, readInputs, saveJsonToFile } from "./utils";
 
 export const compile = async (
     circuitPath: string,

@@ -8,7 +8,7 @@
   "browser": "web/index.js",
   "types": "web/index.d.ts",
   "scripts": {
-    "build": "rm -rf ./dist/* && tsc && ts-node scripts/postTsc.js && $npm_execpath run build:docs",
+    "build": "rm -rf ./dist/* && tsc && tsx scripts/postTsc.js && $npm_execpath run build:docs",
     "build:docs": "./scripts/buildDocs.sh",
     "test": "jest"
   },
@@ -26,7 +26,6 @@
   "dependencies": {
     "@axiom-crypto/core": "2.3.0-rc2.3",
     "@axiom-crypto/halo2-lib-js": "0.2.14-rc.0",
-    "@axiom-crypto/halo2-wasm": "0.2.11-rc.1",
     "@axiom-crypto/tools": "2.0.0",
     "commander": "^11.1.0",
     "ethers": "^6.8.1",

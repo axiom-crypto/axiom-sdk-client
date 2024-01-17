@@ -49,8 +49,8 @@ function AxiomCircuitProvider({
   mock,
   children,
 }: {
-  compiledCircuit: AxiomV2CompiledCircuit,
   provider: string,
+  compiledCircuit: AxiomV2CompiledCircuit,
   chainId?: number | string | bigint,
   mock?: boolean,
   children: React.ReactNode,

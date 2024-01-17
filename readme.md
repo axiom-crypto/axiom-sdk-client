@@ -1,11 +1,11 @@
 # @axiom-crypto/client
 
-This repository is split into 3 components:
+This repository is split into 4 components:
 
 - `client`: Contains the Axiom CLI interface and developer-facing AxiomCircuit exports
 - `circuit`: Handles lower-level interface with Wasm circuit libraries
 - `harness`: Test harness for `client`
-- `react`: Axiom React component for proving in React/Next.js dApps
+- `react`: Axiom component and hook for proving circuits in React/Next.js dApps
 
 ## Convenience scripts
 

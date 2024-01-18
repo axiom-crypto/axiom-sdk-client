@@ -19,6 +19,12 @@ export interface AxiomV2ClientConfig<T> {
   privateKey?: string;
   version?: string;
   mock?: boolean;
+  callback: AxiomV2CallbackInput;
+}
+
+export interface AxiomV2CallbackInput {
+  target: string;
+  extraData?: string;
 }
 
 export interface AxiomV2CompiledCircuit {
@@ -40,8 +46,8 @@ export interface AxiomV2ClientParams {
   caller?: string;
   refundee?: string;
   privateKey?: string;
-  callback?: AxiomV2Callback;
   options?: AxiomV2QueryOptions;
+  validate?: boolean;
 }
 
 export interface AxiomV2SendQueryArgs {

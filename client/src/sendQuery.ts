@@ -16,7 +16,9 @@ export const buildSendQuery = async (input: {
   callback: AxiomV2Callback;
   caller: string;
   options: AxiomV2QueryOptions;
+  validate?: boolean;
 }) => {
+  const validate = input.validate ?? true;
   const query = input.axiom.query as QueryV2;
   if (input.options.refundee === undefined) {
     throw new Error("Refundee is required");
@@ -47,7 +49,7 @@ export const buildSendQuery = async (input: {
     userSalt,
     refundee,
     dataQuery,
-  } = await qb.build(true);
+  } = await qb.build(validate);
   const payment = await qb.calculateFee();
   const id = await qb.getQueryId(input.caller);
   const abi = input.axiom.getAxiomQueryAbi();

@@ -10,18 +10,20 @@ import { RawInput } from "@axiom-crypto/circuit/types";
 import { convertChainIdToViemChain, convertInputSchemaToJsonString } from "./utils";
 import { TransactionReceipt, createPublicClient, createWalletClient, http, zeroAddress, zeroHash } from "viem";
 import { privateKeyToAccount } from 'viem/accounts'
-import { AxiomV2QueryOptions } from "@axiom-crypto/core";
+import { AxiomV2Callback, AxiomV2QueryOptions } from "@axiom-crypto/core";
 
 export class Axiom<T> {
   protected config: AxiomV2ClientConfig<T>;
   protected axiomCircuit: AxiomCircuit<T>;
   protected compiledCircuit: AxiomV2CompiledCircuit;
+  protected callback: AxiomV2Callback;
   protected params?: AxiomV2ClientParams;
 
   constructor(config: AxiomV2ClientConfig<T>) {
     this.config = config;
     const inputSchema = convertInputSchemaToJsonString(config.inputSchema);
     this.compiledCircuit = config.compiledCircuit;
+    this.setCallback(config.callback);
     this.axiomCircuit = new AxiomCircuit({
       f: config.circuit,
       provider: this.config.provider,
@@ -38,11 +40,21 @@ export class Axiom<T> {
     });
   }
 
-  async setParams(params: AxiomV2ClientParams) {
+  setParams(params: AxiomV2ClientParams) {
     this.params = { 
       ...this.params, 
       ...params, 
     };
+  }
+
+  setCallback(callback: {
+    target?: string;
+    extraData?: string;
+  }) {
+    this.callback = {
+      ...this.callback,
+      ...callback,
+    }
   }
 
   async prove(input: RawInput<T>): Promise<AxiomV2SendQueryArgs> {
@@ -57,8 +69,8 @@ export class Axiom<T> {
     }
 
     return await this.axiomCircuit.getSendQueryArgs({
-      callbackTarget: this.params?.callback?.target ?? zeroAddress,
-      callbackExtraData: this.params?.callback?.extraData ?? zeroHash,
+      callbackTarget: this.callback.target,
+      callbackExtraData: this.callback.extraData ?? "",
       callerAddress: caller,
       options: this.params?.options ?? defaultOptions,
     })

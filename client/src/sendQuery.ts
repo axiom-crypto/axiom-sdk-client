@@ -38,7 +38,7 @@ export const buildSendQuery = async (input: {
       sourceChainId: input.axiom.config.chainId.toString(),
     });
   }
-  let {
+  const {
     sourceChainId,
     dataQueryHash,
     computeQuery,

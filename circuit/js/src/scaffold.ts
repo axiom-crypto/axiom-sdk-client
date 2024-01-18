@@ -18,6 +18,8 @@ import { DEFAULT_CIRCUIT_CONFIG } from "./constants";
 import { RawInput } from "./types";
 import { encodeAxiomV2CircuitMetadata } from "./encoder";
 
+const DEADBEEF_BYTES32 = "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef";
+
 export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   protected resultLen: number;
   protected halo2Lib!: Halo2LibWasm;
@@ -76,6 +78,10 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     await this.loadParamsAndVk(base64ToByteArray(input.vk));
   }
 
+  loadSavedMock(input: {config: CircuitConfig}) {
+    this.config = input.config;
+  }
+
   getQuerySchema() {
     const partialVk = this.getPartialVk();
     const vk = convertToBytes32(partialVk);
@@ -92,7 +98,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     const encodedCircuitMetadata = encodeAxiomV2CircuitMetadata({
       version: 0,
       numValuesPerInstanceColumn: [
-        AxiomV2CircuitConstant.UserMaxOutputs * AxiomV2CircuitConstant.UserResultFieldElements + 
+        AxiomV2CircuitConstant.UserMaxOutputs * AxiomV2CircuitConstant.UserResultFieldElements +
         AxiomV2CircuitConstant.UserMaxSubqueries * SUBQUERY_RESULT_LEN
       ],
       numChallenge: [0],
@@ -131,6 +137,29 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     };
   }
 
+  async mockCompile(inputs: RawInput<T>) {
+    this.newCircuitFromConfig(this.config);
+    this.timeStart("Witness generation");
+    const { config, results } = await AxiomCircuitRunner(
+      this.halo2wasm,
+      this.halo2Lib,
+      this.config,
+      this.provider,
+    ).compile(this.f, inputs, this.inputSchema);
+    this.timeEnd("Witness generation");
+    this.config = config;
+    this.results = results;
+    const vk = this.getMockVk().map(e => e.slice(2)).join('');
+    const encoder = new TextEncoder();
+    const inputSchema = encoder.encode(this.inputSchema);
+    return {
+      vk,
+      config,
+      querySchema: DEADBEEF_BYTES32,
+      inputSchema: byteArrayToBase64(inputSchema),
+    };
+  }
+
   async populateCircuit(inputs: RawInput<T>) {
     this.newCircuitFromConfig(this.config);
     this.timeStart("Witness generation");
@@ -164,7 +193,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     const vk = this.getPartialVk();
     const vkBytes = convertToBytes32(vk);
     const onchainVkey = this.prependCircuitMetadata(this.config, vkBytes);
-    
+
     const computeProofBase = this.getComputeProof() as `0x${string}`;
     const computeAccumulator = concat([zeroHash, zeroHash]);
     const computeProof = concat([computeAccumulator, computeProofBase]);
@@ -179,6 +208,12 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     return computeQuery;
   }
 
+  private getMockVk(): string[] {
+    const vkLen = 6 + 2 * DEFAULT_CIRCUIT_CONFIG.numAdvice + DEFAULT_CIRCUIT_CONFIG.numLookupAdvice;
+    const emptyVk = new Array(vkLen).fill(DEADBEEF_BYTES32);
+    return emptyVk;
+  }
+
   buildMockComputeQuery() {
     // Mock compute query only works for the following DEFAULT_CIRCUIT_CONFIG:
     if (
@@ -189,8 +224,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     ) {
       throw new Error(`MockComputeQuery not valid for this DEFAULT_CIRCUIT_CONFIG`);
     }
-    const vkLen = 6 + 2 * DEFAULT_CIRCUIT_CONFIG.numAdvice + DEFAULT_CIRCUIT_CONFIG.numLookupAdvice;
-    const emptyVk = new Array(vkLen).fill(zeroHash);
+    const emptyVk = this.getMockVk();
     const onchainVkey = this.prependCircuitMetadata(this.config, emptyVk);
 
     this.proof = new Uint8Array(2080);

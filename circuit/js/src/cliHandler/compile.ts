@@ -10,7 +10,8 @@ export const compile = async (
         outputs?: string,
         chainId?: number | string | bigint,
         provider?: string,
-        inputs?: string
+        inputs?: string,
+        mock?: boolean,
     }
 ) => {
     let circuitFunction = "circuit";
@@ -21,7 +22,7 @@ export const compile = async (
     const provider = getProvider(options.provider);
     const circuit = new AxiomBaseCircuit({
         f: f.circuit,
-        mock: true,
+        mock: options.mock,
         chainId: options.chainId,
         provider,
         shouldTime: options.stats,
@@ -33,7 +34,7 @@ export const compile = async (
     }
     const circuitInputs = readInputs(inputFile, f.inputs);
     try {
-        const res = await circuit.compile(circuitInputs);
+        const res = options.mock ? await circuit.mockCompile(circuitInputs) : await circuit.compile(circuitInputs);
         const circuitFn = `const ${f.importName} = AXIOM_CLIENT_IMPORT\n${f.circuit.toString()}`;
         const encoder = new TextEncoder();
         const circuitBuild = encoder.encode(circuitFn);

@@ -41,11 +41,12 @@ export const prove = async (
     }
     const circuitInputs = readInputs(inputFile, f.inputs);
     try {
-        circuit.loadSaved(compiledJson);
         let computeQuery;
         if (options.mock === true) {
+            circuit.loadSavedMock(compiledJson);
             computeQuery = await circuit.mockProve(circuitInputs);
         } else {
+            circuit.loadSaved(compiledJson);
             computeQuery = await circuit.run(circuitInputs);
         }
         const computeResults = circuit.getComputeResults();

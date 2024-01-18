@@ -93,12 +93,12 @@ const padInstances = () => {
   const numDataInstances = dataInstances.length;
 
   for (let i = numUserInstances; i < USER_COMPUTE_NUM_INSTANCES; i++) {
-    let witness = halo2Lib.witness("0");
+    let witness = halo2Lib.constant("0");
     userInstances.push(witness);
   }
 
   for (let i = numDataInstances; i < SUBQUERY_NUM_INSTANCES; i++) {
-    let witness = halo2Lib.witness("0");
+    let witness = halo2Lib.constant("0");
     dataInstances.push(witness);
   }
 
@@ -138,7 +138,7 @@ export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibW
     let functionInputs = getInputFunctionSignature(inputs);
     let parsedInputs = parseDataInputs(inputs);
 
-    let fn = eval(`let {${halo2LibFns.join(", ")}} = halo2Lib; let {${axiomDataFns.join(", ")}} = axiomData; (async function({${functionInputs}}) { ${code} })`);
+    let fn = eval(`let {${halo2LibFns.join(", ")}} = halo2Lib; let {${axiomDataFns.join(", ")}} = axiomData; (async function(input) { ${code} })`);
     await fn(parsedInputs);
 
     const { numUserInstances } = padInstances();

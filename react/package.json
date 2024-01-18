@@ -24,7 +24,7 @@
     "comlink": "^4.4.1"
   },
   "peerDependencies": {
-    "@axiom-crypto/client": "0.2.3-rc2.0",
+    "@axiom-crypto/client": "0.2.3-rc2.1-alpha.0",
     "@types/react": ">=18.1.0",
     "react": ">=18.1.0",
     "react-dom": ">=18.1.0"

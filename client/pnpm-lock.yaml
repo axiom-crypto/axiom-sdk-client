@@ -9,8 +9,8 @@ dependencies:
     specifier: link:../circuit/js/dist
     version: link:../circuit/js/dist
   '@axiom-crypto/core':
-    specifier: 2.3.1
-    version: 2.3.1
+    specifier: 2.3.2
+    version: 2.3.2
   chalk:
     specifier: ^4.1.2
     version: 4.1.2
@@ -70,8 +70,8 @@ packages:
       '@jridgewell/trace-mapping': 0.3.20
     dev: true
 
-  /@axiom-crypto/core@2.3.1:
-    resolution: {integrity: sha512-+X1CrAW23aQxi/EEG4bxROVoUWCHOtEeEtQHmEwQvvzYcPwRUhrJ8q7Ca5PFQ1B2uUnWi9jXaCOYJDvnaEEvBQ==}
+  /@axiom-crypto/core@2.3.2:
+    resolution: {integrity: sha512-qJL99nX3nD8IChBN8F74VZF/4aKBXTtyiSZ0weH243vqzCTzRmvQofUOCw9OJ3t/LvZ+zIAswvpFEY/9czebJQ==}
     dependencies:
       '@axiom-crypto/tools': 2.0.0
       axios: 1.6.5

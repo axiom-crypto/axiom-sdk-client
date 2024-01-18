@@ -4,9 +4,9 @@
   "author": "Intrinsic Technologies",
   "license": "MIT",
   "description": "Client SDK to write custom queries for Axiom, the ZK Coprocessor for Ethereum.",
-  "main": "js/index.js",
+  "main": "index.js",
+  "types": "index.d.ts",
   "browser": "web/index.js",
-  "types": "web/index.d.ts",
   "scripts": {
     "build": "rm -rf ./dist/* && tsc && tsx scripts/postTsc.js && $npm_execpath run build:docs",
     "build:docs": "./scripts/buildDocs.sh",
@@ -24,9 +24,9 @@
     "crypto"
   ],
   "dependencies": {
-    "@axiom-crypto/core": "2.3.1",
-    "@axiom-crypto/halo2-lib-js": "0.2.14-rc.0",
-    "@axiom-crypto/halo2-wasm": "0.2.11-rc.1",
+    "@axiom-crypto/core": "2.3.2",
+    "@axiom-crypto/halo2-lib-js": "0.3.2",
+    "@axiom-crypto/halo2-wasm": "0.3.2",
     "@axiom-crypto/tools": "2.0.0",
     "commander": "^11.1.0",
     "ethers": "^6.8.1",

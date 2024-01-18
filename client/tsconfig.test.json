@@ -28,13 +28,11 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.json",
-    "test/**/*.circuit.ts"
   ],
   "exclude": [
     "dist",
     "node_modules",
     "scripts",
-    "test",
     "src/scaffold/templates/*"
   ],
   "ts-node": {

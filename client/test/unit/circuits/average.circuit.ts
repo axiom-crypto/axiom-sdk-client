@@ -1,13 +1,16 @@
 import {
-  sum,
+  add,
+  sub,
+  mul,
   div,
+  checkLessThan,
   addToCallback,
   CircuitValue,
   CircuitValue256,
   constant,
   witness,
   getAccount,
-} from "../../../src";
+} from "../../../../circuit/js/src";
 
 /// For type safety, define the input types to your circuit here.
 /// These should be the _variable_ inputs to your circuit. Constants can be hard-coded into the circuit itself.
@@ -16,52 +19,51 @@ export interface CircuitInputs {
   address: CircuitValue;
 }
 
-// Example inputs that the circuit will use for testing
 export const inputs = {
   blockNumber: 5000000,
-  address: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701"
+  address: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701",
 }
 
-export const circuit = async ({
-  blockNumber,
-  address,
-}: CircuitInputs) => {
-  // Since the blockNumber is a variable input, let's add it to the results that will be sent to our callback function
-  addToCallback(blockNumber);
-  addToCallback(address);
-
-  // Number of samples to take. Note that this must be a constant value and NOT an input because the size of the circuit 
-  // must be known at compile time.
+// The function name `circuit` is searched for by default by our Axiom CLI; if you decide to 
+// change the function name, you'll also need to ensure that you also pass the Axiom CLI flag 
+// `-f <circuitFunctionName>` for it to work
+export const circuit = async (inputs: CircuitInputs) => {
+  // Number of samples to take. Note that this must be a constant value and NOT an input because the size of 
+  // the circuit must be known at compile time.
   const samples = 8; 
 
   // Number of blocks between each sample.
   const spacing = 900;
 
   // Validate that the block number is greater than the number of samples times the spacing
-  if (blockNumber.value() <= (samples * spacing)) {
+  if (inputs.blockNumber.value() <= (samples * spacing)) {
     throw new Error("Block number must be greater than the number of samples times the spacing");
   }
 
-  // Create an array of block numbers to sample from
-  const blockNumbers = Array.from(
-    {length: samples}, 
-    (_: any, i: number) => blockNumber.number() - (spacing * i)
-  );
+  // Perform the block number validation in the circuit as well
+  checkLessThan(mul(samples, spacing), inputs.blockNumber);
 
-  // Get all balances for the given address at the block numbers we are sampling from
-  const balances = await Promise.all(
-    // Call `getAccount` for each sample block number concurrently
-    blockNumbers.map(
-      (sampleBlockNum: number) => getAccount(sampleBlockNum, address).balance()
-    )
-  );
+  // Get account balance at the sample block numbers
+  let sampledAccounts = new Array(samples);
+  for (let i = 0; i < samples; i++) {
+    const sampleBlockNumber: CircuitValue = sub(inputs.blockNumber, mul(spacing, i));
+    const account = getAccount(sampleBlockNumber, inputs.address);
+    sampledAccounts[i] = account;
+  }
 
-  // Calculate the total
-  const total = sum(balances.map((balance: CircuitValue256) => balance.value()));
+  // Accumulate all of the balances to `total`
+  let total = witness(0);
+  for (const account of sampledAccounts) {
+    const balance: CircuitValue256 = await account.balance();
+    total = add(total, balance.lo());
+  }
 
-  // Divide by the number of samples to get the average value
+  // Divide the total amount by the number of samples to get the average value
   const average = div(total, samples);
 
-  // We add the result to the callback, which our Solidity contract will then handle
+  // We call `addToCallback` on all values that we would like to be passed to our contract after the circuit has
+  // been proven in ZK. The values can then be handled by our contract once the prover calls the callback function.
+  addToCallback(inputs.blockNumber);
+  addToCallback(inputs.address);
   addToCallback(average);
 };

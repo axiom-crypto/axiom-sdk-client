@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@axiom-crypto/client':
-    specifier: link:../client/dist
-    version: link:../client/dist
+    specifier: 0.2.3-rc2.0
+    version: 0.2.3-rc2.0(typescript@5.3.3)
   '@types/react':
     specifier: '>=18.1.0'
     version: 18.2.48
@@ -27,6 +27,153 @@ devDependencies:
     version: 5.3.3
 
 packages:
+
+  /@adraffy/ens-normalize@1.10.0:
+    resolution: {integrity: sha512-nA9XHtlAkYfJxY7bce8DcN7eKxWWCWkU+1GR9d+U6MbNpfwQp8TI7vqOsBsMcHoT4mBu2kypKoSKnghEzOOq5Q==}
+    dev: false
+
+  /@axiom-crypto/circuit@0.2.3-rc2.0(typescript@5.3.3):
+    resolution: {integrity: sha512-uVZgw2eQNRkYoRdh+ypuLwsmEzaeQG3elVe0paWSO4E28RkvonrTquOckZg1T4/cx/jXlQvwHXK2az7RJ5aEsw==}
+    dependencies:
+      '@axiom-crypto/core': 2.3.1
+      '@axiom-crypto/halo2-lib-js': 0.2.14-rc.0
+      '@axiom-crypto/halo2-wasm': 0.2.11-rc.1
+      '@axiom-crypto/tools': 2.0.0
+      commander: 11.1.0
+      ethers: 6.10.0
+      viem: 1.21.4(typescript@5.3.3)
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - typescript
+      - utf-8-validate
+      - zod
+    dev: false
+
+  /@axiom-crypto/client@0.2.3-rc2.0(typescript@5.3.3):
+    resolution: {integrity: sha512-hW+pcNC008qGaAX+mEYuredzgDb0TF5+rvM0v+2/m64k+Auv/6rF871GD3NZ6ILQmeZorQldikhuu8O9FyDukA==}
+    hasBin: true
+    dependencies:
+      '@axiom-crypto/circuit': 0.2.3-rc2.0(typescript@5.3.3)
+      '@axiom-crypto/core': 2.3.1
+      chalk: 4.1.2
+      commander: 11.1.0
+      ethers: 6.10.0
+      prompts: 2.4.2
+      viem: 1.21.4(typescript@5.3.3)
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - typescript
+      - utf-8-validate
+      - zod
+    dev: false
+
+  /@axiom-crypto/core@2.3.1:
+    resolution: {integrity: sha512-+X1CrAW23aQxi/EEG4bxROVoUWCHOtEeEtQHmEwQvvzYcPwRUhrJ8q7Ca5PFQ1B2uUnWi9jXaCOYJDvnaEEvBQ==}
+    dependencies:
+      '@axiom-crypto/tools': 2.0.0
+      axios: 1.6.5
+      bs58: 5.0.0
+      ethers: 6.10.0
+      merkletreejs: 0.3.11
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - utf-8-validate
+    dev: false
+
+  /@axiom-crypto/halo2-lib-js@0.2.14-rc.0:
+    resolution: {integrity: sha512-CkWp7VywU5JxXw8Hah/LLIm2oxYJzCKcPxNUo8j3t9wY4tkKVOwpPv2Kr5KuW2oeKOZvNlHmkemNcO6vfItS9Q==}
+    dependencies:
+      '@axiom-crypto/halo2-wasm': 0.2.11-rc.1
+      ethers: 6.10.0
+      prettier: 1.18.2
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
+
+  /@axiom-crypto/halo2-wasm@0.2.11-rc.1:
+    resolution: {integrity: sha512-30yASHZXIIGILRJHvOPDZ43gATCgGzkl9wvbK+on1lC3lnMO5iF3aOsqIV8bPkTsh9OhpxsBA32FUkfZ+vZNyA==}
+    dev: false
+
+  /@axiom-crypto/tools@2.0.0:
+    resolution: {integrity: sha512-zoNlRRTyS98xysKrui2g+/f+A6+LiSi7wNw1m+xbCcDkY5/yz52VkbpGt+DTfo5FboiqTaXAq5f5CidNg4Z0mQ==}
+    dependencies:
+      ethers: 6.10.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
+
+  /@ethereumjs/rlp@4.0.1:
+    resolution: {integrity: sha512-tqsQiBQDQdmPWE1xkkBq4rlSW5QZpLOUJ5RJh2/9fug+q9tnUhuZoVLk7s0scUIKTOzEtR72DFBXI4WiZcMpvw==}
+    engines: {node: '>=14'}
+    hasBin: true
+    dev: false
+
+  /@ethereumjs/util@8.1.0:
+    resolution: {integrity: sha512-zQ0IqbdX8FZ9aw11vP+dZkKDkS+kgIvQPHnSAXzP9pLu+Rfu3D3XEeLbicvoXJTYnhZiPmsZUxgdzXwNKxRPbA==}
+    engines: {node: '>=14'}
+    dependencies:
+      '@ethereumjs/rlp': 4.0.1
+      ethereum-cryptography: 2.1.2
+      micro-ftch: 0.3.1
+    dev: false
+
+  /@noble/curves@1.1.0:
+    resolution: {integrity: sha512-091oBExgENk/kGj3AZmtBDMpxQPDtxQABR2B9lb1JbVTs6ytdzZNwvhxQ4MWasRNEzlbEH8jCWFCwhF/Obj5AA==}
+    dependencies:
+      '@noble/hashes': 1.3.1
+    dev: false
+
+  /@noble/curves@1.2.0:
+    resolution: {integrity: sha512-oYclrNgRaM9SsBUBVbb8M6DTV7ZHRTKugureoYEncY5c65HOmRzvSiTE3y5CYaPYJA/GVkrhXEoF0M3Ya9PMnw==}
+    dependencies:
+      '@noble/hashes': 1.3.2
+    dev: false
+
+  /@noble/hashes@1.3.1:
+    resolution: {integrity: sha512-EbqwksQwz9xDRGfDST86whPBgM65E0OH/pCgqW0GBVzO22bNE+NuIbeTb714+IfSjU3aRk47EUvXIb5bTsenKA==}
+    engines: {node: '>= 16'}
+    dev: false
+
+  /@noble/hashes@1.3.2:
+    resolution: {integrity: sha512-MVC8EAQp7MvEcm30KWENFjgR+Mkmf+D189XJTkFIlwohU5hcBbn1ZkKq7KVTi2Hme3PMGF390DaL52beVrIihQ==}
+    engines: {node: '>= 16'}
+    dev: false
+
+  /@scure/base@1.1.5:
+    resolution: {integrity: sha512-Brj9FiG2W1MRQSTB212YVPRrcbjkv48FoZi/u4l/zds/ieRrqsh7aUf6CLwkAq61oKXr/ZlTzlY66gLIj3TFTQ==}
+    dev: false
+
+  /@scure/bip32@1.3.1:
+    resolution: {integrity: sha512-osvveYtyzdEVbt3OfwwXFr4P2iVBL5u1Q3q4ONBfDY/UpOuXmOlbgwc1xECEboY8wIays8Yt6onaWMUdUbfl0A==}
+    dependencies:
+      '@noble/curves': 1.1.0
+      '@noble/hashes': 1.3.2
+      '@scure/base': 1.1.5
+    dev: false
+
+  /@scure/bip32@1.3.2:
+    resolution: {integrity: sha512-N1ZhksgwD3OBlwTv3R6KFEcPojl/W4ElJOeCZdi+vuI5QmTFwLq3OFf2zd2ROpKvxFdgZ6hUpb0dx9bVNEwYCA==}
+    dependencies:
+      '@noble/curves': 1.2.0
+      '@noble/hashes': 1.3.2
+      '@scure/base': 1.1.5
+    dev: false
+
+  /@scure/bip39@1.2.1:
+    resolution: {integrity: sha512-Z3/Fsz1yr904dduJD0NpiyRHhRYHdcnyh73FZWiV+/qhWi83wNJ3NWolYqCEN+ZWsUz2TWwajJggcRE9r1zUYg==}
+    dependencies:
+      '@noble/hashes': 1.3.2
+      '@scure/base': 1.1.5
+    dev: false
+
+  /@types/node@18.15.13:
+    resolution: {integrity: sha512-N+0kuo9KgrUQ1Sn/ifDXsvg0TTleP7rIy4zOBGECxAljqvqfqpTfzx0Q1NUedOixRMBfe2Whhb056a42cWs26Q==}
+    dev: false
 
   /@types/prop-types@15.7.11:
     resolution: {integrity: sha512-ga8y9v9uyeiLdpKddhxYQkxNDrfvuPrlFb0N1qnZZByvcElJaXthF1UhvCh9TLWJBEHeNtdnbysW7Y6Uq8CVng==}

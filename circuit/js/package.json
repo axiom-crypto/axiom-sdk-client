@@ -25,8 +25,8 @@
   ],
   "dependencies": {
     "@axiom-crypto/core": "2.3.2",
-    "@axiom-crypto/halo2-lib-js": "0.3.2",
-    "@axiom-crypto/halo2-wasm": "0.3.2",
+    "@axiom-crypto/halo2-lib-js": "0.3.3",
+    "@axiom-crypto/halo2-wasm": "0.3.3",
     "@axiom-crypto/tools": "2.0.0",
     "commander": "^11.1.0",
     "ethers": "^6.8.1",

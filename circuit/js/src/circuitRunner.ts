@@ -93,12 +93,12 @@ const padInstances = () => {
   const numDataInstances = dataInstances.length;
 
   for (let i = numUserInstances; i < USER_COMPUTE_NUM_INSTANCES; i++) {
-    let witness = halo2Lib.witness("0");
+    let witness = halo2Lib.constant("0");
     userInstances.push(witness);
   }
 
   for (let i = numDataInstances; i < SUBQUERY_NUM_INSTANCES; i++) {
-    let witness = halo2Lib.witness("0");
+    let witness = halo2Lib.constant("0");
     dataInstances.push(witness);
   }
 

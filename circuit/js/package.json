@@ -1,6 +1,6 @@
 {
   "name": "@axiom-crypto/circuit",
-  "version": "0.2.2-rc2.2",
+  "version": "0.2.3-rc2.0",
   "author": "Intrinsic Technologies",
   "license": "MIT",
   "description": "Client SDK to write custom queries for Axiom, the ZK Coprocessor for Ethereum.",

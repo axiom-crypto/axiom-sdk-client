@@ -21,6 +21,10 @@ export const buildSendQuery = async (input: {
   if (input.options.refundee === undefined) {
     throw new Error("Refundee is required");
   }
+  if (input.options.maxFeePerGas == undefined) {
+    const feeData = await input.axiom.config.provider.getFeeData();
+    input.options.maxFeePerGas = feeData.maxFeePerGas?.toString();
+  }
   const qb: QueryBuilderV2 = query.new(
     undefined,
     input.computeQuery,
@@ -44,10 +48,6 @@ export const buildSendQuery = async (input: {
     refundee,
     dataQuery,
   } = await qb.build(true);
-  if (input.options.maxFeePerGas == undefined) {
-    const maxFeePerGas = await input.axiom.config.provider.getFeeData();
-    feeData.maxFeePerGas = maxFeePerGas;
-  }
   const payment = await qb.calculateFee();
   const id = await qb.getQueryId(input.caller);
   const abi = input.axiom.getAxiomQueryAbi();

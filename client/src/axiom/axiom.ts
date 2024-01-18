@@ -39,7 +39,10 @@ export class Axiom<T> {
   }
 
   async setParams(params: AxiomV2ClientParams) {
-    this.params = params;
+    this.params = { 
+      ...this.params, 
+      ...params, 
+    };
   }
 
   async prove(input: RawInput<T>): Promise<AxiomV2SendQueryArgs> {

@@ -1,5 +1,0 @@
-[profile.default]
-src = "src"
-out = "out"
-libs = ["lib"]
-remappings = ["@axiom-v2-client/=lib/axiom-v2-client/src/"]

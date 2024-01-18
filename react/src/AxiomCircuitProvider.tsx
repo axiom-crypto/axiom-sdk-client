@@ -5,13 +5,13 @@ import React, {
   useRef,
   useState,
 } from "react";
-import {
-  AxiomV2Callback,
-  AxiomV2QueryOptions,
-} from "@axiom-crypto/core";
-import { CircuitConfig } from "@axiom-crypto/core/halo2-js";
 import { Remote, wrap } from "comlink";
 import { AxiomCircuit } from "./worker";
+import { 
+  AxiomV2CompiledCircuit,
+  AxiomV2Callback,
+  AxiomV2QueryOptions,
+} from "@axiom-crypto/client";
 
 type BuiltQuery = {
   calldata: `0x${string}`;
@@ -43,20 +43,14 @@ const useAxiomCircuit = <T,>(): AxiomCircuitContextType<T> => {
 }
 
 function AxiomCircuitProvider({
-  providerUri,
-  build: _build,
+  provider,
+  compiledCircuit,
   chainId,
   mock,
   children,
 }: {
-  build: {
-    vk: string,
-    config: CircuitConfig,
-    querySchema: string,
-    inputSchema: string,
-    circuit: string,
-  }
-  providerUri: string,
+  provider: string,
+  compiledCircuit: AxiomV2CompiledCircuit,
   chainId?: number | string | bigint,
   mock?: boolean,
   children: React.ReactNode,
@@ -81,14 +75,14 @@ function AxiomCircuitProvider({
       const worker = new Worker(new URL("./worker", import.meta.url), { type: "module" });
       const MyAxiomCircuit = wrap<typeof AxiomCircuit>(worker);
       workerApi.current = await new MyAxiomCircuit({
-        provider: providerUri,
-        inputSchema: _build.inputSchema,
+        provider,
+        inputSchema: compiledCircuit.inputSchema,
         mock,
         chainId,
-        f: _build.circuit,
+        f: compiledCircuit.circuit,
       });
       await workerApi.current.setup(window.navigator.hardwareConcurrency);
-      await workerApi.current?.loadSaved(_build);
+      await workerApi.current?.loadSaved(compiledCircuit);
     }
 
     const generateQuery = async () => {

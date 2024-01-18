@@ -1,4 +1,4 @@
-import { Halo2LibWasm, Halo2Wasm } from "@axiom-crypto/halo2-wasm/web";
+import { Halo2LibWasm, Halo2Wasm } from "@axiom-crypto/halo2-lib-js/wasm/web";
 import { DataSubquery } from "@axiom-crypto/tools";
 import { JsonRpcProvider } from "ethers";
 declare global {

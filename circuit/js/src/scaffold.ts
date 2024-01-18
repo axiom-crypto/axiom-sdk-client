@@ -1,4 +1,4 @@
-import { CircuitConfig, Halo2LibWasm } from "@axiom-crypto/halo2-wasm/web";
+import { CircuitConfig, Halo2LibWasm } from "@axiom-crypto/halo2-lib-js/wasm/web";
 import { keccak256 } from "ethers";
 import { base64ToByteArray, byteArrayToBase64, convertToBytes, convertToBytes32 } from "./utils";
 import { concat, encodePacked, zeroHash } from "viem";
@@ -13,7 +13,7 @@ import {
   AxiomSdkCore,
   AxiomV2QueryOptions,
 } from "@axiom-crypto/core";
-import { BaseCircuitScaffold } from "@axiom-crypto/halo2-wasm/shared/scaffold";
+import { BaseCircuitScaffold } from "@axiom-crypto/halo2-lib-js";
 import { DEFAULT_CIRCUIT_CONFIG } from "./constants";
 import { RawInput } from "./types";
 import { encodeAxiomV2CircuitMetadata } from "./encoder";

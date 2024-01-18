@@ -138,7 +138,7 @@ export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibW
     let functionInputs = getInputFunctionSignature(inputs);
     let parsedInputs = parseDataInputs(inputs);
 
-    let fn = eval(`let {${halo2LibFns.join(", ")}} = halo2Lib; let {${axiomDataFns.join(", ")}} = axiomData; (async function({${functionInputs}}) { ${code} })`);
+    let fn = eval(`let {${halo2LibFns.join(", ")}} = halo2Lib; let {${axiomDataFns.join(", ")}} = axiomData; (async function(input) { ${code} })`);
     await fn(parsedInputs);
 
     const { numUserInstances } = padInstances();

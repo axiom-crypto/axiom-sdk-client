@@ -34,7 +34,7 @@ export const buildSendQuery = async (input: {
       sourceChainId: input.axiom.config.chainId.toString(),
     });
   }
-  const {
+  let {
     sourceChainId,
     dataQueryHash,
     computeQuery,
@@ -44,6 +44,10 @@ export const buildSendQuery = async (input: {
     refundee,
     dataQuery,
   } = await qb.build(true);
+  if (input.options.maxFeePerGas == undefined) {
+    const maxFeePerGas = await input.axiom.config.provider.getFeeData();
+    feeData.maxFeePerGas = maxFeePerGas;
+  }
   const payment = await qb.calculateFee();
   const id = await qb.getQueryId(input.caller);
   const abi = input.axiom.getAxiomQueryAbi();

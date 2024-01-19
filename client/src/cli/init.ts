@@ -1,11 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 import prompt, { PromptObject } from 'prompts';
-import { validateForge, validatePackageManager } from '../scaffold/dependency';
-import { scaffoldNext } from '../scaffold/nextjs';
-import { scaffoldProject } from '../scaffold/project';
-import { scaffoldScript } from '../scaffold/script';
-import { ScaffoldManager } from '../scaffold/scaffoldManager';
+import { validateForge, validatePackageManager } from '../projectScaffold/dependency';
+import { scaffoldNext } from '../projectScaffold/nextjs';
+import { scaffoldProject } from '../projectScaffold/project';
+import { scaffoldScript } from '../projectScaffold/script';
+import { ProjectScaffoldManager } from '../projectScaffold/projectScaffoldManager';
 
 export const init = async (
   options: {
@@ -30,9 +30,8 @@ export const init = async (
       choices: [
         { title: "Next.js", value: "nextjs", description: "Next.js dApp (default)" }, 
         { title: "Script", value: "script", description: "Simple test script" },
-        { title: "None", value: "none", description: "No scaffold" },
       ],
-      message: "Type of Axiom app interface scaffold to use?"
+      message: "Type of Axiom app interface to use?"
     },
     {
       name: "packageMgr",
@@ -59,10 +58,9 @@ export const init = async (
     switch (parsedScaffold) {
       case "nextjs":
       case "script":
-      case "none":
         break;
       default:
-        throw new Error("Invalid option for scaffold. Valid options: [nextjs, script, none]");
+        throw new Error("Invalid option for scaffold. Valid options: [nextjs, script]");
     }
     setupQuestions = setupQuestions.filter((obj) => {
       return obj.name !== "scaffold";
@@ -100,16 +98,15 @@ export const init = async (
   validatePackageManager(answers.packageMgr);
 
   // Initialize scaffold manager
-  const sm = new ScaffoldManager(answers.path, answers.packageMgr);
+  const sm = new ProjectScaffoldManager(answers.path, answers.packageMgr,);
 
   // Initialize project
-  await scaffoldProject(sm);
+  await scaffoldProject(sm, answers.scaffold);
 
   // App scaffolds
+  const appPath = path.join(answers.path, "app");
   if (answers.scaffold === "nextjs") {
-    await scaffoldNext({ path: answers.path, packageMgr: answers.packageMgr }, sm);
-  } else if (answers.scaffold === "script") {
-    await scaffoldScript({ path: answers.path, packageMgr: answers.packageMgr }, sm);
+    await scaffoldNext({ path: appPath, packageMgr: answers.packageMgr }, undefined, sm);
   }
 
   // Print report

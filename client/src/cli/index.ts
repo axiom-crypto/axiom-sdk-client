@@ -3,8 +3,8 @@ import { compile } from "@axiom-crypto/circuit/cliHandler";
 import { prove } from "@axiom-crypto/circuit/cliHandler";
 import { init } from './init';
 import { queryParams } from "./queryParams";
-import { scaffoldNext } from "../scaffold/nextjs";
-import { scaffoldScript } from "../scaffold/script";
+import { scaffoldNext } from "../projectScaffold/nextjs";
+import { scaffoldScript } from "../projectScaffold/script";
 import { CLIENT_VERSION } from "../version";
 
 const program = new Command('axiom');
@@ -71,13 +71,15 @@ const scaffold = program.command("scaffold")
 scaffold
   .command("nextjs")
   .description("Scaffold a Next.js dApp that incorporates Axiom")
-  .option("-p, --path [path]", "Next.js dApp path", "app/")
+  .option("-p, --path [path]", "Next.js dApp path")
+  .option("-m, --manager [name]", "package manager to use (npm, yarn, pnpm)")
   .action(scaffoldNext)
 
 scaffold
   .command("script")
   .description("Scaffold a script to send Axiom Queries")
-  .option("-p, --path [path]", "Script path", "app/")
+  .option("-p, --path [path]", "Script path")
+  .option("-m, --manager [name]", "package manager to use (npm, yarn, pnpm)")
   .action(scaffoldScript)
 
 program.parseAsync(process.argv);

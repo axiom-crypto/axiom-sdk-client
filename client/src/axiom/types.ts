@@ -42,11 +42,9 @@ export interface AxiomV2CompiledCircuit {
   circuit: string;
 }
 
-export interface AxiomV2ClientParams {
+export interface AxiomV2ClientParams extends AxiomV2QueryOptions {
   caller?: string;
-  refundee?: string;
   privateKey?: string;
-  options?: AxiomV2QueryOptions;
   validate?: boolean;
 }
 

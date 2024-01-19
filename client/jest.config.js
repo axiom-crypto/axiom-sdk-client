@@ -6,7 +6,6 @@ require('dotenv').config({
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  moduleDirectories: ['node_modules'],
   modulePathIgnorePatterns: ["<rootDir>/dist/"],
   transform: {
     '^.+\\.tsx?$': [

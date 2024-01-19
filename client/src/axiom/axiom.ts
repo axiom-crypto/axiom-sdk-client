@@ -23,7 +23,11 @@ export class Axiom<T> {
     this.config = config;
     const inputSchema = convertInputSchemaToJsonString(config.inputSchema);
     this.compiledCircuit = config.compiledCircuit;
-    this.setCallback(config.callback);
+    this.callback = {
+      target: config.callback.target,
+      extraData: config.callback.extraData ?? "0x",
+    };
+
     this.axiomCircuit = new AxiomCircuit({
       f: config.circuit,
       provider: this.config.provider,
@@ -42,8 +46,8 @@ export class Axiom<T> {
 
   setParams(params: AxiomV2ClientParams) {
     this.params = { 
-      ...this.params, 
-      ...params, 
+      ...this.params,
+      ...params,
     };
   }
 
@@ -64,16 +68,20 @@ export class Axiom<T> {
       privateKeyToAccount(this.config.privateKey as `0x${string}`).address as string : 
       this.params?.caller ?? "";
 
-    const defaultOptions: AxiomV2QueryOptions = {
-      refundee: this.params?.options?.refundee ?? caller,
+    const options: AxiomV2QueryOptions = {
+      maxFeePerGas: this.params?.maxFeePerGas,
+      callbackGasLimit: this.params?.callbackGasLimit,
+      overrideAxiomQueryFee: this.params?.overrideAxiomQueryFee,
+      dataQueryCalldataGasWarningThreshold: this.params?.callbackGasLimit,
+      refundee: this.params?.refundee ?? caller,
     }
 
     return await this.axiomCircuit.getSendQueryArgs({
       callbackTarget: this.callback.target,
-      callbackExtraData: this.callback.extraData ?? "",
+      callbackExtraData: this.callback.extraData ?? "0x",
       callerAddress: caller,
-      options: this.params?.options ?? defaultOptions,
-    })
+      options,
+    });
   }
 
   async sendQuery(args: AxiomV2SendQueryArgs): Promise<TransactionReceipt> {
@@ -87,15 +95,23 @@ export class Axiom<T> {
       account,
       transport: http(this.config.provider),
     })
-    const { request } = await publicClient.simulateContract({
-      address: args.address as `0x${string}`,
-      abi: args.abi,
-      functionName: args.functionName,
-      args: args.args,
-      account,
-      value: args.value,
-    });
-    const hash = await walletClient.writeContract(request);
-    return await publicClient.waitForTransactionReceipt({ hash });
+
+    try {
+      const { request } = await publicClient.simulateContract({
+        address: args.address as `0x${string}`,
+        abi: args.abi,
+        functionName: args.functionName,
+        args: args.args,
+        account,
+        value: args.value,
+      });
+      const hash = await walletClient.writeContract(request);
+      return await publicClient.waitForTransactionReceipt({ hash });
+    } catch (e: any) {
+      if (e?.metaMessages !== undefined) {
+        throw new Error(e.metaMessages.join("\n"));
+      }
+      throw new Error(e);
+    }
   }
 }

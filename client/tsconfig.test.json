@@ -28,6 +28,8 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.json",
+    "test/**/*.ts",
+    "test/**/*.json",
   ],
   "exclude": [
     "dist",

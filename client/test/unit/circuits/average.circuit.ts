@@ -10,7 +10,7 @@ import {
   constant,
   witness,
   getAccount,
-} from "../../../../circuit/js/src";
+} from "@axiom-crypto/circuit";
 
 /// For type safety, define the input types to your circuit here.
 /// These should be the _variable_ inputs to your circuit. Constants can be hard-coded into the circuit itself.

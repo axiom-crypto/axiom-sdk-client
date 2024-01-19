@@ -76,9 +76,9 @@ export function getProvider(provider: string | undefined): string {
 }
 
 export function readInputs(inputFile: string, circuitInputs: any) {
+    console.log(`Reading JSON inputs from: ${inputFile}`);
     if (fileExists(inputFile)) {
         circuitInputs = readJsonFromFile(inputFile);
-        console.log(`Reading JSON inputs from: ${inputFile}`);
         return circuitInputs
     } 
     if (circuitInputs === undefined) {

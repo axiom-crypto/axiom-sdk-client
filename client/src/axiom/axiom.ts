@@ -1,23 +1,22 @@
 import { AxiomCircuit } from "../js";
 import { 
   AxiomV2ClientConfig,
-  AxiomV2ClientParams,
+  AxiomV2ClientOptions,
   AxiomV2CompiledCircuit,
   AxiomV2SendQueryArgs,
-  CircuitInputType,
 } from "./types";
 import { RawInput } from "@axiom-crypto/circuit/types";
 import { convertChainIdToViemChain, convertInputSchemaToJsonString } from "./utils";
 import { TransactionReceipt, createPublicClient, createWalletClient, http, zeroAddress, zeroHash } from "viem";
 import { privateKeyToAccount } from 'viem/accounts'
-import { AxiomV2Callback, AxiomV2QueryOptions } from "@axiom-crypto/core";
+import { AxiomV2Callback } from "@axiom-crypto/core";
 
 export class Axiom<T> {
   protected config: AxiomV2ClientConfig<T>;
   protected axiomCircuit: AxiomCircuit<T>;
   protected compiledCircuit: AxiomV2CompiledCircuit;
   protected callback: AxiomV2Callback;
-  protected params?: AxiomV2ClientParams;
+  protected options?: AxiomV2ClientOptions;
 
   constructor(config: AxiomV2ClientConfig<T>) {
     this.config = config;
@@ -44,10 +43,10 @@ export class Axiom<T> {
     });
   }
 
-  setParams(params: AxiomV2ClientParams) {
-    this.params = { 
-      ...this.params,
-      ...params,
+  setOptions(options: AxiomV2ClientOptions) {
+    this.options = { 
+      ...this.options,
+      ...options,
     };
   }
 
@@ -66,14 +65,11 @@ export class Axiom<T> {
 
     const caller = this.config.privateKey !== undefined ? 
       privateKeyToAccount(this.config.privateKey as `0x${string}`).address as string : 
-      this.params?.caller ?? "";
+      this.options?.caller ?? "";
 
-    const options: AxiomV2QueryOptions = {
-      maxFeePerGas: this.params?.maxFeePerGas,
-      callbackGasLimit: this.params?.callbackGasLimit,
-      overrideAxiomQueryFee: this.params?.overrideAxiomQueryFee,
-      dataQueryCalldataGasWarningThreshold: this.params?.callbackGasLimit,
-      refundee: this.params?.refundee ?? caller,
+    const options: AxiomV2ClientOptions = {
+      ...this.options,
+      refundee: this.options?.refundee ?? caller,
     }
 
     return await this.axiomCircuit.getSendQueryArgs({
@@ -85,6 +81,9 @@ export class Axiom<T> {
   }
 
   async sendQuery(args: AxiomV2SendQueryArgs): Promise<TransactionReceipt> {
+    if (this.config.privateKey === undefined) {
+      throw new Error("Setting `privateKey` is required to send a Query on-chain");
+    }
     const publicClient = createPublicClient({
       chain: convertChainIdToViemChain(this.config.chainId),
       transport: http(this.config.provider),

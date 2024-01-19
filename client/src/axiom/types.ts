@@ -42,10 +42,11 @@ export interface AxiomV2CompiledCircuit {
   circuit: string;
 }
 
-export interface AxiomV2ClientParams extends AxiomV2QueryOptions {
+export interface AxiomV2ClientOptions extends AxiomV2QueryOptions {
   caller?: string;
   privateKey?: string;
   validate?: boolean;
+  maximumMaxFeePerGas?: string;
 }
 
 export interface AxiomV2SendQueryArgs {

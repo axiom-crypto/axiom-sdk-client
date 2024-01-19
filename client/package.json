@@ -28,9 +28,8 @@
     "@axiom-crypto/core": "2.3.2",
     "chalk": "^4.1.2",
     "commander": "^11.1.0",
-    "ethers": "^6.8.1",
     "prompts": "^2.4.2",
-    "viem": "^1.19.9"
+    "viem": "^2.3.1"
   },
   "devDependencies": {
     "@types/jest": "^29.5.11",

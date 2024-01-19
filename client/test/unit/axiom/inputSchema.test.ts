@@ -1,6 +1,6 @@
 import { convertInputSchemaToJsonString } from "../../../src/axiom/utils";
 
-describe("Axiom tests", () => {
+describe("Input schema tests", () => {
   test("validate input schema transform", async () => {
     let inputSchema = convertInputSchemaToJsonString({
       claimedBlockNumber: "uint32",

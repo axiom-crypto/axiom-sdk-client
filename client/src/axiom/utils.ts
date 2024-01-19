@@ -1,6 +1,14 @@
-import { AxiomV2Callback, AxiomV2ComputeQuery, AxiomV2FeeData, getByteLength } from "@axiom-crypto/core";
+import {
+  AxiomSdkCore,
+  AxiomV2Callback,
+  AxiomV2ComputeQuery,
+  AxiomV2FeeData,
+  getByteLength,
+} from "@axiom-crypto/core";
 import { AxiomV2SendQueryArgsParams, CircuitInputType } from "./types";
-import { mainnet, goerli, sepolia } from 'viem/chains';
+import { createPublicClient, http } from 'viem';
+import { mainnet, sepolia } from 'viem/chains';
+import { ClientConstants } from "../constants";
 
 export function convertInputSchemaToJsonString(args: {[arg: string]: CircuitInputType}): string {
   const inputs = Object.keys(args).map((key: string) => {
@@ -22,8 +30,6 @@ export function convertChainIdToViemChain(chainId: string) {
   switch(chainId) {
     case "1":
       return mainnet;
-    case "5":
-      return goerli;
     case "11155111":
       return sepolia;
     default:
@@ -59,4 +65,26 @@ export function argsObjToArr(
     args.refundee,
     args.dataQuery,
   ]
+}
+
+export async function getMaxFeePerGas(axiom: AxiomSdkCore): Promise<string> {
+  const providerFeeData = (await axiom.config.provider.getFeeData()).maxFeePerGas as bigint;
+  const publicClient = createPublicClient({
+    chain: convertChainIdToViemChain(axiom.config.chainId.toString()),
+    transport: http(axiom.config.providerUri),
+  });
+  let contractMinMaxFeePerGas = await publicClient.readContract({
+    address: axiom.getAxiomQueryAddress() as `0x${string}`,
+    abi: axiom.getAxiomQueryAbi(),
+    functionName: "minMaxFeePerGas",
+    args: [],
+  }) as bigint;
+  if (contractMinMaxFeePerGas === 0n) {
+    contractMinMaxFeePerGas = ClientConstants.MIN_MAX_FEE_PER_GAS;
+  }
+  if (providerFeeData > contractMinMaxFeePerGas) {
+    return providerFeeData.toString();
+  }
+  console.log(`Network gas price below threshold. Using contract-defined minimum maxFeePerGas of ${contractMinMaxFeePerGas.toString()}`);
+  return contractMinMaxFeePerGas.toString();
 }

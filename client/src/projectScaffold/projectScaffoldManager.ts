@@ -11,7 +11,7 @@ export interface Action {
   status: string,
 }
 
-export class ScaffoldManager {
+export class ProjectScaffoldManager {
   basePath: string;
   fullPath: string;
   packageMgr: string;
@@ -24,6 +24,11 @@ export class ScaffoldManager {
     this.packageMgr = packageMgr;
     this.installCmd = getInstallCmd(packageMgr);
     this.actions = [] as Action[];
+  }
+
+  setPath(newPath: string) {
+    this.basePath = newPath;
+    this.fullPath = path.resolve(newPath);
   }
 
   exists(inputPath: string, description: string): boolean {
@@ -48,11 +53,9 @@ export class ScaffoldManager {
   }
 
   async exec(cmd: string, description: string) {
-    let stdout;
-    let stderr;
-    let err;
+    let stdout, stderr, err;
     try {
-      ({ stdout, stderr } = await exec(`cd ${this.fullPath} && ${cmd}`));
+      ({ stdout, stderr } = await exec(cmd));
     } catch (e) {
       err = e;
     }
@@ -78,7 +81,7 @@ export class ScaffoldManager {
   cp(src: string, dst: string, description: string) {
     const fullSrcPath = path.join(this.fullPath, src);
     const fullDstPath = path.join(this.fullPath, dst);
-    fs.cpSync(fullSrcPath, fullDstPath);
+    fs.cpSync(fullSrcPath, fullDstPath, { recursive: true });
     const fileExists = fs.existsSync(fullDstPath);
     this.actions.push({
       description,

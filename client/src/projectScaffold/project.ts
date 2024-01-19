@@ -1,12 +1,17 @@
 import path from 'path';
 import chalk from 'chalk';
-import { ScaffoldManager } from './scaffoldManager';
+import { ProjectScaffoldManager } from './projectScaffoldManager';
 
-export const scaffoldProject = async (sm: ScaffoldManager) => {
+export const scaffoldProject = async (sm: ProjectScaffoldManager, appScaffold: string) => {
+  const startingDir = process.cwd();
+
   // Create folder if it doesn't exist
   if (!sm.exists(".", `Directory ${chalk.bold(sm.basePath)} exists?`)) {
     sm.mkdir(".", `  - Create directory ${chalk.bold(sm.basePath)}`);
   }
+
+  // Move to base path
+  process.chdir(sm.basePath);
 
   // Check if folder is a git repository and if not then initialize
   if (!sm.exists(".git", `Directory ${chalk.bold(sm.basePath)} is a git repository?`)) {
@@ -78,18 +83,35 @@ export const scaffoldProject = async (sm: ScaffoldManager) => {
     sm.cp(`${tempDir}/${inputFile}`, inputFile, `  - Copy template ${chalk.bold(inputFile)}`);
   }
 
-  // Create Axiom circuit folder
-  const axiomPath = path.join("app", "axiom");
-  if (!sm.exists(axiomPath, `${chalk.bold(axiomPath)} path exists?`)) {
-    console.log("Generating Axiom circuit path...");
-    sm.mkdir(axiomPath, `  - Create Axiom path ${chalk.bold(axiomPath)}`)
-  }
+  if (appScaffold === "script") {
+    const appPath = "app";
 
-  // Create Axiom example typescript circuit
-  const axiomCircuitFile = path.join(axiomPath, "average.circuit.ts");
-  if (!sm.exists(axiomCircuitFile, `${chalk.bold(axiomCircuitFile)} exists?`)) {
-    console.log("Generating Axiom example circuit...");
-    sm.cp(`${tempDir}/${axiomCircuitFile}`, axiomCircuitFile, `  - Copy template ${chalk.bold(axiomCircuitFile)}`);
+    // Create App folder
+    if (!sm.exists(appPath, `${chalk.bold(appPath)} path exists?`)) {
+      console.log("Generating Axiom app path...");
+      sm.mkdir(appPath, `  - Create Axiom path ${chalk.bold(appPath)}`)
+    }
+
+    // Copy Axiom script file
+    const axiomScriptFile = path.join(appPath, "index.ts");
+    if (!sm.exists(axiomScriptFile, `${chalk.bold(axiomScriptFile)} exists?`)) {
+      console.log("Generating Axiom Query script...");
+      sm.cp(`${tempDir}/${axiomScriptFile}`, axiomScriptFile, `  - Copy template ${chalk.bold(axiomScriptFile)}`);
+    }
+
+    // Create Axiom circuit folder
+    const axiomPath = path.join(appPath, "axiom");
+    if (!sm.exists(axiomPath, `${chalk.bold(axiomPath)} path exists?`)) {
+      console.log("Generating Axiom circuit path...");
+      sm.mkdir(axiomPath, `  - Create Axiom path ${chalk.bold(axiomPath)}`)
+    }
+
+    // Create Axiom example typescript circuit
+    const axiomCircuitFile = path.join(axiomPath, "average.circuit.ts");
+    if (!sm.exists(axiomCircuitFile, `${chalk.bold(axiomCircuitFile)} exists?`)) {
+      console.log("Generating Axiom example circuit...");
+      sm.cp(`${tempDir}/${axiomCircuitFile}`, axiomCircuitFile, `  - Copy template ${chalk.bold(axiomCircuitFile)}`);
+    }
   }
 
   // Create .env file
@@ -99,5 +121,9 @@ export const scaffoldProject = async (sm: ScaffoldManager) => {
     console.log("Fill in .env with your environment variables.");
   }
 
+  // Remove cloned repo
   await sm.exec(`rm -rf ${tempDir}`, "Clean up build files");
+
+  // Move back to starting directory
+  process.chdir(startingDir);
 }

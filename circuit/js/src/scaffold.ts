@@ -1,13 +1,13 @@
 import { CircuitConfig, Halo2LibWasm } from "@axiom-crypto/halo2-lib-js/wasm/web";
-import { keccak256 } from "ethers";
 import { base64ToByteArray, byteArrayToBase64, convertToBytes, convertToBytes32 } from "./utils";
-import { concat, encodePacked, zeroHash } from "viem";
+import { concat, zeroHash } from "viem";
 import { AxiomCircuitRunner } from "./circuitRunner";
 import {
   AxiomV2Callback,
   AxiomV2CircuitConstant,
   AxiomV2ComputeQuery,
   DataSubquery,
+  getQuerySchemaHash,
 } from "@axiom-crypto/tools";
 import {
   AxiomSdkCore,
@@ -86,12 +86,8 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     const partialVk = this.getPartialVk();
     const vkBytes = convertToBytes32(partialVk);
     const onchainVk = this.prependCircuitMetadata(this.config, vkBytes);
-    const packed = encodePacked(
-      ["uint8", "uint16", "uint8", "bytes32[]"],
-      [this.config.k, this.resultLen, onchainVk.length, onchainVk as `0x${string}`[]],
-    );
-    const schema = keccak256(packed);
-    return schema as string;
+    const querySchema = getQuerySchemaHash(this.config.k, this.resultLen, onchainVk);
+    return querySchema;
   }
 
   prependCircuitMetadata(config: CircuitConfig, partialVk: string[]): string[] {

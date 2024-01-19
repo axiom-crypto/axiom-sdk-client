@@ -82,8 +82,6 @@ export async function getMaxFeePerGas(axiom: AxiomSdkCore, maximumMaxFeePerGas?:
     functionName: "minMaxFeePerGas",
     args: [],
   }) as bigint;
-  console.log("provider MaxFeePerGas", providerFeeData);
-  console.log("contractMin MaxFeePerGas", contractMinMaxFeePerGas);
   if (contractMinMaxFeePerGas === 0n) {
     contractMinMaxFeePerGas = ClientConstants.MIN_MAX_FEE_PER_GAS;
   }

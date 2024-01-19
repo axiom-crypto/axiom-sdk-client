@@ -29,7 +29,6 @@ export const buildSendQuery = async (input: {
       input.axiom, 
       input.options.maximumMaxFeePerGas
     );
-    console.log("set maxFeePerGas to", input.options.maxFeePerGas);
   }
 
   const queryOptions: AxiomV2QueryOptions = {

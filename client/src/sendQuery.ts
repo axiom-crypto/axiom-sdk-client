@@ -25,10 +25,7 @@ export const buildSendQuery = async (input: {
     throw new Error("Refundee is required");
   }
   if (input.options.maxFeePerGas == undefined) {
-    input.options.maxFeePerGas = await getMaxFeePerGas(
-      input.axiom, 
-      input.options.maximumMaxFeePerGas
-    );
+    input.options.maxFeePerGas = await getMaxFeePerGas(input.axiom);
   }
 
   const queryOptions: AxiomV2QueryOptions = {

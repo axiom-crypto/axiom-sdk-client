@@ -46,7 +46,6 @@ export interface AxiomV2ClientOptions extends AxiomV2QueryOptions {
   caller?: string;
   privateKey?: string;
   validate?: boolean;
-  maximumMaxFeePerGas?: string;
 }
 
 export interface AxiomV2SendQueryArgs {

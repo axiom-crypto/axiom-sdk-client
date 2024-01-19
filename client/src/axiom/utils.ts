@@ -67,10 +67,7 @@ export function argsObjToArr(
   ]
 }
 
-export async function getMaxFeePerGas(axiom: AxiomSdkCore, maximumMaxFeePerGas?: string): Promise<string> {
-  if (maximumMaxFeePerGas === undefined) {
-    maximumMaxFeePerGas = ClientConstants.MAX_MAX_FEE_PER_GAS.toString();
-  }
+export async function getMaxFeePerGas(axiom: AxiomSdkCore): Promise<string> {
   const providerFeeData = (await axiom.config.provider.getFeeData()).maxFeePerGas as bigint;
   const publicClient = createPublicClient({
     chain: convertChainIdToViemChain(axiom.config.chainId.toString()),
@@ -86,11 +83,8 @@ export async function getMaxFeePerGas(axiom: AxiomSdkCore, maximumMaxFeePerGas?:
     contractMinMaxFeePerGas = ClientConstants.MIN_MAX_FEE_PER_GAS;
   }
   if (providerFeeData > contractMinMaxFeePerGas) {
-    const maximumMaxFeePerGasBigInt = BigInt(maximumMaxFeePerGas);
-    if (providerFeeData > maximumMaxFeePerGasBigInt) {
-      return maximumMaxFeePerGas;
-    }
     return providerFeeData.toString();
   }
+  console.log(`Network gas price below threshold. Using contract-defined minimum maxFeePerGas of ${contractMinMaxFeePerGas.toString()}`);
   return contractMinMaxFeePerGas.toString();
 }

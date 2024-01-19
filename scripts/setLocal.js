@@ -8,7 +8,7 @@ if (process.argv[2] === "ci") {
 
 const packageManager = ci ? "npm" : "pnpm";
 const localPrefix = ci ? "file:" : "link:";
-const optionalClearNodeModules = ci ? "" : "rm -rf node_modules &&";
+const optionalClearNodeModules = ci ? "rm -rf node_modules &&" : "";
 
 const packages = {
   "@axiom-crypto/circuit": {

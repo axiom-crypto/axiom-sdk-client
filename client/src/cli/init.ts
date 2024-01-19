@@ -106,10 +106,11 @@ export const init = async (
   await scaffoldProject(sm);
 
   // App scaffolds
+  const appPath = path.join(answers.path, "app");
   if (answers.scaffold === "nextjs") {
-    await scaffoldNext({ path: answers.path, packageMgr: answers.packageMgr }, sm);
+    await scaffoldNext({ path: appPath, packageMgr: answers.packageMgr }, sm);
   } else if (answers.scaffold === "script") {
-    await scaffoldScript({ path: answers.path, packageMgr: answers.packageMgr }, sm);
+    await scaffoldScript({ path: appPath, packageMgr: answers.packageMgr }, sm);
   }
 
   // Print report

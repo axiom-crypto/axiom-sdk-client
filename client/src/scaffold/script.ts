@@ -1,6 +1,6 @@
 import { ScaffoldManager } from "./scaffoldManager"
 
-export const scaffoldScript = (
+export const scaffoldScript = async (
   options: {
     path: string,
     packageMgr: string,

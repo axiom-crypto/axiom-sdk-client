@@ -88,7 +88,7 @@ export class ScaffoldManager {
 
   rm(filePath: string, description: string) {
     const fullFilePath = path.join(this.fullPath, filePath);
-    fs.rmSync(fullFilePath);
+    fs.rmSync(fullFilePath, { recursive: true });
     const fileExists = fs.existsSync(fullFilePath);
     this.actions.push({
       description,

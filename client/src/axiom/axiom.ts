@@ -10,6 +10,7 @@ import { convertChainIdToViemChain, convertInputSchemaToJsonString } from "./uti
 import { TransactionReceipt, createPublicClient, createWalletClient, http, zeroAddress, zeroHash } from "viem";
 import { privateKeyToAccount } from 'viem/accounts'
 import { AxiomV2Callback } from "@axiom-crypto/core";
+import { ClientConstants } from "../constants";
 
 export class Axiom<T> {
   protected config: AxiomV2ClientConfig<T>;
@@ -69,6 +70,7 @@ export class Axiom<T> {
 
     const options: AxiomV2ClientOptions = {
       ...this.options,
+      callbackGasLimit: this.options?.callbackGasLimit ?? ClientConstants.CALLBACK_GAS_LIMIT,
       refundee: this.options?.refundee ?? caller,
     }
 

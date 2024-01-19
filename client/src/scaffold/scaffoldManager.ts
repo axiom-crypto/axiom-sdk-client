@@ -30,7 +30,7 @@ export class ScaffoldManager {
     const doesExist = fs.existsSync(path.join(this.fullPath, inputPath));
     this.actions.push({
       description,
-      status: doesExist ? chalk.yellow("SKIP"): chalk.green("MAKE")
+      status: doesExist ? chalk.yellow("SKIP") : chalk.green("MAKE")
     });
     return doesExist;
   }
@@ -47,12 +47,17 @@ export class ScaffoldManager {
     });
   }
 
-  async exec(cmd: string, description: string) {
+  async exec(cmd: string, description: string, options?: { inPlace?: boolean }) {
     let stdout;
     let stderr;
     let err;
     try {
-      ({ stdout, stderr } = await exec(`cd ${this.fullPath} && ${cmd}`));
+      if (options && options.inPlace) {
+        await exec(cmd);
+      }
+      else {
+        await exec(`cd ${this.fullPath} && ${cmd}`);
+      }
     } catch (e) {
       err = e;
     }
@@ -61,8 +66,32 @@ export class ScaffoldManager {
       description,
       status: err !== undefined ? chalk.red("ERR") : chalk.green("OK")
     });
-    
+
     return { stdout, stderr, err }
+  }
+
+  async execWithStream(cmd: string, args: string[], description: string, options?: { inPlace?: boolean }) {
+    return new Promise((resolve, reject) => {
+      let cmdString = options && options.inPlace ? cmd : `cd ${this.fullPath} && ${cmd}`;
+
+      const child = childProcess.spawn(cmdString, args, { shell: true, stdio: 'inherit' });
+
+      child.on('close', (code) => {
+        if (code === 0) {
+          this.actions.push({
+            description,
+            status: chalk.green("OK")
+          });
+          resolve(`Child process exited with code ${code}`);
+        } else {
+          this.actions.push({
+            description,
+            status: chalk.red("ERR")
+          });
+          reject(`Child process exited with code ${code}`);
+        }
+      });
+    });
   }
 
   cpFromTemplate(src: string, dst: string, description: string) {

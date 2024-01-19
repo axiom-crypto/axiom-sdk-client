@@ -3,8 +3,8 @@ import path from 'path';
 import prompt, { PromptObject } from 'prompts';
 import { validateForge, validatePackageManager } from '../scaffold/dependency';
 import { scaffoldNext } from '../scaffold/nextjs';
-import { scaffoldProject } from '../scaffold/project';
 import { scaffoldScript } from '../scaffold/script';
+// import { scaffoldScript } from '../scaffold/script';
 import { ScaffoldManager } from '../scaffold/scaffoldManager';
 
 export const init = async (
@@ -102,14 +102,12 @@ export const init = async (
   // Initialize scaffold manager
   const sm = new ScaffoldManager(answers.path, answers.packageMgr);
 
-  // Initialize project
-  await scaffoldProject(sm);
-
   // App scaffolds
   if (answers.scaffold === "nextjs") {
-    await scaffoldNext({ path: answers.path, packageMgr: answers.packageMgr }, sm);
+    // await scaffoldNext({ path: answers.path, packageMgr: answers.packageMgr }, sm);
+    await scaffoldNext(sm);
   } else if (answers.scaffold === "script") {
-    await scaffoldScript({ path: answers.path, packageMgr: answers.packageMgr }, sm);
+    await scaffoldScript(sm);
   }
 
   // Print report

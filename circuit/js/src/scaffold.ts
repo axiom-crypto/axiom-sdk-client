@@ -84,10 +84,11 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
 
   getQuerySchema() {
     const partialVk = this.getPartialVk();
-    const vk = convertToBytes32(partialVk);
+    const vkBytes = convertToBytes32(partialVk);
+    const onchainVk = this.prependCircuitMetadata(this.config, vkBytes);
     const packed = encodePacked(
       ["uint8", "uint16", "uint8", "bytes32[]"],
-      [this.config.k, this.resultLen, vk.length, vk as `0x${string}`[]],
+      [this.config.k, this.resultLen, onchainVk.length, onchainVk as `0x${string}`[]],
     );
     const schema = keccak256(packed);
     return schema as string;

@@ -35,7 +35,7 @@ export class ProjectScaffoldManager {
     const doesExist = fs.existsSync(path.join(this.fullPath, inputPath));
     this.actions.push({
       description,
-      status: doesExist ? chalk.yellow("SKIP"): chalk.green("MAKE")
+      status: doesExist ? chalk.yellow("SKIP") : chalk.green("MAKE")
     });
     return doesExist;
   }
@@ -52,10 +52,18 @@ export class ProjectScaffoldManager {
     });
   }
 
-  async exec(cmd: string, description: string) {
+  async exec(cmd: string, description: string, options?: { inPlace?: boolean }) {
     let stdout, stderr, err;
     try {
-      ({ stdout, stderr } = await exec(cmd));
+      if (options?.inPlace !== true) {
+        ({ stdout, stderr } = await exec(cmd));
+      }
+      else {
+        const cwd = process.cwd();
+        process.chdir(this.fullPath);
+        ({ stdout, stderr } = await exec(cmd));
+        process.chdir(cwd);
+      }
     } catch (e) {
       err = e;
     }
@@ -66,6 +74,35 @@ export class ProjectScaffoldManager {
     });
     
     return { stdout, stderr, err }
+  }
+
+  async execWithStream(cmd: string, args: string[], description: string, options?: { inPlace?: boolean }) {
+    return new Promise((resolve, reject) => {
+      const cwd = process.cwd();
+      if (options?.inPlace !== true) {
+        process.chdir(this.fullPath);
+      }
+      const child = childProcess.spawn(cmd, args, { shell: true, stdio: 'inherit' });
+
+      child.on('close', (code) => {
+        if (code === 0) {
+          this.actions.push({
+            description,
+            status: chalk.green("OK")
+          });
+          resolve(`Child process exited with code ${code}`);
+        } else {
+          this.actions.push({
+            description,
+            status: chalk.red("ERR")
+          });
+          reject(`Child process exited with code ${code}`);
+        }
+        if (options?.inPlace !== true) {
+          process.chdir(cwd);
+        }
+      });
+    });
   }
 
   cpFromTemplate(src: string, dst: string, description: string) {

@@ -1,6 +1,7 @@
 import path from 'path';
 import chalk from 'chalk';
 import { ProjectScaffoldManager } from './projectScaffoldManager';
+import { CLIENT_VERSION } from '../version';
 
 export const scaffoldProject = async (sm: ProjectScaffoldManager, appScaffold: string) => {
   const startingDir = process.cwd();
@@ -41,7 +42,7 @@ export const scaffoldProject = async (sm: ProjectScaffoldManager, appScaffold: s
 
   // Install package dependencies
   console.log("Installing node dependencies...");
-  await sm.exec(`${sm.packageMgr} ${sm.installCmd} @axiom-crypto/client@0.2.2-rc2.2`, `Install ${chalk.bold("@axiom-crypto/client")}`);
+  await sm.exec(`${sm.packageMgr} ${sm.installCmd} @axiom-crypto/client@${CLIENT_VERSION}`, `Install ${chalk.bold("@axiom-crypto/client")}`);
 
   // Check if forge initialized at path and run forge init if not
   if (!sm.exists("foundry.toml", `${chalk.bold("foundry.toml")} exists?`)) {

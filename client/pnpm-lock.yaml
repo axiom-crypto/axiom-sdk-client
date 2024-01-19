@@ -9,8 +9,8 @@ dependencies:
     specifier: 0.2.3-rc2.3
     version: 0.2.3-rc2.3(typescript@5.3.3)
   '@axiom-crypto/core':
-    specifier: 2.3.2
-    version: 2.3.2
+    specifier: 2.3.3
+    version: 2.3.3
   chalk:
     specifier: ^4.1.2
     version: 4.1.2
@@ -87,6 +87,20 @@ packages:
 
   /@axiom-crypto/core@2.3.2:
     resolution: {integrity: sha512-qJL99nX3nD8IChBN8F74VZF/4aKBXTtyiSZ0weH243vqzCTzRmvQofUOCw9OJ3t/LvZ+zIAswvpFEY/9czebJQ==}
+    dependencies:
+      '@axiom-crypto/tools': 2.0.0
+      axios: 1.6.5
+      bs58: 5.0.0
+      ethers: 6.9.2
+      merkletreejs: 0.3.11
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - utf-8-validate
+    dev: false
+
+  /@axiom-crypto/core@2.3.3:
+    resolution: {integrity: sha512-7oY2e7KYcHE9KDX3F7uRHe3IDLVVTcyWSjs0XsBaNcWmTga5gd0Hrvny3r+bs2xSHGq8OVgCwjhKapsOjgn/gg==}
     dependencies:
       '@axiom-crypto/tools': 2.0.0
       axios: 1.6.5

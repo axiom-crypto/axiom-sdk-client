@@ -4,9 +4,8 @@ import { expose } from "comlink";
 export class AxiomCircuit extends MyAxiomCircuit<any> {
     constructor(inputs: {
         provider: string,
+        chainId: number | string | bigint,
         inputSchema?: string,
-        mock?: boolean,
-        chainId?: number | string | bigint,
         shouldTime?: boolean,
         f: string,
     }) {

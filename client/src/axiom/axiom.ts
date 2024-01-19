@@ -33,7 +33,6 @@ export class Axiom<T> {
       provider: this.config.provider,
       inputSchema,
       chainId: this.config.chainId,
-      mock: this.config.mock ?? false,
     });
   }
 

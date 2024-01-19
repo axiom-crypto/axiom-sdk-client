@@ -46,13 +46,11 @@ function AxiomCircuitProvider({
   provider,
   compiledCircuit,
   chainId,
-  mock,
   children,
 }: {
   provider: string,
   compiledCircuit: AxiomV2CompiledCircuit,
-  chainId?: number | string | bigint,
-  mock?: boolean,
+  chainId: number | string | bigint,
   children: React.ReactNode,
 }) {
   const [inputs, setInputs] = useState<any | null>(null);
@@ -77,7 +75,6 @@ function AxiomCircuitProvider({
       workerApi.current = await new MyAxiomCircuit({
         provider,
         inputSchema: compiledCircuit.inputSchema,
-        mock,
         chainId,
         f: compiledCircuit.circuit,
       });

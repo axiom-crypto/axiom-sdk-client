@@ -18,7 +18,6 @@ export interface AxiomV2ClientConfig<T> {
   provider: string;
   privateKey?: string;
   version?: string;
-  mock?: boolean;
   callback: AxiomV2CallbackInput;
 }
 

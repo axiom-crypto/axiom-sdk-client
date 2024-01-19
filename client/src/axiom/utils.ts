@@ -77,7 +77,7 @@ export async function getMaxFeePerGas(axiom: AxiomSdkCore, maximumMaxFeePerGas?:
     transport: http(axiom.config.providerUri),
   });
   let contractMinMaxFeePerGas = await publicClient.readContract({
-    address: axiom.getAxiomQueryAddress(),
+    address: axiom.getAxiomQueryAddress() as `0x${string}`,
     abi: axiom.getAxiomQueryAbi(),
     functionName: "minMaxFeePerGas",
     args: [],

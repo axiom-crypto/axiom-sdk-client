@@ -8,6 +8,7 @@ if (process.argv[2] === "ci") {
 
 const packageManager = ci ? "npm" : "pnpm";
 const localPrefix = ci ? "file:" : "link:";
+const optionalClearNodeModules = ci ? "" : "rm -rf node_modules &&";
 
 const packages = {
   "@axiom-crypto/circuit": {
@@ -63,7 +64,7 @@ function main() {
     fs.writeFileSync(packageJsonPath.slice(1), JSON.stringify(packageJson, null, 2));
 
     // Install dependencies & build 
-    execSync(`cd ${packages[package].path.slice(1)} && ${packageManager} i && ${packageManager} run build && cd ..`);
+    execSync(`cd ${packages[package].path.slice(1)} &&${optionalClearNodeModules} ${packageManager} i && ${packageManager} run build && cd ..`);
   }
 }
 

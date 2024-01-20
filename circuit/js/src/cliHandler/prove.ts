@@ -9,7 +9,7 @@ export const prove = async (
         function?: string,
         compiled?: string,
         outputs?: string,
-        chainId?: number | string | bigint,
+        sourceChainId?: number | string | bigint,
         provider?: string,
         inputs?: string,
         mock?: boolean,
@@ -30,7 +30,7 @@ export const prove = async (
     const circuit = new AxiomBaseCircuit({
         f: f.circuit,
         mock: options.mock,
-        chainId: options.chainId,
+        chainId: options.sourceChainId,
         provider,
         shouldTime: options.stats,
         inputSchema: compiledJson.inputSchema,

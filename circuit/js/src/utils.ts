@@ -1,4 +1,7 @@
+import { UnbuiltAccountSubquery, UnbuiltHeaderSubquery, UnbuiltSolidityNestedMappingSubquery, UnbuiltStorageSubquery, UnbuiltSubquery, UnbuiltTxSubquery } from "@axiom-crypto/core";
 import { CircuitValue, convertRawInput, RawCircuitInput, CircuitValue256 } from "@axiom-crypto/halo2-lib-js";
+import { DataSubquery, DataSubqueryType, ReceiptSubquery, TxSubquery, getBlockNumberAndTxIdx, getTxHash } from "@axiom-crypto/tools";
+import { ethers } from "ethers";
 
 export const getCircuitValue256Witness = (value: RawCircuitInput) => {
   let convertedVal = BigInt(value).toString(16).padStart(64, '0');
@@ -82,4 +85,60 @@ export function resizeArray<T>(arr: T[], size: number, defaultValue: T): T[] {
     return arr.concat(Array(size - arr.length).fill(defaultValue));
   }
   return arr.slice(0, size);
+}
+
+export async function convertBuiltSubqueries(provider: string, builtSubqueries: DataSubquery[]): Promise<UnbuiltSubquery[]> {
+  let unbuiltSubqueries: UnbuiltSubquery[] = [];
+  const jsonRpcProvider = new ethers.JsonRpcProvider(provider);
+  for await (const builtSubquery of builtSubqueries) {
+    let unbuiltSubquery: {[key: string]: any} = {};
+    const type = builtSubquery.type;
+    switch (type) {
+      case DataSubqueryType.Header:
+        unbuiltSubquery = builtSubquery.subqueryData as UnbuiltHeaderSubquery;
+        unbuiltSubqueries.push(unbuiltSubquery);
+        break;
+      case DataSubqueryType.Account:
+        unbuiltSubquery = builtSubquery.subqueryData as UnbuiltAccountSubquery;
+        unbuiltSubqueries.push(unbuiltSubquery);
+        break;
+      case DataSubqueryType.Storage:
+        unbuiltSubquery = builtSubquery.subqueryData as UnbuiltStorageSubquery;
+        unbuiltSubqueries.push(unbuiltSubquery);
+        break;
+      case DataSubqueryType.Transaction: 
+        let builtTxData = builtSubquery.subqueryData as TxSubquery;
+        const txHashTx = await getTxHash(jsonRpcProvider, builtTxData.blockNumber, builtTxData.txIdx)
+        if (txHashTx === null) {
+          throw new Error(`Transaction at block ${builtTxData.blockNumber} and index ${builtTxData.txIdx} not found`);
+        }
+        unbuiltSubquery = {
+          txHash: txHashTx,
+          fieldOrCalldataIdx: builtTxData.fieldOrCalldataIdx,
+        }
+        unbuiltSubqueries.push(unbuiltSubquery);
+        break;
+      case DataSubqueryType.Receipt:
+        let builtData = builtSubquery.subqueryData as ReceiptSubquery;
+        const txHashRc = await getTxHash(jsonRpcProvider, builtData.blockNumber, builtData.txIdx)
+        if (txHashRc === null) {
+          throw new Error(`Transaction at block ${builtData.blockNumber} and index ${builtData.txIdx} not found`);
+        }
+        unbuiltSubquery = {
+          txHash: txHashRc,
+          fieldOrLogIdx: builtData.fieldOrLogIdx,
+          topicOrDataOrAddressIdx: builtData.topicOrDataOrAddressIdx,
+          eventSchema: builtData.eventSchema
+        }
+        unbuiltSubqueries.push(unbuiltSubquery);
+        break;
+      case DataSubqueryType.SolidityNestedMapping:
+        unbuiltSubquery = builtSubquery.subqueryData as UnbuiltSolidityNestedMappingSubquery;
+        unbuiltSubqueries.push(unbuiltSubquery);
+        break;
+      default:
+        throw new Error(`Invalid subquery type: ${type}`);
+    }
+  }
+  return unbuiltSubqueries;
 }

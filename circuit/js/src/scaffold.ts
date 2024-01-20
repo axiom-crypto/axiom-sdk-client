@@ -1,5 +1,5 @@
 import { CircuitConfig, Halo2LibWasm } from "@axiom-crypto/halo2-lib-js/wasm/web";
-import { base64ToByteArray, byteArrayToBase64, convertToBytes, convertToBytes32 } from "./utils";
+import { base64ToByteArray, byteArrayToBase64, convertBuiltSubqueries, convertToBytes, convertToBytes32 } from "./utils";
 import { concat, zeroHash } from "viem";
 import { AxiomCircuitRunner } from "./circuitRunner";
 import {
@@ -12,6 +12,7 @@ import {
 import {
   AxiomSdkCore,
   AxiomV2QueryOptions,
+  QueryV2,
 } from "@axiom-crypto/core";
 import { BaseCircuitScaffold } from "@axiom-crypto/halo2-lib-js";
 import { DEFAULT_CIRCUIT_CONFIG } from "./constants";
@@ -122,6 +123,14 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     this.config = config;
     this.results = results;
     await this.populateCircuit(inputs);
+
+    // Validate max circuit subquery size
+    const queryBuilder = (this.axiom.query as QueryV2).new();
+    queryBuilder.setBuiltDataQuery({
+      sourceChainId: this.chainId,
+      subqueries: this.dataQuery,
+    });
+
     await this.keygen();
     const vk = this.getHalo2Vk();
     const encoder = new TextEncoder();
@@ -176,6 +185,15 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
 
   async run(inputs: RawInput<T>) {
     await this.populateCircuit(inputs);
+
+    // Validate data subqueries
+    const queryBuilder = (this.axiom.query as QueryV2).new();
+    const unbuiltSubqueries = await convertBuiltSubqueries(this.provider, this.dataQuery);
+    queryBuilder.append(unbuiltSubqueries);
+    if (await !queryBuilder.validate()) {
+      throw new Error("Subquery validation failed")
+    }
+
     this.prove();
     return this.buildComputeQuery();
   }

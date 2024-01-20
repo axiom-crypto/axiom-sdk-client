@@ -190,7 +190,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     const queryBuilder = (this.axiom.query as QueryV2).new();
     const unbuiltSubqueries = await convertBuiltSubqueries(this.provider, this.dataQuery);
     queryBuilder.append(unbuiltSubqueries);
-    if (!queryBuilder.validate()) {
+    if (await !queryBuilder.validate()) {
       throw new Error("Subquery validation failed")
     }
 

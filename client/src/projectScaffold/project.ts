@@ -59,7 +59,7 @@ export const scaffoldProject = async (sm: ProjectScaffoldManager, appScaffold: s
     }
   }
 
-  // Add axiom-v2-client to Foundry 
+  // Add axiom-v2-periphery to Foundry 
   console.log("Installing @axiom-crypto/v2-periphery Solidity library to Foundry...");
   await sm.exec("forge install axiom-crypto/axiom-v2-periphery --no-commit", `Add ${chalk.bold("@axiom-crypto/v2-periphery")} library to Foundry`);
 

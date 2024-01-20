@@ -11,7 +11,7 @@ Starting a new Axiom project is easy:
 npx create-axiom-client
 ```
 
-Set a directory to start your project in and then select `Next.js` in the options list to scaffold a new Axiom next.js dApp.
+Set a directory to start your project in and then select `Next.js` in the options list to scaffold a new Axiom Next.js dApp.
 
 ## Docs
 

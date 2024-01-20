@@ -21,7 +21,7 @@ export const scaffoldNext = async (
       {
         name: "path",
         type: "text",
-        message: "Path to initialize Axiom next.js project (default: './app')?"
+        message: "Path to initialize Axiom Next.js project (default: './app')?"
       },
       {
         name: "packageMgr",
@@ -88,17 +88,17 @@ export const scaffoldNext = async (
   // Move to base path
   process.chdir(sm.basePath);
 
-  // Clone the next.js scaffold
-  console.log("Fetching Axiom next.js scaffold...");
+  // Clone the Next.js scaffold
+  console.log("Fetching Axiom Next.js scaffold...");
   const tempDir = `.axiom-temp-${Date.now()}`; 
   console.log("tempDir", tempDir);
-  await sm.exec(`git clone --depth 1 https://github.com/axiom-crypto/axiom-scaffold-nextjs.git ${tempDir}`, "Clone Axiom next.js scaffold");
-  await sm.rm(`${tempDir}/.git`, `  - Remove cloned next.js scaffold's ${chalk.bold(".git")} folder`);
-  sm.cp(`${tempDir}/.`, ".", `  - Copy next.js scaffold files to ${chalk.bold(sm.basePath)}`);
+  await sm.exec(`git clone --depth 1 https://github.com/axiom-crypto/axiom-scaffold-nextjs.git ${tempDir}`, "Clone Axiom Next.js scaffold");
+  await sm.rm(`${tempDir}/.git`, `  - Remove cloned Next.js scaffold's ${chalk.bold(".git")} folder`);
+  sm.cp(`${tempDir}/.`, ".", `  - Copy Next.js scaffold files to ${chalk.bold(sm.basePath)}`);
 
   // Install package dependencies
-  console.log("Installing next.js scaffold dependencies...");
-  await sm.execWithStream(sm.packageMgr, [sm.installCmd], `Install next.js scaffold dependencies`);
+  console.log("Installing Next.js scaffold dependencies...");
+  await sm.execWithStream(sm.packageMgr, [sm.installCmd], `Install Next.js scaffold dependencies`);
 
   // Clean up cloned repo
   await sm.exec(`rm -rf ${tempDir}`, "Clean up build files");

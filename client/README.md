@@ -1,4 +1,4 @@
-# @axiom-crypto/client
+# Axiom Client SDK
 
 ## What is Axiom
 

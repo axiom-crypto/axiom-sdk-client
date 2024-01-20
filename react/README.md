@@ -1,4 +1,4 @@
-# @axiom-crypto/client
+# Axiom React Components
 
 ## What is Axiom
 

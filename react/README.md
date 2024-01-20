@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # @axiom-crypto/client
 
 ## What is Axiom
@@ -16,3 +17,8 @@ Set a directory to start your project in and then select `Next.js` in the option
 ## Docs
 
 For more information on Axiom, please see the (Docs)[https://docs.axiom.xyz] page.
+=======
+# Axiom SDK React Components
+
+Axiom Circuit React components for use with the Axiom SDK in React/Next.js web applications.
+>>>>>>> 3e5ee2ba8aebe9d81ce7d4b2a9805baec3064097

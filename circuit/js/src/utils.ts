@@ -90,7 +90,7 @@ export function resizeArray<T>(arr: T[], size: number, defaultValue: T): T[] {
 export async function convertBuiltSubqueries(provider: string, builtSubqueries: DataSubquery[]): Promise<UnbuiltSubquery[]> {
   let unbuiltSubqueries: UnbuiltSubquery[] = [];
   const jsonRpcProvider = new ethers.JsonRpcProvider(provider);
-  for (const builtSubquery of builtSubqueries) {
+  for await (const builtSubquery of builtSubqueries) {
     let unbuiltSubquery: {[key: string]: any} = {};
     const type = builtSubquery.type;
     switch (type) {

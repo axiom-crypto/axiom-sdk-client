@@ -34,7 +34,7 @@ export interface Log {
 
 type ReceiptEnumKeys = Uncapitalize<keyof typeof ReceiptField>;
 type ReceiptEnumKeyFieldsUnfiltered = { [key in ReceiptEnumKeys]: () => Promise<CircuitValue256> };
-type ReceiptEnumKeyFields = Omit<ReceiptEnumKeyFieldsUnfiltered, "logs" | "postState" | "logsBloom">;
+type ReceiptEnumKeyFields = Omit<ReceiptEnumKeyFieldsUnfiltered, "logs" | "logsBloom">;
 
 enum SpecialReceiptField {
   TxType = 51,

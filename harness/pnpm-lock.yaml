@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@axiom-crypto/client':
-    specifier: 2.0.1-rc2.0
-    version: 2.0.1-rc2.0(typescript@5.3.3)
+    specifier: 2.0.1-rc2.1
+    version: 2.0.1-rc2.1(typescript@5.3.3)
   commander:
     specifier: ^11.1.0
     version: 11.1.0
@@ -61,10 +61,10 @@ packages:
       '@jridgewell/trace-mapping': 0.3.20
     dev: true
 
-  /@axiom-crypto/circuit@2.0.1-rc2.0(typescript@5.3.3):
-    resolution: {integrity: sha512-YhSdC+FyyMMe6XjZsHYs28pZePMFmbKdvxdJ39cSM8Ie5HB8Om76fVW8wZ0JcdgnlXxcN4ToDZLmQpPLITKMcg==}
+  /@axiom-crypto/circuit@2.0.1-rc2.1(typescript@5.3.3):
+    resolution: {integrity: sha512-a2XtMYMT7eqWJseUzeKKwsPN9Mir5zjHvsyjgMACgzprHWMTSklI9cObcl6Jrb6lAJxIED3kBW00FfOhhh3NZg==}
     dependencies:
-      '@axiom-crypto/core': 2.3.3
+      '@axiom-crypto/core': 2.3.4
       '@axiom-crypto/halo2-lib-js': 0.3.4
       '@axiom-crypto/halo2-wasm': 0.3.4
       '@axiom-crypto/tools': 2.0.0
@@ -79,12 +79,12 @@ packages:
       - zod
     dev: false
 
-  /@axiom-crypto/client@2.0.1-rc2.0(typescript@5.3.3):
-    resolution: {integrity: sha512-P9x7k73CZVu9gvcTE8koYcZqqzWMRfzkemrZQKgg0wx519+15/0nOelpVFWAd/H01dBc+96zEHycIdtblIulXg==}
+  /@axiom-crypto/client@2.0.1-rc2.1(typescript@5.3.3):
+    resolution: {integrity: sha512-TnlDtdrnZ5mX6JoYVvku5VPuVMntmDX4aXPgHkyYiLQ66lGwVW68wYPQxlCT6gbrPXLpHlPk10e3XcpILSwedg==}
     hasBin: true
     dependencies:
-      '@axiom-crypto/circuit': 2.0.1-rc2.0(typescript@5.3.3)
-      '@axiom-crypto/core': 2.3.3
+      '@axiom-crypto/circuit': 2.0.1-rc2.1(typescript@5.3.3)
+      '@axiom-crypto/core': 2.3.4
       chalk: 4.1.2
       commander: 11.1.0
       prompts: 2.4.2
@@ -97,8 +97,8 @@ packages:
       - zod
     dev: false
 
-  /@axiom-crypto/core@2.3.3:
-    resolution: {integrity: sha512-7oY2e7KYcHE9KDX3F7uRHe3IDLVVTcyWSjs0XsBaNcWmTga5gd0Hrvny3r+bs2xSHGq8OVgCwjhKapsOjgn/gg==}
+  /@axiom-crypto/core@2.3.4:
+    resolution: {integrity: sha512-3CcxPB2nEVcNblCMd4xf7ZzX9UL0T0UMYmDY5cmFGnKNQcnQcaSUOn3Ke5IVB9GSvsublKTRN7EWPhIOuNw9mA==}
     dependencies:
       '@axiom-crypto/tools': 2.0.0
       axios: 1.6.5

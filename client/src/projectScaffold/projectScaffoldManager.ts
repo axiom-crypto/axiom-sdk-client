@@ -3,7 +3,7 @@ import fs from 'fs';
 import util from 'util';
 import childProcess from 'child_process';
 import chalk from 'chalk';
-import { getInstallCmd } from './utils';
+import { getDevFlag, getInstallCmd } from './utils';
 const exec = util.promisify(childProcess.exec);
 
 export interface Action {
@@ -16,6 +16,7 @@ export class ProjectScaffoldManager {
   fullPath: string;
   packageMgr: string;
   installCmd: string;
+  devFlag: string;
   actions: Action[];
 
   constructor(basePath: string, packageMgr: string) {
@@ -23,6 +24,7 @@ export class ProjectScaffoldManager {
     this.fullPath = path.resolve(basePath);
     this.packageMgr = packageMgr;
     this.installCmd = getInstallCmd(packageMgr);
+    this.devFlag = getDevFlag(packageMgr);
     this.actions = [] as Action[];
   }
 

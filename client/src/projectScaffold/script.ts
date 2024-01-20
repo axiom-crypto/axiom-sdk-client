@@ -91,7 +91,7 @@ export const scaffoldScript = async (
   // Clone the Next.js scaffold
   console.log("Fetching Axiom quickstart template...");
   const tempDir = `.axiom-temp-${Date.now()}`; 
-  await sm.exec(`git clone -b staging https://github.com/axiom-crypto/axiom-quickstart.git ${tempDir}`, "Clone Axiom quickstart template");
+  await sm.exec(`git clone --depth 1 https://github.com/axiom-crypto/axiom-quickstart.git ${tempDir}`, "Clone Axiom quickstart template");
 
   const tempAppDir = path.join(tempDir, "app");
 
@@ -118,6 +118,10 @@ export const scaffoldScript = async (
     console.log("Generating Axiom example circuit...");
     sm.cp(`${tempAppDir}/${axiomCircuitFile}`, axiomCircuitFile, `  - Copy template ${chalk.bold(axiomCircuitFileLog)}`);
   }
+
+  // Copy Axiom circuit data
+  const axiomDataPath = path.join(axiomPath, "data");
+  sm.cp(`${tempAppDir}/${axiomDataPath}`, axiomDataPath, `  - Copy Axiom circuit data ${chalk.bold(axiomDataPath)}`);
 
   // Clean up cloned repo
   await sm.exec(`rm -rf ${tempDir}`, "Clean up build files");

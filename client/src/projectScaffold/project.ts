@@ -26,6 +26,13 @@ export const scaffoldProject = async (sm: ProjectScaffoldManager, appScaffold: s
     await sm.exec(`echo "node_modules" >> .gitignore`, "  - Add node_modules to .gitignore");
   }
 
+  // Install package dependencies
+  console.log("Installing node dependencies...");
+  await sm.exec(`${sm.packageMgr} ${sm.installCmd} @axiom-crypto/client@${CLIENT_VERSION}`, `  - Install ${chalk.bold("@axiom-crypto/client")}`);
+  await sm.exec(`${sm.packageMgr} ${sm.installCmd} dotenv`, `  - Install ${chalk.bold("dotenv")}`);
+  await sm.exec(`${sm.packageMgr} ${sm.installCmd} ${sm.devFlag} typescript`, `  - Install (dev) ${chalk.bold("typescript")}`);
+  await sm.exec(`${sm.packageMgr} ${sm.installCmd} ${sm.devFlag} tsx`, `  - Install (dev) ${chalk.bold("tsx")}`);
+
   const tempDir = `.axiom-temp-${Date.now()}`;
   console.log("Fetching Axiom quickstart template...");
   await sm.exec(`git clone --depth 1 https://github.com/axiom-crypto/axiom-quickstart.git ${tempDir}`, "Clone Axiom quickstart template");
@@ -39,10 +46,6 @@ export const scaffoldProject = async (sm: ProjectScaffoldManager, appScaffold: s
       await sm.exec(`echo "node_modules" >> .gitignore`, "  - Add node_modules to .gitignore");
     }
   }
-
-  // Install package dependencies
-  console.log("Installing node dependencies...");
-  await sm.exec(`${sm.packageMgr} ${sm.installCmd} @axiom-crypto/client@${CLIENT_VERSION}`, `Install ${chalk.bold("@axiom-crypto/client")}`);
 
   // Check if forge initialized at path and run forge init if not
   if (!sm.exists("foundry.toml", `${chalk.bold("foundry.toml")} exists?`)) {
@@ -106,6 +109,10 @@ export const scaffoldProject = async (sm: ProjectScaffoldManager, appScaffold: s
       console.log("Generating Axiom example circuit...");
       sm.cp(`${tempDir}/${axiomCircuitFile}`, axiomCircuitFile, `  - Copy template ${chalk.bold(axiomCircuitFile)}`);
     }
+
+    // Copy Axiom circuit data
+    const axiomDataPath = path.join(axiomPath, "data");
+    sm.cp(`${tempDir}/${axiomDataPath}`, axiomDataPath, `  - Copy Axiom circuit data ${chalk.bold(axiomDataPath)}`);
   }
 
   // Create .env file

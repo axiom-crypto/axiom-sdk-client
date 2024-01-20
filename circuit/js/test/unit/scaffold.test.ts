@@ -6,7 +6,7 @@ describe("Scaffold", () => {
   test("Build computeQuery", async () => {
     // This circuit gets a single account's balance 7 times and adds them to the results
     const testCircuit = new AxiomBaseCircuit({
-      provider: process.env.PROVIDER_URI_GOERLI as string,
+      provider: process.env.PROVIDER_URI_SEPOLIA as string,
       f: seven_balance_circuit,
       inputSchema: `{
         "address": "CircuitValue",

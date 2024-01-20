@@ -28,7 +28,7 @@ export const scaffoldProject = async (sm: ProjectScaffoldManager, appScaffold: s
 
   const tempDir = `.axiom-temp-${Date.now()}`;
   console.log("Fetching Axiom quickstart template...");
-  await sm.exec(`git clone -b staging https://github.com/axiom-crypto/axiom-quickstart.git ${tempDir}`, "Clone Axiom quickstart template");
+  await sm.exec(`git clone --depth 1 https://github.com/axiom-crypto/axiom-quickstart.git ${tempDir}`, "Clone Axiom quickstart template");
 
   // Check if `node_modules` is in .gitignore and if not then add
   if (!sm.exists(".gitignore", `${chalk.bold(".gitignore")} exists?`)) {
@@ -59,9 +59,9 @@ export const scaffoldProject = async (sm: ProjectScaffoldManager, appScaffold: s
     }
   }
 
-  // Add axiom-v2-client to Foundry 
-  console.log("Installing @axiom-v2-client Solidity library to Foundry...");
-  await sm.exec("forge install axiom-crypto/axiom-v2-client --no-commit", `Add ${chalk.bold("axiom-v2-client")} library to Foundry`);
+  // Add axiom-v2-periphery to Foundry 
+  console.log("Installing @axiom-crypto/v2-periphery Solidity library to Foundry...");
+  await sm.exec("forge install axiom-crypto/axiom-v2-periphery --no-commit", `Add ${chalk.bold("@axiom-crypto/v2-periphery")} library to Foundry`);
 
   // Create forge src files
   const fileAvgBal = path.join("src", "AverageBalance.sol");
@@ -75,13 +75,6 @@ export const scaffoldProject = async (sm: ProjectScaffoldManager, appScaffold: s
   if (!sm.exists(fileAvgBalTest, `${chalk.bold(fileAvgBalTest)} exists?`)) {
     console.log("Generating Solidity test files...");
     sm.cp(`${tempDir}/${fileAvgBalTest}`, fileAvgBalTest, `  - Copy template ${chalk.bold(fileAvgBalTest)}`);
-  }
-
-  // Create circuit test files
-  const inputFile = path.join("test", "input.json");
-  if (!sm.exists(inputFile, `${chalk.bold(inputFile)} exists?`)) {
-    console.log("Generating input file...");
-    sm.cp(`${tempDir}/${inputFile}`, inputFile, `  - Copy template ${chalk.bold(inputFile)}`);
   }
 
   if (appScaffold === "script") {

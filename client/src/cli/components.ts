@@ -1,7 +1,7 @@
 // For external export
 
-import { compile } from "@axiom-crypto/circuit";
-import { run } from "@axiom-crypto/circuit";
-import { sendQuery } from "./sendQuery";
+import { compile } from "@axiom-crypto/circuit/cliHandler";
+import { prove } from "@axiom-crypto/circuit/cliHandler";
+import { queryParams } from "./queryParams";
 
-export { compile, run, sendQuery };
+export { compile, prove, queryParams };

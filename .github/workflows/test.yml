@@ -4,11 +4,13 @@ on:
   push:
     branches:
       - main
+      - rc1
+      - rc2
   pull_request:
 
 jobs:
-  build:
-    name: Jest Testing
+  circuit-js:
+    name: JS Circuit Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -20,22 +22,35 @@ jobs:
         with:
           node-version: 18.x
 
-      - name: Build Client
-        working-directory: ./client
-        run: npm install && npm run build
-
-      - name: Install Harness dependencies
-        working-directory: ./harness
+      - name: Install dependencies
+        working-directory: ./circuit/js
         run: npm install
 
-      # - name: Run Integration Tests (Goerli)
-      #   working-directory: ./harness
-      #   run: |
-      #     export PROVIDER_URI_GOERLI=${{ secrets.PROVIDER_URI_GOERLI }}
-      #     ANVIL_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
-      #     export PRIVATE_KEY=$ANVIL_PRIVATE_KEY # just needs to be in the correct format, no tx is sent in unit tests
-      #     export PRIVATE_KEY_GOERLI=$ANVIL_PRIVATE_KEY
-      #     npm run test test/integration/goerli.test.ts
+      - name: Run Unit Tests
+        working-directory: ./circuit/js
+        run: |
+          export PROVIDER_URI_GOERLI=${{ secrets.PROVIDER_URI_GOERLI }}
+          ANVIL_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+          export PRIVATE_KEY=$ANVIL_PRIVATE_KEY # just needs to be in the correct format, no tx is sent in unit tests
+          export PRIVATE_KEY_GOERLI=$ANVIL_PRIVATE_KEY
+          npm run test
+
+  harness:
+    name: Harness Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18.x
+
+      - name: Set all packages to local and build
+        working-directory: ./
+        run: npm run local ci
 
       - name: Run Integration Tests (Sepolia)
         working-directory: ./harness
@@ -44,4 +59,4 @@ jobs:
           ANVIL_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
           export PRIVATE_KEY=$ANVIL_PRIVATE_KEY # just needs to be in the correct format, no tx is sent in unit tests
           export PRIVATE_KEY_SEPOLIA=$ANVIL_PRIVATE_KEY
-          npm run test test/integration/sepolia.test.ts
+          npm run test test/unit/sepolia.test.ts

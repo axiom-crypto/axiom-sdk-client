@@ -1,27 +1,31 @@
-import { CircuitConfig, Halo2LibWasm } from "@axiom-crypto/halo2-wasm/web";
-import { keccak256 } from "ethers";
+import { CircuitConfig, Halo2LibWasm } from "@axiom-crypto/halo2-lib-js/wasm/web";
 import { base64ToByteArray, byteArrayToBase64, convertToBytes, convertToBytes32 } from "./utils";
-import { encodePacked } from "viem";
+import { concat, zeroHash } from "viem";
 import { AxiomCircuitRunner } from "./circuitRunner";
 import {
   AxiomV2Callback,
+  AxiomV2CircuitConstant,
   AxiomV2ComputeQuery,
   DataSubquery,
+  getQuerySchemaHash,
 } from "@axiom-crypto/tools";
 import {
-  Axiom,
+  AxiomSdkCore,
   AxiomV2QueryOptions,
 } from "@axiom-crypto/core";
-import { BaseCircuitScaffold } from "@axiom-crypto/halo2-wasm/shared/scaffold";
+import { BaseCircuitScaffold } from "@axiom-crypto/halo2-lib-js";
 import { DEFAULT_CIRCUIT_CONFIG } from "./constants";
 import { RawInput } from "./types";
+import { encodeAxiomV2CircuitMetadata } from "./encoder";
+
+const DEADBEEF_BYTES32 = "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef";
 
 export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
-  protected numInstances: number;
+  protected resultLen: number;
   protected halo2Lib!: Halo2LibWasm;
   protected provider: string;
   protected dataQuery: DataSubquery[];
-  protected axiom: Axiom;
+  protected axiom: AxiomSdkCore;
   protected computeQuery: AxiomV2ComputeQuery | undefined;
   protected chainId: string;
   protected f: (inputs: T) => Promise<void>;
@@ -38,17 +42,17 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     shouldTime?: boolean;
   }) {
     super();
-    this.numInstances = 0;
+    this.resultLen = 0;
     this.provider = inputs.provider;
     this.config = inputs.config ?? DEFAULT_CIRCUIT_CONFIG;
     this.dataQuery = [];
-    this.axiom = new Axiom({
+    this.axiom = new AxiomSdkCore({
       providerUri: inputs.provider,
       chainId: inputs.chainId,
       mock: inputs.mock,
       version: "v2",
     });
-    this.chainId = inputs.chainId?.toString() ?? "5";
+    this.chainId = inputs.chainId?.toString() ?? "undefined";
     this.shouldTime = inputs.shouldTime ?? false;
     this.loadedVk = false;
     this.f = inputs.f;
@@ -74,15 +78,35 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     await this.loadParamsAndVk(base64ToByteArray(input.vk));
   }
 
+  loadSavedMock(input: {config: CircuitConfig}) {
+    this.config = input.config;
+  }
+
   getQuerySchema() {
     const partialVk = this.getPartialVk();
-    const vk = convertToBytes32(partialVk);
-    const packed = encodePacked(
-      ["uint8", "uint16", "uint8", "bytes32[]"],
-      [this.config.k, this.numInstances / 2, vk.length, vk],
-    );
-    const schema = keccak256(packed);
-    return schema as string;
+    const vkBytes = convertToBytes32(partialVk);
+    const onchainVk = this.prependCircuitMetadata(this.config, vkBytes);
+    const querySchema = getQuerySchemaHash(this.config.k, this.resultLen, onchainVk);
+    return querySchema;
+  }
+
+  prependCircuitMetadata(config: CircuitConfig, partialVk: string[]): string[] {
+    const SUBQUERY_RESULT_LEN = 1 + AxiomV2CircuitConstant.MaxSubqueryInputs + AxiomV2CircuitConstant.MaxSubqueryOutputs;
+    const encodedCircuitMetadata = encodeAxiomV2CircuitMetadata({
+      version: 0,
+      numValuesPerInstanceColumn: [
+        AxiomV2CircuitConstant.UserMaxOutputs * AxiomV2CircuitConstant.UserResultFieldElements +
+        AxiomV2CircuitConstant.UserMaxSubqueries * SUBQUERY_RESULT_LEN
+      ],
+      numChallenge: [0],
+      isAggregation: false,
+      numAdvicePerPhase: [config.numAdvice],
+      numLookupAdvicePerPhase: [config.numLookupAdvice],
+      numRlcColumns: 0,
+      numFixed: 1,
+      maxOutputs: AxiomV2CircuitConstant.UserMaxOutputs,
+    });
+    return [encodedCircuitMetadata, ...partialVk];
   }
 
   async compile(inputs: RawInput<T>) {
@@ -110,6 +134,29 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     };
   }
 
+  async mockCompile(inputs: RawInput<T>) {
+    this.newCircuitFromConfig(this.config);
+    this.timeStart("Witness generation");
+    const { config, results } = await AxiomCircuitRunner(
+      this.halo2wasm,
+      this.halo2Lib,
+      this.config,
+      this.provider,
+    ).compile(this.f, inputs, this.inputSchema);
+    this.timeEnd("Witness generation");
+    this.config = config;
+    this.results = results;
+    const vk = this.getMockVk().map(e => e.slice(2)).join('');
+    const encoder = new TextEncoder();
+    const inputSchema = encoder.encode(this.inputSchema);
+    return {
+      vk,
+      config,
+      querySchema: DEADBEEF_BYTES32,
+      inputSchema: byteArrayToBase64(inputSchema),
+    };
+  }
+
   async populateCircuit(inputs: RawInput<T>) {
     this.newCircuitFromConfig(this.config);
     this.timeStart("Witness generation");
@@ -120,7 +167,10 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       this.provider,
     ).run(this.f, inputs, this.inputSchema, this.results);
     this.timeEnd("Witness generation");
-    this.numInstances = numUserInstances;
+    if (numUserInstances % 2 !== 0) {
+      throw new Error("numUserInstances must be even");
+    }
+    this.resultLen = Math.floor(numUserInstances / 2);
     this.dataQuery = dataQuery;
   }
 
@@ -130,15 +180,60 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     return this.buildComputeQuery();
   }
 
+  async mockProve(inputs: RawInput<T>) {
+    await this.populateCircuit(inputs);
+    this.mock();
+    return this.buildMockComputeQuery();
+  }
+
   buildComputeQuery() {
     const vk = this.getPartialVk();
     const vkBytes = convertToBytes32(vk);
-    const computeProof = this.getComputeProof();
+    const onchainVkey = this.prependCircuitMetadata(this.config, vkBytes);
+
+    const computeProofBase = this.getComputeProof() as `0x${string}`;
+    const computeAccumulator = concat([zeroHash, zeroHash]);
+    const computeProof = concat([computeAccumulator, computeProofBase]);
+
     const computeQuery: AxiomV2ComputeQuery = {
       k: this.config.k,
-      vkey: vkBytes,
-      computeProof: computeProof,
-      resultLen: this.numInstances / 2,
+      vkey: onchainVkey,
+      computeProof,
+      resultLen: this.resultLen,
+    };
+    this.computeQuery = computeQuery;
+    return computeQuery;
+  }
+
+  private getMockVk(): string[] {
+    const vkLen = 6 + 2 * DEFAULT_CIRCUIT_CONFIG.numAdvice + DEFAULT_CIRCUIT_CONFIG.numLookupAdvice;
+    const emptyVk = new Array(vkLen).fill(DEADBEEF_BYTES32);
+    return emptyVk;
+  }
+
+  buildMockComputeQuery() {
+    // Mock compute query only works for the following DEFAULT_CIRCUIT_CONFIG:
+    if (
+      DEFAULT_CIRCUIT_CONFIG.numAdvice !== 4 ||
+      DEFAULT_CIRCUIT_CONFIG.numLookupAdvice !== 1 ||
+      DEFAULT_CIRCUIT_CONFIG.numInstance !== 1 ||
+      DEFAULT_CIRCUIT_CONFIG.numVirtualInstance !== 2
+    ) {
+      throw new Error(`MockComputeQuery not valid for this DEFAULT_CIRCUIT_CONFIG`);
+    }
+    const emptyVk = this.getMockVk();
+    const onchainVkey = this.prependCircuitMetadata(this.config, emptyVk);
+
+    this.proof = new Uint8Array(2080);
+    const computeProofBase = this.getComputeProof() as `0x${string}`;
+    const computeAccumulator = concat([zeroHash, zeroHash]);
+    const computeProof = concat([computeAccumulator, computeProofBase]);
+
+    const computeQuery: AxiomV2ComputeQuery = {
+      k: this.config.k,
+      vkey: onchainVkey,
+      computeProof,
+      resultLen: this.resultLen,
     };
     this.computeQuery = computeQuery;
     return computeQuery;
@@ -156,7 +251,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   getComputeResults() {
     const computeResults: string[] = [];
     const instances = this.getInstances();
-    for (let i = 0; i < this.numInstances / 2; i++) {
+    for (let i = 0; i < this.resultLen; i++) {
       const instanceHi = BigInt(instances[2 * i]);
       const instanceLo = BigInt(instances[2 * i + 1]);
       const instance = instanceHi * BigInt(2 ** 128) + instanceLo;
@@ -176,7 +271,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   }
 
   setMock(mock: boolean) {
-    this.axiom = new Axiom({
+    this.axiom = new AxiomSdkCore({
       providerUri: this.provider,
       chainId: this.chainId,
       mock,

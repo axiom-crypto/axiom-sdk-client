@@ -1,7 +1,6 @@
 import { DataSubqueryType, StorageSubquery } from "@axiom-crypto/tools"
 import { getCircuitValue256FromCircuitValue, getCircuitValue256Constant } from "../utils";
 import { CircuitValue, RawCircuitInput, CircuitValue256 } from "@axiom-crypto/halo2-lib-js";
-import { Halo2LibWasm } from "@axiom-crypto/halo2-lib-js/wasm/web";
 import { prepData } from "./data";
 
 /**

@@ -1,0 +1,15 @@
+{
+  "name": "axiom-sdk-client",
+  "version": "0.0.1",
+  "description": "Axiom client SDK",
+  "scripts": {
+    "remote": "node -e 'require(\"./scripts/setRemote.js\").setRemote()'",
+    "local": "node scripts/setLocal.js",
+    "versions": "node scripts/setVersions.js",
+    "build-all": "node scripts/buildAll.js",
+    "publish-all": "node scripts/publishAll.js"
+  },
+  "keywords": [],
+  "author": "Intrinsic Technologies",
+  "license": "MIT"
+}

@@ -1,0 +1,35 @@
+{
+  "name": "@axiom-crypto/react",
+  "version": "2.0.0",
+  "description": "React components for Axiom SDK",
+  "author": "Intrinsic Technologies",
+  "license": "MIT",
+  "source": "src/index.ts",
+  "main": "index.js",
+  "scripts": {
+    "build": "rm -rf ./dist && tsc && node scripts/postbuild.js"
+  },
+  "keywords": [
+    "axiom",
+    "ethereum",
+    "zero knowledge",
+    "zk",
+    "coprocessor",
+    "crypto"
+  ],
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "dependencies": {
+    "comlink": "^4.4.1"
+  },
+  "peerDependencies": {
+    "@axiom-crypto/client": "2.0.0",
+    "@types/react": ">=18.1.0",
+    "react": ">=18.1.0",
+    "react-dom": ">=18.1.0"
+  },
+  "devDependencies": {
+    "typescript": ">=5.2.2"
+  }
+}

@@ -10,3 +10,14 @@ export type RawInput<T> = {
     [P in keyof T]: ToRawInput<T[P]>;
 };
 
+export interface AxiomV2CircuitMetadataParams {
+    version: number;
+    numValuesPerInstanceColumn: number[];
+    numChallenge: number[];
+    isAggregation: boolean;
+    numAdvicePerPhase: number[];
+    numLookupAdvicePerPhase: number[];
+    numRlcColumns: number;
+    numFixed: number;
+    maxOutputs: number;
+};

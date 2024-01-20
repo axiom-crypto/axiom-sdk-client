@@ -1,27 +1,40 @@
+import path from 'path';
 import { AxiomBaseCircuit } from "../js";
-import { getFunctionFromTs, getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
+import { getFunctionFromTs, getProvider, readInputs, saveJsonToFile } from "./utils";
 
-export const compile = async (path: string, options: { stats: boolean, function: string, output: string, provider?: string, inputs?: string }) => {
-    const f = await getFunctionFromTs(path, options.function);
+export const compile = async (
+    circuitPath: string,
+    options: { 
+        stats: boolean,
+        function?: string,
+        outputs?: string,
+        chainId?: number | string | bigint,
+        provider?: string,
+        inputs?: string,
+        mock?: boolean,
+    }
+) => {
+    let circuitFunction = "circuit";
+    if (options.function !== undefined) {
+        circuitFunction = options.function;
+    }
+    const f = await getFunctionFromTs(circuitPath, circuitFunction);
     const provider = getProvider(options.provider);
     const circuit = new AxiomBaseCircuit({
         f: f.circuit,
-        mock: true,
+        mock: options.mock,
+        chainId: options.chainId,
         provider,
-        shouldTime: true,
+        shouldTime: options.stats,
         inputSchema: f.inputSchema,
     })
-    let circuitInputs = f.inputs;
-    if (options.inputs) {
-        circuitInputs = readJsonFromFile(options.inputs);
+    let inputFile = path.join(path.dirname(circuitPath), "data", "inputs.json");
+    if (options.inputs !== undefined) {
+        inputFile = options.inputs;
     }
-    else {
-        if (circuitInputs === undefined) {
-            throw new Error("No inputs provided. Either export `inputs` from your circuit file or provide a path to a json file with inputs.");
-        }
-    }
+    const circuitInputs = readInputs(inputFile, f.inputs);
     try {
-        const res = await circuit.compile(circuitInputs);
+        const res = options.mock ? await circuit.mockCompile(circuitInputs) : await circuit.compile(circuitInputs);
         const circuitFn = `const ${f.importName} = AXIOM_CLIENT_IMPORT\n${f.circuit.toString()}`;
         const encoder = new TextEncoder();
         const circuitBuild = encoder.encode(circuitFn);
@@ -29,7 +42,13 @@ export const compile = async (path: string, options: { stats: boolean, function:
             ...res,
             circuit: Buffer.from(circuitBuild).toString('base64'),
         }
-        saveJsonToFile(build, options.output, "build.json");
+        
+        let outfile = path.join(path.dirname(circuitPath), "data", "compiled.json");
+        if (options.outputs !== undefined) {
+            outfile = options.outputs;
+        }
+
+        saveJsonToFile(build, outfile);
     }
     catch (e) {
         console.error(e);

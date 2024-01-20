@@ -64,7 +64,7 @@ export const prepData = async (dataSubquery: DataSubquery, queryArr: CircuitValu
 
   let paddedQueryArr = [circuitType, ...queryArr];
   for (let i = queryArr.length; i < 13; i++) {
-    paddedQueryArr.push(getCircuitValueWitness(0));
+    paddedQueryArr.push(getCircuitValueConstant(0));
   }
   paddedQueryArr.push(witness.hi());
   paddedQueryArr.push(witness.lo());

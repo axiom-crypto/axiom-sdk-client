@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "target": "ES2020",
     "module": "CommonJS",
     "moduleResolution": "node",
@@ -20,8 +21,7 @@
     "skipLibCheck": true,
     "outDir": "dist",
     "types": [
-      "node",
-      "jest"
+      "node"
     ]
   },
   "include": [
@@ -32,7 +32,8 @@
     "dist",
     "node_modules",
     "scripts",
-    "test"
+    "test",
+    "src/scaffold/templates/*"
   ],
   "ts-node": {
     "esm": true

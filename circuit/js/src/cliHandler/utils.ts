@@ -75,16 +75,34 @@ export function getProvider(provider: string | undefined): string {
     return providerToUse;
 }
 
-export function saveJsonToFile(json: any, relativePath: string, name: string) {
-    const filePath = path.resolve(relativePath);
-    const folderPath = path.dirname(filePath);
+export function readInputs(inputFile: string, circuitInputs: any) {
+    console.log(`Reading JSON inputs from: ${inputFile}`);
+    if (fileExists(inputFile)) {
+        circuitInputs = readJsonFromFile(inputFile);
+        return circuitInputs
+    } 
+    if (circuitInputs === undefined) {
+        throw new Error("No inputs provided. Either export `inputs` from your circuit file or provide a path to a json file with inputs.");
+    }
+    console.log(`Reading inputs from circuit file`);
+    return circuitInputs;
+}
+
+export function saveJsonToFile(json: any, filePath: string) {
+    const fullPath = path.resolve(filePath);
+    const filename = path.basename(fullPath);
+    const folderPath = path.dirname(fullPath);
     if (!fs.existsSync(folderPath)) {
         fs.mkdirSync(folderPath, { recursive: true });
     }
     fs.writeFileSync(filePath, JSON.stringify(json, null, 2));
-    console.log(`Saved ${name} to ${filePath}`);
+    console.log(`Saved ${filename} to ${filePath}`);
 }
 
 export function readJsonFromFile(relativePath: string) {
     return JSON.parse(fs.readFileSync(path.resolve(relativePath), 'utf8'))
+}
+
+export function fileExists(relativePath: string) {
+    return fs.existsSync(path.resolve(relativePath));
 }

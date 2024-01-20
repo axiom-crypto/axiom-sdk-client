@@ -12,6 +12,7 @@ import {
 import {
   AxiomSdkCore,
   AxiomV2QueryOptions,
+  QueryV2,
 } from "@axiom-crypto/core";
 import { BaseCircuitScaffold } from "@axiom-crypto/halo2-lib-js";
 import { DEFAULT_CIRCUIT_CONFIG } from "./constants";
@@ -172,6 +173,14 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     }
     this.resultLen = Math.floor(numUserInstances / 2);
     this.dataQuery = dataQuery;
+    const queryBuilder = (this.axiom.query as QueryV2).new();
+    queryBuilder.setBuiltDataQuery({
+      sourceChainId: this.chainId,
+      subqueries: dataQuery,
+    });
+    if (!queryBuilder.validate()) {
+      throw new Error("Data query validation failed");
+    }
   }
 
   async run(inputs: RawInput<T>) {

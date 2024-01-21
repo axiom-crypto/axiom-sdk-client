@@ -1,6 +1,6 @@
 # axiom-client harness
 
-Client harness that allows for easy circuit parameter generation 
+Client harness that allows for easy circuit parameter generation
 
 Run via:
 
@@ -8,11 +8,11 @@ Run via:
 npx harness run <circuit.js file>
 ```
 
-Saves output to ./data/ unless a different output directory is specified.
+Saves output to `./data/` unless a different output directory is specified.
 
 ## Javascript circuit format
 
-Code and input should be in the same file, with input parameters specified as a Javascript object called `const input = {...}`. 
+Code and input should be in the same file, with input parameters specified as a Javascript object called `const input = {...}`.
 
 Example circuit.js file:
 

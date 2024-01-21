@@ -8,7 +8,7 @@ Run via:
 npx harness run <circuit.js file>
 ```
 
-Saves output to ./data/ unless a different output directory is specified.
+Saves output to `./data/` unless a different output directory is specified.
 
 ## Javascript circuit format
 

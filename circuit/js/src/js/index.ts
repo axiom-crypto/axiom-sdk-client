@@ -9,7 +9,8 @@ export class AxiomBaseCircuit<T> extends AxiomBaseCircuitScaffold<T> {
         inputSchema?: string,
         mock?: boolean,
         chainId?: number | string | bigint,
-        shouldTime?: boolean
+        shouldTime?: boolean,
+        results?: { [key: string]: string },
     }) {
         super(inputs);
         this.setContext({

@@ -4,7 +4,7 @@ import { getFunctionFromTs, getProvider, readInputs, readJsonFromFile, saveJsonT
 
 export const prove = async (
     circuitPath: string,
-    options: { 
+    options: {
         stats: boolean,
         function?: string,
         compiled?: string,
@@ -13,6 +13,7 @@ export const prove = async (
         provider?: string,
         inputs?: string,
         mock?: boolean,
+        cache?: string;
     }
 ) => {
     let circuitFunction = "circuit";
@@ -27,6 +28,11 @@ export const prove = async (
     }
     console.log(`Reading compiled circuit JSON from: ${compiledFile}`);
     const compiledJson = readJsonFromFile(compiledFile);
+    const cache: { [key: string]: string } = {};
+    if (options.cache !== undefined) {
+        const cacheJson = readJsonFromFile(options.cache);
+        Object.assign(cache, cacheJson);
+    }
     const circuit = new AxiomBaseCircuit({
         f: f.circuit,
         mock: options.mock,
@@ -34,6 +40,7 @@ export const prove = async (
         provider,
         shouldTime: options.stats,
         inputSchema: compiledJson.inputSchema,
+        results: cache,
     })
     let inputFile = path.join(path.dirname(circuitPath), "data", "inputs.json");
     if (options.inputs !== undefined) {
@@ -65,6 +72,9 @@ export const prove = async (
         }
 
         saveJsonToFile(res, outfile);
+        if (options.cache) {
+            saveJsonToFile(circuit.getResults(), options.cache);
+        }
     }
     catch (e) {
         console.error(e);

@@ -13,6 +13,7 @@ export const compile = async (
         provider?: string,
         inputs?: string,
         mock?: boolean,
+        cache?: string,
     }
 ) => {
     let circuitFunction = "circuit";
@@ -61,6 +62,9 @@ export const compile = async (
         }
 
         saveJsonToFile(build, outfile);
+        if (options.cache) {
+            saveJsonToFile(circuit.getResults(), options.cache);
+        }
     }
     catch (e) {
         console.error(e);

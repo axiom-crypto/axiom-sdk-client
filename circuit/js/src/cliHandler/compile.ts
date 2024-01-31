@@ -1,6 +1,6 @@
 import path from 'path';
 import { AxiomBaseCircuit } from "../js";
-import { getFunctionFromTs, getProvider, readInputs, saveJsonToFile } from "./utils";
+import { getFunctionFromTs, getProvider, readInputs, readJsonFromFile, saveJsonToFile } from "./utils";
 import { existsSync, readFileSync } from 'fs';
 
 export const compile = async (
@@ -22,6 +22,11 @@ export const compile = async (
     }
     const f = await getFunctionFromTs(circuitPath, circuitFunction);
     const provider = getProvider(options.provider);
+    const cache: { [key: string]: string } = {};
+    if (options.cache !== undefined && existsSync(options.cache)) {
+        const cacheJson = readJsonFromFile(options.cache);
+        Object.assign(cache, cacheJson);
+    }
     const circuit = new AxiomBaseCircuit({
         f: f.circuit,
         mock: options.mock,
@@ -29,6 +34,7 @@ export const compile = async (
         provider,
         shouldTime: options.stats,
         inputSchema: f.inputSchema,
+        results: cache,
     })
     let inputFile = path.join(path.dirname(circuitPath), "data", "inputs.json");
     if (options.inputs !== undefined) {

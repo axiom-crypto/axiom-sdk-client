@@ -1,4 +1,5 @@
 const fs = require("fs");
+const { execSync } = require("child_process");
 
 const packages = {
   "@axiom-crypto/circuit": {
@@ -18,6 +19,13 @@ const packages = {
     version: "",
   },
 };
+
+let ci = false;
+if (process.argv[2] === "ci") {
+  ci = true;
+}
+
+const packageManager = ci ? "npm" : "pnpm";
 
 const dependencyTypes = [
   "dependencies",
@@ -57,6 +65,7 @@ function setRemote() {
       });
     }
     fs.writeFileSync(packageJsonPath.slice(1), JSON.stringify(packageJson, null, 2));
+    execSync(`cd ${packages[package].path.slice(1)} && ${packageManager} i`);
   }
 
   return packages;

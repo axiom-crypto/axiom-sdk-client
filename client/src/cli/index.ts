@@ -32,6 +32,7 @@ circuit
   .option("-i, --inputs [inputs]", "inputs json file")
   .option("-o, --outputs [outputs]", "outputs json file")
   .option("-f, --function [function]", "function name in typescript circuit")
+  .option("--cache [cache]", "cache output file")
   .action(compile);
 
 circuit
@@ -46,6 +47,7 @@ circuit
   .option("-i, --inputs [inputs]", "inputs json file")
   .option("-o, --outputs [outputs]", "outputs json file")
   .option("-f, --function [function]", "function name in typescript circuit")
+  .option("--cache [cache]", "cache input file")
   .action(prove);
 
 circuit

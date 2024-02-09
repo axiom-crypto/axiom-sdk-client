@@ -90,5 +90,8 @@ export const buildCircuit = (jsCircuitPath: string) => {
   // Replace template imports with used imports
   circuit = circuit.replace(imports[0], usedImports);
 
+  if (inputs == undefined) {
+    inputs = {};
+  }
   return { circuit, inputs };
 }

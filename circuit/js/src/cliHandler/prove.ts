@@ -22,7 +22,7 @@ export const prove = async (
     const decoder = new TextDecoder();
     const decodedArray = Buffer.from(compiled.circuit, 'base64');
     const raw = decoder.decode(decodedArray);
-    const AXIOM_CLIENT_IMPORT = require("@axiom-crypto/client");
+    const AXIOM_CLIENT_IMPORT = require("../index");
     const f = eval(raw);
     const provider = getProvider(options.provider);
 

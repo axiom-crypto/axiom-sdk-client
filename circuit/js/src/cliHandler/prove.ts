@@ -47,7 +47,7 @@ export const prove = async (
     if (options.inputs !== undefined) {
         inputFile = options.inputs;
     }
-    const circuitInputs = readInputs(inputFile, f.inputs);
+    const circuitInputs = readInputs(inputFile, f.defaultInputs);
     try {
         let computeQuery;
         if (options.mock === true) {

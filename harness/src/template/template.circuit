@@ -55,7 +55,7 @@ import {
   loadSecp256k1Pubkey,
 } from "@axiom-crypto/client";
 
-export const inputs = {
+export const defaultInputs = {
   // $input
 };
 export type CircuitInputType = typeof inputs;

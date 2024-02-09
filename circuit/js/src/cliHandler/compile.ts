@@ -11,7 +11,6 @@ export const compile = async (
         outputs?: string,
         chainId?: number | string | bigint,
         provider?: string,
-        inputs?: string,
         mock?: boolean,
         cache?: string,
     }
@@ -36,11 +35,7 @@ export const compile = async (
         inputSchema: f.inputSchema,
         results: cache,
     })
-    let inputFile = path.join(path.dirname(circuitPath), "data", "inputs.json");
-    if (options.inputs !== undefined) {
-        inputFile = options.inputs;
-    }
-    const circuitInputs = readInputs(inputFile, f.inputs);
+    const circuitInputs = f.defaultInputs;
     try {
         const circuitFn = `const ${f.importName} = AXIOM_CLIENT_IMPORT\n${f.circuit.toString()}`;
         const encoder = new TextEncoder();

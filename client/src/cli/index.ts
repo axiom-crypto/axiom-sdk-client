@@ -29,7 +29,6 @@ circuit
   .option("-st, --stats", "print stats")
   .option("-m, --mock", "generate a mock vkey and query schema")
   .option("-p, --provider [provider]", "JSON-RPC provider (https)")
-  .option("-i, --inputs [inputs]", "inputs json file")
   .option("-o, --outputs [outputs]", "outputs json file")
   .option("-f, --function [function]", "function name in typescript circuit")
   .option("--cache [cache]", "cache output file")

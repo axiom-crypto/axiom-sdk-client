@@ -23,7 +23,6 @@ export const prove = async (
     const decodedArray = Buffer.from(compiled.circuit, 'base64');
     const raw = decoder.decode(decodedArray);
     const AXIOM_CLIENT_IMPORT = require("../index");
-    const f = eval(raw);
     const provider = getProvider(options.provider);
 
     const cache: { [key: string]: string } = {};
@@ -32,7 +31,7 @@ export const prove = async (
         Object.assign(cache, cacheJson);
     }
     const circuit = new AxiomBaseCircuit({
-        f: f.circuit,
+        f: eval(raw),
         mock: options.mock,
         chainId: options.sourceChainId,
         provider,

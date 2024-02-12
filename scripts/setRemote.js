@@ -65,7 +65,6 @@ function setRemote() {
       });
     }
     fs.writeFileSync(packageJsonPath.slice(1), JSON.stringify(packageJson, null, 2));
-    execSync(`cd ${packages[package].path.slice(1)} && ${packageManager} i`);
   }
 
   return packages;

@@ -5,7 +5,7 @@ import { existsSync } from 'fs';
 
 export const prove = async (
     compiledPath: string,
-    inputFile: string,
+    inputsFile: string,
     options: {
         stats: boolean,
         outputs?: string,
@@ -38,7 +38,7 @@ export const prove = async (
         inputSchema: compiled.inputSchema,
         results: cache,
     })
-    const circuitInputs = readInputs(inputFile, null);
+    const circuitInputs = readInputs(inputsFile, null);
     try {
         let computeQuery;
         if (options.mock === true) {

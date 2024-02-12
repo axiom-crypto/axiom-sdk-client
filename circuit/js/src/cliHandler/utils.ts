@@ -79,10 +79,10 @@ export function getProvider(provider: string | undefined): string {
     return providerToUse;
 }
 
-export function readInputs(inputFile: string, circuitInputs: any) {
-    console.log(`Reading JSON inputs from: ${inputFile}`);
-    if (fileExists(inputFile)) {
-        circuitInputs = readJsonFromFile(inputFile);
+export function readInputs(inputsFile: string, circuitInputs: any) {
+    console.log(`Reading JSON inputs from: ${inputsFile}`);
+    if (fileExists(inputsFile)) {
+        circuitInputs = readJsonFromFile(inputsFile);
         return circuitInputs
     }
     if (circuitInputs === undefined) {

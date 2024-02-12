@@ -4,57 +4,48 @@ import { getFunctionFromTs, getProvider, readInputs, readJsonFromFile, saveJsonT
 import { existsSync } from 'fs';
 
 export const prove = async (
-    circuitPath: string,
+    compiledPath: string,
+    inputFile: string,
     options: {
         stats: boolean,
-        function?: string,
-        compiled?: string,
         outputs?: string,
         sourceChainId?: number | string | bigint,
         provider?: string,
-        inputs?: string,
         mock?: boolean,
         cache?: string;
     }
 ) => {
-    let circuitFunction = "circuit";
-    if (options.function !== undefined) {
-        circuitFunction = options.function;
-    }
-    const f = await getFunctionFromTs(circuitPath, circuitFunction);
+    console.log(`Reading compiled circuit JSON from: ${compiledPath}`);
+    const compiled = readJsonFromFile(compiledPath);
+
+    const decoder = new TextDecoder();
+    const decodedArray = Buffer.from(compiled.circuit, 'base64');
+    const raw = decoder.decode(decodedArray);
+    const AXIOM_CLIENT_IMPORT = require("../index");
     const provider = getProvider(options.provider);
-    let compiledFile = path.join(path.dirname(circuitPath), "data", "compiled.json");
-    if (options.compiled !== undefined) {
-        compiledFile = options.compiled;
-    }
-    console.log(`Reading compiled circuit JSON from: ${compiledFile}`);
-    const compiledJson = readJsonFromFile(compiledFile);
+
     const cache: { [key: string]: string } = {};
     if (options.cache !== undefined && existsSync(options.cache)) {
         const cacheJson = readJsonFromFile(options.cache);
         Object.assign(cache, cacheJson);
     }
     const circuit = new AxiomBaseCircuit({
-        f: f.circuit,
+        f: eval(raw),
         mock: options.mock,
         chainId: options.sourceChainId,
         provider,
         shouldTime: options.stats,
-        inputSchema: compiledJson.inputSchema,
+        inputSchema: compiled.inputSchema,
         results: cache,
     })
-    let inputFile = path.join(path.dirname(circuitPath), "data", "inputs.json");
-    if (options.inputs !== undefined) {
-        inputFile = options.inputs;
-    }
-    const circuitInputs = readInputs(inputFile, f.inputs);
+    const circuitInputs = readInputs(inputFile, null);
     try {
         let computeQuery;
         if (options.mock === true) {
-            circuit.loadSavedMock(compiledJson);
+            circuit.loadSavedMock(compiled);
             computeQuery = await circuit.mockProve(circuitInputs);
         } else {
-            circuit.loadSaved(compiledJson);
+            circuit.loadSaved(compiled);
             computeQuery = await circuit.run(circuitInputs);
         }
         const computeResults = circuit.getComputeResults();
@@ -67,7 +58,7 @@ export const prove = async (
             dataQuery,
         }
 
-        let outfile = path.join(path.dirname(circuitPath), "data", "proven.json");
+        let outfile = path.join(path.dirname(compiledPath), "proven.json");
         if (options.outputs !== undefined) {
             outfile = options.outputs;
         }

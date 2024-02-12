@@ -29,7 +29,6 @@ circuit
   .option("-st, --stats", "print stats")
   .option("-m, --mock", "generate a mock vkey and query schema")
   .option("-p, --provider [provider]", "JSON-RPC provider (https)")
-  .option("-i, --inputs [inputs]", "inputs json file")
   .option("-o, --outputs [outputs]", "outputs json file")
   .option("-f, --function [function]", "function name in typescript circuit")
   .option("--cache [cache]", "cache output file")
@@ -38,15 +37,13 @@ circuit
 circuit
   .command("prove")
   .description("prove an Axiom circuit")
-  .argument("<circuitPath>", "path to the typescript circuit file")
+  .argument("<compiledPath>", "path to the compiled circuit json file")
+  .argument("<inputFile>", "path to the inputs json file")
   .option("-s, --sourceChainId [sourceChainId]", "source chain id")
-  .option("-c, --compiled [compiled]", "path of the compiled circuit json file")
   .option("-m, --mock", "generate a mock compute proof")
   .option("-st, --stats", "print stats")
   .option("-p, --provider [provider]", "JSON-RPC provider (https)")
-  .option("-i, --inputs [inputs]", "inputs json file")
   .option("-o, --outputs [outputs]", "outputs json file")
-  .option("-f, --function [function]", "function name in typescript circuit")
   .option("--cache [cache]", "cache input file")
   .action(prove);
 

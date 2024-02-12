@@ -21,12 +21,16 @@ export const harness = async (
 
   // Write the typescript circuit
   fs.mkdirSync(path.resolve(options.outputs), { recursive: true });
-  fs.writeFileSync(circuitPath, circuit);
+  fs.writeFileSync(circuitPath, circuit.circuit);
+
+  // Write the inputs
+  const inputsFile = `${outputsFileBase}.inputs.json`;
+  fs.writeFileSync(inputsFile, JSON.stringify(circuit.inputs, null, 2));
 
   // Compile the circuit
   const compiledFile = `${outputsFileBase}.compiled.json`;
   await compile(
-    circuitPath, 
+    circuitPath,
     {
       stats: false,
       function: options.function,
@@ -39,11 +43,10 @@ export const harness = async (
   // Run the circuit
   const outputsFile = `${outputsFileBase}.proven.json`;
   await prove(
-    circuitPath, 
+    compiledFile,
+    inputsFile,
     {
       stats: false,
-      compiled: compiledFile,
-      function: options.function,
       outputs: outputsFile,
       chainId: options.chainId,
       provider: options.provider,

@@ -20,7 +20,7 @@ export async function getFunctionFromTs(relativePath: string, functionName: stri
     const pattern: RegExp = /const (\w+) = require\("@axiom-crypto\/client"\);/;
     const match = result.outputText.match(pattern);
     const importName = match ? match[1] : null;
-    if(!importName) throw new Error("Could not find import name");
+    if (!importName) throw new Error("Could not find import name");
     const script = new vm.Script(result.outputText);
     const customRequire = (moduleName: string) => {
         try {
@@ -49,13 +49,17 @@ export async function getFunctionFromTs(relativePath: string, functionName: stri
     });
     script.runInContext(context);
     if (!context.exports[functionName]) throw new Error(`File does not export a function called \`${functionName}\`!`);
-    let inputs = undefined;
-    if (context.exports.inputs) inputs = context.exports.inputs;
+    if (!context.exports.defaultInputs) {
+        if (context.exports.inputs) {
+            console.warn("Using `inputs` from circuit file is deprecated. Please export a `defaultInputs` object instead.");
+        }
+        throw new Error(`File does not export a defaultInputs object!`);
+    }
     return {
         circuit: context.exports[functionName],
-        inputs,
         inputSchema,
-        importName
+        importName,
+        defaultInputs: context.exports.defaultInputs
     };
 }
 
@@ -80,7 +84,7 @@ export function readInputs(inputFile: string, circuitInputs: any) {
     if (fileExists(inputFile)) {
         circuitInputs = readJsonFromFile(inputFile);
         return circuitInputs
-    } 
+    }
     if (circuitInputs === undefined) {
         throw new Error("No inputs provided. Either export `inputs` from your circuit file or provide a path to a json file with inputs.");
     }

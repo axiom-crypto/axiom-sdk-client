@@ -38,7 +38,7 @@ circuit
   .command("prove")
   .description("prove an Axiom circuit")
   .argument("<compiledPath>", "path to the compiled circuit json file")
-  .argument("<inputFile>", "path to the inputs json file")
+  .argument("<inputsFile>", "path to the inputs json file")
   .option("-s, --sourceChainId [sourceChainId]", "source chain id")
   .option("-m, --mock", "generate a mock compute proof")
   .option("-st, --stats", "print stats")

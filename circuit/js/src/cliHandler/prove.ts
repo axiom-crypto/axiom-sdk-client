@@ -11,7 +11,6 @@ export const prove = async (
         outputs?: string,
         sourceChainId?: number | string | bigint,
         provider?: string,
-        inputs?: string,
         mock?: boolean,
         cache?: string;
     }

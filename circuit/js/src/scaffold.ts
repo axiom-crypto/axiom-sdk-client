@@ -41,6 +41,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     mock?: boolean;
     chainId?: number | string | bigint;
     shouldTime?: boolean;
+    results?: { [key: string]: string };
   }) {
     super();
     this.resultLen = 0;
@@ -71,7 +72,11 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       }
     }
     this.inputSchema = inputs.inputSchema;
-    this.results = {};
+    this.results = inputs.results ?? {};
+  }
+
+  getResults() {
+    return { ...this.results };
   }
 
   async loadSaved(input: { config: CircuitConfig; vk: string }) {
@@ -79,7 +84,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     await this.loadParamsAndVk(base64ToByteArray(input.vk));
   }
 
-  loadSavedMock(input: {config: CircuitConfig}) {
+  loadSavedMock(input: { config: CircuitConfig }) {
     this.config = input.config;
   }
 

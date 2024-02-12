@@ -21,7 +21,6 @@ export class Axiom<T> {
 
   constructor(config: AxiomV2ClientConfig<T>) {
     this.config = config;
-    const inputSchema = convertInputSchemaToJsonString(config.inputSchema);
     this.compiledCircuit = config.compiledCircuit;
     this.callback = {
       target: config.callback.target,
@@ -31,7 +30,7 @@ export class Axiom<T> {
     this.axiomCircuit = new AxiomCircuit({
       f: config.circuit,
       provider: this.config.provider,
-      inputSchema,
+      inputSchema: config.compiledCircuit.inputSchema,
       chainId: this.config.chainId,
     });
   }

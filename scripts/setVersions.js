@@ -42,9 +42,9 @@ function setVersions() {
     let packageVersion = packageJson.version;
     if (increment) {
       let versionParts = packageVersion.split(".");
-      let minor = parseInt(versionParts[versionParts.length-1]);
-      minor++;
-      versionParts[versionParts.length-1] = minor.toString();
+      let patchVer = parseInt(versionParts[versionParts.length-1]);
+      patchVer++;
+      versionParts[versionParts.length-1] = patchVer.toString();
       packageVersion = versionParts.join(".");
     } else {
       packageVersion = setVersion;

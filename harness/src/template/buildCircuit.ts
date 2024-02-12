@@ -2,11 +2,11 @@ import fs from 'fs';
 import path from 'path';
 
 const parseStringToObject = (str: string) => {
-  const inputVars = str.split(":").slice(0,-1).map((line) => line.split(" ").slice(-1)[0]);
+  const inputVars = str.split(":").slice(0, -1).map((line) => line.split(" ").slice(-1)[0]);
   for (const inputVar of inputVars) {
     str = str.replace(inputVar, `"${inputVar}"`);
   }
-  let parsed = str.replace(/ /g,"").replace(/\n/g,"");
+  let parsed = str.replace(/ /g, "").replace(/\n/g, "");
   parsed = parsed.replace(/;/g, "");
   parsed = parsed.replace(/,\]/g, "]");
   parsed = parsed.replace(/,\}/g, "}");
@@ -35,7 +35,7 @@ const getCircuitInterfaceFromInput = (jsonInput: object) => {
   return inputTypes.join("\n");
 }
 
-export const buildCircuit = (jsCircuitPath: string): string => {
+export const buildCircuit = (jsCircuitPath: string) => {
   // Parse path
   let parsedFilename = path.basename(jsCircuitPath);
   parsedFilename = parsedFilename.split(".js")[0] + ".circuit.ts";
@@ -44,15 +44,17 @@ export const buildCircuit = (jsCircuitPath: string): string => {
   let circuit = fs.readFileSync(path.resolve(__dirname, "template.circuit")).toString();
   let inputCircuit = fs.readFileSync(path.resolve(jsCircuitPath)).toString();
 
+  let inputs: any;
+
   // Check if inputCircuit defines an input object
   let inputObject = inputCircuit.match(/const input = {[\s\S]*}[;]*/);
   if (inputObject) {
     // Split out extraneous lines in input
-    let inputs = parseStringToObject(inputObject[0].split("const input = ")[1]);//inputObject[0].split("\n").slice(1, -1).join("\n");
+    inputs = parseStringToObject(inputObject[0].split("const input = ")[1]);//inputObject[0].split("\n").slice(1, -1).join("\n");
     console.log("inputs", inputs);
 
     // Replace the input object in the template with the input object from the input circuit
-    circuit = circuit.replace("  // $input", JSON.stringify(inputs, null, 2).slice(2,-2));
+    circuit = circuit.replace("  // $input", JSON.stringify(inputs, null, 2).slice(2, -2));
 
     // Remove the input object from the input circuit
     inputCircuit = inputCircuit.replace(inputObject[0], "");
@@ -75,7 +77,7 @@ export const buildCircuit = (jsCircuitPath: string): string => {
     throw new Error("Could not find imports in circuit");
   }
   let importArray = imports[0].split("\n").slice(1, -1).map((line) => line.trim().split(",")[0]);
-  
+
   // Check which imports are used in the input circuit
   importArray = importArray.filter((imp) => {
     if (imp == "CircuitValue" || imp == "CircuitValue256") {
@@ -84,9 +86,12 @@ export const buildCircuit = (jsCircuitPath: string): string => {
     return inputCircuit.includes(imp);
   });
   const usedImports = `import {\n${importArray.join(",\n").concat(",")}\n} from "@axiom-crypto/client";`;
-  
+
   // Replace template imports with used imports
   circuit = circuit.replace(imports[0], usedImports);
 
-  return circuit;
+  if (inputs == undefined) {
+    inputs = {};
+  }
+  return { circuit, inputs };
 }

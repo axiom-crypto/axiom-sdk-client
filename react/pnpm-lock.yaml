@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@axiom-crypto/client':
-    specifier: 2.0.4-rc.0
-    version: 2.0.4-rc.0(typescript@5.3.3)
+    specifier: 2.0.4-rc.1
+    version: 2.0.4-rc.1(typescript@5.3.3)
   '@types/react':
     specifier: '>=18.1.0'
     version: 18.2.48
@@ -36,8 +36,8 @@ packages:
     resolution: {integrity: sha512-96Z2IP3mYmF1Xg2cDm8f1gWGf/HUVedQ3FMifV4kG/PQ4yEP51xDtRAEfhVNt5f/uzpNkZHwWQuUcu6D6K+Ekw==}
     dev: false
 
-  /@axiom-crypto/circuit@2.0.4-rc.0(typescript@5.3.3):
-    resolution: {integrity: sha512-mq/73aDDpidkJhbP7pU5CXqahibh/lwBKc0wxlQQG9nYZ5RcwG1HwNX5ZrvDNNp4xB98d9IgIPAMOLNMMZHzhA==}
+  /@axiom-crypto/circuit@2.0.4-rc.1(typescript@5.3.3):
+    resolution: {integrity: sha512-rVL4sZBVKknehu+Sfex7/C/BN/aBREVYf3KJGpVklk1m0To0Qpl4HNtj/Ms4bKY5cNNRcYTRr2Iltmwlc4IaCA==}
     dependencies:
       '@axiom-crypto/core': 2.3.5
       '@axiom-crypto/halo2-lib-js': 0.3.4
@@ -54,11 +54,11 @@ packages:
       - zod
     dev: false
 
-  /@axiom-crypto/client@2.0.4-rc.0(typescript@5.3.3):
-    resolution: {integrity: sha512-LEYDt45E9OTeAM1IX31cj8dvwTOw6FJROKUuBak/1j8a/X0BUQNHvZetDKViT91t0by3PN31ITXPQQ8Q+IS0bA==}
+  /@axiom-crypto/client@2.0.4-rc.1(typescript@5.3.3):
+    resolution: {integrity: sha512-l7T2ZrLyv+1JMuS/xS8iyzL4pXxsjLbQbZmTmEJLD04IIiv2QmhkiSnmd+eyWXLIcD9ZtwPnZ7Mv4ZcTHj5RmA==}
     hasBin: true
     dependencies:
-      '@axiom-crypto/circuit': 2.0.4-rc.0(typescript@5.3.3)
+      '@axiom-crypto/circuit': 2.0.4-rc.1(typescript@5.3.3)
       '@axiom-crypto/core': 2.3.5
       chalk: 4.1.2
       commander: 11.1.0
@@ -155,7 +155,15 @@ packages:
     resolution: {integrity: sha512-N1ZhksgwD3OBlwTv3R6KFEcPojl/W4ElJOeCZdi+vuI5QmTFwLq3OFf2zd2ROpKvxFdgZ6hUpb0dx9bVNEwYCA==}
     dependencies:
       '@noble/curves': 1.2.0
-      '@noble/hashes': 1.3.2
+      '@noble/hashes': 1.3.3
+      '@scure/base': 1.1.5
+    dev: false
+
+  /@scure/bip32@1.3.3:
+    resolution: {integrity: sha512-LJaN3HwRbfQK0X1xFSi0Q9amqOgzQnnDngIt+ZlsBC3Bm7/nE7K0kwshZHyaru79yIVRv/e1mQAjZyuZG6jOFQ==}
+    dependencies:
+      '@noble/curves': 1.3.0
+      '@noble/hashes': 1.3.3
       '@scure/base': 1.1.5
     dev: false
 
@@ -170,7 +178,14 @@ packages:
   /@scure/bip39@1.2.1:
     resolution: {integrity: sha512-Z3/Fsz1yr904dduJD0NpiyRHhRYHdcnyh73FZWiV+/qhWi83wNJ3NWolYqCEN+ZWsUz2TWwajJggcRE9r1zUYg==}
     dependencies:
-      '@noble/hashes': 1.3.2
+      '@noble/hashes': 1.3.3
+      '@scure/base': 1.1.5
+    dev: false
+
+  /@scure/bip39@1.2.2:
+    resolution: {integrity: sha512-HYf9TUXG80beW+hGAt3TRM8wU6pQoYur9iNypTROm42dorCGmLnFe3eWjz3gOq6G62H2WRh0FCzAR1PI+29zIA==}
+    dependencies:
+      '@noble/hashes': 1.3.3
       '@scure/base': 1.1.5
     dev: false
 

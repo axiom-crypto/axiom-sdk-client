@@ -15,8 +15,8 @@ import {
   QueryV2,
 } from "@axiom-crypto/core";
 import { BaseCircuitScaffold } from "@axiom-crypto/halo2-lib-js";
-import { DEFAULT_CIRCUIT_CONFIG } from "./constants";
-import { RawInput } from "./types";
+import { DEFAULT_CIRCUIT_CONFIG, SUBQUERY_FE, USER_OUTPUT_FE } from "./constants";
+import { AxiomV2CircuitOverrides, RawInput } from "./types";
 import { encodeAxiomV2CircuitMetadata } from "./encoder";
 
 const DEADBEEF_BYTES32 = "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef";
@@ -32,18 +32,21 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   protected f: (inputs: T) => Promise<void>;
   protected results: { [key: string]: string };
   protected inputSchema?: string;
+  protected circuitOverrides?: AxiomV2CircuitOverrides;
 
   constructor(inputs: {
-    provider: string;
-    f: (inputs: T) => Promise<void>;
-    inputSchema?: string | object;
-    config?: CircuitConfig;
-    mock?: boolean;
-    chainId?: number | string | bigint;
-    shouldTime?: boolean;
-    results?: { [key: string]: string };
+    provider: string,
+    f: (inputs: T) => Promise<void>,
+    inputSchema?: string | object,
+    config?: CircuitConfig,
+    mock?: boolean,
+    chainId?: number | string | bigint,
+    shouldTime?: boolean,
+    results?: { [key: string]: string },
+    overrides?: AxiomV2CircuitOverrides,
   }) {
     super();
+    this.circuitOverrides = inputs.overrides;
     this.resultLen = 0;
     this.provider = inputs.provider;
     this.config = inputs.config ?? DEFAULT_CIRCUIT_CONFIG;
@@ -97,12 +100,13 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   }
 
   prependCircuitMetadata(config: CircuitConfig, partialVk: string[]): string[] {
-    const SUBQUERY_RESULT_LEN = 1 + AxiomV2CircuitConstant.MaxSubqueryInputs + AxiomV2CircuitConstant.MaxSubqueryOutputs;
+    const maxOutputs = this.circuitOverrides?.maxOutputs ?? AxiomV2CircuitConstant.UserMaxOutputs;
+    const maxSubqueries = this.circuitOverrides?.maxSubqueries ?? AxiomV2CircuitConstant.UserMaxSubqueries;
     const encodedCircuitMetadata = encodeAxiomV2CircuitMetadata({
       version: 0,
       numValuesPerInstanceColumn: [
-        AxiomV2CircuitConstant.UserMaxOutputs * AxiomV2CircuitConstant.UserResultFieldElements +
-        AxiomV2CircuitConstant.UserMaxSubqueries * SUBQUERY_RESULT_LEN
+        maxOutputs * USER_OUTPUT_FE +
+        maxSubqueries * SUBQUERY_FE
       ],
       numChallenge: [0],
       isAggregation: false,
@@ -110,7 +114,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       numLookupAdvicePerPhase: [config.numLookupAdvice],
       numRlcColumns: 0,
       numFixed: 1,
-      maxOutputs: AxiomV2CircuitConstant.UserMaxOutputs,
+      maxOutputs: maxOutputs,
     });
     return [encodedCircuitMetadata, ...partialVk];
   }
@@ -123,6 +127,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       this.halo2Lib,
       this.config,
       this.provider,
+      this.circuitOverrides,
     ).compile(this.f, inputs, this.inputSchema);
     this.timeEnd("Witness generation");
     this.config = config;
@@ -156,6 +161,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       this.halo2Lib,
       this.config,
       this.provider,
+      this.circuitOverrides,
     ).compile(this.f, inputs, this.inputSchema);
     this.timeEnd("Witness generation");
     this.config = config;
@@ -179,6 +185,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       this.halo2Lib,
       this.config,
       this.provider,
+      this.circuitOverrides,
     ).run(this.f, inputs, this.inputSchema, this.results);
     this.timeEnd("Witness generation");
     if (numUserInstances % 2 !== 0) {

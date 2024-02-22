@@ -1,10 +1,10 @@
 import { JsonRpcProvider } from "ethers";
 import { getCircuitValue256Witness, getCircuitValueWitness } from "./utils";
-import { SUBQUERY_NUM_INSTANCES, USER_COMPUTE_NUM_INSTANCES } from "./constants";
+import { SUBQUERY_FE, SUBQUERY_NUM_INSTANCES, USER_COMPUTE_NUM_INSTANCES, USER_OUTPUT_FE } from "./constants";
 import { getInputFunctionSignature } from "@axiom-crypto/halo2-lib-js/shared/utils";
 import { autoConfigCircuit, CircuitConfig, setCircuit } from "@axiom-crypto/halo2-lib-js";
 import { Halo2Wasm, Halo2LibWasm } from "@axiom-crypto/halo2-lib-js/wasm/web";
-import { RawInput } from "./types";
+import { AxiomV2CircuitOverrides, RawInput } from "./types";
 
 const autoParseDataInputs = (inputs: string) => {
   let parsedInputs = JSON.parse(inputs);
@@ -83,7 +83,7 @@ const parseDataInputs = (inputs: string, inputSchema?: string) => {
   }
 }
 
-const padInstances = () => {
+const padInstances = (overrides?: AxiomV2CircuitOverrides) => {
   const halo2Lib = globalThis.axiom.halo2lib;
   const halo2Wasm = globalThis.axiom.halo2wasm;
   let userInstances = [...halo2Wasm.getInstances(0)];
@@ -92,12 +92,15 @@ const padInstances = () => {
   const dataInstances = [...halo2Wasm.getInstances(1)];
   const numDataInstances = dataInstances.length;
 
-  for (let i = numUserInstances; i < USER_COMPUTE_NUM_INSTANCES; i++) {
+  const NUM_USER_INSTANCES = overrides?.maxOutputs ? overrides.maxOutputs * USER_OUTPUT_FE : USER_COMPUTE_NUM_INSTANCES;
+  const NUM_DATA_INSTANCES = overrides?.maxSubqueries ? overrides.maxSubqueries * SUBQUERY_FE : SUBQUERY_NUM_INSTANCES;
+
+  for (let i = numUserInstances; i < NUM_USER_INSTANCES; i++) {
     let witness = halo2Lib.constant("0");
     userInstances.push(witness);
   }
 
-  for (let i = numDataInstances; i < SUBQUERY_NUM_INSTANCES; i++) {
+  for (let i = numDataInstances; i < NUM_DATA_INSTANCES; i++) {
     let witness = halo2Lib.constant("0");
     dataInstances.push(witness);
   }
@@ -107,7 +110,7 @@ const padInstances = () => {
   return { numUserInstances };
 }
 
-export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibWasm, config: CircuitConfig, provider: string) {
+export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibWasm, config: CircuitConfig, provider: string, overrides?: AxiomV2CircuitOverrides) {
   globalThis.axiom = {
     dataQuery: [],
     halo2lib: halo2LibWasm,
@@ -141,7 +144,7 @@ export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibW
     let fn = eval(`let {${halo2LibFns.join(", ")}} = halo2Lib; let {${axiomDataFns.join(", ")}} = axiomData; (async function(inputs) { ${code} })`);
     await fn(parsedInputs);
 
-    const { numUserInstances } = padInstances();
+    const { numUserInstances } = padInstances(overrides);
     halo2Wasm.assignInstances();
 
     let newConfig = config;

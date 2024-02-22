@@ -21,3 +21,8 @@ export interface AxiomV2CircuitMetadataParams {
     numFixed: number;
     maxOutputs: number;
 };
+
+export interface AxiomV2CircuitOverrides {
+    maxOutputs: number;
+    maxSubqueries: number;
+}

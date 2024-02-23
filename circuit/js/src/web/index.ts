@@ -10,7 +10,7 @@ export class AxiomBaseCircuit<T> extends AxiomBaseCircuitScaffold<T> {
         mock?: boolean,
         chainId?: number | string | bigint,
         shouldTime?: boolean,
-        overrides?: AxiomV2CircuitCapacity,
+        capacity?: AxiomV2CircuitCapacity,
         config?: CircuitConfig,
     }) {
         super(inputs);
@@ -24,7 +24,7 @@ export class AxiomBaseCircuit<T> extends AxiomBaseCircuitScaffold<T> {
         this.halo2wasm.config(this.config);
     }
 
-    newCircuitFromConfig(config: AxiomV2CircuitConfig): void {
+    newCircuitFromConfig(config: CircuitConfig): void {
         super.newCircuitFromConfig(config);
         if (this.halo2Lib) this.halo2Lib.free();
         this.halo2Lib = getHalo2LibWasm(this.halo2wasm);

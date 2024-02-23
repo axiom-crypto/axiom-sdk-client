@@ -2,6 +2,7 @@ import path from 'path';
 import { AxiomBaseCircuit } from "../js";
 import { getFunctionFromTs, getProvider, readInputs, readJsonFromFile, saveJsonToFile } from "./utils";
 import { existsSync, readFileSync } from 'fs';
+import { AxiomV2CircuitConfig } from '../types';
 
 export const compile = async (
     circuitPath: string,
@@ -34,8 +35,8 @@ export const compile = async (
         shouldTime: options.stats,
         inputSchema: f.inputSchema,
         results: cache,
-        overrides: f.config,
-        config: f.config,
+        capacity: f.config?.capacity,
+        config: f.config?.circuit,
     })
     const circuitInputs = f.defaultInputs;
     try {

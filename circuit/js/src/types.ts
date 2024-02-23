@@ -27,5 +27,12 @@ export interface AxiomV2CircuitCapacity {
     maxSubqueries: number;
 }
 
-export interface AxiomV2CircuitConfig extends CircuitConfig, AxiomV2CircuitCapacity { }
+export interface AxiomV2CircuitConfig {
+    circuit: CircuitConfig,
+    capacity: AxiomV2CircuitCapacity,
+}
+
+export {
+    CircuitConfig
+}
 

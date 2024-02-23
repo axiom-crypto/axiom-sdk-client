@@ -21,6 +21,9 @@ export const DEFAULT_CIRCUIT_CONFIG = {
     numInstance: AxiomV2CircuitConstant.UserInstanceCols,
     numLookupBits: 13,
     numVirtualInstance: 2,
+};
+
+export const DEFAULT_CAPACITY = {
     maxOutputs: AxiomV2CircuitConstant.UserMaxOutputs,
     maxSubqueries: AxiomV2CircuitConstant.UserMaxSubqueries,
-};
+}

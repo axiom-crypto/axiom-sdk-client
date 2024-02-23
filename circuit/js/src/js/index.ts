@@ -12,7 +12,7 @@ export class AxiomBaseCircuit<T> extends AxiomBaseCircuitScaffold<T> {
         chainId?: number | string | bigint,
         shouldTime?: boolean,
         results?: { [key: string]: string },
-        overrides?: AxiomV2CircuitCapacity,
+        capacity?: AxiomV2CircuitCapacity,
         config?: CircuitConfig,
     }) {
         super(inputs);
@@ -27,7 +27,7 @@ export class AxiomBaseCircuit<T> extends AxiomBaseCircuitScaffold<T> {
         console.warn("Setup does nothing in JS AxiomBaseCircuit (multiple threads not supported)");
     }
 
-    newCircuitFromConfig(config: AxiomV2CircuitConfig): void {
+    newCircuitFromConfig(config: CircuitConfig): void {
         super.newCircuitFromConfig(config);
         if (this.halo2Lib) this.halo2Lib.free();
         this.halo2Lib = getHalo2LibWasm(this.halo2wasm);

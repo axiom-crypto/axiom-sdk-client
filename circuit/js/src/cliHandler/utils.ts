@@ -60,7 +60,7 @@ export async function getFunctionFromTs(relativePath: string, functionName: stri
         inputSchema,
         importName,
         defaultInputs: context.exports.defaultInputs,
-        config: context.exports.defaultInputs
+        config: context.exports.config,
     };
 }
 

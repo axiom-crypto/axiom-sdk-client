@@ -110,7 +110,7 @@ const padInstances = (capacity: AxiomV2CircuitCapacity) => {
   return { numUserInstances };
 }
 
-export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibWasm, config: AxiomV2CircuitConfig, provider: string) {
+export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibWasm, config: CircuitConfig, capacity: AxiomV2CircuitCapacity, provider: string) {
   globalThis.axiom = {
     dataQuery: [],
     halo2lib: halo2LibWasm,
@@ -144,7 +144,7 @@ export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibW
     let fn = eval(`let {${halo2LibFns.join(", ")}} = halo2Lib; let {${axiomDataFns.join(", ")}} = axiomData; (async function(inputs) { ${code} })`);
     await fn(parsedInputs);
 
-    const { numUserInstances } = padInstances(config);
+    const { numUserInstances } = padInstances(capacity);
     halo2Wasm.assignInstances();
 
     let newConfig = config;
@@ -172,7 +172,7 @@ export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibW
 
     await f(parsedInputs);
 
-    const { numUserInstances } = padInstances(config);
+    const { numUserInstances } = padInstances(capacity);
     halo2Wasm.assignInstances();
 
     return {

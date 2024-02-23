@@ -1,5 +1,5 @@
 import { AxiomCircuit } from "../js";
-import { 
+import {
   AxiomV2ClientConfig,
   AxiomV2ClientOptions,
   AxiomV2CompiledCircuit,
@@ -32,6 +32,7 @@ export class Axiom<T> {
       provider: this.config.provider,
       inputSchema: config.compiledCircuit.inputSchema,
       chainId: this.config.chainId,
+      capacity: this.compiledCircuit.config.capacity,
     });
   }
 
@@ -43,7 +44,7 @@ export class Axiom<T> {
   }
 
   setOptions(options: AxiomV2ClientOptions) {
-    this.options = { 
+    this.options = {
       ...this.options,
       ...options,
     };
@@ -62,8 +63,8 @@ export class Axiom<T> {
   async prove(input: RawInput<T>): Promise<AxiomV2SendQueryArgs> {
     await this.axiomCircuit.run(input);
 
-    const caller = this.config.privateKey !== undefined ? 
-      privateKeyToAccount(this.config.privateKey as `0x${string}`).address as string : 
+    const caller = this.config.privateKey !== undefined ?
+      privateKeyToAccount(this.config.privateKey as `0x${string}`).address as string :
       this.options?.caller ?? "";
 
     const options: AxiomV2ClientOptions = {

@@ -1,4 +1,4 @@
-import { CircuitValue, CircuitValue256 } from "@axiom-crypto/halo2-lib-js";
+import { CircuitConfig, CircuitValue, CircuitValue256 } from "@axiom-crypto/halo2-lib-js";
 
 type ToRawInput<T> = T extends CircuitValue ? number | bigint | string :
     T extends CircuitValue[] ? (number | bigint | string)[] :
@@ -22,7 +22,10 @@ export interface AxiomV2CircuitMetadataParams {
     maxOutputs: number;
 };
 
-export interface AxiomV2CircuitOverrides {
+export interface AxiomV2CircuitCapacity {
     maxOutputs: number;
     maxSubqueries: number;
 }
+
+export interface AxiomV2CircuitConfig extends CircuitConfig, AxiomV2CircuitCapacity { }
+

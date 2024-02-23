@@ -1,6 +1,7 @@
 import { CircuitConfig } from "@axiom-crypto/halo2-lib-js";
 import { AxiomBaseCircuitScaffold } from "../scaffold";
 import { getHalo2LibWasm, getHalo2Wasm, getKzgParams } from "@axiom-crypto/halo2-lib-js/wasm/js";
+import { AxiomV2CircuitCapacity, AxiomV2CircuitConfig } from "../types";
 
 export class AxiomBaseCircuit<T> extends AxiomBaseCircuitScaffold<T> {
     constructor(inputs: {
@@ -11,6 +12,8 @@ export class AxiomBaseCircuit<T> extends AxiomBaseCircuitScaffold<T> {
         chainId?: number | string | bigint,
         shouldTime?: boolean,
         results?: { [key: string]: string },
+        overrides?: AxiomV2CircuitCapacity,
+        config?: CircuitConfig,
     }) {
         super(inputs);
         this.setContext({
@@ -24,7 +27,7 @@ export class AxiomBaseCircuit<T> extends AxiomBaseCircuitScaffold<T> {
         console.warn("Setup does nothing in JS AxiomBaseCircuit (multiple threads not supported)");
     }
 
-    newCircuitFromConfig(config: CircuitConfig): void {
+    newCircuitFromConfig(config: AxiomV2CircuitConfig): void {
         super.newCircuitFromConfig(config);
         if (this.halo2Lib) this.halo2Lib.free();
         this.halo2Lib = getHalo2LibWasm(this.halo2wasm);

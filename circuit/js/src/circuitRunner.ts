@@ -4,7 +4,7 @@ import { SUBQUERY_FE, SUBQUERY_NUM_INSTANCES, USER_COMPUTE_NUM_INSTANCES, USER_O
 import { getInputFunctionSignature } from "@axiom-crypto/halo2-lib-js/shared/utils";
 import { autoConfigCircuit, CircuitConfig, setCircuit } from "@axiom-crypto/halo2-lib-js";
 import { Halo2Wasm, Halo2LibWasm } from "@axiom-crypto/halo2-lib-js/wasm/web";
-import { AxiomV2CircuitOverrides, RawInput } from "./types";
+import { AxiomV2CircuitCapacity, AxiomV2CircuitConfig, RawInput } from "./types";
 
 const autoParseDataInputs = (inputs: string) => {
   let parsedInputs = JSON.parse(inputs);
@@ -83,7 +83,7 @@ const parseDataInputs = (inputs: string, inputSchema?: string) => {
   }
 }
 
-const padInstances = (overrides?: AxiomV2CircuitOverrides) => {
+const padInstances = (capacity: AxiomV2CircuitCapacity) => {
   const halo2Lib = globalThis.axiom.halo2lib;
   const halo2Wasm = globalThis.axiom.halo2wasm;
   let userInstances = [...halo2Wasm.getInstances(0)];
@@ -92,8 +92,8 @@ const padInstances = (overrides?: AxiomV2CircuitOverrides) => {
   const dataInstances = [...halo2Wasm.getInstances(1)];
   const numDataInstances = dataInstances.length;
 
-  const NUM_USER_INSTANCES = overrides?.maxOutputs ? overrides.maxOutputs * USER_OUTPUT_FE : USER_COMPUTE_NUM_INSTANCES;
-  const NUM_DATA_INSTANCES = overrides?.maxSubqueries ? overrides.maxSubqueries * SUBQUERY_FE : SUBQUERY_NUM_INSTANCES;
+  const NUM_USER_INSTANCES = capacity.maxOutputs * USER_OUTPUT_FE;
+  const NUM_DATA_INSTANCES = capacity.maxSubqueries * SUBQUERY_FE;
 
   for (let i = numUserInstances; i < NUM_USER_INSTANCES; i++) {
     let witness = halo2Lib.constant("0");
@@ -110,7 +110,7 @@ const padInstances = (overrides?: AxiomV2CircuitOverrides) => {
   return { numUserInstances };
 }
 
-export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibWasm, config: CircuitConfig, provider: string, overrides?: AxiomV2CircuitOverrides) {
+export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibWasm, config: AxiomV2CircuitConfig, provider: string) {
   globalThis.axiom = {
     dataQuery: [],
     halo2lib: halo2LibWasm,
@@ -144,7 +144,7 @@ export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibW
     let fn = eval(`let {${halo2LibFns.join(", ")}} = halo2Lib; let {${axiomDataFns.join(", ")}} = axiomData; (async function(inputs) { ${code} })`);
     await fn(parsedInputs);
 
-    const { numUserInstances } = padInstances(overrides);
+    const { numUserInstances } = padInstances(config);
     halo2Wasm.assignInstances();
 
     let newConfig = config;
@@ -172,7 +172,7 @@ export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibW
 
     await f(parsedInputs);
 
-    const { numUserInstances } = padInstances();
+    const { numUserInstances } = padInstances(config);
     halo2Wasm.assignInstances();
 
     return {

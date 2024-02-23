@@ -59,7 +59,8 @@ export async function getFunctionFromTs(relativePath: string, functionName: stri
         circuit: context.exports[functionName],
         inputSchema,
         importName,
-        defaultInputs: context.exports.defaultInputs
+        defaultInputs: context.exports.defaultInputs,
+        config: context.exports.defaultInputs
     };
 }
 

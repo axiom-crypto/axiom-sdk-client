@@ -34,6 +34,8 @@ export const compile = async (
         shouldTime: options.stats,
         inputSchema: f.inputSchema,
         results: cache,
+        overrides: f.config,
+        config: f.config,
     })
     const circuitInputs = f.defaultInputs;
     try {

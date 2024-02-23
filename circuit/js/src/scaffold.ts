@@ -16,7 +16,7 @@ import {
 } from "@axiom-crypto/core";
 import { BaseCircuitScaffold } from "@axiom-crypto/halo2-lib-js";
 import { DEFAULT_CIRCUIT_CONFIG, SUBQUERY_FE, USER_OUTPUT_FE } from "./constants";
-import { AxiomV2CircuitOverrides, RawInput } from "./types";
+import { AxiomV2CircuitCapacity, AxiomV2CircuitConfig, RawInput } from "./types";
 import { encodeAxiomV2CircuitMetadata } from "./encoder";
 
 const DEADBEEF_BYTES32 = "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef";
@@ -32,7 +32,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   protected f: (inputs: T) => Promise<void>;
   protected results: { [key: string]: string };
   protected inputSchema?: string;
-  protected circuitOverrides?: AxiomV2CircuitOverrides;
+  protected config: AxiomV2CircuitConfig;
 
   constructor(inputs: {
     provider: string,
@@ -43,13 +43,14 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     chainId?: number | string | bigint,
     shouldTime?: boolean,
     results?: { [key: string]: string },
-    overrides?: AxiomV2CircuitOverrides,
+    overrides?: AxiomV2CircuitCapacity,
   }) {
     super();
-    this.circuitOverrides = inputs.overrides;
     this.resultLen = 0;
     this.provider = inputs.provider;
-    this.config = inputs.config ?? DEFAULT_CIRCUIT_CONFIG;
+    this.config = DEFAULT_CIRCUIT_CONFIG;
+    if (inputs.config) this.config = { ...this.config, ...inputs.config };
+    if (inputs.overrides) this.config = { ...this.config, ...inputs.overrides };
     this.dataQuery = [];
     this.axiom = new AxiomSdkCore({
       providerUri: inputs.provider,
@@ -82,12 +83,12 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     return { ...this.results };
   }
 
-  async loadSaved(input: { config: CircuitConfig; vk: string }) {
+  async loadSaved(input: { config: AxiomV2CircuitConfig; vk: string }) {
     this.config = input.config;
     await this.loadParamsAndVk(base64ToByteArray(input.vk));
   }
 
-  loadSavedMock(input: { config: CircuitConfig }) {
+  loadSavedMock(input: { config: AxiomV2CircuitConfig }) {
     this.config = input.config;
   }
 
@@ -99,14 +100,12 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     return querySchema;
   }
 
-  prependCircuitMetadata(config: CircuitConfig, partialVk: string[]): string[] {
-    const maxOutputs = this.circuitOverrides?.maxOutputs ?? AxiomV2CircuitConstant.UserMaxOutputs;
-    const maxSubqueries = this.circuitOverrides?.maxSubqueries ?? AxiomV2CircuitConstant.UserMaxSubqueries;
+  prependCircuitMetadata(config: AxiomV2CircuitConfig, partialVk: string[]): string[] {
     const encodedCircuitMetadata = encodeAxiomV2CircuitMetadata({
       version: 0,
       numValuesPerInstanceColumn: [
-        maxOutputs * USER_OUTPUT_FE +
-        maxSubqueries * SUBQUERY_FE
+        this.config.maxOutputs * USER_OUTPUT_FE +
+        this.config.maxSubqueries * SUBQUERY_FE
       ],
       numChallenge: [0],
       isAggregation: false,
@@ -114,7 +113,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       numLookupAdvicePerPhase: [config.numLookupAdvice],
       numRlcColumns: 0,
       numFixed: 1,
-      maxOutputs: maxOutputs,
+      maxOutputs: this.config.maxOutputs,
     });
     return [encodedCircuitMetadata, ...partialVk];
   }
@@ -127,7 +126,6 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       this.halo2Lib,
       this.config,
       this.provider,
-      this.circuitOverrides,
     ).compile(this.f, inputs, this.inputSchema);
     this.timeEnd("Witness generation");
     this.config = config;
@@ -150,6 +148,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       config,
       querySchema: this.getQuerySchema(),
       inputSchema: byteArrayToBase64(inputSchema),
+      capacity: this.config,
     };
   }
 
@@ -161,7 +160,6 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       this.halo2Lib,
       this.config,
       this.provider,
-      this.circuitOverrides,
     ).compile(this.f, inputs, this.inputSchema);
     this.timeEnd("Witness generation");
     this.config = config;
@@ -185,7 +183,6 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       this.halo2Lib,
       this.config,
       this.provider,
-      this.circuitOverrides,
     ).run(this.f, inputs, this.inputSchema, this.results);
     this.timeEnd("Witness generation");
     if (numUserInstances % 2 !== 0) {

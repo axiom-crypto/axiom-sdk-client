@@ -5,6 +5,7 @@ import {
   AxiomV2QueryOptions,
   ByteLengths,
 } from "@axiom-crypto/core";
+import { IpfsClient } from "src/lib/ipfs";
 
 const solidityTypes = Object.keys(ByteLengths);
 const solidityInputTypes = [...solidityTypes, ...solidityTypes.map((type: string) => `${type}[]`)] as const;
@@ -18,6 +19,7 @@ export interface AxiomV2ClientConfig<T> {
   privateKey?: string;
   version?: string;
   callback: AxiomV2CallbackInput;
+  ipfsClientKey?: string;
 }
 
 export interface AxiomV2CallbackInput {
@@ -44,6 +46,8 @@ export interface AxiomV2ClientOptions extends AxiomV2QueryOptions {
   caller?: string;
   privateKey?: string;
   validate?: boolean;
+  ipfs?: boolean;
+  ipfsClient?: IpfsClient;
 }
 
 export interface AxiomV2SendQueryArgs {

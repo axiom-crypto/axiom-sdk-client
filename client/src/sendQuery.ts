@@ -10,6 +10,7 @@ import {
 import { encodeFunctionData } from "viem";
 import { getMaxFeePerGas } from "./axiom/utils";
 import { AxiomV2ClientOptions } from "./axiom";
+import { encodeFullQueryV2 } from "@axiom-crypto/core/codec";
 
 export const buildSendQuery = async (input: {
   axiom: AxiomSdkCore;
@@ -20,6 +21,11 @@ export const buildSendQuery = async (input: {
   options: AxiomV2ClientOptions;
 }) => {
   const validate = input.options.validate ?? true;
+  const ipfs = input.options.ipfs ?? false;
+  if (ipfs && !input.options.ipfsClient) {
+    throw new Error("IPFS client is required");
+  }
+
   const query = input.axiom.query as QueryV2;
   if (input.options.refundee === undefined) {
     throw new Error("Refundee is required");
@@ -62,25 +68,60 @@ export const buildSendQuery = async (input: {
   const id = await qb.getQueryId(input.caller);
   const abi = input.axiom.getAxiomQueryAbi();
   const axiomQueryAddress = input.axiom.getAxiomQueryAddress();
-  const args = [
-    sourceChainId,
-    dataQueryHash,
-    computeQuery,
-    callback,
-    feeData,
-    userSalt,
-    refundee,
-    dataQuery,
-  ];
-  const sendQueryArgs = {
-    address: axiomQueryAddress as `0x${string}`,
-    abi: abi,
-    functionName: "sendQuery",
-    value: BigInt(payment),
-    args,
-    queryId: id,
-    mock: input.axiom.config.mock,
-  };
+
+  let sendQueryArgs: any;
+  if (!ipfs) {
+    sendQueryArgs = {
+      address: axiomQueryAddress as `0x${string}`,
+      abi: abi,
+      functionName: "sendQuery",
+      value: BigInt(payment),
+      args: [
+        sourceChainId,
+        dataQueryHash,
+        computeQuery,
+        callback,
+        feeData,
+        userSalt,
+        refundee,
+        dataQuery,
+      ],
+      queryId: id,
+      mock: input.axiom.config.mock,
+    };
+  } else {
+    const encodedQuery = encodeFullQueryV2(
+      sourceChainId,
+      refundee,
+      {
+        sourceChainId: input.axiom.config.chainId.toString(),
+        subqueries: input.dataQuery,
+      },
+      computeQuery,
+      callback,
+      feeData,
+      userSalt,
+      refundee,
+    );
+    const ipfsHash = await input.options.ipfsClient?.write(encodedQuery);
+    console.log("IPFS hash (bytes32): ", ipfsHash);
+    sendQueryArgs = {
+      address: axiomQueryAddress as `0x${string}`,
+      abi: abi,
+      functionName: "sendQueryWithIpfsData",
+      value: BigInt(payment),
+      args: [
+        dataQueryHash,
+        ipfsHash,
+        callback,
+        feeData,
+        userSalt,
+        refundee,
+      ],
+      queryId: id,
+      mock: input.axiom.config.mock,
+    };
+  }
 
   const calldata = encodeFunctionData(sendQueryArgs);
   return {

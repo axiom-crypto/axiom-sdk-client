@@ -9,8 +9,9 @@ import { RawInput } from "@axiom-crypto/circuit/types";
 import { convertChainIdToViemChain, convertInputSchemaToJsonString } from "./utils";
 import { TransactionReceipt, createPublicClient, createWalletClient, http, zeroAddress, zeroHash } from "viem";
 import { privateKeyToAccount } from 'viem/accounts'
-import { AxiomV2Callback } from "@axiom-crypto/core";
+import { AxiomV2Callback, AxiomV2ComputeQuery } from "@axiom-crypto/core";
 import { ClientConstants } from "../constants";
+import { PinataIpfsClient } from "../lib/ipfs";
 
 export class Axiom<T> {
   protected config: AxiomV2ClientConfig<T>;
@@ -59,28 +60,11 @@ export class Axiom<T> {
     }
   }
 
-  async prove(input: RawInput<T>): Promise<AxiomV2SendQueryArgs> {
-    await this.axiomCircuit.run(input);
-
-    const caller = this.config.privateKey !== undefined ? 
-      privateKeyToAccount(this.config.privateKey as `0x${string}`).address as string : 
-      this.options?.caller ?? "";
-
-    const options: AxiomV2ClientOptions = {
-      ...this.options,
-      callbackGasLimit: this.options?.callbackGasLimit ?? ClientConstants.CALLBACK_GAS_LIMIT,
-      refundee: this.options?.refundee ?? caller,
-    }
-
-    return await this.axiomCircuit.getSendQueryArgs({
-      callbackTarget: this.callback.target,
-      callbackExtraData: this.callback.extraData ?? "0x",
-      callerAddress: caller,
-      options,
-    });
+  async prove(input: RawInput<T>): Promise<AxiomV2ComputeQuery> {
+    return await this.axiomCircuit.run(input);
   }
 
-  async sendQuery(args: AxiomV2SendQueryArgs): Promise<TransactionReceipt> {
+  async sendQuery(): Promise<TransactionReceipt> {
     if (this.config.privateKey === undefined) {
       throw new Error("Setting `privateKey` is required to send a Query on-chain");
     }
@@ -95,7 +79,69 @@ export class Axiom<T> {
       transport: http(this.config.provider),
     })
 
+    const caller = privateKeyToAccount(this.config.privateKey as `0x${string}`).address as string
+    const options: AxiomV2ClientOptions = {
+      ...this.options,
+      callbackGasLimit: this.options?.callbackGasLimit ?? ClientConstants.CALLBACK_GAS_LIMIT,
+      refundee: this.options?.refundee ?? caller,
+    }
+    const args = await this.axiomCircuit.getSendQueryArgs({
+      callbackTarget: this.callback.target,
+      callbackExtraData: this.callback.extraData ?? "0x",
+      callerAddress: caller,
+      options,
+    });
+
     try {
+      const { request } = await publicClient.simulateContract({
+        address: args.address as `0x${string}`,
+        abi: args.abi,
+        functionName: args.functionName,
+        args: args.args,
+        account,
+        value: args.value,
+      });
+      const hash = await walletClient.writeContract(request);
+      return await publicClient.waitForTransactionReceipt({ hash });
+    } catch (e: any) {
+      if (e?.metaMessages !== undefined) {
+        throw new Error(e.metaMessages.join("\n"));
+      }
+      throw new Error(e);
+    }
+  }
+
+  async sendQueryWithIpfs(): Promise<TransactionReceipt> {
+    if (this.config.privateKey === undefined) {
+      throw new Error("Setting `privateKey` is required to send a Query on-chain");
+    }
+    const publicClient = createPublicClient({
+      chain: convertChainIdToViemChain(this.config.chainId),
+      transport: http(this.config.provider),
+    })
+    const account = privateKeyToAccount(this.config.privateKey as `0x${string}`);
+    const walletClient = createWalletClient({
+      chain: convertChainIdToViemChain(this.config.chainId),
+      account,
+      transport: http(this.config.provider),
+    })
+
+    const caller = privateKeyToAccount(this.config.privateKey as `0x${string}`).address as string
+    const options: AxiomV2ClientOptions = {
+      ...this.options,
+      callbackGasLimit: this.options?.callbackGasLimit ?? ClientConstants.CALLBACK_GAS_LIMIT,
+      refundee: this.options?.refundee ?? caller,
+      ipfs: true,
+      ipfsClient: new PinataIpfsClient(this.config.ipfsClientKey),
+    }
+    const args = await this.axiomCircuit.getSendQueryArgs({
+      callbackTarget: this.callback.target,
+      callbackExtraData: this.callback.extraData ?? "0x",
+      callerAddress: caller,
+      options,
+    });
+
+    try { 
       const { request } = await publicClient.simulateContract({
         address: args.address as `0x${string}`,
         abi: args.abi,

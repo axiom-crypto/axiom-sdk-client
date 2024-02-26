@@ -10,7 +10,7 @@ import {
 import { encodeFunctionData } from "viem";
 import { getMaxFeePerGas } from "./axiom/utils";
 import { AxiomV2ClientOptions } from "./axiom";
-import { encodeFullQueryV2 } from "@axiom-crypto/core/codec";
+import { encodeFullQueryV2 } from "@axiom-crypto/core/packages/tools";
 
 export const buildSendQuery = async (input: {
   axiom: AxiomSdkCore;

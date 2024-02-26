@@ -15,8 +15,8 @@ dependencies:
     specifier: 0.3.4
     version: 0.3.4
   '@axiom-crypto/tools':
-    specifier: 2.0.2-rc.0
-    version: 2.0.2-rc.0
+    specifier: 2.0.2
+    version: 2.0.2
   commander:
     specifier: ^11.1.0
     version: 11.1.0
@@ -97,6 +97,15 @@ packages:
 
   /@axiom-crypto/halo2-wasm@0.3.4:
     resolution: {integrity: sha512-SUHXnydtx5rY0gQ2zWy0Br6L3iaAFo5RH/AMnOCSM4Nb3inqinBEnXQgEPZ45+EFmeOfRi1xOVUBdo6keZlacQ==}
+    dev: false
+
+  /@axiom-crypto/tools@2.0.2:
+    resolution: {integrity: sha512-9U72jZvY33NXXon93qTBy49s01VZZPi5OAuTnPB7Hqw/0x+HDEdP1h3PB5fcV7cPdO5ZmqOH70ukVe/zCMwYjg==}
+    dependencies:
+      ethers: 6.10.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
     dev: false
 
   /@axiom-crypto/tools@2.0.2-rc.0:

@@ -1,4 +1,4 @@
-import { AbiType } from "src/types";
+import { AbiType } from "../types";
 import AxiomV2QueryAbi from "./abi/AxiomV2Query.json";
 
 export function getAxiomAbi(

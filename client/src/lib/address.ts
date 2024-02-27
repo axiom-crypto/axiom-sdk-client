@@ -45,46 +45,52 @@ const axiomV2QueryAddressesMock = {
   },
 };
 
-export function getContractAddress(
+const axiomV2BridgeAddress = {
+  [mainnet.id.toString()]: {
+    [arbitrum.id.toString()]: [
+      "",
+    ],
+    [optimism.id.toString()]: [
+      "",
+    ],
+    [base.id.toString()]: [
+      "",
+    ],
+    [scroll.id.toString()]: [
+      "",
+    ],
+  },
+}
+
+export function getAxiomV2QueryAddress(
   chainId: string,
   targetChainId?: string,
-  bridgeId?: number,
+  
   mock?: boolean,
 ) {
   if (mock === undefined) {
     mock = false;
   }
-  if (targetChainId === undefined || targetChainId === chainId) {
-    if (!mock) {
-      switch (chainId) {
-        case mainnet.id.toString():
-          return axiomV2QueryAddresses[mainnet.id.toString()][mainnet.id.toString()];
-        case sepolia.id.toString():
-          return axiomV2QueryAddresses[sepolia.id.toString()][sepolia.id.toString()];
-        default:
-          throw new Error(`Chain ${chainId} not supported`);
-      }
-    } else {
-      switch (chainId) {
-        case mainnet.id.toString():
-          return axiomV2QueryAddressesMock[mainnet.id.toString()][mainnet.id.toString()];
-        case sepolia.id.toString():
-          return axiomV2QueryAddressesMock[sepolia.id.toString()][sepolia.id.toString()];
-        default:
-          throw new Error(`Chain ${chainId} not supported`);
-      }
-    }
-  }
 
+  if (targetChainId === undefined) {
+    targetChainId = chainId;
+  }
+  
+  if (!mock) {
+    return axiomV2QueryAddresses[chainId][targetChainId];
+  } else {
+    return axiomV2QueryAddressesMock[chainId][targetChainId];
+  }
+}
+
+export function getAxiomV2BridgeAddress(
+  chainId: string,
+  targetChainId: string,
+  bridgeId?: number,
+) {
   if (bridgeId === undefined) {
     bridgeId = 0;
   }
 
-  switch (chainId) {
-    case "1":
-      switch (targetChainId) {
-        case "":
-      }
-  }
-  
+  return axiomV2BridgeAddress[chainId][targetChainId][bridgeId];
 }

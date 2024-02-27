@@ -7,6 +7,5 @@ export {
 } from "@axiom-crypto/core";
 
 export enum AbiType {
-  Core,
   Query,
 }

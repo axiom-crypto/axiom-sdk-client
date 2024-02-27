@@ -1,7 +1,7 @@
 import { AbiType } from "../types";
 import AxiomV2QueryAbi from "./abi/AxiomV2Query.json";
 
-export function getAxiomAbi(
+export function getAxiomV2Abi(
   type: AbiType,
 ) {
   switch (type) {

@@ -17,7 +17,7 @@ export async function getFunctionFromTs(relativePath: string, functionName: stri
             module: ts.ModuleKind.CommonJS,
         }
     });
-    const pattern: RegExp = /const (\w+) = require\("@axiom-crypto\/client"\);/;
+    const pattern: RegExp = /const (\w+) = require\("@axiom-crypto\/(client|circuit)"\);/;
     const match = result.outputText.match(pattern);
     const importName = match ? match[1] : null;
     if (!importName) throw new Error("Could not find import name");
@@ -28,6 +28,9 @@ export async function getFunctionFromTs(relativePath: string, functionName: stri
                 return require("@axiom-crypto/halo2-lib-js");
             }
             else if (moduleName === "@axiom-crypto/client") {
+                return require("../index");
+            }
+            else if (moduleName === "@axiom-crypto/circuit") {
                 return require("../index");
             }
             else {

@@ -65,7 +65,6 @@ const axiomV2BridgeAddress = {
 export function getAxiomV2QueryAddress(
   chainId: string,
   targetChainId?: string,
-  
   mock?: boolean,
 ) {
   if (mock === undefined) {

@@ -5,7 +5,7 @@ getHeader,
 addToCallback,
 add,
 or,
-} from "../../src";
+} from "../../../src";
 
 export const inputs = {
   "claimedBlockNumber": 3000000

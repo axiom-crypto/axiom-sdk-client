@@ -6,11 +6,11 @@ settings:
 
 dependencies:
   '@axiom-crypto/circuit':
-    specifier: 2.0.4-rc.1
-    version: 2.0.4-rc.1(typescript@5.3.3)
+    specifier: 2.0.4
+    version: 2.0.4(typescript@5.3.3)
   '@axiom-crypto/core':
-    specifier: 2.3.5
-    version: 2.3.5
+    specifier: 2.3.6-rc.3
+    version: 2.3.6-rc.3
   chalk:
     specifier: ^4.1.2
     version: 4.1.2
@@ -34,6 +34,9 @@ devDependencies:
   '@types/prompts':
     specifier: ^2.4.9
     version: 2.4.9
+  dotenv:
+    specifier: ^16.4.5
+    version: 16.4.5
   dts-bundle-generator:
     specifier: ^9.0.0
     version: 9.2.1
@@ -67,8 +70,8 @@ packages:
       '@jridgewell/trace-mapping': 0.3.20
     dev: true
 
-  /@axiom-crypto/circuit@2.0.4-rc.1(typescript@5.3.3):
-    resolution: {integrity: sha512-rVL4sZBVKknehu+Sfex7/C/BN/aBREVYf3KJGpVklk1m0To0Qpl4HNtj/Ms4bKY5cNNRcYTRr2Iltmwlc4IaCA==}
+  /@axiom-crypto/circuit@2.0.4(typescript@5.3.3):
+    resolution: {integrity: sha512-yy102cSR8HOpumhm0PRAiE6TS28N3mnrUQN7pNnLzsvg8K6EipIXufZGbn8VMadelf91F37PuR76egRFIcH3tg==}
     dependencies:
       '@axiom-crypto/core': 2.3.5
       '@axiom-crypto/halo2-lib-js': 0.3.4
@@ -99,6 +102,20 @@ packages:
       - utf-8-validate
     dev: false
 
+  /@axiom-crypto/core@2.3.6-rc.3:
+    resolution: {integrity: sha512-ZuP8O3GZzDE4PWG6CGZx5zJeoUUJx10L51LamsfBlDgxwTOMcn7/u+P5FVCOdUB/80okw3Ta1d43HNvQFSMArQ==}
+    dependencies:
+      '@axiom-crypto/tools': 2.0.2-rc.0
+      axios: 1.6.5
+      bs58: 5.0.0
+      ethers: 6.9.2
+      merkletreejs: 0.3.11
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - utf-8-validate
+    dev: false
+
   /@axiom-crypto/halo2-lib-js@0.3.4:
     resolution: {integrity: sha512-E/i7EqlcvjcfXZejL8HcpvFQIIMJxcMrVBXsdaDJGgEXVc6pEDJ07Hy3drLbhQ007ZJ8aultw3HSfD9gJRkh4w==}
     dependencies:
@@ -116,6 +133,15 @@ packages:
 
   /@axiom-crypto/tools@2.0.1:
     resolution: {integrity: sha512-rMJFvxhryU2o4GSKibGLygJfY7+yP8N5PddeuD2XiRo/BD2F4OY7MrdmsxQLoCjvNxECqVa/gcLTCratjSTMdw==}
+    dependencies:
+      ethers: 6.9.2
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
+
+  /@axiom-crypto/tools@2.0.2-rc.0:
+    resolution: {integrity: sha512-yaPR5n7Bb2spR1CDLecbSaaBCsTrTStgN0D6UnQnb2ZdcX1BOVoQUHEBCn+KKehLUJo1QhPGkivyueTLES1qCQ==}
     dependencies:
       ethers: 6.9.2
     transitivePeerDependencies:
@@ -1492,6 +1518,11 @@ packages:
   /diff-sequences@29.6.3:
     resolution: {integrity: sha512-EjePK1srD3P08o2j4f0ExnylqRs5B9tJjcp9t1krH2qRi8CCdsYfwe9JgSLurFBWwq4uOlipzfk5fHNvwFKr8Q==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
+    dev: true
+
+  /dotenv@16.4.5:
+    resolution: {integrity: sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==}
+    engines: {node: '>=12'}
     dev: true
 
   /dts-bundle-generator@9.2.1:

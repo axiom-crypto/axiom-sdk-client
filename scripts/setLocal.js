@@ -11,8 +11,8 @@ const localPrefix = ci ? "file:" : "link:";
 
 const packages = {
   "@axiom-crypto/circuit": {
-    path: "../circuit/js",
-    version: `${localPrefix}../circuit/js/dist`,
+    path: "../circuit",
+    version: `${localPrefix}../circuit/dist`,
   },
   "@axiom-crypto/client": {
     path: "../client",

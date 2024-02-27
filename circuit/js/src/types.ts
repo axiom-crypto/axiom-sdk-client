@@ -28,7 +28,7 @@ export interface AxiomV2CircuitCapacity {
 }
 
 export interface AxiomV2CircuitConfig {
-    circuit: CircuitConfig,
+    config: CircuitConfig,
     capacity: AxiomV2CircuitCapacity,
 }
 

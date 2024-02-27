@@ -36,7 +36,7 @@ export const compile = async (
         inputSchema: f.inputSchema,
         results: cache,
         capacity: f.config?.capacity,
-        config: f.config?.circuit,
+        config: f.config?.config,
     })
     const circuitInputs = f.defaultInputs;
     try {

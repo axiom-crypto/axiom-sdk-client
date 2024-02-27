@@ -83,19 +83,19 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   }
 
   async loadSaved(input: { config: AxiomV2CircuitConfig; vk: string }) {
-    this.config = input.config.circuit;
+    this.config = input.config.config;
     this.capacity = input.config.capacity;
     await this.loadParamsAndVk(base64ToByteArray(input.vk));
   }
 
   loadSavedMock(input: { config: AxiomV2CircuitConfig }) {
-    this.config = input.config.circuit;
+    this.config = input.config.config;
     this.capacity = input.config.capacity;
   }
 
   circuitConfig(): AxiomV2CircuitConfig {
     return {
-      circuit: this.config,
+      config: this.config,
       capacity: this.capacity,
     }
   }
@@ -153,7 +153,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     const encoder = new TextEncoder();
     const inputSchema = encoder.encode(this.inputSchema);
     const axiomConfig: AxiomV2CircuitConfig = {
-      circuit: config,
+      config,
       capacity: this.capacity
     }
     return {
@@ -182,7 +182,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     const encoder = new TextEncoder();
     const inputSchema = encoder.encode(this.inputSchema);
     const axiomConfig: AxiomV2CircuitConfig = {
-      circuit: config,
+      config,
       capacity: this.capacity
     }
     return {

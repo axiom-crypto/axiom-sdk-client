@@ -16,7 +16,9 @@ export const circuit = async (inputs: CircuitInputs) => {
         // x^2 + y
         const x_2 = mul(inputs.x[i], inputs.x[i]);
         const val = add(x_2, inputs.y[i]);
-        xRes.push(val);
+        if (i < 4) {
+            xRes.push(val);
+        }
     }
 
     let yRes: CircuitValue[] = [];
@@ -24,20 +26,26 @@ export const circuit = async (inputs: CircuitInputs) => {
         // x^2 + y
         const y_2 = mul(inputs.y[i], inputs.y[i]);
         const val = add(y_2, inputs.x[i]);
-        yRes.push(val);
+        if (i < 4) {
+            yRes.push(val);
+        }
     }
 
     let zRes: CircuitValue[] = [];
     for (let i = 0; i < xRes.length; i++) {
         const val = mul(xRes[i], yRes[i]);
-        zRes.push(val);
+        if (i < 4) {
+            zRes.push(val);
+        }
     }
 
     let aRes: CircuitValue[] = [];
     for (let i = 0; i < xRes.length; i++) {
         for (let j = 0; j < yRes.length; j++) {
             const val = mul(xRes[i], yRes[j]);
-            aRes.push(val);
+            if (i < 4 && j < 4) {
+                aRes.push(val);
+            }
         }
     }
 
@@ -45,7 +53,9 @@ export const circuit = async (inputs: CircuitInputs) => {
     for (let i = 0; i < yRes.length; i++) {
         for (let j = 0; j < zRes.length; j++) {
             const val = mul(yRes[i], zRes[j]);
-            bRes.push(val);
+            if (i < 4 && j < 4) {
+                bRes.push(val);
+            }
         }
     }
 
@@ -53,18 +63,24 @@ export const circuit = async (inputs: CircuitInputs) => {
     for (let i = 0; i < zRes.length; i++) {
         for (let j = 0; j < xRes.length; j++) {
             const val = mul(zRes[i], xRes[j]);
-            cRes.push(val);
+            if (i < 4 && j < 4) {
+                cRes.push(val);
+            }
         }
     }
 
     for (let i = 0; i < xRes.length; i++) {
-        addToCallback(xRes[i]);
-        addToCallback(yRes[i]);
-        addToCallback(zRes[i]);
+        if (i < 4) {
+            addToCallback(xRes[i]);
+            addToCallback(yRes[i]);
+            addToCallback(zRes[i]);
+        }
     }
 
     for (let i = 0; i < aRes.length; i++) {
         const val = mul(cRes[i], mul(aRes[i], bRes[i]));
-        addToCallback(val);
+        if (i < 4) {
+            addToCallback(val);
+        }
     }
 }

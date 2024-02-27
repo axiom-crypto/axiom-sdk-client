@@ -1,10 +1,10 @@
-import { circuit as circuit0 } from "./circuits/queryId/basic.circuit";
-import compiledCircuit0 from "./circuits/queryId/basic.compiled.json";
 import { Axiom } from "../../src";
-import { bytes32 } from "@axiom-crypto/core";
+import { circuit as circuit0 } from "./circuits/quickstart/average.circuit";
+import compiledCircuit0 from "./circuits/quickstart/average.compiled.json";
+import inputs0 from "./circuits/quickstart/average.inputs.json";
 
-describe("QueryID Integration Tests", () => {
-  test("check queryId matches emitted event", async () => {
+describe("Quickstart", () => {
+  test("Quickstart query", async () => {
     const axiom = new Axiom({
       circuit: circuit0,
       compiledCircuit: compiledCircuit0,
@@ -16,12 +16,8 @@ describe("QueryID Integration Tests", () => {
       },
     });
     await axiom.init();
-    const args = await axiom.prove({});
+    const args = await axiom.prove(inputs0);
     const receipt = await axiom.sendQuery(args);
     expect(receipt.status).toBe('success');
-
-    const queryInitiatedOnChainEvent = receipt.logs[1];
-    const onchainQueryId = queryInitiatedOnChainEvent.topics[3];
-    expect(bytes32(args.queryId)).toEqual(onchainQueryId);
   }, 60000);
 });

@@ -1,6 +1,7 @@
-import { AbiType } from "../../../src/types";
-import { getAxiomV2BridgeAddress, getAxiomV2QueryAddress } from "../../../src/lib/address";
-import AxiomV2QueryAbi from "../../../src/lib/abi/AxiomV2Query.json";
+import {
+  getAxiomV2BridgeAddress,
+  getAxiomV2QueryAddress,
+} from "../../../src/lib/address";
 
 describe("Address library unit tests", () => {
   test("Basic addresses", () => {

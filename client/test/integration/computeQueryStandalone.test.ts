@@ -1,7 +1,7 @@
 import { circuit as circuit0 } from "./circuits/computeQueryStandalone/computeQueryNoData.circuit";
 import compiledCircuit0 from "./circuits/computeQueryStandalone/computeQueryNoData.compiled.json";
-import { circuit as circuit1 } from "./circuits/computeQueryStandalone/computeQueryNoData.circuit";
-import compiledCircuit1 from "./circuits/computeQueryStandalone/computeQueryNoData.compiled.json";
+import { circuit as circuit1 } from "./circuits/computeQueryStandalone/computeQueryNoDataLarge.circuit";
+import compiledCircuit1 from "./circuits/computeQueryStandalone/computeQueryNoDataLarge.compiled.json";
 import circuitInputs1 from "./circuits/computeQueryStandalone/computeQueryNoDataLarge.inputs.json";
 import { Axiom } from "../../src";
 

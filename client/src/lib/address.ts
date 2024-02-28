@@ -11,6 +11,7 @@ import {
   sepolia
 } from "viem/chains";
 
+// Maps sourceChainId to targetChainId AxiomV2Query deployment address
 const axiomV2QueryAddresses = {
   [mainnet.id.toString()]: {
     [mainnet.id.toString()]: "0x83c8c0B395850bA55c830451Cfaca4F2A667a983",
@@ -28,6 +29,7 @@ const axiomV2QueryAddresses = {
   },
 };
 
+// Maps sourceChainId to targetChainId AxiomV2QueryMock deployment address
 const axiomV2QueryAddressesMock = {
   [mainnet.id.toString()]: {
     [mainnet.id.toString()]: "",
@@ -45,6 +47,7 @@ const axiomV2QueryAddressesMock = {
   },
 };
 
+// Maps sourceChainId to targetChainId to bridge ID addresses
 const axiomV2BridgeAddress = {
   [mainnet.id.toString()]: {
     [arbitrum.id.toString()]: [

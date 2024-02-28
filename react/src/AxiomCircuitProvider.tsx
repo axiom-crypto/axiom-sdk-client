@@ -25,7 +25,7 @@ type BuiltQuery = {
 
 type AxiomCircuitContextType<T> = {
   setOptions: React.Dispatch<React.SetStateAction<AxiomV2QueryOptions | null>>,
-  setParams: (inputs: T, callbackAddress: string, callbackExtraData: string, refundee: string) => void,
+  setParams: (inputs: T, callbackTarget: string, callbackExtraData: string, refundee: string) => void,
   areParamsSet: boolean,
   build: () => Promise<BuiltQuery | null>,
   builtQuery: BuiltQuery | null,
@@ -104,10 +104,13 @@ function AxiomCircuitProvider({
     setBuiltQuery(null);
   }
 
-  const setParams = useCallback((inputs: any, calllbackAddress: string, callbackExtraData: string, refundee: string) => {
+  const setParams = useCallback((inputs: any, callbackTarget: string, callbackExtraData: string, refundee: string) => {
+    if (callbackExtraData === "") {
+      callbackExtraData = "0x";
+    }
     setInputs(inputs);
     setCallback({
-      target: calllbackAddress,
+      target: callbackTarget,
       extraData: callbackExtraData,
     });
     setRefundee(refundee);

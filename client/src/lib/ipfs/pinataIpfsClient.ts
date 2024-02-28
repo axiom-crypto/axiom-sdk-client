@@ -12,12 +12,47 @@ export class PinataIpfsClient extends IpfsClient {
     this.pinataJwt = pinataJwt;
   }
 
+  async getSize(hashOrCid: string): Promise<number | null> {
+    try {
+      if (hashOrCid.startsWith("0x")) {
+        hashOrCid = this.convertBytes32ToIpfsCid(hashOrCid);
+      }
+      
+      const res = await axios.get(`https://api.pinata.cloud/data/pinList?` + new URLSearchParams({
+        hashContains: hashOrCid,
+      }), {
+        headers: {
+          Authorization: `Bearer ${this.pinataJwt}`,
+        }
+      });
+      
+      const allPinned = res.data.rows;
+      if (!allPinned) {
+        return null;
+      }
+      for (const pinned of allPinned) {
+        if (pinned.date_pinned === null) {
+          continue;
+        }
+        return pinned.size;
+      }
+      return null;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  }
+
   async read(hashOrCid: string): Promise<string | null> {
     try {
       if (hashOrCid.startsWith("0x")) {
         hashOrCid = this.convertBytes32ToIpfsCid(hashOrCid);
       }
-      const res = await axios.get(`https://gateway.pinata.cloud/ipfs/${hashOrCid}`);
+      const res = await axios.get(`https://gateway.pinata.cloud/ipfs/${hashOrCid}`, {
+        headers: {
+          Authorization: `Bearer ${this.pinataJwt}`,
+        }
+      });
       return res.data.data ?? null;
     } catch (e) {
       console.error(e);

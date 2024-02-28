@@ -1,6 +1,7 @@
-import bs58 from 'bs58'
+import bs58 from 'bs58';
 
 export abstract class IpfsClient {
+  abstract getSize(hashOrCid: string): Promise<number | null>;
   abstract read(hashOrCid: string): Promise<string | null>;
   abstract write(data: string): Promise<string | null>;
 

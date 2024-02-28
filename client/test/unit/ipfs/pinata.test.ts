@@ -1,6 +1,8 @@
 import { PinataIpfsClient } from "../../../src/lib/ipfs/pinataIpfsClient";
 
 describe("Pinata IPFS client", () => {
+  const PADDING_SIZE = 22;
+
   const CID = "QmP1gv3pkhS16zuP7riLL2Lr9yVxN4CLBGjyWcnRn8AxkK";
   const CID_BYTES32 = "0x0a002552373dd861ecafa476341e768dd496a10fc1ee3f18753434d33adc1404";
   const encodedQuery =
@@ -16,6 +18,11 @@ describe("Pinata IPFS client", () => {
   test("Read from IPFS", async () => {
     const encoded = await pinata.read(CID);
     expect(encoded).toEqual(encodedQuery);
+  });
+
+  test("Get pinned object size", async () => {
+    const size = await pinata.getSize(CID);
+    expect(size).toEqual(encodedQuery.length + PADDING_SIZE);
   });
 
   test("Convert CID to bytes32", async () => {

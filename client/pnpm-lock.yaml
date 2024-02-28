@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@axiom-crypto/circuit':
-    specifier: link:../circuit/js/dist
-    version: link:../circuit/js/dist
+    specifier: link:../circuit/dist
+    version: link:../circuit/dist
   '@axiom-crypto/core':
     specifier: 2.3.6-rc.3
     version: 2.3.6-rc.3

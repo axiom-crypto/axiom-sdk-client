@@ -3,7 +3,7 @@ const { execSync } = require("child_process");
 
 const packages = {
   "@axiom-crypto/circuit": {
-    path: "../circuit/js",
+    path: "../circuit",
     version: "",
   },
   "@axiom-crypto/client": {

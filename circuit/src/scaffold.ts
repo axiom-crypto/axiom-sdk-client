@@ -141,12 +141,13 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     this.results = results;
     await this.populateCircuit(inputs);
 
+    let skipValidate = this.capacity !== DEFAULT_CAPACITY;
     // Validate max circuit subquery size
     const queryBuilder = (this.axiom.query as QueryV2).new();
     queryBuilder.setBuiltDataQuery({
       sourceChainId: this.chainId,
       subqueries: this.dataQuery,
-    });
+    }, skipValidate);
 
     await this.keygen();
     const vk = this.getHalo2Vk();
@@ -214,11 +215,18 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   async run(inputs: RawInput<T>) {
     await this.populateCircuit(inputs);
 
+    let skipValidate = this.capacity !== DEFAULT_CAPACITY;
+
     // Validate data subqueries
     const queryBuilder = (this.axiom.query as QueryV2).new();
-    const unbuiltSubqueries = await convertBuiltSubqueries(this.provider, this.dataQuery);
-    queryBuilder.append(unbuiltSubqueries);
-    if (await !queryBuilder.validate()) {
+
+    // const unbuiltSubqueries = await convertBuiltSubqueries(this.provider, this.dataQuery);
+    // queryBuilder.append(unbuiltSubqueries, skipValidate);
+    queryBuilder.setBuiltDataQuery({
+      sourceChainId: this.chainId,
+      subqueries: this.dataQuery,
+    }, skipValidate);
+    if (!skipValidate && !queryBuilder.validate()) {
       throw new Error("Subquery validation failed")
     }
 

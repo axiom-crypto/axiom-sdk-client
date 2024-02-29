@@ -6,11 +6,11 @@ settings:
 
 dependencies:
   '@axiom-crypto/circuit':
-    specifier: link:../circuit/js/dist
-    version: link:../circuit/js/dist
+    specifier: link:../circuit/dist
+    version: link:../circuit/dist
   '@axiom-crypto/core':
-    specifier: 2.3.5
-    version: 2.3.5
+    specifier: 2.3.7-rc.0
+    version: 2.3.7-rc.0
   chalk:
     specifier: ^4.1.2
     version: 4.1.2
@@ -67,10 +67,10 @@ packages:
       '@jridgewell/trace-mapping': 0.3.20
     dev: true
 
-  /@axiom-crypto/core@2.3.5:
-    resolution: {integrity: sha512-1O/oM4gvZWf0VtVtypHAKmJQFluMj0k976OuM6HOGnOgNu+TqWt/9jUZeZ9HEUWGXEoFCNI5l9dA5pgdnJN1/g==}
+  /@axiom-crypto/core@2.3.7-rc.0:
+    resolution: {integrity: sha512-54+5K/vvRWyvp2ty9nSOLt3Fqj/JQpUytKaTUkLRM759NDd//8mNxbz5v1I+lMi6Uxsx+4B6+SX6ajwjya/KTA==}
     dependencies:
-      '@axiom-crypto/tools': 2.0.1
+      '@axiom-crypto/tools': 2.0.2
       axios: 1.6.5
       bs58: 5.0.0
       ethers: 6.9.2
@@ -81,8 +81,8 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@axiom-crypto/tools@2.0.1:
-    resolution: {integrity: sha512-rMJFvxhryU2o4GSKibGLygJfY7+yP8N5PddeuD2XiRo/BD2F4OY7MrdmsxQLoCjvNxECqVa/gcLTCratjSTMdw==}
+  /@axiom-crypto/tools@2.0.2:
+    resolution: {integrity: sha512-9U72jZvY33NXXon93qTBy49s01VZZPi5OAuTnPB7Hqw/0x+HDEdP1h3PB5fcV7cPdO5ZmqOH70ukVe/zCMwYjg==}
     dependencies:
       ethers: 6.9.2
     transitivePeerDependencies:

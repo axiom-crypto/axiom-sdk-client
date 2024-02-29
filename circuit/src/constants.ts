@@ -9,11 +9,6 @@ export const SUBQUERY_FE = (1 + MAX_SUBQUERY_INPUTS + MAX_SUBQUERY_OUTPUTS);
 
 export const MAX_SOLIDITY_MAPPING_KEYS = AxiomV2CircuitConstant.MaxSolidityMappingKeys;
 
-export const USER_COMPUTE_NUM_INSTANCES = MAX_USER_OUTPUTS * USER_OUTPUT_FE;
-export const SUBQUERY_NUM_INSTANCES = MAX_DATA_SUBQUERIES * SUBQUERY_FE;
-
-export const COMPUTE_NUM_INSTANCES = USER_COMPUTE_NUM_INSTANCES + SUBQUERY_NUM_INSTANCES;
-
 export const DEFAULT_CIRCUIT_CONFIG = {
     k: 14,
     numAdvice: AxiomV2CircuitConstant.UserAdviceCols,

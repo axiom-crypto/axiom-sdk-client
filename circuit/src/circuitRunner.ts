@@ -1,6 +1,6 @@
 import { JsonRpcProvider } from "ethers";
 import { getCircuitValue256Witness, getCircuitValueWitness } from "./utils";
-import { SUBQUERY_FE, SUBQUERY_NUM_INSTANCES, USER_COMPUTE_NUM_INSTANCES, USER_OUTPUT_FE } from "./constants";
+import { SUBQUERY_FE, USER_OUTPUT_FE } from "./constants";
 import { getInputFunctionSignature } from "@axiom-crypto/halo2-lib-js/shared/utils";
 import { autoConfigCircuit, CircuitConfig, setCircuit } from "@axiom-crypto/halo2-lib-js";
 import { Halo2Wasm, Halo2LibWasm } from "@axiom-crypto/halo2-lib-js/wasm/web";

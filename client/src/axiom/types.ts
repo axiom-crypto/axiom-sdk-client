@@ -19,7 +19,7 @@ export interface AxiomV2ClientConfig<T> {
   privateKey?: string;
   version?: string;
   callback: AxiomV2CallbackInput;
-  ipfsClientKey?: string;
+  ipfsClient?: IpfsClient;
 }
 
 export interface AxiomV2CallbackInput {
@@ -46,7 +46,6 @@ export interface AxiomV2ClientOptions extends AxiomV2QueryOptions {
   caller?: string;
   privateKey?: string;
   validate?: boolean;
-  ipfs?: boolean;
   ipfsClient?: IpfsClient;
 }
 

@@ -3,13 +3,30 @@ import { IpfsClient } from "./ipfsClient";
 
 export class PinataIpfsClient extends IpfsClient {
   private pinataJwt: string;
+  private dedicatedGatewayUrl?: string;
 
-  constructor(pinataJwt: string | undefined) {
-    super();
+  constructor(pinataJwt: string | undefined, dedicatedGatewayUrl?: string) {
+    super("Pinata");
     if (!pinataJwt) {
       throw new Error("Pinata JWT is required");
     }
     this.pinataJwt = pinataJwt;
+    if (dedicatedGatewayUrl) {
+      if (dedicatedGatewayUrl[dedicatedGatewayUrl.length - 1] === "/") {
+        dedicatedGatewayUrl = dedicatedGatewayUrl.slice(0, -1);
+        if (!dedicatedGatewayUrl.endsWith("/ipfs")) {
+          dedicatedGatewayUrl += "/ipfs";
+        }
+        this.dedicatedGatewayUrl = dedicatedGatewayUrl;
+      }
+    }
+  }
+
+  private getUrl(): string {
+    if (this.dedicatedGatewayUrl) {
+      return `${this.dedicatedGatewayUrl}`;
+    }
+    return `https://gateway.pinata.cloud/ipfs`;
   }
 
   async getSize(hashOrCid: string): Promise<number | null> {
@@ -17,26 +34,10 @@ export class PinataIpfsClient extends IpfsClient {
       if (hashOrCid.startsWith("0x")) {
         hashOrCid = this.convertBytes32ToIpfsCid(hashOrCid);
       }
-      
-      const res = await axios.get(`https://api.pinata.cloud/data/pinList?` + new URLSearchParams({
-        hashContains: hashOrCid,
-      }), {
-        headers: {
-          Authorization: `Bearer ${this.pinataJwt}`,
-        }
-      });
-      
-      const allPinned = res.data.rows;
-      if (!allPinned) {
-        return null;
-      }
-      for (const pinned of allPinned) {
-        if (pinned.date_pinned === null) {
-          continue;
-        }
-        return pinned.size;
-      }
-      return null;
+      // Pinata gateway will not return data size on a head request, so we need to use 
+      // the public ipfs.io gateway instead.
+      const res = await axios.head(`https://ipfs.io/ipfs/${hashOrCid}`);
+      return res.headers["x-ipfs-datasize"] ?? null;
     } catch (e) {
       console.error(e);
       return null;
@@ -48,7 +49,8 @@ export class PinataIpfsClient extends IpfsClient {
       if (hashOrCid.startsWith("0x")) {
         hashOrCid = this.convertBytes32ToIpfsCid(hashOrCid);
       }
-      const res = await axios.get(`https://gateway.pinata.cloud/ipfs/${hashOrCid}`, {
+      const url = this.getUrl();
+      const res = await axios.get(`${url}/${hashOrCid}`, {
         headers: {
           Authorization: `Bearer ${this.pinataJwt}`,
         }
@@ -60,7 +62,7 @@ export class PinataIpfsClient extends IpfsClient {
     }
   }
 
-  async write(data: string): Promise<string | null> {
+  async pin(data: string): Promise<string | null> {
     const dataObj = {
       "pinataContent": {
         "data": data,
@@ -71,17 +73,38 @@ export class PinataIpfsClient extends IpfsClient {
       }
     }
     try {
-      const res = await axios.post("https://api.pinata.cloud/pinning/pinJSONToIPFS", dataObj, {
-        headers: {
-          'Content-Type': "application/json",//`multipart/form-data; boundary= ${formData.getBoundary()}`,
-          Authorization: `Bearer ${this.pinataJwt}`,
+      const res = await axios.post(
+        "https://api.pinata.cloud/pinning/pinJSONToIPFS",
+        dataObj,
+        {
+          headers: {
+            'Content-Type': "application/json",
+            Authorization: `Bearer ${this.pinataJwt}`,
+          }
         }
-      });
+      );
       const hash = res.data.IpfsHash
       return this.convertIpfsCidToBytes32(hash);
     } catch (e) {
       console.error(e);
       return null;
+    }
+  }
+
+  async unpin(hashOrCid: string): Promise<boolean> {
+    try {
+      if (hashOrCid.startsWith("0x")) {
+        hashOrCid = this.convertBytes32ToIpfsCid(hashOrCid);
+      }
+      const res = await axios.delete(`https://api.pinata.cloud/pinning/unpin/${hashOrCid}`, {
+        headers: {
+          Authorization: `Bearer ${this.pinataJwt}`,
+        }
+      });
+      return res.status === 200;
+    } catch (e: any) {
+      console.error(e);
+      return false;
     }
   }
 }

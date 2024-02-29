@@ -21,10 +21,6 @@ export const buildSendQuery = async (input: {
   options: AxiomV2ClientOptions;
 }) => {
   const validate = input.options.validate ?? true;
-  const ipfs = input.options.ipfs ?? false;
-  if (ipfs && !input.options.ipfsClient) {
-    throw new Error("IPFS client is required");
-  }
 
   const query = input.axiom.query as QueryV2;
   if (input.options.refundee === undefined) {
@@ -70,7 +66,7 @@ export const buildSendQuery = async (input: {
   const axiomQueryAddress = input.axiom.getAxiomQueryAddress();
 
   let sendQueryArgs: any;
-  if (!ipfs) {
+  if (!input.options.ipfsClient) {
     sendQueryArgs = {
       address: axiomQueryAddress as `0x${string}`,
       abi: abi,
@@ -103,8 +99,10 @@ export const buildSendQuery = async (input: {
       userSalt,
       refundee,
     );
-    const ipfsHash = await input.options.ipfsClient?.write(encodedQuery);
-    console.log("IPFS hash (bytes32): ", ipfsHash);
+    const ipfsHash = await input.options.ipfsClient?.pin(encodedQuery);
+    if (!ipfsHash) {
+      throw new Error("Failed to write data to IPFS");
+    }
     sendQueryArgs = {
       address: axiomQueryAddress as `0x${string}`,
       abi: abi,

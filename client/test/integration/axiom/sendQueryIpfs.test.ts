@@ -8,16 +8,18 @@ import { PinataIpfsClient } from "../../../src/lib/ipfs";
 
 describe("Send Query using Axiom client", () => {
   test("Send a query with IPFS", async () => {
+    const ipfsClient = new PinataIpfsClient(process.env.PINATA_JWT as string);
+
     const axiom = new Axiom({
       circuit: circuit,
       compiledCircuit: compiledCircuit,
       chainId: "11155111",  // Sepolia
       provider: process.env.PROVIDER_URI_SEPOLIA as string,
       privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
-      ipfsClientKey: process.env.PINATA_JWT as string,
       callback: {
         target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
       },
+      ipfsClient: ipfsClient,
     });
     await axiom.init();
     const computeQuery = await axiom.prove(inputs as RawInput<CircuitInputs>);

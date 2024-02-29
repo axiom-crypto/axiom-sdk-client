@@ -111,13 +111,15 @@ export class Axiom<T> {
   }
 
   async sendQueryWithIpfs(): Promise<TransactionReceipt> {
-    const ipfsClient = new PinataIpfsClient(this.config.ipfsClientKey)
+    if (this.config.ipfsClient === undefined) {
+      throw new Error("Setting `ipfsClient` is required to send a Query with IPFS");
+    }
     const {
       publicClient,
       walletClient,
       account,
       options,
-    } = await this.prepareSendQuery(ipfsClient);
+    } = await this.prepareSendQuery(this.config.ipfsClient);
     const args = await this.axiomCircuit.getSendQueryArgs({
       callbackTarget: this.callback.target,
       callbackExtraData: this.callback.extraData ?? "0x",
@@ -163,7 +165,6 @@ export class Axiom<T> {
       ...this.options,
       callbackGasLimit: this.options?.callbackGasLimit ?? ClientConstants.CALLBACK_GAS_LIMIT,
       refundee: this.options?.refundee ?? account.address,
-      ipfs: ipfsClient !== undefined,
       ipfsClient,
     }
 

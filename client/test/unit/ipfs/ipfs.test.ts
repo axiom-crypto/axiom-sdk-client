@@ -16,7 +16,7 @@ describe("IPFS client tests", () => {
   }
 
   const pinata = new PinataIpfsClient(process.env.PINATA_JWT);
-  const quicknode = new QuicknodeIpfsClient(process.env.QUICKNODE_IPFS_URL as string, process.env.QUICKNODE_API_KEY as string);
+  const quicknode = new QuicknodeIpfsClient(process.env.QUICKNODE_API_KEY as string, process.env.QUICKNODE_IPFS_URL as string);
   const ipfsClients = [
     pinata, 
     quicknode,

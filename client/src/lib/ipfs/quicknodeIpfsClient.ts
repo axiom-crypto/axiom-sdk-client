@@ -6,10 +6,13 @@ export class QuicknodeIpfsClient extends IpfsClient {
   private gatewayUrl: string;
   private apiKey: string;
 
-  constructor(gatewayUrl: string, apiKey: string) {
+  constructor(apiKey: string, gatewayUrl: string) {
     super("Quicknode");
     if (gatewayUrl[gatewayUrl.length - 1] === "/") {
       gatewayUrl = gatewayUrl.slice(0, -1);
+      if (!gatewayUrl.endsWith("/ipfs")) {
+        gatewayUrl += "/ipfs";
+      }
     }
     this.gatewayUrl = gatewayUrl;
     this.apiKey = apiKey;

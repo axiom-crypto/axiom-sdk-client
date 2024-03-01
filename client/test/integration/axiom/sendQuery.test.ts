@@ -2,7 +2,7 @@ import { circuit, CircuitInputs } from "../circuit/average.circuit";
 import { Axiom } from "../../../src/";
 import inputs from '../circuit/average.inputs.json';
 import compiledCircuit from '../circuit/average.compiled.json';
-import { RawInput } from "@axiom-crypto/circuit/types";
+import { UserInput } from "@axiom-crypto/circuit";
 
 describe("Send Query using Axiom client", () => {
   test("Send a query", async () => {
@@ -17,7 +17,7 @@ describe("Send Query using Axiom client", () => {
       },
     });
     await axiom.init();
-    const args = await axiom.prove(inputs as RawInput<CircuitInputs>);
+    const args = await axiom.prove(inputs as UserInput<CircuitInputs>);
     if (!process.env.PRIVATE_KEY_SEPOLIA) {
       console.log("No private key provided: Query will not be sent to the blockchain.");
       return;

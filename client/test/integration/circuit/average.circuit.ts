@@ -8,8 +8,6 @@ import {
   CircuitValue256,
   constant,
   witness,
-} from "@axiom-crypto/halo2-lib-js";
-import {
   addToCallback,
   getAccount,
 } from "@axiom-crypto/circuit";

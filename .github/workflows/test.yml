@@ -18,6 +18,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
       - name: "Install Node.js"
         uses: "actions/setup-node@v4"
         with:
@@ -46,6 +51,11 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
 
       - name: "Install Node.js"
         uses: "actions/setup-node@v4"

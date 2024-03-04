@@ -1,6 +1,7 @@
-import { 
+import { AxiomV2CircuitCapacity, AxiomV2CircuitConfig, CircuitConfig } from "@axiom-crypto/circuit/types";
+import {
   AxiomV2Callback,
-  AxiomV2ComputeQuery, 
+  AxiomV2ComputeQuery,
   AxiomV2FeeData,
   AxiomV2QueryOptions,
   ByteLengths,
@@ -27,14 +28,7 @@ export interface AxiomV2CallbackInput {
 
 export interface AxiomV2CompiledCircuit {
   vk: string;
-  config: {
-    k: number;
-    numAdvice: number;
-    numLookupAdvice: number;
-    numInstance: number;
-    numLookupBits: number;
-    numVirtualInstance: number;
-  };
+  config: AxiomV2CircuitConfig,
   querySchema: string;
   inputSchema: string;
   circuit: string;

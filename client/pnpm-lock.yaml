@@ -9,8 +9,13 @@ dependencies:
     specifier: link:../circuit/dist
     version: link:../circuit/dist
   '@axiom-crypto/core':
+<<<<<<< HEAD
     specifier: 2.3.7
     version: 2.3.7
+=======
+    specifier: 2.3.7-rc.0
+    version: 2.3.7-rc.0
+>>>>>>> 7521c4b99ebee5729262291bb0cf5773e6ff8181
   chalk:
     specifier: ^4.1.2
     version: 4.1.2
@@ -82,11 +87,19 @@ packages:
       '@jridgewell/trace-mapping': 0.3.23
     dev: true
 
+<<<<<<< HEAD
   /@axiom-crypto/core@2.3.7:
     resolution: {integrity: sha512-ioY5rkmQLYsHbnp9FUhAx2HfBovBLxdpPfRGkpAavHWoojo2aplWzBp9FXfyeGn2X0MMwX9RrP+Ir5inx1SXcA==}
     dependencies:
       '@axiom-crypto/tools': 2.1.0
       axios: 1.6.7
+=======
+  /@axiom-crypto/core@2.3.7-rc.0:
+    resolution: {integrity: sha512-54+5K/vvRWyvp2ty9nSOLt3Fqj/JQpUytKaTUkLRM759NDd//8mNxbz5v1I+lMi6Uxsx+4B6+SX6ajwjya/KTA==}
+    dependencies:
+      '@axiom-crypto/tools': 2.0.2
+      axios: 1.6.5
+>>>>>>> 7521c4b99ebee5729262291bb0cf5773e6ff8181
       bs58: 5.0.0
       ethers: 6.11.1
       merkletreejs: 0.3.11
@@ -96,6 +109,7 @@ packages:
       - utf-8-validate
     dev: false
 
+<<<<<<< HEAD
   /@axiom-crypto/halo2-lib-js@0.3.4:
     resolution: {integrity: sha512-E/i7EqlcvjcfXZejL8HcpvFQIIMJxcMrVBXsdaDJGgEXVc6pEDJ07Hy3drLbhQ007ZJ8aultw3HSfD9gJRkh4w==}
     dependencies:
@@ -113,6 +127,10 @@ packages:
 
   /@axiom-crypto/tools@2.1.0:
     resolution: {integrity: sha512-kuW4y+OcbHoYviCBNnpbkCYd4FRaewFMitq5N5CDOdt4CNHamlQ2HNxLU00t2yD3oFZyjmMRVU4aGLkFoyNSAg==}
+=======
+  /@axiom-crypto/tools@2.0.2:
+    resolution: {integrity: sha512-9U72jZvY33NXXon93qTBy49s01VZZPi5OAuTnPB7Hqw/0x+HDEdP1h3PB5fcV7cPdO5ZmqOH70ukVe/zCMwYjg==}
+>>>>>>> 7521c4b99ebee5729262291bb0cf5773e6ff8181
     dependencies:
       axios: 1.6.7
       bs58: 5.0.0
@@ -2559,12 +2577,6 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       find-up: 4.1.0
-    dev: true
-
-  /prettier@1.18.2:
-    resolution: {integrity: sha512-OeHeMc0JhFE9idD4ZdtNibzY0+TPHSpSSb9h8FqtP+YnoZZ1sl8Vc9b1sasjfymH3SonAF4QcA2+mzHPhMvIiw==}
-    engines: {node: '>=4'}
-    hasBin: true
     dev: true
 
   /pretty-format@29.7.0:

@@ -1,5 +1,5 @@
 import { AxiomCircuit } from "../js";
-import { 
+import {
   AxiomV2ClientConfig,
   AxiomV2ClientOptions,
   AxiomV2CompiledCircuit,
@@ -32,6 +32,7 @@ export class Axiom<T> {
       provider: this.config.provider,
       inputSchema: config.compiledCircuit.inputSchema,
       chainId: this.config.chainId,
+      capacity: this.compiledCircuit.config.capacity,
     });
 
     if (this.config.privateKey) {
@@ -73,7 +74,7 @@ export class Axiom<T> {
   }
 
   setOptions(options: AxiomV2ClientOptions) {
-    this.options = { 
+    this.options = {
       ...this.options,
       ...options,
     };

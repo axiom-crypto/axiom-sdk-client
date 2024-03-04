@@ -20,7 +20,7 @@ export const buildSendQuery = async (input: {
   caller: string;
   options: AxiomV2ClientOptions;
 }) => {
-  const validate = input.options.validate ?? true;
+  const validate = input.options.validate ?? false;
   const query = input.axiom.query as QueryV2;
   if (input.options.refundee === undefined) {
     throw new Error("Refundee is required");
@@ -47,7 +47,7 @@ export const buildSendQuery = async (input: {
     qb.setBuiltDataQuery({
       subqueries: input.dataQuery,
       sourceChainId: input.axiom.config.chainId.toString(),
-    });
+    }, true);
   }
   const {
     sourceChainId,

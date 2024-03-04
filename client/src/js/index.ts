@@ -2,6 +2,7 @@ import { AxiomBaseCircuit } from "@axiom-crypto/circuit/js/";
 import { AxiomV2Callback } from "@axiom-crypto/core";
 import { buildSendQuery } from "../sendQuery";
 import { AxiomV2ClientOptions } from "../axiom";
+import { AxiomV2CircuitCapacity } from "@axiom-crypto/circuit/types";
 
 export class AxiomCircuit<T> extends AxiomBaseCircuit<T> {
   constructor(inputs: {
@@ -10,7 +11,8 @@ export class AxiomCircuit<T> extends AxiomBaseCircuit<T> {
     inputSchema?: string,
     mock?: boolean,
     chainId?: number | string | bigint,
-    shouldTime?: boolean
+    shouldTime?: boolean,
+    capacity?: AxiomV2CircuitCapacity,
   }) {
     super(inputs);
   }

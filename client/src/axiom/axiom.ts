@@ -139,8 +139,6 @@ export class Axiom<T> {
         account: this.walletClient?.account!, // checked on initialization
         value: args.value,
       });
-      console.log("request", request);
-      console.log("args",args)
       const hash = await this.walletClient?.writeContract(request);
       if (hash === undefined) {
         throw new Error("Failed to send the query transaction to AxiomV2Query");

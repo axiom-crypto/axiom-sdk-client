@@ -10,6 +10,7 @@ export const harness = async (
     function: string;
     chainId?: number | string | bigint;
     provider?: string;
+    skipProve?: boolean;
   }
 ) => {
   const fileName = path.basename(inputPath).split(".js")[0];
@@ -40,7 +41,9 @@ export const harness = async (
     }
   );
 
-  // Run the circuit
+  if (options.skipProve) return;
+
+  // Prove the circuit
   const outputsFile = `${outputsFileBase}.proven.json`;
   await prove(
     compiledFile,

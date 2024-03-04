@@ -28,7 +28,6 @@
     "@axiom-crypto/core": "2.3.7",
     "chalk": "^4.1.2",
     "commander": "^11.1.0",
-    "form-data": "^4.0.0",
     "prompts": "^2.4.2",
     "viem": "^2.3.1"
   },

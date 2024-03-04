@@ -61,7 +61,7 @@ export const buildSendQuery = async (input: {
   const payment = await qb.calculateFee();
   const id = await qb.getQueryId(input.caller);
   const abi = input.axiom.getAxiomQueryAbi();
-  const axiomQueryAddress = input.axiom.getAxiomQueryAddress();
+  const axiomQueryAddress = input.options.queryAddress ?? input.axiom.getAxiomQueryAddress();
   const args = [
     sourceChainId,
     dataQueryHash,

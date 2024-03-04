@@ -1,4 +1,4 @@
-import { AxiomV2CircuitCapacity, AxiomV2CircuitConfig, CircuitConfig } from "@axiom-crypto/circuit/types";
+import { AxiomV2CircuitConfig } from "@axiom-crypto/circuit/types";
 import {
   AxiomV2Callback,
   AxiomV2ComputeQuery,
@@ -38,6 +38,7 @@ export interface AxiomV2ClientOptions extends AxiomV2QueryOptions {
   caller?: string;
   privateKey?: string;
   validate?: boolean;
+  queryAddress?: string;
 }
 
 export interface AxiomV2SendQueryArgs {

@@ -4,8 +4,8 @@ import {
   AxiomV2FeeData,
   AxiomV2QueryOptions,
   ByteLengths,
+  IpfsClient,
 } from "@axiom-crypto/core";
-import { IpfsClient } from "src/lib/ipfs";
 
 const solidityTypes = Object.keys(ByteLengths);
 const solidityInputTypes = [...solidityTypes, ...solidityTypes.map((type: string) => `${type}[]`)] as const;

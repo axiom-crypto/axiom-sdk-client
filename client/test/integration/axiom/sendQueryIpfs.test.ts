@@ -2,9 +2,9 @@ import { circuit, CircuitInputs } from "../circuit/average.circuit";
 import { Axiom } from "../../../src/";
 import inputs from '../circuit/average.inputs.json';
 import compiledCircuit from '../circuit/average.compiled.json';
-import { RawInput } from "@axiom-crypto/circuit/types";
+import { UserInput } from "@axiom-crypto/circuit";
+import { PinataIpfsClient } from "@axiom-crypto/core";
 import { ByteStringReader, decodeFullQueryV2 } from "@axiom-crypto/core/packages/tools";
-import { PinataIpfsClient } from "../../../src/lib/ipfs";
 
 describe("Send Query using Axiom client", () => {
   test("Send a query with IPFS", async () => {
@@ -22,7 +22,7 @@ describe("Send Query using Axiom client", () => {
       ipfsClient: ipfsClient,
     });
     await axiom.init();
-    const computeQuery = await axiom.prove(inputs as RawInput<CircuitInputs>);
+    const computeQuery = await axiom.prove(inputs as UserInput<CircuitInputs>);
     if (!process.env.PRIVATE_KEY_SEPOLIA) {
       console.log("No private key provided: Query will not be sent to the blockchain.");
       return;
@@ -38,12 +38,12 @@ describe("Send Query using Axiom client", () => {
 
     // Read the data posted on IPFS and decode it
     const pinata = new PinataIpfsClient(process.env.PINATA_JWT);
-    const rawIpfsData = await pinata.read(ipfsHash);
-    if (!rawIpfsData) {
+    const readRes = await pinata.read(ipfsHash);
+    if (readRes.status - 200 > 99) {
       throw new Error("Failed to read data from IPFS");
     }
-    console.log(rawIpfsData);
-    const decoded = decodeFullQueryV2(rawIpfsData);
+    console.log(readRes);
+    const decoded = decodeFullQueryV2(readRes.value as string);
     expect(decoded?.computeQuery).toEqual(computeQuery);
   }, 60000);
 });

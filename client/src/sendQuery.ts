@@ -52,6 +52,7 @@ export const buildSendQuery = async (input: {
   }
   const {
     sourceChainId,
+    queryHash,
     dataQueryHash,
     computeQuery,
     callback,
@@ -99,17 +100,18 @@ export const buildSendQuery = async (input: {
       userSalt,
       refundee,
     );
-    const ipfsHash = await input.options.ipfsClient?.pin(encodedQuery);
-    if (!ipfsHash) {
+    const pinRes = await input.options.ipfsClient?.pin(encodedQuery);
+    if (pinRes.status - 200 > 99) {
       throw new Error("Failed to write data to IPFS");
     }
+    const ipfsHash = pinRes.value as string;
     sendQueryArgs = {
       address: axiomQueryAddress as `0x${string}`,
       abi: abi,
       functionName: "sendQueryWithIpfsData",
       value: BigInt(payment),
       args: [
-        dataQueryHash,
+        queryHash,
         ipfsHash,
         callback,
         feeData,

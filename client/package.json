@@ -26,8 +26,6 @@
   "dependencies": {
     "@axiom-crypto/circuit": "link:../circuit/dist",
     "@axiom-crypto/core": "2.3.7",
-    "axios": "^1.6.7",
-    "bs58": "^5.0.0",
     "chalk": "^4.1.2",
     "commander": "^11.1.0",
     "form-data": "^4.0.0",

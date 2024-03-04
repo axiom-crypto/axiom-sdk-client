@@ -21,7 +21,6 @@ export const buildSendQuery = async (input: {
   options: AxiomV2ClientOptions;
 }) => {
   const validate = input.options.validate ?? true;
-
   const query = input.axiom.query as QueryV2;
   if (input.options.refundee === undefined) {
     throw new Error("Refundee is required");

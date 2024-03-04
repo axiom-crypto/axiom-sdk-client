@@ -11,12 +11,6 @@ dependencies:
   '@axiom-crypto/core':
     specifier: 2.3.7
     version: 2.3.7
-  axios:
-    specifier: ^1.6.7
-    version: 1.6.7
-  bs58:
-    specifier: ^5.0.0
-    version: 5.0.0
   chalk:
     specifier: ^4.1.2
     version: 4.1.2

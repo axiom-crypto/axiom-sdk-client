@@ -1,10 +1,11 @@
-import { circuit, CircuitInputs } from "../circuit/average.circuit";
-import { Axiom } from "../../../src/";
-import inputs from '../circuit/average.inputs.json';
-import compiledCircuit from '../circuit/average.compiled.json';
+import { circuit, CircuitInputs } from "./circuits/sendQuery/average.circuit";
+import { Axiom } from "../../src";
+import inputs from './circuits/sendQuery/average.inputs.json';
+import compiledCircuit from './circuits/sendQuery/average.compiled.json';
 import { UserInput } from "@axiom-crypto/circuit";
 import { PinataIpfsClient } from "@axiom-crypto/core";
 import { ByteStringReader, decodeFullQueryV2 } from "@axiom-crypto/core/packages/tools";
+import { getQueryHashV2, getDataQueryHashFromSubqueries } from "@axiom-crypto/tools";
 
 describe("Send Query using Axiom client", () => {
   test("Send a query with IPFS", async () => {
@@ -30,6 +31,8 @@ describe("Send Query using Axiom client", () => {
     const receipt = await axiom.sendQueryWithIpfs();
     expect(receipt.status).toBe('success');
 
+    const sendQueryArgs = await axiom.getSendQueryArgs();
+
     // Get the IPFS hash from the logs
     const logData = receipt.logs[1].data;
     const bsr = new ByteStringReader(logData);
@@ -44,6 +47,13 @@ describe("Send Query using Axiom client", () => {
     }
     console.log(readRes);
     const decoded = decodeFullQueryV2(readRes.value as string);
-    expect(decoded?.computeQuery).toEqual(computeQuery);
+    if (!decoded) {
+      throw new Error("Failed to decode the data from IPFS");
+    }
+    // const = decoded?.sourceChainId
+    const dataQueryHash = getDataQueryHashFromSubqueries(decoded.dataQuery.sourceChainId, decoded.dataQuery.subqueries);
+    const queryHash = getQueryHashV2(decoded.sourceChainId, dataQueryHash, decoded.computeQuery);
+
+    expect(queryHash).toEqual(sendQueryArgs.args[0]);
   }, 60000);
 });

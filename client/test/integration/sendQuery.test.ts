@@ -1,7 +1,7 @@
-import { circuit, CircuitInputs } from "../circuit/average.circuit";
-import { Axiom } from "../../../src/";
-import inputs from '../circuit/average.inputs.json';
-import compiledCircuit from '../circuit/average.compiled.json';
+import { circuit, CircuitInputs } from "./circuits/sendQuery/average.circuit";
+import { Axiom } from "../../src";
+import inputs from './circuits/sendQuery/average.inputs.json';
+import compiledCircuit from './circuits/sendQuery/average.compiled.json';
 import { UserInput } from "@axiom-crypto/circuit";
 
 describe("Send Query using Axiom client", () => {

@@ -5,3 +5,7 @@ export {
   AxiomV2QueryOptions,
   AxiomV2FeeData,
 } from "@axiom-crypto/core";
+
+export enum AbiType {
+  Query,
+}

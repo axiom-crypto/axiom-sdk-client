@@ -162,7 +162,6 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       config: axiomConfig,
       querySchema: this.getQuerySchema(),
       inputSchema: byteArrayToBase64(inputSchema),
-      capacity: this.config,
     };
   }
 

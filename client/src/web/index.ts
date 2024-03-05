@@ -1,7 +1,7 @@
 import { AxiomBaseCircuit } from "@axiom-crypto/circuit/web/";
 import { AxiomV2Callback } from "@axiom-crypto/core";
 import { buildSendQuery } from "../sendQuery";
-import { AxiomV2ClientOptions } from "../types";
+import { AxiomV2ClientOptions, AxiomV2SendQueryArgs } from "../types";
 import { AxiomV2CircuitCapacity } from "@axiom-crypto/circuit/types";
 
 export class AxiomCircuit<T> extends AxiomBaseCircuit<T> {
@@ -22,7 +22,7 @@ export class AxiomCircuit<T> extends AxiomBaseCircuit<T> {
     callbackExtraData: string;
     callerAddress: string;
     options: AxiomV2ClientOptions;
-  }) {
+  }): Promise<AxiomV2SendQueryArgs> {
     if (!this.computeQuery) throw new Error("No compute query generated");
     const axiomCallback: AxiomV2Callback = {
       target: input.callbackTarget,

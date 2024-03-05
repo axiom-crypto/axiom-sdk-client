@@ -1,5 +1,6 @@
 import { AxiomCircuit as MyAxiomCircuit } from "@axiom-crypto/client/web";
 import { expose } from "comlink";
+import { AxiomV2CircuitCapacity } from "../../circuit/dist/types";
 
 export class AxiomCircuit extends MyAxiomCircuit<any> {
     constructor(inputs: {
@@ -7,6 +8,7 @@ export class AxiomCircuit extends MyAxiomCircuit<any> {
         chainId: number | string | bigint,
         inputSchema?: string,
         shouldTime?: boolean,
+        capacity?: AxiomV2CircuitCapacity,
         f: string,
     }) {
         const decodedArray = Buffer.from(inputs.f, 'base64');

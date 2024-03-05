@@ -9,7 +9,7 @@ import {
 } from "@axiom-crypto/core";
 import { encodeFunctionData } from "viem";
 import { getMaxFeePerGas } from "./axiom/utils";
-import { AxiomV2ClientOptions } from "./axiom";
+import { AxiomV2ClientOptions, AxiomV2SendQueryArgs } from "./types";
 import { encodeFullQueryV2 } from "@axiom-crypto/core/packages/tools";
 
 export const buildSendQuery = async (input: {
@@ -19,7 +19,7 @@ export const buildSendQuery = async (input: {
   callback: AxiomV2Callback;
   caller: string;
   options: AxiomV2ClientOptions;
-}) => {
+}): Promise<AxiomV2SendQueryArgs> => {
   const validate = input.options.validate ?? false;
   const query = input.axiom.query as QueryV2;
   if (input.options.refundee === undefined) {
@@ -63,7 +63,7 @@ export const buildSendQuery = async (input: {
   const payment = await qb.calculateFee();
   const id = await qb.getQueryId(input.caller);
   const abi = input.axiom.getAxiomQueryAbi();
-  const axiomQueryAddress = input.axiom.getAxiomQueryAddress();
+  const axiomQueryAddress = input.options.queryAddress ?? input.axiom.getAxiomQueryAddress();
 
   let sendQueryArgs: any;
   if (!input.options.ipfsClient) {

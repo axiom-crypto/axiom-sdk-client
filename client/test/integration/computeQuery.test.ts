@@ -16,8 +16,30 @@ describe("Build ComputeQuery with DataQuery", () => {
       },
     });
     await axiom.init();
-    const args = await axiom.prove(inputs0);
-    const receipt = await axiom.sendQuery(args);
+    await axiom.prove(inputs0);
+    const receipt = await axiom.sendQuery();
     expect(receipt.status).toBe('success');
+  }, 60000);
+
+  test("simple computeQuery with dataQuery and address override", async () => {
+    const axiom = new Axiom({
+      circuit: circuit0,
+      compiledCircuit: compiledCircuit0,
+      chainId: "11155111",  // Sepolia
+      provider: process.env.PROVIDER_URI_SEPOLIA as string,
+      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
+      callback: {
+        target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
+      },
+    });
+    await axiom.init();
+    const addressOverride = "0xdeadbeefdeadbeef";
+    axiom.setOptions({ queryAddress: addressOverride });
+    await axiom.prove(inputs0);
+    const args = axiom.getSendQueryArgs();
+    if (!args) {
+      throw new Error("Unable to get sendQuery args.");
+    }
+    expect(args.address).toBe(addressOverride);
   }, 60000);
 });

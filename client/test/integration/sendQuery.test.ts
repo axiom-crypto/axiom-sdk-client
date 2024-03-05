@@ -17,7 +17,7 @@ describe("Send Query using Axiom client", () => {
       },
     });
     await axiom.init();
-    const args = await axiom.prove(inputs as UserInput<CircuitInputs>);
+    await axiom.prove(inputs as UserInput<CircuitInputs>);
     if (!process.env.PRIVATE_KEY_SEPOLIA) {
       console.log("No private key provided: Query will not be sent to the blockchain.");
       return;

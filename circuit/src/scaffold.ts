@@ -1,17 +1,14 @@
 import { CircuitConfig, Halo2LibWasm } from "@axiom-crypto/halo2-lib-js/wasm/web";
-import { base64ToByteArray, byteArrayToBase64, convertBuiltSubqueries, convertToBytes, convertToBytes32 } from "./utils";
+import { base64ToByteArray, byteArrayToBase64, convertToBytes, convertToBytes32 } from "./utils";
 import { concat, zeroHash } from "viem";
 import { AxiomCircuitRunner } from "./circuitRunner";
 import {
-  AxiomV2Callback,
-  AxiomV2CircuitConstant,
   AxiomV2ComputeQuery,
   DataSubquery,
   getQuerySchemaHash,
 } from "@axiom-crypto/tools";
 import {
   AxiomSdkCore,
-  AxiomV2QueryOptions,
   QueryV2,
 } from "@axiom-crypto/core";
 import { BaseCircuitScaffold } from "@axiom-crypto/halo2-lib-js";

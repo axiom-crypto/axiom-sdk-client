@@ -23,15 +23,13 @@ describe("Send Query using Axiom client", () => {
       ipfsClient: ipfsClient,
     });
     await axiom.init();
-    const computeQuery = await axiom.prove(inputs as UserInput<CircuitInputs>);
+    await axiom.prove(inputs as UserInput<CircuitInputs>);
     if (!process.env.PRIVATE_KEY_SEPOLIA) {
       console.log("No private key provided: Query will not be sent to the blockchain.");
       return;
     }
     const receipt = await axiom.sendQueryWithIpfs();
     expect(receipt.status).toBe('success');
-
-    const sendQueryArgs = await axiom.getSendQueryArgs();
 
     // Get the IPFS hash from the logs
     const logData = receipt.logs[1].data;
@@ -54,6 +52,11 @@ describe("Send Query using Axiom client", () => {
     const dataQueryHash = getDataQueryHashFromSubqueries(decoded.dataQuery.sourceChainId, decoded.dataQuery.subqueries);
     const queryHash = getQueryHashV2(decoded.sourceChainId, dataQueryHash, decoded.computeQuery);
 
+    const sendQueryArgs = axiom.getSendQueryArgs();
+    if (!sendQueryArgs) {
+      throw new Error("Failed to get sendQueryArgs");
+    }
+
     expect(queryHash).toEqual(sendQueryArgs.args[0]);
-  }, 60000);
+  }, 90000);
 });

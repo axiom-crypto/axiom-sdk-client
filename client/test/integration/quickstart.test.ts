@@ -16,8 +16,8 @@ describe("Quickstart", () => {
       },
     });
     await axiom.init();
-    const args = await axiom.prove(inputs0);
-    const receipt = await axiom.sendQuery(args);
+    await axiom.prove(inputs0);
+    const receipt = await axiom.sendQuery();
     expect(receipt.status).toBe('success');
   }, 60000);
 });

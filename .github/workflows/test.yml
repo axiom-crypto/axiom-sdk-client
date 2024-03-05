@@ -5,8 +5,7 @@ on:
     branches:
       - main
       - develop
-      - rc1
-      - rc2
+      - rc
   pull_request:
 
 jobs:

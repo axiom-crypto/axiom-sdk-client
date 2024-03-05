@@ -16,8 +16,12 @@ describe("QueryID Integration Tests", () => {
       },
     });
     await axiom.init();
-    const args = await axiom.prove({});
-    const receipt = await axiom.sendQuery(args);
+    await axiom.prove({});
+    const args = axiom.getSendQueryArgs();
+    if (!args) {
+      throw new Error("Unable to get sendQuery args.");
+    }
+    const receipt = await axiom.sendQuery();
     expect(receipt.status).toBe('success');
 
     const queryInitiatedOnChainEvent = receipt.logs[1];

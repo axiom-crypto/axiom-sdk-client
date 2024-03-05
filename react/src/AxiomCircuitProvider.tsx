@@ -10,25 +10,16 @@ import { AxiomCircuit } from "./worker";
 import { 
   AxiomV2CompiledCircuit,
   AxiomV2Callback,
-  AxiomV2QueryOptions,
+  AxiomV2SendQueryArgs,
+  AxiomV2ClientOptions,
 } from "@axiom-crypto/client";
 
-type BuiltQuery = {
-  calldata: `0x${string}`;
-  address: `0x${string}`;
-  abi: any;
-  functionName: string;
-  value: bigint;
-  args: any[];
-  queryId: string;
-}
-
 type AxiomCircuitContextType<T> = {
-  setOptions: React.Dispatch<React.SetStateAction<AxiomV2QueryOptions | null>>,
+  setOptions: React.Dispatch<React.SetStateAction<AxiomV2ClientOptions | null>>,
   setParams: (inputs: T, callbackTarget: string, callbackExtraData: string, refundee: string) => void,
   areParamsSet: boolean,
-  build: () => Promise<BuiltQuery | null>,
-  builtQuery: BuiltQuery | null,
+  build: () => Promise<AxiomV2SendQueryArgs | null>,
+  builtQuery: AxiomV2SendQueryArgs | null,
   reset: () => void,
 }
 
@@ -54,10 +45,10 @@ function AxiomCircuitProvider({
   children: React.ReactNode,
 }) {
   const [inputs, setInputs] = useState<any | null>(null);
-  const [options, setOptions] = useState<AxiomV2QueryOptions | null>(null);
+  const [options, setOptions] = useState<AxiomV2ClientOptions | null>(null);
   const [callback, setCallback] = useState<AxiomV2Callback | null>(null);
   const [refundee, setRefundee] = useState<string | null>(null);
-  const [builtQuery, setBuiltQuery] = useState<BuiltQuery | null>(null);
+  const [builtQuery, setBuiltQuery] = useState<AxiomV2SendQueryArgs | null>(null);
 
   const workerApi = useRef<Remote<AxiomCircuit>>();
 
@@ -79,7 +70,13 @@ function AxiomCircuitProvider({
         f: compiledCircuit.circuit,
       });
       await workerApi.current.setup(window.navigator.hardwareConcurrency);
-      await workerApi.current?.loadSaved(compiledCircuit);
+      await workerApi.current?.loadSaved({
+        config: {
+          config: compiledCircuit.config,
+          capacity: (await workerApi.current.circuitConfig()).capacity,
+        },
+        vk: compiledCircuit.vk,
+      });
     }
 
     const generateQuery = async () => {

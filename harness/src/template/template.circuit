@@ -58,7 +58,7 @@ import {
 export const defaultInputs = {
   // $input
 };
-export type CircuitInputType = typeof inputs;
+export type CircuitInputType = typeof defaultInputs;
 export interface CircuitInputs extends CircuitInputType { }
 export interface CircuitValueInputs {
   // $typeInputs

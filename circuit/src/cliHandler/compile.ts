@@ -1,8 +1,7 @@
 import path from 'path';
 import { AxiomBaseCircuit } from "../js";
-import { getFunctionFromTs, getProvider, readInputs, readJsonFromFile, saveJsonToFile } from "./utils";
+import { getFunctionFromTs, getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
 import { existsSync, readFileSync } from 'fs';
-import { AxiomV2CircuitConfig } from '../types';
 
 export const compile = async (
     circuitPath: string,

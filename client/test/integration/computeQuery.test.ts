@@ -16,8 +16,8 @@ describe("Build ComputeQuery with DataQuery", () => {
       },
     });
     await axiom.init();
-    const args = await axiom.prove(inputs0);
-    const receipt = await axiom.sendQuery(args);
+    await axiom.prove(inputs0);
+    const receipt = await axiom.sendQuery();
     expect(receipt.status).toBe('success');
   }, 60000);
 
@@ -35,7 +35,11 @@ describe("Build ComputeQuery with DataQuery", () => {
     await axiom.init();
     const addressOverride = "0xdeadbeefdeadbeef";
     axiom.setOptions({ queryAddress: addressOverride });
-    const args = await axiom.prove(inputs0);
+    await axiom.prove(inputs0);
+    const args = axiom.getSendQueryArgs();
+    if (!args) {
+      throw new Error("Unable to get sendQuery args.");
+    }
     expect(args.address).toBe(addressOverride);
   }, 60000);
 });

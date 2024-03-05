@@ -18,8 +18,8 @@ describe("Build ComputeQuery Standalone", () => {
       },
     });
     await axiom.init();
-    const args = await axiom.prove({});
-    const receipt = await axiom.sendQuery(args);
+    await axiom.prove({});
+    const receipt = await axiom.sendQuery();
     expect(receipt.status).toBe('success');
   }, 60000);
 
@@ -35,8 +35,8 @@ describe("Build ComputeQuery Standalone", () => {
       },
     });
     await axiom.init();
-    const args = await axiom.prove(circuitInputs1);
-    const receipt = await axiom.sendQuery(args);
+    await axiom.prove(circuitInputs1);
+    const receipt = await axiom.sendQuery();
     expect(receipt.status).toBe('success');
   }, 60000);
 });

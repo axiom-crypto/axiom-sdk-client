@@ -1,7 +1,7 @@
 import { CircuitConfig } from "@axiom-crypto/halo2-lib-js";
 import { AxiomBaseCircuitScaffold } from "../scaffold";
 import { getHalo2LibWasm, getHalo2Wasm, getKzgParams } from "@axiom-crypto/halo2-lib-js/wasm/js";
-import { AxiomV2CircuitCapacity, AxiomV2CircuitConfig } from "../types";
+import { AxiomV2CircuitCapacity } from "../types";
 
 export class AxiomBaseCircuit<T> extends AxiomBaseCircuitScaffold<T> {
     constructor(inputs: {

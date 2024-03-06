@@ -18,6 +18,10 @@ const packages = {
     path: "../client",
     version: `${localPrefix}../client/dist`,
   },
+  "@axiom-crypto/broadcaster": {
+    path: "../broadcaster",
+    version: `${localPrefix}../broadcaster/dist`,
+  },
   "@axiom-crypto/harness": {
     path: "../harness",
     version: `${localPrefix}../harness/dist`,

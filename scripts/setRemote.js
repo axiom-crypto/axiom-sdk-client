@@ -10,6 +10,10 @@ const packages = {
     path: "../client",
     version: "",
   },
+  "@axiom-crypto/broadcaster": {
+    path: "../broadcaster",
+    version: "",
+  },
   "@axiom-crypto/harness": {
     path: "../harness",
     version: "",

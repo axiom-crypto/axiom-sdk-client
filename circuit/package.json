@@ -8,7 +8,7 @@
   "types": "index.d.ts",
   "browser": "web/index.js",
   "scripts": {
-    "build": "rm -rf ./dist/* && tsc && tsx scripts/postTsc.js && $npm_execpath run build:docs",
+    "build": "rm -rf ./dist/* && tsc && node scripts/postTsc.js && $npm_execpath run build:docs",
     "build:docs": "./scripts/buildDocs.sh",
     "test": "jest"
   },

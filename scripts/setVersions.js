@@ -15,7 +15,7 @@ if (setVersion.toLowerCase() === "increment" || setVersion.toLowerCase() === "in
 
 const packages = {
   "@axiom-crypto/circuit": {
-    path: "../circuit/js",
+    path: "../circuit",
     version: "",
   },
   "@axiom-crypto/client": {

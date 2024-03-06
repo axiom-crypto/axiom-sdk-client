@@ -5,8 +5,7 @@ on:
     branches:
       - main
       - develop
-      - rc1
-      - rc2
+      - rc
   pull_request:
 
 jobs:
@@ -18,23 +17,32 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Use Node.js 18.x
-        uses: actions/setup-node@v2
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
         with:
-          node-version: 18.x
+          version: 8
+
+      - name: "Install Node.js"
+        uses: "actions/setup-node@v4"
+        with:
+          node-version: "20.x"
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
+          cache-dependency-path: circuit/pnpm-lock.yaml
 
       - name: Install dependencies
-        working-directory: ./circuit/js
-        run: npm install
+        working-directory: ./circuit
+        run: pnpm install
 
       - name: Run Unit Tests
-        working-directory: ./circuit/js
+        working-directory: ./circuit
         run: |
           export PROVIDER_URI_GOERLI=${{ secrets.PROVIDER_URI_GOERLI }}
+          export PROVIDER_URI_SEPOLIA=${{ secrets.PROVIDER_URI_SEPOLIA }}
           ANVIL_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
           export PRIVATE_KEY=$ANVIL_PRIVATE_KEY # just needs to be in the correct format, no tx is sent in unit tests
           export PRIVATE_KEY_GOERLI=$ANVIL_PRIVATE_KEY
-          npm run test
+          pnpm test
 
   harness:
     name: Harness Tests
@@ -44,14 +52,22 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Use Node.js 18.x
-        uses: actions/setup-node@v2
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
         with:
-          node-version: 18.x
+          version: 8
+
+      - name: "Install Node.js"
+        uses: "actions/setup-node@v4"
+        with:
+          node-version: "20.x"
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
+          cache-dependency-path: harness/pnpm-lock.yaml
 
       - name: Set all packages to local and build
         working-directory: ./
-        run: npm run local ci
+        run: pnpm local
 
       - name: Run Integration Tests (Sepolia)
         working-directory: ./harness
@@ -60,4 +76,4 @@ jobs:
           ANVIL_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
           export PRIVATE_KEY=$ANVIL_PRIVATE_KEY # just needs to be in the correct format, no tx is sent in unit tests
           export PRIVATE_KEY_SEPOLIA=$ANVIL_PRIVATE_KEY
-          npm run test test/unit/sepolia.test.ts
+          pnpm test test/unit/sepolia.test.ts

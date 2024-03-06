@@ -1,15 +1,16 @@
 import { AxiomCircuit } from "../js";
-import { 
+import {
   AxiomV2ClientConfig,
   AxiomV2ClientOptions,
   AxiomV2CompiledCircuit,
   AxiomV2SendQueryArgs,
-} from "./types";
-import { RawInput } from "@axiom-crypto/circuit/types";
-import { convertChainIdToViemChain, convertInputSchemaToJsonString } from "./utils";
-import { TransactionReceipt, createPublicClient, createWalletClient, http, zeroAddress, zeroHash } from "viem";
+} from "../types";
+import { AxiomV2CircuitCapacity, RawInput } from "@axiom-crypto/circuit/types";
+import { DEFAULT_CAPACITY } from "@axiom-crypto/circuit/constants";
+import { convertChainIdToViemChain } from "./utils";
+import { TransactionReceipt, WalletClient, createPublicClient, createWalletClient, http, zeroAddress, zeroHash } from "viem";
 import { privateKeyToAccount } from 'viem/accounts'
-import { AxiomV2Callback } from "@axiom-crypto/core";
+import { AxiomV2Callback, AxiomV2ComputeQuery } from "@axiom-crypto/core";
 import { ClientConstants } from "../constants";
 
 export class Axiom<T> {
@@ -18,6 +19,9 @@ export class Axiom<T> {
   protected compiledCircuit: AxiomV2CompiledCircuit;
   protected callback: AxiomV2Callback;
   protected options?: AxiomV2ClientOptions;
+  protected capacity?: AxiomV2CircuitCapacity;
+  protected walletClient?: WalletClient;
+  protected sendQueryArgs?: AxiomV2SendQueryArgs;
 
   constructor(config: AxiomV2ClientConfig<T>) {
     this.config = config;
@@ -32,18 +36,38 @@ export class Axiom<T> {
       provider: this.config.provider,
       inputSchema: config.compiledCircuit.inputSchema,
       chainId: this.config.chainId,
+      capacity: this.capacity,
     });
+
+    if (this.config.privateKey) {
+      const account = privateKeyToAccount(this.config.privateKey as `0x${string}`);
+      this.walletClient = createWalletClient({
+        chain: convertChainIdToViemChain(this.config.chainId),
+        account,
+        transport: http(this.config.provider),
+      });
+      if (this.walletClient.account === undefined) {
+        throw new Error("Failed to create wallet client");
+      }
+    }
   }
 
   async init() {
     await this.axiomCircuit.loadSaved({
-      config: this.compiledCircuit.config,
+      config: {
+        config: this.compiledCircuit.config,
+        capacity: this.capacity ?? DEFAULT_CAPACITY,
+      },
       vk: this.compiledCircuit.vk,
     });
   }
 
+  getSendQueryArgs(): AxiomV2SendQueryArgs | undefined {
+    return this.sendQueryArgs;
+  }
+
   setOptions(options: AxiomV2ClientOptions) {
-    this.options = { 
+    this.options = {
       ...this.options,
       ...options,
     };
@@ -59,52 +83,34 @@ export class Axiom<T> {
     }
   }
 
-  async prove(input: RawInput<T>): Promise<AxiomV2SendQueryArgs> {
+  async prove(input: RawInput<T>): Promise<any> {
     await this.axiomCircuit.run(input);
-
-    const caller = this.config.privateKey !== undefined ? 
-      privateKeyToAccount(this.config.privateKey as `0x${string}`).address as string : 
-      this.options?.caller ?? "";
-
-    const options: AxiomV2ClientOptions = {
-      ...this.options,
-      callbackGasLimit: this.options?.callbackGasLimit ?? ClientConstants.CALLBACK_GAS_LIMIT,
-      refundee: this.options?.refundee ?? caller,
-    }
-
-    return await this.axiomCircuit.getSendQueryArgs({
-      callbackTarget: this.callback.target,
-      callbackExtraData: this.callback.extraData ?? "0x",
-      callerAddress: caller,
-      options,
-    });
+    return await this.buildSendQueryArgs(); 
   }
 
-  async sendQuery(args: AxiomV2SendQueryArgs): Promise<TransactionReceipt> {
-    if (this.config.privateKey === undefined) {
-      throw new Error("Setting `privateKey` is required to send a Query on-chain");
-    }
+  async sendQuery(): Promise<TransactionReceipt> {
     const publicClient = createPublicClient({
       chain: convertChainIdToViemChain(this.config.chainId),
       transport: http(this.config.provider),
-    })
-    const account = privateKeyToAccount(this.config.privateKey as `0x${string}`);
-    const walletClient = createWalletClient({
-      chain: convertChainIdToViemChain(this.config.chainId),
-      account,
-      transport: http(this.config.provider),
-    })
+    });
 
+    const args = this.getSendQueryArgs();
+    if (args === undefined) {
+      throw new Error("SendQuery args have not been built yet. Please run `prove` first.");
+    }
     try {
       const { request } = await publicClient.simulateContract({
         address: args.address as `0x${string}`,
         abi: args.abi,
         functionName: args.functionName,
         args: args.args,
-        account,
+        account: this.walletClient?.account!, // checked on initialization
         value: args.value,
       });
-      const hash = await walletClient.writeContract(request);
+      const hash = await this.walletClient?.writeContract(request);
+      if (hash === undefined) {
+        throw new Error("Failed to send the query transaction to AxiomV2Query");
+      }
       return await publicClient.waitForTransactionReceipt({ hash });
     } catch (e: any) {
       if (e?.metaMessages !== undefined) {
@@ -112,5 +118,59 @@ export class Axiom<T> {
       }
       throw new Error(e);
     }
+  }
+
+  async sendQueryWithIpfs(): Promise<TransactionReceipt> {
+    if (this.config.ipfsClient === undefined) {
+      throw new Error("Setting `ipfsClient` is required to send a Query with IPFS");
+    }
+    const publicClient = createPublicClient({
+      chain: convertChainIdToViemChain(this.config.chainId),
+      transport: http(this.config.provider),
+    });
+
+    const args = await this.getSendQueryArgs();
+    if (args === undefined) {
+      throw new Error("SendQuery args have not been built yet. Please run `prove` first.");
+    }
+    try { 
+      const { request } = await publicClient.simulateContract({
+        address: args.address as `0x${string}`,
+        abi: args.abi,
+        functionName: args.functionName,
+        args: args.args,
+        account: this.walletClient?.account!, // checked on initialization
+        value: args.value,
+      });
+      const hash = await this.walletClient?.writeContract(request);
+      if (hash === undefined) {
+        throw new Error("Failed to send the query transaction to AxiomV2Query");
+      }
+      return await publicClient.waitForTransactionReceipt({ hash });
+    } catch (e: any) {
+      if (e?.metaMessages !== undefined) {
+        throw new Error(e.metaMessages.join("\n"));
+      }
+      throw new Error(e);
+    }
+  }
+
+  protected async buildSendQueryArgs(): Promise<AxiomV2SendQueryArgs> {
+    if (this.walletClient === undefined) {
+      throw new Error("Setting `privateKey` in the `Axiom` constructor is required to get sendQuery args");
+    }
+    const clientOptions = {
+      ...this.options,
+      callbackGasLimit: this.options?.callbackGasLimit ?? ClientConstants.CALLBACK_GAS_LIMIT,
+      refundee: this.options?.refundee ?? this.walletClient?.account?.address,
+      ipfsClient: this.config.ipfsClient,
+    };
+    this.sendQueryArgs = await this.axiomCircuit.getSendQueryArgs({
+      callbackTarget: this.callback.target,
+      callbackExtraData: this.callback.extraData ?? "0x",
+      callerAddress: this.walletClient?.account?.address,
+      options: clientOptions,
+    });
+    return this.sendQueryArgs;
   }
 }

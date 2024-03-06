@@ -5,7 +5,7 @@ import {
   AxiomV2FeeData,
   getByteLength,
 } from "@axiom-crypto/core";
-import { AxiomV2SendQueryArgsParams, CircuitInputType } from "./types";
+import { AxiomV2SendQueryArgsParams, CircuitInputType } from "../types";
 import { createPublicClient, http } from 'viem';
 import { mainnet, sepolia } from 'viem/chains';
 import { ClientConstants } from "../constants";

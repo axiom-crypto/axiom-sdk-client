@@ -11,6 +11,11 @@ import {
   sepolia
 } from "viem/chains";
 
+const axiomV2CoreAddresses = {
+  [mainnet.id.toString()]: "0x69963768F8407dE501029680dE46945F838Fc98B",
+  [sepolia.id.toString()]: "0x69963768F8407dE501029680dE46945F838Fc98B",
+}
+
 // Maps sourceChainId to targetChainId AxiomV2Query deployment address
 const axiomV2QueryAddresses = {
   [mainnet.id.toString()]: {
@@ -47,22 +52,10 @@ const axiomV2QueryAddressesMock = {
   },
 };
 
-// Maps sourceChainId to targetChainId to bridge ID addresses
-const axiomV2BridgeAddress = {
-  [mainnet.id.toString()]: {
-    [arbitrum.id.toString()]: [
-      "",
-    ],
-    [optimism.id.toString()]: [
-      "",
-    ],
-    [base.id.toString()]: [
-      "",
-    ],
-    [scroll.id.toString()]: [
-      "",
-    ],
-  },
+export function getAxiomV2CoreAddress(
+  chainId: string,
+) {
+  return axiomV2CoreAddresses[chainId];
 }
 
 export function getAxiomV2QueryAddress(
@@ -83,16 +76,4 @@ export function getAxiomV2QueryAddress(
   } else {
     return axiomV2QueryAddressesMock[chainId][targetChainId];
   }
-}
-
-export function getAxiomV2BridgeAddress(
-  chainId: string,
-  targetChainId: string,
-  bridgeId?: number,
-) {
-  if (bridgeId === undefined) {
-    bridgeId = 0;
-  }
-
-  return axiomV2BridgeAddress[chainId][targetChainId][bridgeId];
 }

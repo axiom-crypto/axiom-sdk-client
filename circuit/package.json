@@ -30,7 +30,7 @@
     "@axiom-crypto/tools": "2.1.0",
     "commander": "^11.1.0",
     "ethers": "^6.8.1",
-    "viem": "^1.19.9"
+    "viem": "^2.7.20"
   },
   "devDependencies": {
     "@types/jest": "^29.5.11",

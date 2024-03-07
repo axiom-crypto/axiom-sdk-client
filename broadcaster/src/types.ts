@@ -1,9 +1,5 @@
 import { PublicClient, WalletClient } from "viem";
-
-export interface SourceTarget {
-  source: string;
-  target: string;
-}
+import { ByteLengths } from "@axiom-crypto/core";
 
 export interface Channel {
   chainId: string;
@@ -24,5 +20,5 @@ export interface AxiomV2BroadcastClientConfig {
 export interface AxiomV2BroadcastClientParams {
   chainId: string;
   publicClient: PublicClient;
-  walletClient: WalletClient;
+  walletClient: WalletClient | undefined;
 }

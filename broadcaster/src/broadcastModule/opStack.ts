@@ -1,19 +1,23 @@
 import { encodePacked } from "viem";
 import { BroadcastModule } from "./broadcastModule";
+import { BroadcastParams } from "../types";
 
 export class OpStackBroadcastModule extends BroadcastModule {
-    constructor() {
-        super();
-    }
+  protected inputs: { [key: string]: string } = {};
 
-    getBridgeMetadata(inputs: { [key: string]: string }): string {
-      if (inputs.gasLimit === undefined) {
-        throw new Error("`gasLimit` is required");
-      }
-      return encodePacked(["uint32"], [inputs.gasLimit]);
+  constructor(inputs: { [key: string]: string }) {
+    if (inputs.gasLimit === undefined) {
+      throw new Error("`gasLimit` is required");
     }
-    
-    getBridgePayment(inputs: { [key: string]: string }): bigint {
-      return 0n;
-    }
+    super();
+    this.inputs = inputs;
+  }
+
+  getBridgeMetadata(): string {
+    return encodePacked(["uint32"], [this.inputs.gasLimit]);
+  }
+  
+  getBridgePayment(): bigint {
+    return 0n;
+  }
 }

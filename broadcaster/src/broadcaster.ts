@@ -80,10 +80,6 @@ export class Broadcaster {
     console.log(receipt);
   }
 
-  // function sendBlockhashPmmr(
-  //   uint32 pmmrSize,
-  //   Channel[] calldata channels,
-  //   BroadcastParams[] calldata broadcastParamsList
   public async sendBlockhashPmmr(
     pmmrSize: number,
     channels: Channel[],

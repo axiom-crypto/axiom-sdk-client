@@ -1,4 +1,13 @@
+import { BroadcastParams } from "../types";
+
 export abstract class BroadcastModule {
-  abstract getBridgeMetadata(inputs: { [key: string]: string }): string;
-  abstract getBridgePayment(inputs: { [key: string]: string }): bigint;
+  abstract getBridgeMetadata(): string;
+  abstract getBridgePayment(): bigint;
+  
+  getBroadcastParams(): BroadcastParams {
+    return {
+      bridgeMetadata: this.getBridgeMetadata(),
+      bridgePayment: this.getBridgePayment(),
+    }
+  }
 }

@@ -1,12 +1,14 @@
-import { createPublicClient, PublicClient } from "viem";
 import { ethers } from 'ethers';
 import { ChildProcess, execSync, spawn } from 'child_process';
 import { sleep } from "../testUtils";
-import { Broadcaster, Channel } from "../../src";
-import { viemPublicClient } from "../../src/utils";
+import { Broadcaster, BroadcastParams, Channel, OpStackBroadcastModule } from "../../src";
 import { getAxiomV2BroadcasterAddress } from "../../src/lib/address";
 
+const PMMR_SIZE = 5430616;
+const BLOCKS_AFTER = 1200;
+const CHAIN_ID_BASE_SEPOLIA = "84532";
 const ANVIL_PK = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+const broadcastModuleAddr = "0xCf0F7382EE8715C6fC97e64a786C46bBa39AE174";
 
 describe("Channel Actions", () => {
   let broadcaster: Broadcaster;
@@ -23,13 +25,13 @@ describe("Channel Actions", () => {
     }
 
     // Get latest block
-    const currentBlock = await sepoliaProvider.getBlockNumber();
-    if (currentBlock === undefined) {
-      throw new Error("Failed to get the current block number");
-    }
+    // const currentBlock = await sepoliaProvider.getBlockNumber();
+    // if (currentBlock === undefined) {
+    //   throw new Error("Failed to get the current block number");
+    // }
 
     // start the local anvil fork
-    anvilProcess = spawn('anvil', [`--fork-url`, `${process.env.PROVIDER_URI_11155111}`, `--fork-block-number`, `${currentBlock}`, `--block-time`, `10`], {
+    anvilProcess = spawn('anvil', [`--fork-url`, `${process.env.PROVIDER_URI_11155111}`, `--fork-block-number`, `${PMMR_SIZE + BLOCKS_AFTER}`, `--block-time`, `10`], {
       cwd: process.cwd(),
       detached: true,
       stdio: "inherit"
@@ -45,14 +47,6 @@ describe("Channel Actions", () => {
       provider: "http://localhost:8545",
       privateKey: ANVIL_PK,
     });
-
-    // Send eth to signer address
-    
-    // const signer = new Wallet(anvilThrowawayPrivateKey, anvilProvider);
-    // await signer.sendTransaction({
-    //   to: "0x58E2BeEA6130A0a3ab1a15F7220CA45841f267C3",
-    //   value: BigInt("10000000000000000000"), // 10 eth
-    // });
     
     // Calculate the storage slot for the Prover role for the signer address
     // AxiomAccess: https://github.com/axiom-crypto/axiom-v2-contracts/blob/main/contracts/libraries/access/AxiomAccess.sol
@@ -85,9 +79,8 @@ describe("Channel Actions", () => {
   });
 
   test("Add a channel", async () => {
-    const broadcastModuleAddr = "0xe76a90E3069c9d86e666DcC687e76fcecf4429cF";
     const channel: Channel = {
-      chainId: "421614",
+      chainId: CHAIN_ID_BASE_SEPOLIA,
       bridgeId: 0,
     }
     await broadcaster.addChannel(channel, broadcastModuleAddr);
@@ -97,11 +90,29 @@ describe("Channel Actions", () => {
 
   test("Remove a channel", async () => {
     const channel: Channel = {
-      chainId: "421614",
+      chainId: CHAIN_ID_BASE_SEPOLIA,
       bridgeId: 0,
     }
     await broadcaster.removeChannel(channel);
     const onchainChannel = await broadcaster.getChannel(channel);
     expect(onchainChannel).toEqual("0x0000000000000000000000000000000000000000");
+  }, 30000);
+
+  test("sendBlockhashPmmr", async () => {
+    const channel: Channel = {
+      chainId: CHAIN_ID_BASE_SEPOLIA,
+      bridgeId: 0,
+    };
+    const baseParams = new OpStackBroadcastModule({
+      gasLimit: "30000000"
+    });
+    const params: BroadcastParams = baseParams.getBroadcastParams();
+    await broadcaster.addChannel(channel, broadcastModuleAddr);
+    try {
+      await broadcaster.sendBlockhashPmmr(PMMR_SIZE, [channel], [params])
+    } catch (e: any) {
+      console.log(e.metaMessages.join("\n"));
+      throw new Error("Failed to sendBlockhashPmmr");
+    }
   }, 30000);
 })

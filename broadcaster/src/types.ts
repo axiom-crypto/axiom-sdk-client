@@ -8,7 +8,7 @@ export interface Channel {
 
 export interface BroadcastParams {
   bridgeMetadata: string;
-  bridgePayment: string;
+  bridgePayment: bigint;
 }
 
 export interface AxiomV2BroadcastClientConfig {

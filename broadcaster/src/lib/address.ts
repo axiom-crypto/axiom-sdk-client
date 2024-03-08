@@ -13,7 +13,7 @@ import {
 
 const axiomV2BroadcasterAddresses = {
   [mainnet.id.toString()]: "",
-  [sepolia.id.toString()]: "0x1AA67AEa85dA95C1825c9973f2c7830c274b6071",
+  [sepolia.id.toString()]: "0xD95c6Ca1fdB559A3108617BD0Ac846b8CCD871E3",
 }
 
 // Maps sourceChainId to targetChainId to bridge ID addresses

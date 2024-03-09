@@ -7,10 +7,13 @@ import {
   QueryBuilderV2,
   QueryV2,
 } from "@axiom-crypto/core";
-import { encodeFunctionData } from "viem";
+import { createPublicClient, encodeFunctionData, http } from "viem";
 import { getMaxFeePerGas } from "./axiom/utils";
-import { AxiomV2ClientOptions, AxiomV2SendQueryArgs } from "./types";
+import { AbiType, AxiomV2ClientOptions, AxiomV2SendQueryArgs } from "./types";
 import { encodeFullQueryV2 } from "@axiom-crypto/core/packages/tools";
+import { calculatePayment } from "./lib/paymentCalc";
+import { viemChain } from "./lib/viem";
+import { getAxiomV2Abi, getAxiomV2QueryAddress } from "./lib";
 
 export const buildSendQuery = async (input: {
   axiom: AxiomSdkCore;
@@ -18,6 +21,7 @@ export const buildSendQuery = async (input: {
   computeQuery: AxiomV2ComputeQuery;
   callback: AxiomV2Callback;
   caller: string;
+  provider: string;
   options: AxiomV2ClientOptions;
 }): Promise<AxiomV2SendQueryArgs> => {
   const validate = input.options.validate ?? false;
@@ -28,6 +32,8 @@ export const buildSendQuery = async (input: {
   if (input.options.maxFeePerGas == undefined) {
     input.options.maxFeePerGas = await getMaxFeePerGas(input.axiom);
   }
+  const chainId = input.options?.overrides?.chainId ?? input.axiom.config.chainId.toString();
+  console.log("chainId", chainId, input.options, input.axiom.config.chainId.toString());
 
   const queryOptions: AxiomV2QueryOptions = {
     maxFeePerGas: input.options.maxFeePerGas,
@@ -46,11 +52,10 @@ export const buildSendQuery = async (input: {
   if (input.dataQuery.length > 0) {
     qb.setBuiltDataQuery({
       subqueries: input.dataQuery,
-      sourceChainId: input.axiom.config.chainId.toString(),
+      sourceChainId: chainId,
     }, true);
   }
   const {
-    sourceChainId,
     queryHash,
     dataQueryHash,
     computeQuery,
@@ -60,10 +65,16 @@ export const buildSendQuery = async (input: {
     refundee,
     dataQuery,
   } = await qb.build(validate);
-  const payment = await qb.calculateFee();
   const id = await qb.getQueryId(input.caller);
-  const abi = input.axiom.getAxiomQueryAbi();
-  const axiomQueryAddress = input.options.queryAddress ?? input.axiom.getAxiomQueryAddress();
+  const abi = getAxiomV2Abi(AbiType.Query);
+  const axiomQueryAddress = input.options?.overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
+  console.log("axiomQueryAddress", axiomQueryAddress);
+
+  const publicClient = createPublicClient({
+    chain: viemChain(chainId, input.provider),
+    transport: http(input.provider),
+  });
+  const payment = await calculatePayment(axiomQueryAddress, publicClient, input.options);
 
   let sendQueryArgs: any;
   if (!input.options.ipfsClient) {
@@ -73,7 +84,7 @@ export const buildSendQuery = async (input: {
       functionName: "sendQuery",
       value: BigInt(payment),
       args: [
-        sourceChainId,
+        chainId,
         dataQueryHash,
         computeQuery,
         callback,
@@ -87,10 +98,10 @@ export const buildSendQuery = async (input: {
     };
   } else {
     const encodedQuery = encodeFullQueryV2(
-      sourceChainId,
+      chainId,
       refundee,
       {
-        sourceChainId: input.axiom.config.chainId.toString(),
+        sourceChainId: chainId,
         subqueries: input.dataQuery,
       },
       computeQuery,

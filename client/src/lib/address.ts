@@ -21,7 +21,7 @@ const axiomV2QueryAddresses = {
     [scroll.id.toString()]: "",
   },
   [sepolia.id.toString()]: {
-    [sepolia.id.toString()]: "",
+    [sepolia.id.toString()]: "0x83c8c0B395850bA55c830451Cfaca4F2A667a983",
     [arbitrumSepolia.id.toString()]: "",
     [optimismSepolia.id.toString()]: "",
     [baseSepolia.id.toString()]: "",
@@ -79,9 +79,9 @@ export function getAxiomV2QueryAddress(
   }
   
   if (!mock) {
-    return axiomV2QueryAddresses[chainId][targetChainId];
+    return axiomV2QueryAddresses?.[chainId]?.[targetChainId] ?? "";
   } else {
-    return axiomV2QueryAddressesMock[chainId][targetChainId];
+    return axiomV2QueryAddressesMock?.[chainId]?.[targetChainId] ?? "";
   }
 }
 

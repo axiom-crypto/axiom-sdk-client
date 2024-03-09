@@ -5,10 +5,21 @@ import {
   AxiomV2FeeData,
   getByteLength,
 } from "@axiom-crypto/core";
-import { AxiomV2SendQueryArgsParams, CircuitInputType } from "../types";
+import { AbiType, AxiomV2SendQueryArgsParams, CircuitInputType } from "../types";
 import { createPublicClient, http } from 'viem';
 import { mainnet, sepolia } from 'viem/chains';
 import { ClientConstants } from "../constants";
+import { getAxiomV2Abi, getAxiomV2QueryAddress, viemChain } from "../lib";
+
+export function validateChainId(chainId: string) {
+  switch (chainId) {
+    case "1":
+    case "11155111":
+      return;
+    default:
+      throw new Error(`Unsupported chainId ${chainId}`);
+  }
+}
 
 export function convertInputSchemaToJsonString(args: {[arg: string]: CircuitInputType}): string {
   const inputs = Object.keys(args).map((key: string) => {
@@ -70,12 +81,12 @@ export function argsObjToArr(
 export async function getMaxFeePerGas(axiom: AxiomSdkCore): Promise<string> {
   const providerFeeData = (await axiom.config.provider.getFeeData()).maxFeePerGas as bigint;
   const publicClient = createPublicClient({
-    chain: convertChainIdToViemChain(axiom.config.chainId.toString()),
+    chain: viemChain(axiom.config.chainId.toString(), axiom.config.providerUri),
     transport: http(axiom.config.providerUri),
   });
   let contractMinMaxFeePerGas = await publicClient.readContract({
-    address: axiom.getAxiomQueryAddress() as `0x${string}`,
-    abi: axiom.getAxiomQueryAbi(),
+    address: getAxiomV2QueryAddress(axiom.config.chainId.toString()) as `0x${string}`,
+    abi: getAxiomV2Abi(AbiType.Query),
     functionName: "minMaxFeePerGas",
     args: [],
   }) as bigint;

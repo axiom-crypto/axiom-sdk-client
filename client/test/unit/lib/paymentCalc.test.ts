@@ -1,35 +1,9 @@
-import { ethers } from "ethers"
-import { AbiType, AxiomV2QueryOptions, getAxiomV2Abi, getAxiomV2QueryAddress } from "../../../src";
-import { ClientConstants } from "../../../src/constants";
-import { calculatePayment } from "../../../src/lib/paymentCalc";
+import { Axiom } from "../../../src";
 import { createPublicClient, http } from "viem";
 import { viemChain } from "../../../src/lib/viem";
-
-async function calculatePaymentEthers(axiomV2Query: ethers.Contract, options?: AxiomV2QueryOptions): Promise<bigint> {
-  // Get proofVerificationGas from contract
-  let proofVerificationGas = await axiomV2Query.proofVerificationGas(); // in gas units
-  if (proofVerificationGas === 0n) {
-    proofVerificationGas = ClientConstants.FALLBACK_PROOF_VERIFICATION_GAS;
-  }
-  proofVerificationGas = proofVerificationGas.toString();
-
-  // Get axiomQueryFee from contract
-  let axiomQueryFee = await axiomV2Query.axiomQueryFee(); // in wei
-  if (axiomQueryFee === 0n) {
-    axiomQueryFee = ClientConstants.FALLBACK_AXIOM_QUERY_FEE_WEI;
-  }
-  const axiomQueryFeeWei = ethers.parseUnits(axiomQueryFee.toString(), "wei");
-
-  // Convert callback gas limit to wei
-  const callbackGasLimit = (options?.callbackGasLimit ?? ClientConstants.DEFAULT_CALLBACK_GAS_LIMIT).toString();
-
-  // payment = maxFeePerGas * (proofVerificationGas + callbackGasLimit) + axiomQueryFee
-  const payment =
-    BigInt(options?.maxFeePerGas ?? ClientConstants.DEFAULT_MAX_FEE_PER_GAS_WEI) *
-      (BigInt(proofVerificationGas) + BigInt(callbackGasLimit)) +
-    BigInt(axiomQueryFeeWei);
-  return payment;
-}
+import { circuit } from "../../integration/circuits/quickstart/average.circuit";
+import compiledCircuit from "../../integration/circuits/quickstart/average.compiled.json";
+import inputs from "../../integration/circuits/quickstart/average.inputs.json";
 
 describe("PaymentCalc", () => {
   const CHAIN_ID = "11155111";
@@ -38,12 +12,65 @@ describe("PaymentCalc", () => {
     transport: http(process.env.PROVIDER_URI_SEPOLIA as string),
   });
 
-  test("Payment calculation with ethers should equal viem", async () => {
-    const axiomV2QueryAddr = getAxiomV2QueryAddress(CHAIN_ID);
-    const ethersProvider = new ethers.JsonRpcProvider(process.env.PROVIDER_URI_SEPOLIA as string);
-    const ethersAxiomV2Query = new ethers.Contract(axiomV2QueryAddr, getAxiomV2Abi(AbiType.Query), ethersProvider);
-    const viemPayment = await calculatePayment(axiomV2QueryAddr, publicClient);
-    const ethersPayment = await calculatePaymentEthers(ethersAxiomV2Query);
-    expect(viemPayment).toEqual(ethersPayment);
-  });
+  test("Payment calculation default based on options", async () => {
+    const axiom = new Axiom({
+      circuit,
+      compiledCircuit,
+      chainId: CHAIN_ID,
+      provider: process.env.PROVIDER_URI_SEPOLIA as string,
+      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
+      callback: {
+        target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
+      },
+      options: {
+        maxFeePerGas: "5000000000",
+      },
+    });
+    await axiom.init();
+    await axiom.prove(inputs);
+    const args = axiom.getSendQueryArgs();
+    expect(args?.value).toEqual(5600000000000000n);
+  }, 20000);
+
+  test("Payment calculation high based on options", async () => {
+    const axiom = new Axiom({
+      circuit,
+      compiledCircuit,
+      chainId: CHAIN_ID,
+      provider: process.env.PROVIDER_URI_SEPOLIA as string,
+      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
+      callback: {
+        target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
+      },
+      options: {
+        maxFeePerGas: "500000000000",
+        callbackGasLimit: 1000000000,
+      },
+    });
+    await axiom.init();
+    await axiom.prove(inputs);
+    const args = axiom.getSendQueryArgs();
+    expect(args?.value).toEqual(500213000000000000000n);
+  }, 20000);
+
+  test("Payment calculation high based on options", async () => {
+    const axiom = new Axiom({
+      circuit,
+      compiledCircuit,
+      chainId: CHAIN_ID,
+      provider: process.env.PROVIDER_URI_SEPOLIA as string,
+      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
+      callback: {
+        target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
+      },
+      options: {
+        maxFeePerGas: "5000000000",
+        callbackGasLimit: 1000,
+      },
+    });
+    await axiom.init();
+    await axiom.prove(inputs);
+    const args = axiom.getSendQueryArgs();
+    expect(args?.value).toEqual(5105000000000000n);
+  }, 20000);
 });

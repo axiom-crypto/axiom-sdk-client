@@ -33,13 +33,11 @@ export const buildSendQuery = async (input: {
     input.options.maxFeePerGas = await getMaxFeePerGas(input.axiom);
   }
   const chainId = input.options?.overrides?.chainId ?? input.axiom.config.chainId.toString();
-  console.log("chainId", chainId, input.options, input.axiom.config.chainId.toString());
 
   const queryOptions: AxiomV2QueryOptions = {
     maxFeePerGas: input.options.maxFeePerGas,
     callbackGasLimit: input.options.callbackGasLimit,
     overrideAxiomQueryFee: input.options.overrideAxiomQueryFee,
-    dataQueryCalldataGasWarningThreshold: input.options.dataQueryCalldataGasWarningThreshold,
     refundee: input.options.refundee,
   };
   const qb: QueryBuilderV2 = query.new(
@@ -68,7 +66,6 @@ export const buildSendQuery = async (input: {
   const id = await qb.getQueryId(input.caller);
   const abi = getAxiomV2Abi(AbiType.Query);
   const axiomQueryAddress = input.options?.overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
-  console.log("axiomQueryAddress", axiomQueryAddress);
 
   const publicClient = createPublicClient({
     chain: viemChain(chainId, input.provider),
@@ -82,7 +79,7 @@ export const buildSendQuery = async (input: {
       address: axiomQueryAddress as `0x${string}`,
       abi: abi,
       functionName: "sendQuery",
-      value: BigInt(payment),
+      value: payment,
       args: [
         chainId,
         dataQueryHash,

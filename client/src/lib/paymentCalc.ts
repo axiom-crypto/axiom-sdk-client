@@ -10,24 +10,35 @@ export async function calculatePayment(
   options?: AxiomV2QueryOptions
 ): Promise<bigint> {
   // Get proofVerificationGas from contract
-  let proofVerificationGas = await publicClient.readContract({
-    address: axiomV2QueryAddr,
-    abi: getAxiomV2Abi(AbiType.Query),
-    functionName: "proofVerificationGas",
-    args: [],
-  }); // in gas units
-  proofVerificationGas = BigInt(proofVerificationGas);
+  let proofVerificationGas;
+  try {
+    proofVerificationGas = await publicClient.readContract({
+      address: axiomV2QueryAddr,
+      abi: getAxiomV2Abi(AbiType.Query),
+      functionName: "proofVerificationGas",
+      args: [],
+    }) as bigint; // in gas units
+  } catch (e) {
+    console.log(`Unable to read proofVerificationGas from contract`);
+  }
+  proofVerificationGas = BigInt(proofVerificationGas ?? 0);
   if (proofVerificationGas === 0n) {
     proofVerificationGas = ClientConstants.FALLBACK_PROOF_VERIFICATION_GAS;
   }
 
   // Get axiomQueryFee from contract
-  let axiomQueryFee = await publicClient.readContract({
-    address: axiomV2QueryAddr,
-    abi: getAxiomV2Abi(AbiType.Query),
-    functionName: "axiomQueryFee",
-    args: [],
-  }) as bigint; // in wei
+  let axiomQueryFee;
+  try {
+    axiomQueryFee = await publicClient.readContract({
+      address: axiomV2QueryAddr,
+      abi: getAxiomV2Abi(AbiType.Query),
+      functionName: "axiomQueryFee",
+      args: [],
+    }) as bigint; // in wei
+  } catch (e) {
+    console.log(`Unable to read axiomQueryFee from contract`);
+  }
+  axiomQueryFee = BigInt(axiomQueryFee ?? 0);
   if (axiomQueryFee === 0n) {
     axiomQueryFee = ClientConstants.FALLBACK_AXIOM_QUERY_FEE_WEI;
   }

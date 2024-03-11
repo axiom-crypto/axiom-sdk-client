@@ -37,6 +37,7 @@ const dependencyTypes = [
 function main() {
   // Substitute package versions 
   for (const package of Object.keys(packages)) {
+    console.log("For", package)
     const packageJsonPath = packages[package].path + "/package.json";
     console.log("Processing", packageJsonPath);
     let packageJson = require(packageJsonPath);
@@ -63,9 +64,13 @@ function main() {
     fs.writeFileSync(packageJsonPath.slice(1), JSON.stringify(packageJson, null, 2));
 
     // Install dependencies & build 
+    console.log(`cd ${packages[package].path.slice(1)}`);
     execSync(`cd ${packages[package].path.slice(1)}`);
-    execSync(`${packageManager} i`);
+    console.log(`${packageManager} install`);
+    execSync(`${packageManager} install`);
+    console.log(`${packageManager} run build`);
     execSync(`${packageManager} run build`);
+    console.log(`cd..`);
     execSync(`cd..`);
   }
 }

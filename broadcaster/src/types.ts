@@ -1,5 +1,4 @@
 import { PublicClient, WalletClient } from "viem";
-import { ByteLengths } from "@axiom-crypto/core";
 
 export interface Channel {
   chainId: string;

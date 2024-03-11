@@ -21,7 +21,6 @@ export const buildSendQuery = async (input: {
   computeQuery: AxiomV2ComputeQuery;
   callback: AxiomV2Callback;
   caller: string;
-  provider: string;
   options: AxiomV2ClientOptions;
 }): Promise<AxiomV2SendQueryArgs> => {
   const validate = input.options.validate ?? false;
@@ -68,8 +67,8 @@ export const buildSendQuery = async (input: {
   const axiomQueryAddress = input.options?.overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
 
   const publicClient = createPublicClient({
-    chain: viemChain(chainId, input.provider),
-    transport: http(input.provider),
+    chain: viemChain(chainId, input.axiom.config.providerUri),
+    transport: http(input.axiom.config.providerUri),
   });
   const payment = await calculatePayment(axiomQueryAddress, publicClient, input.options);
 

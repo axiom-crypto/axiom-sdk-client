@@ -35,7 +35,6 @@ export class AxiomCircuit<T> extends AxiomBaseCircuit<T> {
       callback: axiomCallback,
       caller: input.callerAddress,
       options: input.options,
-      provider: this.provider,
     });
   }
 }

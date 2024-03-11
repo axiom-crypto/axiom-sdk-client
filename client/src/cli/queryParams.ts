@@ -55,7 +55,6 @@ export const queryParams = async (
         callbackGasLimit: options.callbackGasLimit,
       },
       caller: options.caller ?? options.refundAddress,
-      provider: provider,
     });
     build.value = build.value.toString() as any;
     const res = {

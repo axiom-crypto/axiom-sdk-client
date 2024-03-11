@@ -1,4 +1,4 @@
-const { execSync } = require("child_process");
+const { execSync, exec } = require("child_process");
 const fs = require("fs");
 
 let ci = false;
@@ -63,7 +63,10 @@ function main() {
     fs.writeFileSync(packageJsonPath.slice(1), JSON.stringify(packageJson, null, 2));
 
     // Install dependencies & build 
-    execSync(`cd ${packages[package].path.slice(1)} && ${packageManager} i && ${packageManager} run build && cd ..`);
+    execSync(`cd ${packages[package].path.slice(1)}`);
+    execSync(`${packageManager} i`);
+    execSync(`${packageManager} run build`);
+    execSync(`cd..`);
   }
 }
 

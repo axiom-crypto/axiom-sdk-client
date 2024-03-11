@@ -45,7 +45,7 @@ jobs:
           pnpm test
     
   client-tests:
-    name: "[Client] Tests"
+    name: Client Tests
     runs-on: ubuntu-latest
 
     steps:

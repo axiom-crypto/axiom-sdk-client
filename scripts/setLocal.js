@@ -65,12 +65,12 @@ function main() {
 
     // Install dependencies & build 
     console.log(`cd ${packages[package].path.slice(1)}`);
-    execSync(`cd ${packages[package].path.slice(1)}`);
-    console.log(`${packageManager} install`);
-    execSync(`${packageManager} install`);
-    console.log(`${packageManager} run build`);
-    execSync(`${packageManager} run build`);
-    console.log(`cd..`);
+    const buf0 = execSync(`cd ${packages[package].path.slice(1)}`);
+    console.log(`${packageManager} install, prev: ${buf0}`);
+    const buf1 = execSync(`${packageManager} install`);
+    console.log(`${packageManager} run build, prev: ${buf1}`);
+    const buf2 = execSync(`${packageManager} run build`);
+    console.log(`cd.., prev: ${buf2}`);
     execSync(`cd..`);
   }
 }

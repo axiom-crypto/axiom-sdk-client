@@ -1,15 +1,13 @@
-import { circuit as circuit0 } from "./circuits/computeQueryStandalone/computeQueryNoData.circuit";
-import compiledCircuit0 from "./circuits/computeQueryStandalone/computeQueryNoData.compiled.json";
-import { circuit as circuit1 } from "./circuits/computeQueryStandalone/computeQueryNoDataLarge.circuit";
-import compiledCircuit1 from "./circuits/computeQueryStandalone/computeQueryNoDataLarge.compiled.json";
-import circuitInputs1 from "./circuits/computeQueryStandalone/computeQueryNoDataLarge.inputs.json";
 import { Axiom } from "../../src";
+import { generateCircuit } from "./circuitTest";
 
 describe("Build ComputeQuery Standalone", () => {
   test("simple computeQuery w/ no data subqueries", async () => {
+    const { circuit, compiledCircuit, inputs } = await generateCircuit("computeQueryStandalone/computeQueryNoData");
+
     const axiom = new Axiom({
-      circuit: circuit0,
-      compiledCircuit: compiledCircuit0,
+      circuit,
+      compiledCircuit,
       chainId: "11155111",  // Sepolia
       provider: process.env.PROVIDER_URI_SEPOLIA as string,
       privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
@@ -18,15 +16,17 @@ describe("Build ComputeQuery Standalone", () => {
       },
     });
     await axiom.init();
-    await axiom.prove({});
+    await axiom.prove(inputs);
     const receipt = await axiom.sendQuery();
     expect(receipt.status).toBe('success');
   }, 60000);
 
   test("larger computeQuery w/ no data subqueries", async () => {
+    const { circuit, compiledCircuit, inputs } = await generateCircuit("computeQueryStandalone/computeQueryNoDataLarge");
+
     const axiom = new Axiom({
-      circuit: circuit1,
-      compiledCircuit: compiledCircuit1,
+      circuit,
+      compiledCircuit,
       chainId: "11155111",  // Sepolia
       provider: process.env.PROVIDER_URI_SEPOLIA as string,
       privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
@@ -35,7 +35,7 @@ describe("Build ComputeQuery Standalone", () => {
       },
     });
     await axiom.init();
-    await axiom.prove(circuitInputs1);
+    await axiom.prove(inputs);
     const receipt = await axiom.sendQuery();
     expect(receipt.status).toBe('success');
   }, 60000);

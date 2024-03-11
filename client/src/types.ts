@@ -21,7 +21,7 @@ export interface AxiomV2ClientConfig<T> {
   privateKey?: string;
   version?: string;
   capacity?: AxiomV2CircuitCapacity;
-  options?: AxiomV2ClientOptions;   
+  options?: AxiomV2ClientOptions;
 }
 
 export interface AxiomV2CallbackInput {
@@ -35,6 +35,7 @@ export interface AxiomV2CompiledCircuit {
   querySchema: string;
   inputSchema: string;
   circuit: string;
+  capacity?: AxiomV2CircuitCapacity;
 }
 
 export interface AxiomV2ClientOptions extends AxiomV2QueryOptions {

@@ -7,7 +7,7 @@ import {
 } from "../types";
 import { AxiomV2CircuitCapacity, RawInput } from "@axiom-crypto/circuit/types";
 import { DEFAULT_CAPACITY } from "@axiom-crypto/circuit/constants";
-import { convertChainIdToViemChain, validateChainId } from "./utils";
+import { validateChainId } from "./utils";
 import { PublicClient, TransactionReceipt, WalletClient, createPublicClient, createWalletClient, http, zeroAddress, zeroHash } from "viem";
 import { privateKeyToAccount } from 'viem/accounts'
 import { AxiomV2Callback } from "@axiom-crypto/core";
@@ -43,7 +43,7 @@ export class Axiom<T> {
       provider: this.config.provider,
       inputSchema: config.compiledCircuit.inputSchema,
       chainId: this.config.chainId,
-      capacity: this.capacity,
+      capacity: this.capacity ?? this.compiledCircuit.capacity ?? DEFAULT_CAPACITY,
     });
 
     const publicClient = createPublicClient({
@@ -69,7 +69,7 @@ export class Axiom<T> {
     await this.axiomCircuit.loadSaved({
       config: {
         config: this.compiledCircuit.config,
-        capacity: this.capacity ?? DEFAULT_CAPACITY,
+        capacity: this.capacity ?? this.compiledCircuit.capacity ?? DEFAULT_CAPACITY,
       },
       vk: this.compiledCircuit.vk,
     });

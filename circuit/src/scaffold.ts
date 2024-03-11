@@ -150,13 +150,11 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     const vk = this.getHalo2Vk();
     const encoder = new TextEncoder();
     const inputSchema = encoder.encode(this.inputSchema);
-    const axiomConfig: AxiomV2CircuitConfig = {
-      config,
-      capacity: this.capacity
-    }
+
     return {
       vk: byteArrayToBase64(vk),
-      config: axiomConfig,
+      config,
+      capacity: this.capacity ?? DEFAULT_CAPACITY,
       querySchema: this.getQuerySchema(),
       inputSchema: byteArrayToBase64(inputSchema),
     };
@@ -178,13 +176,11 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     const vk = this.getMockVk().map(e => e.slice(2)).join('');
     const encoder = new TextEncoder();
     const inputSchema = encoder.encode(this.inputSchema);
-    const axiomConfig: AxiomV2CircuitConfig = {
-      config,
-      capacity: this.capacity
-    }
+
     return {
       vk,
-      config: axiomConfig,
+      config,
+      capacity: this.capacity ?? DEFAULT_CAPACITY,
       querySchema: DEADBEEF_BYTES32,
       inputSchema: byteArrayToBase64(inputSchema),
     };

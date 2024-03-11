@@ -43,34 +43,7 @@ jobs:
           export PRIVATE_KEY=$ANVIL_PRIVATE_KEY # just needs to be in the correct format, no tx is sent in unit tests
           export PRIVATE_KEY_GOERLI=$ANVIL_PRIVATE_KEY
           pnpm test
-
-      client-unit-tests:
-        name: "[Client] Unit tests"
-        runs-on: ubuntu-latest
     
-        steps:
-          - name: Checkout Code
-            uses: actions/checkout@v3
-    
-          - name: Setup pnpm
-            uses: pnpm/action-setup@v3
-            with:
-              version: 8
-    
-          - name: "Install Node.js"
-            uses: "actions/setup-node@v4"
-            with:
-              node-version: "20.x"
-              cache: "pnpm"
-              registry-url: "https://registry.npmjs.org"
-              cache-dependency-path: client/pnpm-lock.yaml
-    
-          - name: Set all packages to local and build
-            working-directory: ./
-            run: pnpm local
-    
-          
-
   client-tests:
     name: "[Client] Tests"
     runs-on: ubuntu-latest

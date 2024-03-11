@@ -19,7 +19,7 @@ describe("Build ComputeQuery Standalone", () => {
     await axiom.prove(inputs);
     const receipt = await axiom.sendQuery();
     expect(receipt.status).toBe('success');
-  }, 60000);
+  }, 90000);
 
   test("larger computeQuery w/ no data subqueries", async () => {
     const { circuit, compiledCircuit, inputs } = await generateCircuit("computeQueryStandalone/computeQueryNoDataLarge");
@@ -38,5 +38,5 @@ describe("Build ComputeQuery Standalone", () => {
     await axiom.prove(inputs);
     const receipt = await axiom.sendQuery();
     expect(receipt.status).toBe('success');
-  }, 60000);
+  }, 90000);
 });

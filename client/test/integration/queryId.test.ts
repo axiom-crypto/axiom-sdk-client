@@ -1,5 +1,3 @@
-import { circuit as circuit0 } from "./circuits/queryId/basic.circuit";
-import compiledCircuit0 from "./circuits/queryId/basic.compiled.json";
 import { Axiom } from "../../src";
 import { bytes32 } from "@axiom-crypto/core";
 import { generateCircuit } from "./circuitTest";

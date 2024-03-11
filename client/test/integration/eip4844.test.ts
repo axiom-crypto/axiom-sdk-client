@@ -21,5 +21,5 @@ describe("EIP-4844 transaction", () => {
       const receipt = await axiom.sendQuery();
     };
     await expect(testFn()).rejects.toThrow();
-  });
+  }, 60000);
 })

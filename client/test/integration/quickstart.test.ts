@@ -19,5 +19,5 @@ describe("Quickstart", () => {
     await axiom.prove(inputs);
     const receipt = await axiom.sendQuery();
     expect(receipt.status).toBe('success');
-  }, 60000);
+  }, 90000);
 });

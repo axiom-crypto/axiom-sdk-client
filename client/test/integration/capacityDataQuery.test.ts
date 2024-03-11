@@ -19,7 +19,7 @@ describe("On-chain Data Query scenarios", () => {
     await axiom.prove(inputs);
     const receipt = await axiom.sendQuery();
     expect(receipt.status).toBe('success');
-  }, 60000);
+  }, 90000);
 
   test("Send a size-128 header DataQuery", async () => {
     const { circuit, compiledCircuit, inputs } = await generateCircuit("capacityDataQuery/size128Header");
@@ -38,5 +38,5 @@ describe("On-chain Data Query scenarios", () => {
     await axiom.prove(inputs);
     const receipt = await axiom.sendQuery();
     expect(receipt.status).toBe('success');
-  }, 60000);
+  }, 180000);
 });

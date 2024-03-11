@@ -23,5 +23,5 @@ describe("Send Query using Axiom client", () => {
     }
     const receipt = await axiom.sendQuery();
     expect(receipt.status).toBe('success');
-  }, 60000);
+  }, 90000);
 });

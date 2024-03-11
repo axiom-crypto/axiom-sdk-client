@@ -2,7 +2,7 @@ import { Axiom } from "../../../src";
 import { createPublicClient, http } from "viem";
 import { viemChain } from "../../../src/lib/viem";
 import { circuit } from "../../integration/circuits/quickstart/average.circuit";
-import compiledCircuit from "../../integration/circuits/quickstart/average.compiled.json";
+import compiledCircuit from "../circuits/average.compiled.json";
 import inputs from "../../integration/circuits/quickstart/average.inputs.json";
 
 describe("PaymentCalc", () => {

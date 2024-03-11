@@ -12,7 +12,7 @@ describe("Address library unit tests", () => {
     expect(mainnetMock).toEqual("");
 
     const sepolia = getAxiomV2QueryAddress("11155111");
-    expect(sepolia).toEqual("");
+    expect(sepolia).toEqual("0x83c8c0B395850bA55c830451Cfaca4F2A667a983");
 
     const sepoliaMock = getAxiomV2QueryAddress("11155111", undefined, true);
     expect(sepoliaMock).toEqual("0x83c8c0B395850bA55c830451Cfaca4F2A667a983");

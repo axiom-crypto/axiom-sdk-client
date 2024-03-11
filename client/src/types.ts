@@ -21,7 +21,6 @@ export interface AxiomV2ClientConfig<T> {
   privateKey?: string;
   version?: string;
   capacity?: AxiomV2CircuitCapacity;
-  ipfsClient?: IpfsClient;
   options?: AxiomV2ClientOptions;   
 }
 

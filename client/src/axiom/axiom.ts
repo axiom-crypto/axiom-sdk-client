@@ -129,7 +129,7 @@ export class Axiom<T> {
   }
 
   async sendQueryWithIpfs(): Promise<TransactionReceipt> {
-    if (this.config.ipfsClient === undefined) {
+    if (this.config.options?.ipfsClient === undefined) {
       throw new Error("Setting `ipfsClient` is required to send a Query with IPFS");
     }
 
@@ -167,7 +167,6 @@ export class Axiom<T> {
       ...this.options,
       callbackGasLimit: this.options?.callbackGasLimit ?? ClientConstants.CALLBACK_GAS_LIMIT,
       refundee: this.options?.refundee ?? this.walletClient?.account?.address,
-      ipfsClient: this.config.ipfsClient,
       overrides: this.options?.overrides,
     };
     

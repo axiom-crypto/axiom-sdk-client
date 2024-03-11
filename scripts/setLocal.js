@@ -63,17 +63,18 @@ function main() {
     fs.writeFileSync(packageJsonPath.slice(1), JSON.stringify(packageJson, null, 2));
 
     // Install dependencies & build 
-    try {
-      execSync(
-        `rm package-lock.json pnpm-lock.yaml && `,
-        { 
-          cwd: packages[package].path.slice(1),
-          stdio: 'inherit'
-        }
-      );
-    } catch (_e) {}
+    // try {
+    //   execSync(
+    //     `rm package-lock.json pnpm-lock.yaml && `,
+    //     { 
+    //       cwd: packages[package].path.slice(1),
+    //       stdio: 'inherit'
+    //     }
+    //   );
+    // } catch (_e) {}
+    const installCmd = ci ? "ci" : "i --no-frozen-lockfile";
     execSync(
-      `${packageManager} i && ${packageManager} run build`,
+      `${packageManager} ${installCmd} && ${packageManager} run build`,
       { 
         cwd: packages[package].path.slice(1),
         stdio: 'inherit'

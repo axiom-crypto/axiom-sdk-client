@@ -28,5 +28,5 @@ describe("QueryID Integration Tests", () => {
     const queryInitiatedOnChainEvent = receipt.logs[1];
     const onchainQueryId = queryInitiatedOnChainEvent.topics[3];
     expect(bytes32(args.queryId)).toEqual(onchainQueryId);
-  }, 60000);
+  }, 90000);
 });

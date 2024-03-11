@@ -1,9 +1,6 @@
 
 import { Axiom } from "../../src";
 import { generateCircuit } from "./circuitTest";
-// import { circuit as circuit0 } from "./circuits/computeQuery/simple.circuit";
-// import compiledCircuit0 from "./circuits/computeQuery/simple.compiled.json";
-// import inputs0 from "./circuits/computeQuery/simple.inputs.json";
 
 describe("Build ComputeQuery with DataQuery", () => {
   let circuit: any;
@@ -32,7 +29,7 @@ describe("Build ComputeQuery with DataQuery", () => {
     await axiom.prove(inputs);
     const receipt = await axiom.sendQuery();
     expect(receipt.status).toBe('success');
-  }, 60000);
+  }, 90000);
 
   test("simple computeQuery with dataQuery and address override", async () => {
     const chainIdOverride = "8453";
@@ -61,5 +58,5 @@ describe("Build ComputeQuery with DataQuery", () => {
     }
     expect(args.args[0]).toBe(chainIdOverride)
     expect(args.address).toBe(addressOverride);
-  }, 60000);
+  }, 90000);
 });

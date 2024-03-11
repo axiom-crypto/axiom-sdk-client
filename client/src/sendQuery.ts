@@ -23,15 +23,15 @@ export const buildSendQuery = async (input: {
   caller: string;
   options: AxiomV2ClientOptions;
 }): Promise<AxiomV2SendQueryArgs> => {
-  const validate = input.options.validate ?? false;
+  const validate = input.options?.overrides?.validateBuild ?? false;
   const query = input.axiom.query as QueryV2;
   if (input.options.refundee === undefined) {
     throw new Error("Refundee is required");
   }
   if (input.options.maxFeePerGas == undefined) {
-    input.options.maxFeePerGas = await getMaxFeePerGas(input.axiom);
+    input.options.maxFeePerGas = await getMaxFeePerGas(input.axiom, input.options?.overrides);
   }
-  const chainId = input.options?.overrides?.chainId ?? input.axiom.config.chainId.toString();
+  const chainId = input.axiom.config.chainId.toString();
 
   const queryOptions: AxiomV2QueryOptions = {
     maxFeePerGas: input.options.maxFeePerGas,

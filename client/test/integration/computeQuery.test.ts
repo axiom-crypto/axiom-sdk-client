@@ -28,7 +28,7 @@ describe("Build ComputeQuery with DataQuery", () => {
     const axiom = new Axiom({
       circuit: circuit0,
       compiledCircuit: compiledCircuit0,
-      chainId: "11155111",  // Sepolia
+      chainId: chainIdOverride,  // Base
       provider: process.env.PROVIDER_URI_SEPOLIA as string,
       privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
       callback: {
@@ -36,7 +36,6 @@ describe("Build ComputeQuery with DataQuery", () => {
       },
       options: {
         overrides: {
-          chainId: chainIdOverride,
           queryAddress: addressOverride,
         }
       }

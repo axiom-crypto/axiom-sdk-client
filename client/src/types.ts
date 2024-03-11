@@ -22,7 +22,7 @@ export interface AxiomV2ClientConfig<T> {
   version?: string;
   capacity?: AxiomV2CircuitCapacity;
   ipfsClient?: IpfsClient;
-  options?: AxiomV2ClientOptions;
+  options?: AxiomV2ClientOptions;   
 }
 
 export interface AxiomV2CallbackInput {
@@ -41,7 +41,6 @@ export interface AxiomV2CompiledCircuit {
 export interface AxiomV2ClientOptions extends AxiomV2QueryOptions {
   caller?: string;
   privateKey?: string;
-  validate?: boolean;
   ipfsClient?: IpfsClient;
   overrides?: AxiomV2ClientOverrides;
 }
@@ -69,8 +68,8 @@ export interface AxiomV2SendQueryArgsParams {
 }
 
 export interface AxiomV2ClientOverrides {
-  chainId?: string;
   queryAddress?: string;
+  validateBuild?: boolean;
 }
 
 export {

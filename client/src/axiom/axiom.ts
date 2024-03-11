@@ -34,7 +34,7 @@ export class Axiom<T> {
     };
 
     this.options = config.options;
-    if (config.options?.overrides?.chainId === undefined) {
+    if (config.options?.overrides?.queryAddress === undefined) {
       validateChainId(this.config.chainId);
     }
 

@@ -1,5 +1,5 @@
 import { ClientConstants } from "../constants";
-import { AbiType, AxiomV2QueryOptions } from "../types";
+import { AbiType, AxiomV2ClientOverrides, AxiomV2QueryOptions } from "../types";
 import { PublicClient } from "viem";
 import { getAxiomV2QueryAddress } from "./address";
 import { getAxiomV2Abi } from "./abi";
@@ -57,9 +57,11 @@ export async function getAxiomBalance(
   publicClient: PublicClient,
   chainId: string,
   userAddress: string,
+  overrides?: AxiomV2ClientOverrides,
 ): Promise<string> {
+  const axiomQueryAddress = overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
   const balance = await publicClient.readContract({
-    address: getAxiomV2QueryAddress(chainId),
+    address: axiomQueryAddress as `0x${string}`,
     abi: getAxiomV2Abi(AbiType.Query),
     functionName: "balances",
     args: [userAddress],

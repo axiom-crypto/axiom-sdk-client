@@ -63,13 +63,20 @@ function main() {
     fs.writeFileSync(packageJsonPath.slice(1), JSON.stringify(packageJson, null, 2));
 
     // Install dependencies & build 
-    execSync(`cd ${packages[package].path.slice(1)}`);
-    try {
-      execSync(`rm package-lock.json pnpm-lock.yaml`);
-    } catch (_e) {}
-    execSync(`${packageManager} install`);
-    execSync(`${packageManager} run build`);
-    execSync(`cd..`);
+    execSync(
+      `rm package-lock.json pnpm-lock.yaml && ${packageManager} i && ${packageManager} run build`,
+      { 
+        cwd: packages[package].path.slice(1),
+        stdio: 'inherit'
+      }
+    );
+    // execSync(`cd ${packages[package].path.slice(1)}`);
+    // try {
+    //   execSync(`rm package-lock.json pnpm-lock.yaml`);
+    // } catch (_e) {}
+    // execSync(`${packageManager} install`);
+    // execSync(`${packageManager} run build`);
+    // execSync(`cd..`);
   }
 }
 

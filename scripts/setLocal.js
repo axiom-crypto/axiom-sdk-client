@@ -64,7 +64,9 @@ function main() {
 
     // Install dependencies & build 
     execSync(`cd ${packages[package].path.slice(1)}`);
-    execSync(`rm package-lock.json pnpm-lock.yaml`);
+    try {
+      execSync(`rm package-lock.json pnpm-lock.yaml`);
+    } catch (_e) {}
     execSync(`${packageManager} install`);
     execSync(`${packageManager} run build`);
     execSync(`cd..`);

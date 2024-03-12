@@ -3,14 +3,6 @@ import { Axiom } from "../../src";
 import { generateCircuit } from "./circuitTest";
 
 describe("Build ComputeQuery with DataQuery", () => {
-  let circuit: any;
-  let compiledCircuit: any;
-  let inputs: any;
-
-  beforeAll(async () => {
-    ({ circuit, compiledCircuit, inputs } = await generateCircuit("computeQuery/simple"));
-  })
-
   test("simple computeQuery with dataQuery", async () => {
     const { circuit, compiledCircuit, inputs } = await generateCircuit("computeQuery/simple");
 
@@ -31,6 +23,8 @@ describe("Build ComputeQuery with DataQuery", () => {
   }, 90000);
 
   test("simple computeQuery with dataQuery and address override", async () => {
+    const { circuit, compiledCircuit, inputs } = await generateCircuit("computeQuery/simple");
+    
     const chainIdOverride = "8453";
     const addressOverride = "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef";
 

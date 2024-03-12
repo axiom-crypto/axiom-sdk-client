@@ -47,6 +47,13 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     this.provider = inputs.provider;
     this.config = inputs.config ?? DEFAULT_CIRCUIT_CONFIG;
     this.capacity = inputs.capacity ?? DEFAULT_CAPACITY;
+    if (
+      this.capacity?.maxOutputs !== DEFAULT_CAPACITY.maxOutputs || 
+      this.capacity?.maxSubqueries !== DEFAULT_CAPACITY.maxSubqueries
+    ) {
+      console.warn("Using a non-default capacity for the circuit will result in a query that cannot be fulfilled on-chain.");
+    }
+    
     this.dataQuery = [];
     this.axiom = new AxiomSdkCore({
       providerUri: inputs.provider,
@@ -79,15 +86,22 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     return { ...this.results };
   }
 
-  async loadSaved(input: { config: AxiomV2CircuitConfig; vk: string }) {
-    this.config = input.config.config;
-    this.capacity = input.config.capacity;
+  async loadSaved(input: {
+    vk: string;
+    config: CircuitConfig;
+    capacity?: AxiomV2CircuitCapacity;
+  }) {
+    this.config = input.config;
+    this.capacity = input.capacity ?? DEFAULT_CAPACITY;
     await this.loadParamsAndVk(base64ToByteArray(input.vk));
   }
 
-  loadSavedMock(input: { config: AxiomV2CircuitConfig }) {
-    this.config = input.config.config;
-    this.capacity = input.config.capacity;
+  loadSavedMock(input: {
+    config: CircuitConfig;
+    capacity?: AxiomV2CircuitCapacity;
+  }) {
+    this.config = input.config;
+    this.capacity = input.capacity ?? DEFAULT_CAPACITY;
   }
 
   circuitConfig(): AxiomV2CircuitConfig {
@@ -150,13 +164,11 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     const vk = this.getHalo2Vk();
     const encoder = new TextEncoder();
     const inputSchema = encoder.encode(this.inputSchema);
-    const axiomConfig: AxiomV2CircuitConfig = {
-      config,
-      capacity: this.capacity
-    }
+
     return {
       vk: byteArrayToBase64(vk),
-      config: axiomConfig,
+      config,
+      capacity: this.capacity ?? DEFAULT_CAPACITY,
       querySchema: this.getQuerySchema(),
       inputSchema: byteArrayToBase64(inputSchema),
     };
@@ -178,13 +190,11 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     const vk = this.getMockVk().map(e => e.slice(2)).join('');
     const encoder = new TextEncoder();
     const inputSchema = encoder.encode(this.inputSchema);
-    const axiomConfig: AxiomV2CircuitConfig = {
-      config,
-      capacity: this.capacity
-    }
+
     return {
       vk,
-      config: axiomConfig,
+      config,
+      capacity: this.capacity ?? DEFAULT_CAPACITY,
       querySchema: DEADBEEF_BYTES32,
       inputSchema: byteArrayToBase64(inputSchema),
     };

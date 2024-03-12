@@ -1,14 +1,13 @@
-import { circuit as circuit0 } from "./circuits/capacityDataQuery/oneOfEach.circuit";
-import compiledCircuit0 from "./circuits/capacityDataQuery/oneOfEach.compiled.json";
-import { circuit as circuit1 } from "./circuits/capacityDataQuery/size128Header.circuit";
-import compiledCircuit1 from "./circuits/capacityDataQuery/size128Header.compiled.json";
 import { Axiom } from "../../src";
+import { generateCircuit } from "./circuitTest";
 
 describe("On-chain Data Query scenarios", () => {
   test("Send one of each DataQuery", async () => {
+    const { circuit, compiledCircuit, inputs } = await generateCircuit("capacityDataQuery/oneOfEach");
+
     const axiom = new Axiom({
-      circuit: circuit0,
-      compiledCircuit: compiledCircuit0,
+      circuit,
+      compiledCircuit,
       chainId: "11155111",  // Sepolia
       provider: process.env.PROVIDER_URI_SEPOLIA as string,
       privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
@@ -17,15 +16,17 @@ describe("On-chain Data Query scenarios", () => {
       },
     });
     await axiom.init();
-    await axiom.prove({});
+    await axiom.prove(inputs);
     const receipt = await axiom.sendQuery();
     expect(receipt.status).toBe('success');
-  }, 60000);
+  }, 90000);
 
   test("Send a size-128 header DataQuery", async () => {
+    const { circuit, compiledCircuit, inputs } = await generateCircuit("capacityDataQuery/size128Header");
+    
     const axiom = new Axiom({
-      circuit: circuit1,
-      compiledCircuit: compiledCircuit1,
+      circuit,
+      compiledCircuit,
       chainId: "11155111",  // Sepolia
       provider: process.env.PROVIDER_URI_SEPOLIA as string,
       privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
@@ -34,8 +35,8 @@ describe("On-chain Data Query scenarios", () => {
       },
     });
     await axiom.init();
-    await axiom.prove({});
+    await axiom.prove(inputs);
     const receipt = await axiom.sendQuery();
     expect(receipt.status).toBe('success');
-  }, 60000);
+  }, 180000);
 });

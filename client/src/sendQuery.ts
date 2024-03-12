@@ -33,6 +33,7 @@ export const buildSendQuery = async (input: {
     maxFeePerGas: input.options.maxFeePerGas,
     callbackGasLimit: input.options.callbackGasLimit,
     overrideAxiomQueryFee: input.options.overrideAxiomQueryFee,
+    dataQueryCalldataGasWarningThreshold: input.options.dataQueryCalldataGasWarningThreshold,
     refundee: input.options.refundee,
   };
   const qb: QueryBuilderV2 = query.new(
@@ -89,7 +90,7 @@ export const buildSendQuery = async (input: {
       sourceChainId,
       refundee,
       {
-        sourceChainId: sourceChainId,
+        sourceChainId: input.axiom.config.chainId.toString(),
         subqueries: input.dataQuery,
       },
       computeQuery,

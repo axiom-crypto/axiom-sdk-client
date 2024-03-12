@@ -46,14 +46,13 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     this.resultLen = 0;
     this.provider = inputs.provider;
     this.config = inputs.config ?? DEFAULT_CIRCUIT_CONFIG;
-
+    this.capacity = inputs.capacity ?? DEFAULT_CAPACITY;
     if (
-      inputs.capacity?.maxOutputs !== DEFAULT_CAPACITY.maxOutputs || 
-      inputs.capacity?.maxSubqueries !== DEFAULT_CAPACITY.maxSubqueries
+      this.capacity?.maxOutputs !== DEFAULT_CAPACITY.maxOutputs || 
+      this.capacity?.maxSubqueries !== DEFAULT_CAPACITY.maxSubqueries
     ) {
       console.warn("Using a non-default capacity for the circuit will result in a query that cannot be fulfilled on-chain.");
     }
-    this.capacity = inputs.capacity ?? DEFAULT_CAPACITY;
     
     this.dataQuery = [];
     this.axiom = new AxiomSdkCore({

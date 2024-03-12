@@ -5,8 +5,8 @@ import {
   AxiomV2CompiledCircuit,
   AxiomV2SendQueryArgs,
 } from "../types";
-import { AxiomV2CircuitCapacity, RawInput } from "@axiom-crypto/circuit/types";
-import { DEFAULT_CAPACITY } from "@axiom-crypto/circuit/constants";
+import { RawInput } from "@axiom-crypto/circuit/types";
+import { AxiomV2CircuitCapacity, DEFAULT_CAPACITY } from "@axiom-crypto/circuit";
 import { convertChainIdToViemChain } from "./utils";
 import { TransactionReceipt, WalletClient, createPublicClient, createWalletClient, http, zeroAddress, zeroHash } from "viem";
 import { privateKeyToAccount } from 'viem/accounts'
@@ -26,6 +26,7 @@ export class Axiom<T> {
   constructor(config: AxiomV2ClientConfig<T>) {
     this.config = config;
     this.compiledCircuit = config.compiledCircuit;
+    this.capacity = config.capacity ?? DEFAULT_CAPACITY;
     this.callback = {
       target: config.callback.target,
       extraData: config.callback.extraData ?? "0x",

@@ -80,21 +80,21 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   }
 
   async loadSaved(input: {
-    config: CircuitConfig;
-    capacity: AxiomV2CircuitCapacity;
     vk: string;
+    config: CircuitConfig;
+    capacity?: AxiomV2CircuitCapacity;
   }) {
     this.config = input.config;
-    this.capacity = input.capacity;
+    this.capacity = input.capacity ?? DEFAULT_CAPACITY;
     await this.loadParamsAndVk(base64ToByteArray(input.vk));
   }
 
   loadSavedMock(input: {
     config: CircuitConfig;
-    capacity: AxiomV2CircuitCapacity;
+    capacity?: AxiomV2CircuitCapacity;
   }) {
     this.config = input.config;
-    this.capacity = input.capacity;
+    this.capacity = input.capacity ?? DEFAULT_CAPACITY;
   }
 
   circuitConfig(): AxiomV2CircuitConfig {

@@ -72,10 +72,8 @@ function AxiomCircuitProvider({
       });
       await workerApi.current.setup(window.navigator.hardwareConcurrency);
       await workerApi.current?.loadSaved({
-        config: {
-          config: compiledCircuit.config,
-          capacity: compiledCircuit.capacity ?? DEFAULT_CAPACITY,
-        },
+        config: compiledCircuit.config,
+        capacity: compiledCircuit.capacity ?? DEFAULT_CAPACITY,
         vk: compiledCircuit.vk,
       });
     }

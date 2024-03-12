@@ -5,10 +5,9 @@ import {
   AxiomV2CompiledCircuit,
   AxiomV2SendQueryArgs,
 } from "../types";
-import { AxiomV2CircuitCapacity, RawInput } from "@axiom-crypto/circuit/types";
-import { DEFAULT_CAPACITY } from "@axiom-crypto/circuit/constants";
+import { AxiomV2CircuitCapacity, UserInput, DEFAULT_CAPACITY } from "@axiom-crypto/circuit";
 import { validateChainId } from "./utils";
-import { PublicClient, TransactionReceipt, WalletClient, createPublicClient, createWalletClient, http, zeroAddress, zeroHash } from "viem";
+import { PublicClient, TransactionReceipt, WalletClient, createPublicClient, createWalletClient, http } from "viem";
 import { privateKeyToAccount } from 'viem/accounts'
 import { AxiomV2Callback } from "@axiom-crypto/core";
 import { ClientConstants } from "../constants";
@@ -28,6 +27,7 @@ export class Axiom<T> {
   constructor(config: AxiomV2ClientConfig<T>) {
     this.config = config;
     this.compiledCircuit = config.compiledCircuit;
+    this.capacity = config.capacity ?? DEFAULT_CAPACITY;
     this.callback = {
       target: config.callback.target,
       extraData: config.callback.extraData ?? "0x",
@@ -94,7 +94,7 @@ export class Axiom<T> {
     }
   }
 
-  async prove(input: RawInput<T>): Promise<AxiomV2SendQueryArgs> {
+  async prove(input: UserInput<T>): Promise<AxiomV2SendQueryArgs> {
     await this.axiomCircuit.run(input);
     return await this.buildSendQueryArgs(); 
   }

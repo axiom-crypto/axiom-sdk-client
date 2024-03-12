@@ -1,19 +1,18 @@
-import { circuit, CircuitInputs } from "./circuits/sendQuery/average.circuit";
 import { Axiom } from "../../src";
-import inputs from './circuits/sendQuery/average.inputs.json';
-import compiledCircuit from './circuits/sendQuery/average.compiled.json';
-import { UserInput } from "@axiom-crypto/circuit";
 import { PinataIpfsClient } from "@axiom-crypto/core";
 import { ByteStringReader, decodeFullQueryV2 } from "@axiom-crypto/core/packages/tools";
 import { getQueryHashV2, getDataQueryHashFromSubqueries } from "@axiom-crypto/tools";
+import { generateCircuit } from "./circuitTest";
 
 describe("Send Query using Axiom client", () => {
   test("Send a query with IPFS", async () => {
+    const { circuit, compiledCircuit, inputs } = await generateCircuit("sendQuery/average");
+
     const ipfsClient = new PinataIpfsClient(process.env.PINATA_JWT as string);
 
     const axiom = new Axiom({
-      circuit: circuit,
-      compiledCircuit: compiledCircuit,
+      circuit,
+      compiledCircuit,
       chainId: "11155111",  // Sepolia
       provider: process.env.PROVIDER_URI_SEPOLIA as string,
       privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
@@ -23,7 +22,7 @@ describe("Send Query using Axiom client", () => {
       ipfsClient: ipfsClient,
     });
     await axiom.init();
-    await axiom.prove(inputs as UserInput<CircuitInputs>);
+    await axiom.prove(inputs);
     if (!process.env.PRIVATE_KEY_SEPOLIA) {
       console.log("No private key provided: Query will not be sent to the blockchain.");
       return;

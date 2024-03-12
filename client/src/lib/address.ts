@@ -79,9 +79,9 @@ export function getAxiomV2QueryAddress(
   }
   
   if (!mock) {
-    return axiomV2QueryAddresses[chainId][targetChainId];
+    return axiomV2QueryAddresses?.[chainId]?.[targetChainId] ?? "";
   } else {
-    return axiomV2QueryAddressesMock[chainId][targetChainId];
+    return axiomV2QueryAddressesMock?.[chainId]?.[targetChainId] ?? "";
   }
 }
 

@@ -12,6 +12,7 @@ import {
   AxiomV2Callback,
   AxiomV2SendQueryArgs,
   AxiomV2ClientOptions,
+  DEFAULT_CAPACITY,
 } from "@axiom-crypto/client";
 
 type AxiomCircuitContextType<T> = {
@@ -71,10 +72,8 @@ function AxiomCircuitProvider({
       });
       await workerApi.current.setup(window.navigator.hardwareConcurrency);
       await workerApi.current?.loadSaved({
-        config: {
-          config: compiledCircuit.config,
-          capacity: (await workerApi.current.circuitConfig()).capacity,
-        },
+        config: compiledCircuit.config,
+        capacity: compiledCircuit.capacity ?? DEFAULT_CAPACITY,
         vk: compiledCircuit.vk,
       });
     }

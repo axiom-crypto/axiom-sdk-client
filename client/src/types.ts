@@ -35,6 +35,7 @@ export interface AxiomV2CompiledCircuit {
   querySchema: string;
   inputSchema: string;
   circuit: string;
+  capacity?: AxiomV2CircuitCapacity;
 }
 
 export interface AxiomV2ClientOptions extends AxiomV2QueryOptions {

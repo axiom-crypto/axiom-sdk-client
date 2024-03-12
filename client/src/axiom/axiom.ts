@@ -67,10 +67,8 @@ export class Axiom<T> {
 
   async init() {
     await this.axiomCircuit.loadSaved({
-      config: {
-        config: this.compiledCircuit.config,
-        capacity: this.capacity ?? this.compiledCircuit.capacity ?? DEFAULT_CAPACITY,
-      },
+      config: this.compiledCircuit.config,
+      capacity: this.capacity ?? this.compiledCircuit.capacity ?? DEFAULT_CAPACITY,
       vk: this.compiledCircuit.vk,
     });
   }

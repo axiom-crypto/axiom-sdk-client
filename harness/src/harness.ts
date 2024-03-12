@@ -45,7 +45,6 @@ export const harness = async (
 
   // Prove the circuit
   const outputsFile = `${outputsFileBase}.proven.json`;
-  console.log(`Proving ${compiledFile} with inputs from ${inputsFile}`);
   await prove(
     compiledFile,
     inputsFile,

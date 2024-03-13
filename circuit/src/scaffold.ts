@@ -7,10 +7,7 @@ import {
   DataSubquery,
   getQuerySchemaHash,
 } from "@axiom-crypto/tools";
-import {
-  AxiomSdkCore,
-  QueryV2,
-} from "@axiom-crypto/core";
+import { AxiomV2QueryBuilder } from "./queryBuilder";
 import { BaseCircuitScaffold } from "@axiom-crypto/halo2-lib-js";
 import { DEFAULT_CAPACITY, DEFAULT_CIRCUIT_CONFIG, SUBQUERY_FE, USER_OUTPUT_FE } from "./constants";
 import { AxiomV2CircuitCapacity, AxiomV2CircuitConfig, RawInput } from "./types";
@@ -23,7 +20,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   protected halo2Lib!: Halo2LibWasm;
   protected provider: string;
   protected dataQuery: DataSubquery[];
-  protected axiom: AxiomSdkCore;
+  protected axiom: AxiomV2QueryBuilder;
   protected computeQuery: AxiomV2ComputeQuery | undefined;
   protected chainId: string;
   protected f: (inputs: T) => Promise<void>;
@@ -55,8 +52,8 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     }
     
     this.dataQuery = [];
-    this.axiom = new AxiomSdkCore({
-      providerUri: inputs.provider,
+    this.axiom = new AxiomV2QueryBuilder({
+      provider: inputs.provider,
       chainId: inputs.chainId,
       mock: inputs.mock,
       version: "v2",
@@ -154,8 +151,8 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
 
     let skipValidate = this.capacity !== DEFAULT_CAPACITY;
     // Validate max circuit subquery size
-    const queryBuilder = (this.axiom.query as QueryV2).new();
-    queryBuilder.setBuiltDataQuery({
+    // const queryBuilder = (this.axiom.query as QueryV2).new();
+    this.axiom.setBuiltDataQuery({
       sourceChainId: this.chainId,
       subqueries: this.dataQuery,
     }, skipValidate);
@@ -224,15 +221,14 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     let skipValidate = this.capacity !== DEFAULT_CAPACITY;
 
     // Validate data subqueries
-    const queryBuilder = (this.axiom.query as QueryV2).new();
-
+    // const queryBuilder = (this.axiom.query as QueryV2).new();
     // const unbuiltSubqueries = await convertBuiltSubqueries(this.provider, this.dataQuery);
     // queryBuilder.append(unbuiltSubqueries, skipValidate);
-    queryBuilder.setBuiltDataQuery({
+    this.axiom.setBuiltDataQuery({
       sourceChainId: this.chainId,
       subqueries: this.dataQuery,
     }, skipValidate);
-    if (!skipValidate && !queryBuilder.validate()) {
+    if (!skipValidate && !this.axiom.validate()) {
       throw new Error("Subquery validation failed")
     }
 
@@ -331,8 +327,8 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   }
 
   setMock(mock: boolean) {
-    this.axiom = new AxiomSdkCore({
-      providerUri: this.provider,
+    this.axiom = new AxiomV2QueryBuilder({
+      provider: this.provider,
       chainId: this.chainId,
       mock,
       version: "v2",

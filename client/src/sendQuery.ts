@@ -1,19 +1,17 @@
 import {
-  AxiomSdkCore,
   AxiomV2Callback,
   AxiomV2ComputeQuery,
   AxiomV2QueryOptions,
   DataSubquery,
-  QueryBuilderV2,
-  QueryV2,
-} from "@axiom-crypto/core";
+  AxiomV2QueryBuilder,
+} from "@axiom-crypto/circuit";
 import { encodeFunctionData } from "viem";
 import { getMaxFeePerGas } from "./axiom/utils";
 import { AxiomV2ClientOptions, AxiomV2SendQueryArgs } from "./types";
 import { encodeFullQueryV2 } from "@axiom-crypto/core/packages/tools";
 
 export const buildSendQuery = async (input: {
-  axiom: AxiomSdkCore;
+  axiom: AxiomV2QueryBuilder;
   dataQuery: DataSubquery[];
   computeQuery: AxiomV2ComputeQuery;
   callback: AxiomV2Callback;
@@ -21,7 +19,6 @@ export const buildSendQuery = async (input: {
   options: AxiomV2ClientOptions;
 }): Promise<AxiomV2SendQueryArgs> => {
   const validate = input.options.validate ?? false;
-  const query = input.axiom.query as QueryV2;
   if (input.options.refundee === undefined) {
     throw new Error("Refundee is required");
   }
@@ -33,10 +30,9 @@ export const buildSendQuery = async (input: {
     maxFeePerGas: input.options.maxFeePerGas,
     callbackGasLimit: input.options.callbackGasLimit,
     overrideAxiomQueryFee: input.options.overrideAxiomQueryFee,
-    dataQueryCalldataGasWarningThreshold: input.options.dataQueryCalldataGasWarningThreshold,
     refundee: input.options.refundee,
   };
-  const qb: QueryBuilderV2 = query.new(
+  const qb: AxiomV2QueryBuilder = query.new(
     undefined,
     input.computeQuery,
     input.callback,

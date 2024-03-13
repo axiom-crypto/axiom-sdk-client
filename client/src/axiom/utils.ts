@@ -14,8 +14,6 @@ import { getAxiomV2Abi, getAxiomV2QueryAddress, viemChain } from "../lib";
 export function validateChainId(chainId: string) {
   switch (chainId) {
     case "1": // Mainnet
-    case "8453":  // Base
-    case "84532": // Base Sepolia
     case "11155111":  // Sepolia
       return;
     default:

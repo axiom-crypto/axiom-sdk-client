@@ -20,6 +20,12 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
   const WSOL_ADDR = "0xd31a59c85ae9d8edefec411d448f90841571b89c";
   const UNI_V3_FACTORY_ADDR = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
 
+  const config: AxiomV2QueryBuilderConfig = {
+    privateKey: process.env.PRIVATE_KEY_MAINNET as string,
+    provider: process.env.PROVIDER_URI_MAINNET as string,
+    version: "v2",
+  }
+
   // mainnet block 18500000 txIdx [0,33)
   const validMainnetTxHashes = [
     "0x122f25a52c76682fb0e6b904b3b666e6a9bf5008af0d4c3b474d4e3010c4d5f9",
@@ -60,11 +66,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
   const provider = new JsonRpcProvider(process.env.PROVIDER_URI_MAINNET as string);
 
   test(`Append ${ConstantsV2.MaxSameSubqueryType} Header subqueries`, () => {
-    const axiom = new AxiomV2QueryBuilder({
-      privateKey: process.env.PRIVATE_KEY as string,
-      provider: process.env.PROVIDER_URI_MAINNET as string,
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     const blockNumber = 18000000;
     for (let i = 0; i < ConstantsV2.MaxSameSubqueryType; i++) {
       axiom.appendDataSubquery({
@@ -75,11 +77,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
   });
 
   test(`Append ${ConstantsV2.MaxSameSubqueryType + 1} Header subqueries fail`, () => {
-    const axiom = new AxiomV2QueryBuilder({
-      privateKey: process.env.PRIVATE_KEY as string,
-      provider: process.env.PROVIDER_URI_MAINNET as string,
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     const testFn = () => {
       const blockNumber = 18000000;
       for (let i = 0; i < ConstantsV2.MaxSameSubqueryType + 1; i++) {
@@ -93,11 +91,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
   });
 
   test(`Append ${ConstantsV2.MaxSameSubqueryType} Account subqueries`, () => {
-    const axiom = new AxiomV2QueryBuilder({
-      privateKey: process.env.PRIVATE_KEY as string,
-      provider: process.env.PROVIDER_URI_MAINNET as string,
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     const blockNumber = 18000000;
     for (let i = 0; i < ConstantsV2.MaxSameSubqueryType; i++) {
       axiom.appendDataSubquery({
@@ -109,11 +103,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
   });
 
   test(`Append ${ConstantsV2.MaxSameSubqueryType + 1} Account subqueries fail`, () => {
-    const axiom = new AxiomV2QueryBuilder({
-      privateKey: process.env.PRIVATE_KEY as string,
-      provider: process.env.PROVIDER_URI_MAINNET as string,
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     const testFn = () => {
       const blockNumber = 18000000;
       for (let i = 0; i < ConstantsV2.MaxSameSubqueryType + 1; i++) {
@@ -128,11 +118,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
   });
 
   test(`Append ${ConstantsV2.MaxSameSubqueryType} Storage subqueries`, () => {
-    const axiom = new AxiomV2QueryBuilder({
-      privateKey: process.env.PRIVATE_KEY as string,
-      provider: process.env.PROVIDER_URI_MAINNET as string,
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     const blockNumber = 18000000;
     for (let i = 0; i < ConstantsV2.MaxSameSubqueryType; i++) {
       axiom.appendDataSubquery({
@@ -144,11 +130,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
   });
 
   test(`Append ${ConstantsV2.MaxSameSubqueryType + 1} Storage subqueries fail`, () => {
-    const axiom = new AxiomV2QueryBuilder({
-      privateKey: process.env.PRIVATE_KEY as string,
-      provider: process.env.PROVIDER_URI_MAINNET as string,
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     const testFn = () => {
       const blockNumber = 18000000;
       for (let i = 0; i < ConstantsV2.MaxSameSubqueryType + 1; i++) {
@@ -163,11 +145,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
   });
 
   test(`Append ${ConstantsV2.MaxSameSubqueryType} Solidity Nested Mapping subqueries`, () => {
-    const axiom = new AxiomV2QueryBuilder({
-      privateKey: process.env.PRIVATE_KEY as string,
-      provider: process.env.PROVIDER_URI_MAINNET as string,
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     const blockNumber = 18000000;
     for (let i = 0; i < ConstantsV2.MaxSameSubqueryType; i++) {
       axiom.appendDataSubquery({
@@ -181,11 +159,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
   });
 
   test(`Append ${ConstantsV2.MaxSameSubqueryType + 1} Solidity Nested Mapping subqueries fail`, () => {
-    const axiom = new AxiomV2QueryBuilder({
-      privateKey: process.env.PRIVATE_KEY as string,
-      provider: process.env.PROVIDER_URI_MAINNET as string,
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     const testFn = () => {
       const blockNumber = 18000000;
       for (let i = 0; i < ConstantsV2.MaxSameSubqueryType + 1; i++) {
@@ -202,11 +176,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
   });
 
   test(`Append 43 Account + 43 Storage + 42 Nested Mapping subqueries`, () => {
-    const axiom = new AxiomV2QueryBuilder({
-      privateKey: process.env.PRIVATE_KEY as string,
-      provider: process.env.PROVIDER_URI_MAINNET as string,
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     const blockNumber = 18000000;
     for (let i = 0; i < 43; i++) {
       axiom.appendDataSubquery({
@@ -233,11 +203,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
   });
 
   test(`Append 43 Account + 43 Storage + 43 Nested Mapping subqueries fail`, () => {
-    const axiom = new AxiomV2QueryBuilder({
-      privateKey: process.env.PRIVATE_KEY as string,
-      provider: process.env.PROVIDER_URI_MAINNET as string,
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     const testFn = () => {
       const blockNumber = 18000000;
       for (let i = 0; i < 43; i++) {
@@ -255,7 +221,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
           blockNumber: blockNumber + i,
           addr: UNI_V3_FACTORY_ADDR,
           mappingSlot: 5,
-          mappingDepth: 3,
+          
           keys: [WETH_ADDR, WSOL_ADDR, 10000],
         });
       }
@@ -264,11 +230,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
   });
 
   test(`Append ${ConstantsV2.MaxSameSubqueryType} Tx subqueries`, async () => {
-    const axiom = new AxiomV2QueryBuilder({
-      privateKey: process.env.PRIVATE_KEY as string,
-      provider: process.env.PROVIDER_URI_MAINNET as string,
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     for (let i = 0; i < validMainnetTxHashes.length; i++) {
       const { blockNumber, txIdx } = await getBlockNumberAndTxIdx(provider, validMainnetTxHashes[i]);
       if (blockNumber === null || txIdx === null) {
@@ -298,11 +260,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
   }, 60000);
 
   test(`Append ${ConstantsV2.MaxSameSubqueryType + 1} Tx subqueries fail`, async () => {
-    const axiom = new AxiomV2QueryBuilder({
-      privateKey: process.env.PRIVATE_KEY as string,
-      provider: process.env.PROVIDER_URI_MAINNET as string,
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     for (let i = 0; i < validMainnetTxHashes.length; i++) {
       const { blockNumber, txIdx } = await getBlockNumberAndTxIdx(provider, validMainnetTxHashes[i]);
       if (blockNumber === null || txIdx === null) {
@@ -344,11 +302,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
   }, 60000);
 
   test(`Append ${ConstantsV2.MaxSameSubqueryType} Receipt subqueries`, async () => {
-    const axiom = new AxiomV2QueryBuilder({
-      privateKey: process.env.PRIVATE_KEY as string,
-      provider: process.env.PROVIDER_URI_MAINNET as string,
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     for (let i = 0; i < validMainnetTxHashes.length; i++) {
       const { blockNumber, txIdx } = await getBlockNumberAndTxIdx(provider, validMainnetTxHashes[i]);
       if (blockNumber === null || txIdx === null) {
@@ -386,11 +340,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
   }, 60000);
 
   test(`Append ${ConstantsV2.MaxSameSubqueryType + 1} Receipt subqueries fail`, async () => {
-    const axiom = new AxiomV2QueryBuilder({
-      privateKey: process.env.PRIVATE_KEY as string,
-      provider: process.env.PROVIDER_URI_MAINNET as string,
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     const testFn = async () => {
       const txHashes = validMainnetTxHashes.slice(0, ConstantsV2.MaxSameSubqueryType + 1);
       for (let i = 0; i < ConstantsV2.MaxSameSubqueryType + 1; i++) {
@@ -411,11 +361,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
   }, 60000);
 
   test(`Append ${ConstantsV2.UserMaxTotalSubqueries} subqueries`, async () => {
-    const axiom = new AxiomV2QueryBuilder({
-      privateKey: process.env.PRIVATE_KEY as string,
-      provider: process.env.PROVIDER_URI_MAINNET as string,
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
 
     for (let i = 0; i < ConstantsV2.MaxSameSubqueryType / 4; i++) {
       const { blockNumber, txIdx } = await getBlockNumberAndTxIdx(provider, validMainnetTxHashes[i]);

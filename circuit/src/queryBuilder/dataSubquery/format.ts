@@ -133,7 +133,7 @@ function formatDataSubquerySolidityNestedMapping(
       addr: subquery.addr.toLowerCase(),
       mappingSlot: subquery.mappingSlot,
       mappingDepth: subquery.mappingDepth,
-      keys: subquery.keys.map((key) => bytes32(key.toLowerCase())),
+      keys: subquery.keys.map((key) => bytes32(String(key).toLowerCase())),
     },
   };
 }

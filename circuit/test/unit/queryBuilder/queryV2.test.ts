@@ -18,22 +18,13 @@ import {
   getFieldIdxReceiptTopicIdx,
   bytes32,
   getEventSchema,
-  getFunctionSelector,
 } from "@axiom-crypto/tools";
 import {
   AxiomV2QueryBuilder,
   AxiomV2QueryBuilderConfig,
   AxiomV2Callback,
   AxiomV2QueryOptions,
-  AccountSubquery,
-  buildAccountSubquery,
-  buildHeaderSubquery,
-  buildReceiptSubquery,
-  buildSolidityNestedMappingSubquery,
-  buildStorageSubquery,
-  buildTxSubquery,
 } from "../../../src";
-import { QueryV2 } from "../../../src/v2/query/queryV2";
 import { ethers } from "ethers";
 
 describe("QueryV2", () => {
@@ -43,9 +34,8 @@ describe("QueryV2", () => {
   const WSOL_ADDR = "0xd31a59c85ae9d8edefec411d448f90841571b89c";
   const UNI_V3_FACTORY_ADDR = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
 
-  const provider = new ethers.JsonRpcProvider(process.env.PROVIDER_URI);
+  const provider = new ethers.JsonRpcProvider(process.env.PROVIDER_URI_MAINNET as string);
 
-  const vkeyLen = 27;
   const vkey = [
     "0x0000000e0000000609bddd9050d5cb871ead4831773e485d445bde72a636efda",
     "0x1a1ce29363a95e142250c9b1df9fcc375c0b71f470588fa27fd57ad62b8cc3b8",
@@ -143,29 +133,11 @@ describe("QueryV2", () => {
   const computeProof = ethers.concat(computeProofRaw);
 
   const config: AxiomV2QueryBuilderConfig = {
-    privateKey: process.env.PRIVATE_KEY as string,
-    provider: process.env.PROVIDER_URI_SEPOLIA as string,
+    privateKey: process.env.PRIVATE_KEY_MAINNET as string,
+    provider: process.env.PROVIDER_URI_MAINNET as string,
     version: "v2",
   };
-  const axiom = new AxiomV2QueryBuilder(config);
-
-  test("should initialize QueryV2", () => {
-    expect(typeof axiom.query).toEqual("object");
-  });
-
-  // NOTE: disabled until new contract is deployed
-  // test("should get balance", async () => {
-  //   const config: AxiomV2QueryBuilderConfig = {
-  //     privateKey: process.env.PRIVATE_KEY as string,
-  //     provider: process.env.PROVIDER_URI_GOERLI as string,
-  //     version: "v2",
-  //     chainId: 5,
-  //   };
-  //   const axiomGoerli = new AxiomV2QueryBuilder(config);
-  //   const aqg = axiomGoerli.query as QueryV2;
-  //   const balance = await aqg.getBalance();
-  //   expect(balance).toEqual("0");
-  // });
+  // const axiom = new AxiomV2QueryBuilder(config);
 
   test("should validate a QueryV2", async () => {
     const dataQuery = [
@@ -183,9 +155,9 @@ describe("QueryV2", () => {
         fieldIdx: AccountField.Nonce,
       },
       {
-        // blockNumber: 17975259,
-        // txIdx: 34,
-        txHash: "0x47082a4eaba054312c652a21c6d75a44095b8be43c60bdaeffad03d38a8b1602",
+        blockNumber: 17975259,
+        txIdx: 34,
+        // txHash: "0x47082a4eaba054312c652a21c6d75a44095b8be43c60bdaeffad03d38a8b1602",
         fieldOrLogIdx: ReceiptField.CumulativeGas,
         topicOrDataOrAddressIdx: 0,
         eventSchema: ethers.ZeroHash,
@@ -212,29 +184,35 @@ describe("QueryV2", () => {
       extraData: bytes32(ethers.solidityPacked(["address"], [WETH_WHALE])),
     };
     const options = {};
-    const query = (axiom.query as QueryV2).new(dataQuery, computeQueryReq, callbackQuery, options);
+    const axiom = new AxiomV2QueryBuilder(config, dataQuery, computeQueryReq, callbackQuery, options);
     const isValid = await axiom.validate();
     expect(isValid).toEqual(true);
   }, 20000);
 
   test("Compute callback resultLen based on number of subqueries", async () => {
-    const query = (axiom.query as QueryV2).new();
+    const axiom = new AxiomV2QueryBuilder(config);
 
     const callback: AxiomV2Callback = {
       target: WETH_ADDR,
       extraData: ethers.solidityPacked(["address"], [WETH_WHALE]),
     };
     axiom.setCallback(callback);
-
-    axiom.appendDataSubquery(buildHeaderSubquery(17000000).field(HeaderField.GasLimit));
-    axiom.appendDataSubquery(buildHeaderSubquery(17000001).field(HeaderField.GasLimit));
+    
+    axiom.appendDataSubquery({
+      blockNumber: 17000000,
+      fieldIdx: HeaderField.GasLimit,
+    });
+    axiom.appendDataSubquery({
+      blockNumber: 17000001,
+      fieldIdx: HeaderField.GasLimit,
+    });
 
     const builtQuery = await axiom.build();
     expect(builtQuery.computeQuery.resultLen).toEqual(2);
   });
 
   test("Use specified callback resultLen if there is a computeQuery", async () => {
-    const query = (axiom.query as QueryV2).new();
+    const axiom = new AxiomV2QueryBuilder(config);
 
     const callback: AxiomV2Callback = {
       target: WETH_ADDR,
@@ -249,15 +227,21 @@ describe("QueryV2", () => {
     };
     axiom.setComputeQuery(computeQueryReq);
 
-    axiom.appendDataSubquery(buildHeaderSubquery(17000000).field(HeaderField.GasLimit));
-    axiom.appendDataSubquery(buildHeaderSubquery(17000001).field(HeaderField.GasLimit));
+    axiom.appendDataSubquery({
+      blockNumber: 17000000,
+      fieldIdx: HeaderField.GasLimit,
+    });
+    axiom.appendDataSubquery({
+      blockNumber: 17000001,
+      fieldIdx: HeaderField.GasLimit,
+    });
 
     const builtQuery = await axiom.build();
     expect(builtQuery.computeQuery.resultLen).toEqual(4);
   });
 
   test("Set various options", async () => {
-    const query = (axiom.query as QueryV2).new();
+    const axiom = new AxiomV2QueryBuilder(config);
 
     const options: AxiomV2QueryOptions = {
       maxFeePerGas: "100000000",
@@ -279,8 +263,14 @@ describe("QueryV2", () => {
     };
     axiom.setComputeQuery(computeQueryReq);
 
-    axiom.appendDataSubquery(buildHeaderSubquery(17000000).field(HeaderField.GasLimit));
-    axiom.appendDataSubquery(buildHeaderSubquery(17000001).field(HeaderField.GasLimit));
+    axiom.appendDataSubquery({
+      blockNumber: 17000000,
+      fieldIdx: HeaderField.GasLimit,
+    });
+    axiom.appendDataSubquery({
+      blockNumber: 17000001,
+      fieldIdx: HeaderField.GasLimit,
+    });
 
     const builtQuery = await axiom.build();
     expect(builtQuery.feeData.maxFeePerGas).toEqual(options.maxFeePerGas);
@@ -290,9 +280,11 @@ describe("QueryV2", () => {
   });
 
   test("Append a Header subquery", async () => {
-    const query = (axiom.query as QueryV2).new();
-    const subquery = buildHeaderSubquery(17000000).field(HeaderField.GasLimit);
-    axiom.appendDataSubquery(subquery);
+    const axiom = new AxiomV2QueryBuilder(config);
+    axiom.appendDataSubquery({
+      blockNumber: 17000000,
+      fieldIdx: HeaderField.GasLimit,
+    });
     await axiom.build();
     const builtQuery = axiom.getBuiltQuery();
     const builtDataQuery = builtQuery?.dataQueryStruct.subqueries;
@@ -301,9 +293,12 @@ describe("QueryV2", () => {
   });
 
   test("Append an Account subquery", async () => {
-    const query = (axiom.query as QueryV2).new();
-    const subquery = buildAccountSubquery(17000000).address(WETH_WHALE).field(AccountField.Nonce);
-    axiom.appendDataSubquery(subquery);
+    const axiom = new AxiomV2QueryBuilder(config);
+    axiom.appendDataSubquery({
+      blockNumber: 17000000,
+      addr: WETH_WHALE,
+      fieldIdx: AccountField.Nonce,    
+    });
     await axiom.build();
     const builtQuery = axiom.getBuiltQuery();
     const builtDataQuery = builtQuery?.dataQueryStruct.subqueries;
@@ -313,10 +308,13 @@ describe("QueryV2", () => {
   });
 
   test("Append a Storage subquery", async () => {
-    const query = (axiom.query as QueryV2).new();
+    const axiom = new AxiomV2QueryBuilder(config);
     const slot = getSlotForMapping("3", "address", WETH_WHALE);
-    const subquery = buildStorageSubquery(18000000).address(WETH_ADDR).slot(slot);
-    axiom.appendDataSubquery(subquery);
+    axiom.appendDataSubquery({
+      blockNumber: 18000000,
+      addr: WETH_ADDR,
+      slot,
+    });
 
     await axiom.build();
     const builtQuery = axiom.getBuiltQuery();
@@ -327,14 +325,17 @@ describe("QueryV2", () => {
   });
 
   test("Append a Tx subquery", async () => {
-    const query = (axiom.query as QueryV2).new();
+    const axiom = new AxiomV2QueryBuilder(config);
     const txHash = "0x8d2e6cbd7cf1f88ee174600f31b79382e0028e239bb1af8301ba6fc782758bc6";
     const { blockNumber, txIdx } = (await getBlockNumberAndTxIdx(provider, txHash)) as {
       blockNumber: number;
       txIdx: number;
     };
-    const subquery = buildTxSubquery(txHash).field(TxField.To);
-    axiom.appendDataSubquery(subquery);
+    axiom.appendDataSubquery({
+      blockNumber,
+      txIdx,
+      fieldOrCalldataIdx: TxField.To,
+    });
 
     await axiom.build();
     const builtQuery = axiom.getBuiltQuery();
@@ -345,7 +346,7 @@ describe("QueryV2", () => {
   });
 
   test("Append a Receipt subquery", async () => {
-    const query = (axiom.query as QueryV2).new();
+    const axiom = new AxiomV2QueryBuilder(config);
     const eventSchema = getEventSchema("Transfer", ["address", "address", "uint256"]);
 
     const txHash = "0x8d2e6cbd7cf1f88ee174600f31b79382e0028e239bb1af8301ba6fc782758bc6";
@@ -354,8 +355,13 @@ describe("QueryV2", () => {
       txIdx: number;
     };
 
-    const subquery = buildReceiptSubquery(txHash).log(0).topic(1).eventSchema("Transfer(address,address,uint256)");
-    axiom.appendDataSubquery(subquery);
+    axiom.appendDataSubquery({
+      blockNumber,
+      txIdx,
+      fieldOrLogIdx: getFieldIdxReceiptLogIdx(0),
+      topicOrDataOrAddressIdx: getFieldIdxReceiptTopicIdx(1),
+      eventSchema,
+    });
 
     await axiom.build();
     const builtQuery = axiom.getBuiltQuery();
@@ -372,13 +378,14 @@ describe("QueryV2", () => {
   });
 
   test("Append a Solidity Nested Mapping subquery", async () => {
-    const query = (axiom.query as QueryV2).new();
-    const subquery = buildSolidityNestedMappingSubquery(17000000)
-      .address(UNI_V3_FACTORY_ADDR)
-      .mappingSlot(5)
-      .keys([WETH_ADDR, WSOL_ADDR, 10000]);
-    axiom.appendDataSubquery(subquery);
-
+    const axiom = new AxiomV2QueryBuilder(config);
+    axiom.appendDataSubquery({
+      blockNumber: 17000000,
+      addr: UNI_V3_FACTORY_ADDR,
+      mappingSlot: 5,
+      mappingDepth: 3,
+      keys: [WETH_ADDR, WSOL_ADDR, 10000],
+    });
     await axiom.build();
     const builtQuery = axiom.getBuiltQuery();
     const builtDataQuery = builtQuery?.dataQueryStruct.subqueries;
@@ -386,7 +393,7 @@ describe("QueryV2", () => {
     expect((builtDataQuery?.[0].subqueryData as SolidityNestedMappingSubquery).addr).toEqual(
       UNI_V3_FACTORY_ADDR.toLowerCase(),
     );
-    expect((builtDataQuery?.[0].subqueryData as SolidityNestedMappingSubquery).mappingSlot).toEqual(bytes32(5));
+    expect((builtDataQuery?.[0].subqueryData as SolidityNestedMappingSubquery).mappingSlot).toEqual(5);
     expect((builtDataQuery?.[0].subqueryData as SolidityNestedMappingSubquery).mappingDepth).toEqual(3);
     expect((builtDataQuery?.[0].subqueryData as SolidityNestedMappingSubquery).keys).toEqual([
       bytes32(WETH_ADDR),
@@ -411,9 +418,9 @@ describe("QueryV2", () => {
         fieldIdx: AccountField.Nonce,
       },
       {
-        // blockNumber: 17975259,
-        // txIdx: 34,
-        txHash: "0x47082a4eaba054312c652a21c6d75a44095b8be43c60bdaeffad03d38a8b1602",
+        blockNumber: 17975259,
+        txIdx: 34,
+        // txHash: "0x47082a4eaba054312c652a21c6d75a44095b8be43c60bdaeffad03d38a8b1602",
         fieldOrLogIdx: ReceiptField.CumulativeGas,
         topicOrDataOrAddressIdx: 10,
         eventSchema: ethers.ZeroHash,
@@ -431,7 +438,7 @@ describe("QueryV2", () => {
     const options: AxiomV2QueryOptions = {
       maxFeePerGas: BigInt(100000000).toString(),
     };
-    const query = (axiom.query as QueryV2).new(dataQueryReq, computeQueryReq, callbackQuery, options);
+    const axiom = new AxiomV2QueryBuilder(config, dataQueryReq, computeQueryReq, callbackQuery, options);
 
     const unbiltDq = axiom.getDataQuery();
     expect((unbiltDq?.[2] as AccountSubquery).addr).toEqual(WETH_WHALE);
@@ -442,17 +449,17 @@ describe("QueryV2", () => {
       throw new Error("builtDq is undefined");
     }
 
-    const query2 = (axiom.query as QueryV2).new();
-    query2.setBuiltDataQuery(builtDq);
-    query2.setComputeQuery(computeQueryReq);
-    query2.setCallback(callbackQuery);
+    const axiom2 = new AxiomV2QueryBuilder(config);
+    axiom2.setBuiltDataQuery(builtDq);
+    axiom2.setComputeQuery(computeQueryReq);
+    axiom2.setCallback(callbackQuery);
     const {
       queryHash: queryHash2,
       dataQueryHash: dataQueryHash2,
       dataQuery: dataQuery2,
       computeQuery: computeQuery2,
       callback: callback2,
-    } = await query2.build();
+    } = await axiom2.build();
 
     expect(queryHash).toEqual(queryHash2);
     expect(dataQueryHash).toEqual(dataQueryHash2);
@@ -474,9 +481,9 @@ describe("QueryV2", () => {
     const options: AxiomV2QueryOptions = {
       maxFeePerGas: BigInt(100000000).toString(),
     };
-    const query = (axiom.query as QueryV2).new(undefined, computeQueryReq, callbackQuery, options);
+    const axiom = new AxiomV2QueryBuilder(config, undefined, computeQueryReq, callbackQuery, options);
     axiom.setBuiltDataQuery({
-      sourceChainId: "5",
+      sourceChainId: "11155111",
       subqueries: [],
     });
     await axiom.build();

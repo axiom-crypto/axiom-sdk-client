@@ -7,20 +7,19 @@ import { ConstantsV2 } from "../../../src/queryBuilder/constants";
 
 describe("QueryBuilderV2 Options", () => {
   const config: AxiomV2QueryBuilderConfig = {
-    provider: process.env.PROVIDER_URI_SEPOLIA as string,
-    privateKey: process.env.PRIVATE_KEY as string,
-    chainId: 11155111,
+    provider: process.env.PROVIDER_URI_MAINNET as string,
+    privateKey: process.env.PRIVATE_KEY_MAINNET as string,
+    chainId: 1,
     version: "v2",
   };
-  const axiom = new AxiomV2QueryBuilder(config);
-
   const wallet = new ethers.Wallet(
-    process.env.PRIVATE_KEY as string,
-    new ethers.JsonRpcProvider(process.env.PROVIDER_URI_SEPOLIA as string),
+    process.env.PRIVATE_KEY_MAINNET as string,
+    new ethers.JsonRpcProvider(process.env.PROVIDER_URI_MAINNET as string),
   );
   const blockNumber = 18300000;
 
   test("set maxFeePerGas", async () => {
+    const axiom = new AxiomV2QueryBuilder(config);
     axiom.appendDataSubquery({
       blockNumber,
       fieldIdx: HeaderField.Timestamp,
@@ -36,6 +35,7 @@ describe("QueryBuilderV2 Options", () => {
   });
 
   test("set callbackGasLimit", async () => {
+    const axiom = new AxiomV2QueryBuilder(config);
     axiom.appendDataSubquery({
       blockNumber,
       fieldIdx: HeaderField.Timestamp,
@@ -51,6 +51,7 @@ describe("QueryBuilderV2 Options", () => {
   });
 
   test("set refundee", async () => {
+    const axiom = new AxiomV2QueryBuilder(config);
     axiom.appendDataSubquery({
       blockNumber,
       fieldIdx: HeaderField.Timestamp,

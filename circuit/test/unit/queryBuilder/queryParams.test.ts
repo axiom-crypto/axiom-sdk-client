@@ -1,3 +1,4 @@
+import { bytes32 } from "@axiom-crypto/tools";
 import {
   AxiomV2QueryBuilder,
   AxiomV2QueryBuilderConfig,
@@ -5,8 +6,6 @@ import {
   AxiomV2ComputeQuery,
   AxiomV2DataQuery,
   HeaderField,
-  QueryV2,
-  bytes32,
 } from "../../../src";
 
 // Test coverage areas:
@@ -15,8 +14,8 @@ import {
 
 describe("Query ID and Schema calculation", () => {
   const config: AxiomV2QueryBuilderConfig = {
-    provider: process.env.PROVIDER_URI_SEPOLIA as string,
-    privateKey: process.env.PRIVATE_KEY as string,
+    provider: process.env.PROVIDER_URI_MAINNET as string,
+    privateKey: process.env.PRIVATE_KEY_MAINNET as string,
     chainId: 1,
     version: "v2",
   };
@@ -155,7 +154,7 @@ describe("Query ID and Schema calculation", () => {
         },
       ],
     };
-    const query = (axiom.query as QueryV2).new();
+    const axiom = new AxiomV2QueryBuilder(config);
     axiom.setBuiltDataQuery(dataQuery);
     axiom.setComputeQuery(computeQuery);
     axiom.setCallback(callback);
@@ -169,7 +168,7 @@ describe("Query ID and Schema calculation", () => {
     expect(querySchema).toEqual("0x412efc8f4184ff6cb59c65113d3e64ddfdc521b3dd083bd076aecec735fb6e98");
 
     const queryId = await axiom.getQueryId();
-    expect(queryId).toEqual("26331238880531630939427649691123836670567064478799277856427570787260492145586");
+    expect(queryId).toEqual("4732191631665370121065397791568201906405566557551761192884953577847936028637");
   });
 
   test("queryId should change with different caller", async () => {
@@ -184,7 +183,7 @@ describe("Query ID and Schema calculation", () => {
         fieldIdx: HeaderField.GasUsed,
       },
     ];
-    const query = (axiom.query as QueryV2).new();
+    const axiom = new AxiomV2QueryBuilder(config);
     axiom.append(dataQueryReq);
     axiom.setCallback(callback);
 
@@ -196,7 +195,7 @@ describe("Query ID and Schema calculation", () => {
     builtQuery.userSalt = bytes32(1); // lock the salt value for consistent results
 
     let queryId = await axiom.getQueryId();
-    expect(queryId).toEqual("34105472793833197573956594097263260213057846125309585781735597677991434057572");
+    expect(queryId).toEqual("58585932175084384256816766291305303778710922248857728102949512681235737675927");
 
     queryId = await axiom.getQueryId("0x41a7a901ef58d383801272d2408276d96973550d");
     expect(queryId).toEqual("7120525174168517755499793234294755392835908142367641295038978869119154112223");

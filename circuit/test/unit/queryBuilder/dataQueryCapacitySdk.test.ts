@@ -1,3 +1,4 @@
+import { bytes32, getBlockNumberAndTxIdx } from "@axiom-crypto/tools";
 import {
   AccountField,
   AxiomV2QueryBuilder,
@@ -6,6 +7,8 @@ import {
   ReceiptField,
   TxField,
 } from "../../../src";
+import { ConstantsV2 } from "../../../src/queryBuilder/constants";
+import { JsonRpcProvider } from "ethers";
 
 // Test coverage areas:
 // - DataQuery capacity
@@ -53,227 +56,393 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
     "0xd85e411ae03daa7cf11352795b05a2b1c6bba1cb4144284f510ea379481994a1",
     // "0x079fe983f70c4c176e2b15d0fa4392c5a30fc535055d10fca31003cb48037ba0", // 33
   ];
-  console.log(validMainnetTxHashes.length);
 
-  const config: AxiomV2QueryBuilderConfig = {
-    privateKey: process.env.PRIVATE_KEY as string,
-    provider: process.env.PROVIDER_URI_SEPOLIA as string,
-    version: "v2",
-  };
-  const axiom = new AxiomV2QueryBuilder(config);
+  const provider = new JsonRpcProvider(process.env.PROVIDER_URI_MAINNET as string);
 
   test(`Append ${ConstantsV2.MaxSameSubqueryType} Header subqueries`, () => {
+    const axiom = new AxiomV2QueryBuilder({
+      privateKey: process.env.PRIVATE_KEY as string,
+      provider: process.env.PROVIDER_URI_MAINNET as string,
+      version: "v2",
+    });
     const blockNumber = 18000000;
-    const query = (axiom.query as QueryV2).new();
     for (let i = 0; i < ConstantsV2.MaxSameSubqueryType; i++) {
-      const subquery = buildHeaderSubquery(blockNumber + i).field(HeaderField.Nonce);
-      axiom.appendDataSubquery(subquery);
+      axiom.appendDataSubquery({
+        blockNumber: blockNumber + i,
+        fieldIdx: HeaderField.Nonce,
+      });
     }
   });
 
   test(`Append ${ConstantsV2.MaxSameSubqueryType + 1} Header subqueries fail`, () => {
+    const axiom = new AxiomV2QueryBuilder({
+      privateKey: process.env.PRIVATE_KEY as string,
+      provider: process.env.PROVIDER_URI_MAINNET as string,
+      version: "v2",
+    });
     const testFn = () => {
       const blockNumber = 18000000;
-      const query = (axiom.query as QueryV2).new();
       for (let i = 0; i < ConstantsV2.MaxSameSubqueryType + 1; i++) {
-        const subquery = buildHeaderSubquery(blockNumber + i).field(HeaderField.Nonce);
-        axiom.appendDataSubquery(subquery);
+        axiom.appendDataSubquery({
+          blockNumber: blockNumber + i,
+          fieldIdx: HeaderField.Nonce,
+        });
       }
     };
     expect(testFn).toThrow();
   });
 
   test(`Append ${ConstantsV2.MaxSameSubqueryType} Account subqueries`, () => {
+    const axiom = new AxiomV2QueryBuilder({
+      privateKey: process.env.PRIVATE_KEY as string,
+      provider: process.env.PROVIDER_URI_MAINNET as string,
+      version: "v2",
+    });
     const blockNumber = 18000000;
-    const query = (axiom.query as QueryV2).new();
     for (let i = 0; i < ConstantsV2.MaxSameSubqueryType; i++) {
-      const subquery = buildAccountSubquery(blockNumber + i)
-        .address(WETH_WHALE)
-        .field(AccountField.Balance);
-      axiom.appendDataSubquery(subquery);
+      axiom.appendDataSubquery({
+        blockNumber: blockNumber + i,
+        addr: WETH_WHALE,
+        fieldIdx: AccountField.Balance,
+      });
     }
   });
 
   test(`Append ${ConstantsV2.MaxSameSubqueryType + 1} Account subqueries fail`, () => {
+    const axiom = new AxiomV2QueryBuilder({
+      privateKey: process.env.PRIVATE_KEY as string,
+      provider: process.env.PROVIDER_URI_MAINNET as string,
+      version: "v2",
+    });
     const testFn = () => {
       const blockNumber = 18000000;
-      const query = (axiom.query as QueryV2).new();
       for (let i = 0; i < ConstantsV2.MaxSameSubqueryType + 1; i++) {
-        const subquery = buildAccountSubquery(blockNumber + i)
-          .address(WETH_WHALE)
-          .field(AccountField.Balance);
-        axiom.appendDataSubquery(subquery);
+        axiom.appendDataSubquery({
+          blockNumber: blockNumber + i,
+          addr: WETH_WHALE,
+          fieldIdx: AccountField.Balance,
+        });
       }
     };
     expect(testFn).toThrow();
   });
 
   test(`Append ${ConstantsV2.MaxSameSubqueryType} Storage subqueries`, () => {
+    const axiom = new AxiomV2QueryBuilder({
+      privateKey: process.env.PRIVATE_KEY as string,
+      provider: process.env.PROVIDER_URI_MAINNET as string,
+      version: "v2",
+    });
     const blockNumber = 18000000;
-    const query = (axiom.query as QueryV2).new();
     for (let i = 0; i < ConstantsV2.MaxSameSubqueryType; i++) {
-      const subquery = buildStorageSubquery(blockNumber + i)
-        .address(WETH_ADDR)
-        .slot(0);
-      axiom.appendDataSubquery(subquery);
+      axiom.appendDataSubquery({
+        blockNumber: blockNumber + i,
+        addr: WETH_ADDR,
+        slot: 0,
+      });
     }
   });
 
   test(`Append ${ConstantsV2.MaxSameSubqueryType + 1} Storage subqueries fail`, () => {
+    const axiom = new AxiomV2QueryBuilder({
+      privateKey: process.env.PRIVATE_KEY as string,
+      provider: process.env.PROVIDER_URI_MAINNET as string,
+      version: "v2",
+    });
     const testFn = () => {
       const blockNumber = 18000000;
-      const query = (axiom.query as QueryV2).new();
       for (let i = 0; i < ConstantsV2.MaxSameSubqueryType + 1; i++) {
-        const subquery = buildStorageSubquery(blockNumber + i)
-          .address(WETH_ADDR)
-          .slot(0);
-        axiom.appendDataSubquery(subquery);
+        axiom.appendDataSubquery({
+          blockNumber: blockNumber + i,
+          addr: WETH_ADDR,
+          slot: 0,
+        });
       }
     };
     expect(testFn).toThrow();
   });
 
   test(`Append ${ConstantsV2.MaxSameSubqueryType} Solidity Nested Mapping subqueries`, () => {
+    const axiom = new AxiomV2QueryBuilder({
+      privateKey: process.env.PRIVATE_KEY as string,
+      provider: process.env.PROVIDER_URI_MAINNET as string,
+      version: "v2",
+    });
     const blockNumber = 18000000;
-    const query = (axiom.query as QueryV2).new();
     for (let i = 0; i < ConstantsV2.MaxSameSubqueryType; i++) {
-      const mapping = buildSolidityNestedMappingSubquery(blockNumber + i)
-        .address(UNI_V3_FACTORY_ADDR)
-        .mappingSlot(5)
-        .keys([WETH_ADDR, WSOL_ADDR, 10000]);
-      axiom.appendDataSubquery(mapping);
+      axiom.appendDataSubquery({
+        blockNumber: blockNumber + i,
+        addr: UNI_V3_FACTORY_ADDR,
+        mappingSlot: 5,
+        mappingDepth: 3,
+        keys: [WETH_ADDR, WSOL_ADDR, 10000],
+      });
     }
   });
 
   test(`Append ${ConstantsV2.MaxSameSubqueryType + 1} Solidity Nested Mapping subqueries fail`, () => {
+    const axiom = new AxiomV2QueryBuilder({
+      privateKey: process.env.PRIVATE_KEY as string,
+      provider: process.env.PROVIDER_URI_MAINNET as string,
+      version: "v2",
+    });
     const testFn = () => {
       const blockNumber = 18000000;
-      const query = (axiom.query as QueryV2).new();
       for (let i = 0; i < ConstantsV2.MaxSameSubqueryType + 1; i++) {
-        const mapping = buildSolidityNestedMappingSubquery(blockNumber + i)
-          .address(UNI_V3_FACTORY_ADDR)
-          .mappingSlot(5)
-          .keys([WETH_ADDR, WSOL_ADDR, 10000]);
-        axiom.appendDataSubquery(mapping);
+        axiom.appendDataSubquery({
+          blockNumber: blockNumber + i,
+          addr: UNI_V3_FACTORY_ADDR,
+          mappingSlot: 5,
+          mappingDepth: 3,
+          keys: [WETH_ADDR, WSOL_ADDR, 10000],
+        });
       }
     };
     expect(testFn).toThrow();
   });
 
   test(`Append 43 Account + 43 Storage + 42 Nested Mapping subqueries`, () => {
+    const axiom = new AxiomV2QueryBuilder({
+      privateKey: process.env.PRIVATE_KEY as string,
+      provider: process.env.PROVIDER_URI_MAINNET as string,
+      version: "v2",
+    });
     const blockNumber = 18000000;
-    const query = (axiom.query as QueryV2).new();
     for (let i = 0; i < 43; i++) {
-      const accountSubquery = buildAccountSubquery(blockNumber + i)
-        .address(WETH_WHALE)
-        .field(AccountField.Balance);
-      axiom.appendDataSubquery(accountSubquery);
-      const account = buildStorageSubquery(blockNumber + i)
-        .address(WETH_ADDR)
-        .slot(0);
-      axiom.appendDataSubquery(account);
+      axiom.appendDataSubquery({
+        blockNumber: blockNumber + i,
+        addr: WETH_WHALE,
+        fieldIdx: AccountField.Balance,
+      });
+      axiom.appendDataSubquery({
+        blockNumber: blockNumber + i,
+        addr: WETH_ADDR,
+        slot: 0,
+      });
       if (i === 42) {
         continue;
       }
-      const mapping = buildSolidityNestedMappingSubquery(blockNumber + i)
-        .address(UNI_V3_FACTORY_ADDR)
-        .mappingSlot(5)
-        .keys([WETH_ADDR, WSOL_ADDR, 10000]);
-      axiom.appendDataSubquery(mapping);
+      axiom.appendDataSubquery({
+        blockNumber: blockNumber + i,
+        addr: UNI_V3_FACTORY_ADDR,
+        mappingSlot: 5,
+        mappingDepth: 3,
+        keys: [WETH_ADDR, WSOL_ADDR, 10000],
+      });
     }
   });
 
   test(`Append 43 Account + 43 Storage + 43 Nested Mapping subqueries fail`, () => {
+    const axiom = new AxiomV2QueryBuilder({
+      privateKey: process.env.PRIVATE_KEY as string,
+      provider: process.env.PROVIDER_URI_MAINNET as string,
+      version: "v2",
+    });
     const testFn = () => {
       const blockNumber = 18000000;
-      const query = (axiom.query as QueryV2).new();
       for (let i = 0; i < 43; i++) {
-        const accountSubquery = buildAccountSubquery(blockNumber + i)
-          .address(WETH_WHALE)
-          .field(AccountField.Balance);
-        axiom.appendDataSubquery(accountSubquery);
-        const account = buildStorageSubquery(blockNumber + i)
-          .address(WETH_ADDR)
-          .slot(0);
-        axiom.appendDataSubquery(account);
-        const mapping = buildSolidityNestedMappingSubquery(blockNumber + i)
-          .address(UNI_V3_FACTORY_ADDR)
-          .mappingSlot(5)
-          .keys([WETH_ADDR, WSOL_ADDR, 10000]);
-        axiom.appendDataSubquery(mapping);
+        axiom.appendDataSubquery({
+          blockNumber: blockNumber + i,
+          addr: WETH_WHALE,
+          field: AccountField.Balance,
+        });
+        axiom.appendDataSubquery({
+          blockNumber: blockNumber + i,
+          addr: WETH_ADDR,
+          slot: 0,
+        });
+        axiom.appendDataSubquery({
+          blockNumber: blockNumber + i,
+          addr: UNI_V3_FACTORY_ADDR,
+          mappingSlot: 5,
+          mappingDepth: 3,
+          keys: [WETH_ADDR, WSOL_ADDR, 10000],
+        });
       }
     };
     expect(testFn).toThrow();
   });
 
-  test(`Append ${ConstantsV2.MaxSameSubqueryType} Tx subqueries`, () => {
-    const query = (axiom.query as QueryV2).new();
-    const txHashes = validMainnetTxHashes;
+  test(`Append ${ConstantsV2.MaxSameSubqueryType} Tx subqueries`, async () => {
+    const axiom = new AxiomV2QueryBuilder({
+      privateKey: process.env.PRIVATE_KEY as string,
+      provider: process.env.PROVIDER_URI_MAINNET as string,
+      version: "v2",
+    });
     for (let i = 0; i < validMainnetTxHashes.length; i++) {
-      axiom.appendDataSubquery(buildTxSubquery(txHashes[i]).field(TxField.To));
-      axiom.appendDataSubquery(buildTxSubquery(txHashes[i]).field(TxField.ChainId));
-      axiom.appendDataSubquery(buildTxSubquery(txHashes[i]).field(TxField.GasPrice));
-      axiom.appendDataSubquery(buildTxSubquery(txHashes[i]).field(TxField.Nonce));
+      const { blockNumber, txIdx } = await getBlockNumberAndTxIdx(provider, validMainnetTxHashes[i]);
+      if (blockNumber === null || txIdx === null) {
+        throw new Error("blockNumber or txIdx is null");
+      }
+      axiom.appendDataSubquery({
+        blockNumber,
+        txIdx,
+        fieldOrCalldataIdx: TxField.To,
+      });
+      axiom.appendDataSubquery({
+        blockNumber,
+        txIdx,
+        fieldOrCalldataIdx: TxField.ChainId,
+      });
+      axiom.appendDataSubquery({
+        blockNumber,
+        txIdx,
+        fieldOrCalldataIdx: TxField.GasPrice,
+      });
+      axiom.appendDataSubquery({
+        blockNumber,
+        txIdx,
+        fieldOrCalldataIdx: TxField.Nonce,
+      });
     }
-  });
+  }, 60000);
 
-  test(`Append ${ConstantsV2.MaxSameSubqueryType + 1} Tx subqueries fail`, () => {
-    const query = (axiom.query as QueryV2).new();
-    const txHashes = validMainnetTxHashes;
+  test(`Append ${ConstantsV2.MaxSameSubqueryType + 1} Tx subqueries fail`, async () => {
+    const axiom = new AxiomV2QueryBuilder({
+      privateKey: process.env.PRIVATE_KEY as string,
+      provider: process.env.PROVIDER_URI_MAINNET as string,
+      version: "v2",
+    });
     for (let i = 0; i < validMainnetTxHashes.length; i++) {
-      axiom.appendDataSubquery(buildTxSubquery(txHashes[i]).field(TxField.To));
-      axiom.appendDataSubquery(buildTxSubquery(txHashes[i]).field(TxField.ChainId));
-      axiom.appendDataSubquery(buildTxSubquery(txHashes[i]).field(TxField.GasPrice));
-      axiom.appendDataSubquery(buildTxSubquery(txHashes[i]).field(TxField.Nonce));
+      const { blockNumber, txIdx } = await getBlockNumberAndTxIdx(provider, validMainnetTxHashes[i]);
+      if (blockNumber === null || txIdx === null) {
+        throw new Error("blockNumber or txIdx is null");
+      }
+      axiom.appendDataSubquery({
+        blockNumber,
+        txIdx,
+        fieldOrCalldataIdx: TxField.To,
+      });
+      axiom.appendDataSubquery({
+        blockNumber,
+        txIdx,
+        fieldOrCalldataIdx: TxField.ChainId,
+      });
+      axiom.appendDataSubquery({
+        blockNumber,
+        txIdx,
+        fieldOrCalldataIdx: TxField.GasPrice,
+      });
+      axiom.appendDataSubquery({
+        blockNumber,
+        txIdx,
+        fieldOrCalldataIdx: TxField.Nonce,
+      });
     }
-    const oneMore = () => {
-      axiom.appendDataSubquery(buildTxSubquery(txHashes[0]).field(TxField.To));
+    const oneMore = async () => {
+      const { blockNumber, txIdx } = await getBlockNumberAndTxIdx(provider, validMainnetTxHashes[0]);
+      if (blockNumber === null || txIdx === null) {
+        throw new Error("blockNumber or txIdx is null");
+      }
+      axiom.appendDataSubquery({
+        blockNumber,
+        txIdx,
+        fieldOrCalldataIdx: TxField.To,
+      });
     };
-    expect(oneMore).toThrow();
-  });
+    await expect(oneMore()).rejects.toThrow();
+  }, 60000);
 
-  test(`Append ${ConstantsV2.MaxSameSubqueryType} Receipt subqueries`, () => {
-    const query = (axiom.query as QueryV2).new();
-    const txHashes = validMainnetTxHashes
+  test(`Append ${ConstantsV2.MaxSameSubqueryType} Receipt subqueries`, async () => {
+    const axiom = new AxiomV2QueryBuilder({
+      privateKey: process.env.PRIVATE_KEY as string,
+      provider: process.env.PROVIDER_URI_MAINNET as string,
+      version: "v2",
+    });
     for (let i = 0; i < validMainnetTxHashes.length; i++) {
-      axiom.appendDataSubquery(buildReceiptSubquery(txHashes[i]).field(ReceiptField.Status));
-      axiom.appendDataSubquery(buildReceiptSubquery(txHashes[i]).field(ReceiptField.LogsBloom));
-      axiom.appendDataSubquery(buildReceiptSubquery(txHashes[i]).field(ReceiptField.Logs));
-      axiom.appendDataSubquery(buildReceiptSubquery(txHashes[i]).field(ReceiptField.CumulativeGas));
+      const { blockNumber, txIdx } = await getBlockNumberAndTxIdx(provider, validMainnetTxHashes[i]);
+      if (blockNumber === null || txIdx === null) {
+        throw new Error("blockNumber or txIdx is null");
+      }
+      axiom.appendDataSubquery({
+        blockNumber,
+        txIdx,
+        fieldOrLogIdx: ReceiptField.Status,
+        topicOrDataOrAddressIdx: 0,
+        eventSchema: bytes32(0),
+      });
+      axiom.appendDataSubquery({
+        blockNumber,
+        txIdx,
+        fieldOrLogIdx: ReceiptField.LogsBloom,
+        topicOrDataOrAddressIdx: 0,
+        eventSchema: bytes32(0),
+      });
+      axiom.appendDataSubquery({
+        blockNumber,
+        txIdx,
+        fieldOrLogIdx: ReceiptField.Logs,
+        topicOrDataOrAddressIdx: 0,
+        eventSchema: bytes32(0),
+      });
+      axiom.appendDataSubquery({
+        blockNumber,
+        txIdx,
+        fieldOrLogIdx: ReceiptField.CumulativeGas,
+        topicOrDataOrAddressIdx: 0,
+        eventSchema: bytes32(0),
+      });
     }
-  });
+  }, 60000);
 
-  test(`Append ${ConstantsV2.MaxSameSubqueryType + 1} Receipt subqueries fail`, () => {
-    const testFn = () => {
-      const query = (axiom.query as QueryV2).new();
+  test(`Append ${ConstantsV2.MaxSameSubqueryType + 1} Receipt subqueries fail`, async () => {
+    const axiom = new AxiomV2QueryBuilder({
+      privateKey: process.env.PRIVATE_KEY as string,
+      provider: process.env.PROVIDER_URI_MAINNET as string,
+      version: "v2",
+    });
+    const testFn = async () => {
       const txHashes = validMainnetTxHashes.slice(0, ConstantsV2.MaxSameSubqueryType + 1);
       for (let i = 0; i < ConstantsV2.MaxSameSubqueryType + 1; i++) {
-        const subquery = buildReceiptSubquery(txHashes[i]).field(ReceiptField.Status);
-        axiom.appendDataSubquery(subquery);
+        const { blockNumber, txIdx } = await getBlockNumberAndTxIdx(provider, txHashes[i]);
+        if (blockNumber === null || txIdx === null) {
+          throw new Error("blockNumber or txIdx is null");
+        }
+        axiom.appendDataSubquery({
+          blockNumber,
+          txIdx,
+          fieldOrLogIdx: ReceiptField.Status,
+          topicOrDataOrAddressIdx: 0,
+          eventSchema: bytes32(0),
+        });
       }
     };
-    expect(testFn).toThrow();
-  });
+    await expect(testFn()).rejects.toThrow();
+  }, 60000);
 
-  test(`Append ${ConstantsV2.UserMaxTotalSubqueries} subqueries`, () => {
-    const blockNumber = 18000000;
-    const txHashes = validMainnetTxHashes;
+  test(`Append ${ConstantsV2.UserMaxTotalSubqueries} subqueries`, async () => {
+    const axiom = new AxiomV2QueryBuilder({
+      privateKey: process.env.PRIVATE_KEY as string,
+      provider: process.env.PROVIDER_URI_MAINNET as string,
+      version: "v2",
+    });
 
-    const query = (axiom.query as QueryV2).new();
     for (let i = 0; i < ConstantsV2.MaxSameSubqueryType / 4; i++) {
-      const headerSubquery = buildHeaderSubquery(blockNumber + i).field(HeaderField.Nonce);
-      axiom.appendDataSubquery(headerSubquery);
-
-      const accountSubquery = buildAccountSubquery(blockNumber + i)
-        .address(WETH_WHALE)
-        .field(AccountField.Balance);
-      axiom.appendDataSubquery(accountSubquery);
-
-      const txSubquery = buildTxSubquery(txHashes[i]).field(TxField.To);
-      axiom.appendDataSubquery(txSubquery);
-
-      const receiptSubquery = buildReceiptSubquery(txHashes[i]).field(ReceiptField.Status);
-      axiom.appendDataSubquery(receiptSubquery);
+      const { blockNumber, txIdx } = await getBlockNumberAndTxIdx(provider, validMainnetTxHashes[i]);
+      if (blockNumber === null || txIdx === null) {
+        throw new Error("blockNumber or txIdx is null");
+      }
+      axiom.appendDataSubquery({
+        blockNumber: blockNumber + i,
+        fieldIdx: HeaderField.Nonce,
+      });
+      axiom.appendDataSubquery({
+        blockNumber: blockNumber + i,
+        addr: WETH_WHALE,
+        fieldIdx: AccountField.Balance,
+      });
+      axiom.appendDataSubquery({
+        blockNumber,
+        txIdx,
+        fieldOrCalldataIdx: TxField.To,
+      });
+      axiom.appendDataSubquery({
+        blockNumber,
+        txIdx,
+        fieldOrLogIdx: ReceiptField.Status,
+        topicOrDataOrAddressIdx: 0,
+        eventSchema: bytes32(0),
+      });
     }
-  });
+  }, 60000);
 });

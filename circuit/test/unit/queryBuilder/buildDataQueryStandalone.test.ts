@@ -74,7 +74,7 @@ describe("Build DataQuery Standalone", () => {
       },
       {
         blockNumber: blockNumber + 1,
-        address: WETH_WHALE,
+        addr: WETH_WHALE,
         fieldIdx: 1,
       },
       {

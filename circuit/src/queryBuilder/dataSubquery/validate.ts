@@ -233,12 +233,6 @@ export async function validateSolidityNestedMappingSubquery(
   if (subquery.blockNumber > latestBlock.number) {
     console.warn(`Block number ${subquery.blockNumber} is in the future`);
   }
-  for (const key of subquery.keys) {
-    if (!ethers.isBytesLike(key)) {
-      console.error(`Invalid nested mapping key: ${key} (must be bytes-like)`);
-      return false;
-    }
-  }
 
   const value = await getSolidityNestedMappingValue(provider, subquery, console);
   if (value === null) {

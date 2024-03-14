@@ -7,21 +7,17 @@ import {
   AxiomV2FieldConstant,
   TxSubquery,
   ReceiptSubquery,
+  getFieldIdxHeaderLogsBloomIdx,
+  getEventSchema,
+  getFieldIdxReceiptLogIdx,
+  getFieldIdxReceiptLogAddress,
+  getFieldIdxReceiptLogsBloomIdx,
 } from "@axiom-crypto/tools";
 import {
   AxiomV2QueryBuilder,
   AxiomV2QueryBuilderConfig,
-  QueryV2,
-  buildAccountSubquery,
-  buildHeaderSubquery,
-  buildReceiptSubquery,
-  buildTxSubquery,
-  buildStorageSubquery,
-  buildSolidityNestedMappingSubquery,
   HeaderSubquery,
   AccountSubquery,
-  TxSubquery,
-  ReceiptSubquery,
   SolidityNestedMappingSubquery,
   StorageSubquery,
 } from "../../../src";
@@ -35,22 +31,22 @@ describe("Data Subquery Builders", () => {
   const WETH_ADDR = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2".toLowerCase();
   const WETH_WHALE = "0x2E15D7AA0650dE1009710FDd45C3468d75AE1392".toLowerCase();
 
-  const provider = new ethers.JsonRpcProvider(process.env.PROVIDER_URI_SEPOLIA as string);
+  const provider = new ethers.JsonRpcProvider(process.env.PROVIDER_URI_MAINNET as string);
+  const blockNumber = 18000000;
 
   const config: AxiomV2QueryBuilderConfig = {
-    provider: process.env.PROVIDER_URI_SEPOLIA as string,
+    provider: process.env.PROVIDER_URI_MAINNET as string,
     privateKey: process.env.PRIVATE_KEY as string,
     chainId: 1,
     version: "v2",
   };
-  const axiom = new AxiomV2QueryBuilder(config);
-
-  const blockNumber = 18000000;
 
   test("Build and append a header subquery", () => {
-    const query = (axiom.query as QueryV2).new();
-    const headerSubquery: HeaderSubquery = buildHeaderSubquery(blockNumber).field(HeaderField.GasUsed);
-    axiom.appendDataSubquery(headerSubquery);
+    const axiom = new AxiomV2QueryBuilder(config);
+    axiom.appendDataSubquery({
+      blockNumber: blockNumber,
+      fieldIdx: HeaderField.GasUsed,
+    });
     const dataQuery = axiom.getDataQuery();
 
     const subquery = dataQuery?.[0] as HeaderSubquery;
@@ -59,9 +55,11 @@ describe("Data Subquery Builders", () => {
   });
 
   test("Build and append a header logsBloom subquery", () => {
-    const query = (axiom.query as QueryV2).new();
-    const headerSubquery: HeaderSubquery = buildHeaderSubquery(blockNumber).logsBloom(2);
-    axiom.appendDataSubquery(headerSubquery);
+    const axiom = new AxiomV2QueryBuilder(config);
+    axiom.appendDataSubquery({
+      blockNumber: blockNumber,
+      fieldIdx: getFieldIdxHeaderLogsBloomIdx(2),
+    });
     const dataQuery = axiom.getDataQuery();
 
     const subquery = dataQuery?.[0] as HeaderSubquery;
@@ -70,11 +68,12 @@ describe("Data Subquery Builders", () => {
   });
 
   test("Build and append an account subquery", () => {
-    const query = (axiom.query as QueryV2).new();
-    const accountSubquery: AccountSubquery = buildAccountSubquery(blockNumber)
-      .address(WETH_WHALE)
-      .field(AccountField.Balance);
-    axiom.appendDataSubquery(accountSubquery);
+    const axiom = new AxiomV2QueryBuilder(config);
+    axiom.appendDataSubquery({
+      blockNumber: blockNumber,
+      addr: WETH_WHALE,
+      fieldIdx: AccountField.Balance,
+    });
     const dataQuery = axiom.getDataQuery();
 
     const subquery = dataQuery?.[0] as AccountSubquery;
@@ -84,33 +83,38 @@ describe("Data Subquery Builders", () => {
   });
 
   test("Build and append a storage subquery", () => {
-    const query = (axiom.query as QueryV2).new();
-    const storageSubquery: StorageSubquery = buildStorageSubquery(blockNumber).address(WETH_ADDR).slot(1);
-    axiom.appendDataSubquery(storageSubquery);
+    const axiom = new AxiomV2QueryBuilder(config);
+    axiom.appendDataSubquery({
+      blockNumber: blockNumber,
+      addr: WETH_ADDR,
+      slot: 1,
+    });
     const dataQuery = axiom.getDataQuery();
 
     const subquery = dataQuery?.[0] as StorageSubquery;
     expect(subquery?.blockNumber).toEqual(blockNumber);
     expect(subquery?.addr).toEqual(WETH_ADDR);
-    expect(subquery?.slot).toEqual(bytes32(1));
+    expect(subquery?.slot).toEqual(1);
   });
 
   test("Build and append a tx subquery", async () => {
-    const query = (axiom.query as QueryV2).new();
-
+    const axiom = new AxiomV2QueryBuilder(config);
     const txHash = "0x8d2e6cbd7cf1f88ee174600f31b79382e0028e239bb1af8301ba6fc782758bc6";
     const { blockNumber, txIdx } = await getBlockNumberAndTxIdx(provider, txHash);
     if (blockNumber === null || txIdx === null) {
       throw new Error("Failed to get block number and tx idx");
     }
-
-    const txSubquery: TxSubquery = buildTxSubquery(txHash).field(TxField.MaxPriorityFeePerGas);
-    axiom.appendDataSubquery(txSubquery);
+    axiom.appendDataSubquery({
+      blockNumber: blockNumber,
+      txIdx: txIdx,
+      fieldOrCalldataIdx: TxField.MaxPriorityFeePerGas,
+    });
     const dataQuery = axiom.getDataQuery();
 
     // Check the unbuilt subquery
     const subquery = dataQuery?.[0] as TxSubquery;
-    expect(subquery?.txHash).toEqual(txHash);
+    expect(subquery?.blockNumber).toEqual(blockNumber);
+    expect(subquery?.txIdx).toEqual(txIdx);
     expect(subquery?.fieldOrCalldataIdx).toEqual(2);
 
     // Build the Query and validate the built subquery
@@ -122,24 +126,25 @@ describe("Data Subquery Builders", () => {
   });
 
   test("Build and append a receipt subquery", async () => {
-    const query = (axiom.query as QueryV2).new();
-
+    const axiom = new AxiomV2QueryBuilder(config);
     const txHash = "0x8d2e6cbd7cf1f88ee174600f31b79382e0028e239bb1af8301ba6fc782758bc6";
     const { blockNumber, txIdx } = await getBlockNumberAndTxIdx(provider, txHash);
     if (blockNumber === null || txIdx === null) {
       throw new Error("Failed to get block number and tx idx");
     }
-
-    const receiptSubquery: ReceiptSubquery = buildReceiptSubquery(txHash)
-      .log(0)
-      .topic(1)
-      .eventSchema("Transfer (address from, address to, uint256 value)");
-    axiom.appendDataSubquery(receiptSubquery);
+    axiom.appendDataSubquery({
+      blockNumber: blockNumber,
+      txIdx: txIdx,
+      fieldOrLogIdx: getFieldIdxReceiptLogIdx(0),
+      topicOrDataOrAddressIdx: 1,
+      eventSchema: getEventSchema("Transfer (address from, address to, uint256 value)"),
+    });
     const dataQuery = axiom.getDataQuery();
 
     // Check the unbuilt subquery
     const subquery = dataQuery?.[0] as ReceiptSubquery;
-    expect(subquery?.txHash).toEqual(txHash);
+    expect(subquery?.blockNumber).toEqual(blockNumber);
+    expect(subquery?.txIdx).toEqual(txIdx);
     expect(subquery?.fieldOrLogIdx).toEqual(100);
     expect(subquery?.topicOrDataOrAddressIdx).toEqual(1);
     expect(subquery?.eventSchema).toEqual("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef");
@@ -155,21 +160,25 @@ describe("Data Subquery Builders", () => {
   });
 
   test("Build and append a receipt log address subquery", async () => {
-    const query = (axiom.query as QueryV2).new();
-
+    const axiom = new AxiomV2QueryBuilder(config);
     const txHash = "0x8d2e6cbd7cf1f88ee174600f31b79382e0028e239bb1af8301ba6fc782758bc6";
     const { blockNumber, txIdx } = await getBlockNumberAndTxIdx(provider, txHash);
     if (blockNumber === null || txIdx === null) {
       throw new Error("Failed to get block number and tx idx");
     }
-
-    const receiptSubquery: ReceiptSubquery = buildReceiptSubquery(txHash).log(0).address();
-    axiom.appendDataSubquery(receiptSubquery);
+    axiom.appendDataSubquery({
+      blockNumber: blockNumber,
+      txIdx: txIdx,
+      fieldOrLogIdx: getFieldIdxReceiptLogIdx(0),
+      topicOrDataOrAddressIdx: getFieldIdxReceiptLogAddress(),
+      eventSchema: bytes32(0),
+    });
     const dataQuery = axiom.getDataQuery();
 
     // Check the unbuilt subquery
     const subquery = dataQuery?.[0] as ReceiptSubquery;
-    expect(subquery?.txHash).toEqual(txHash);
+    expect(subquery?.blockNumber).toEqual(blockNumber);
+    expect(subquery?.txIdx).toEqual(txIdx);
     expect(subquery?.fieldOrLogIdx).toEqual(100);
     expect(subquery?.topicOrDataOrAddressIdx).toEqual(50);
     expect(subquery?.eventSchema).toEqual(bytes32(0));
@@ -185,18 +194,23 @@ describe("Data Subquery Builders", () => {
   });
 
   test("Build and append a receipt logsBloom subquery", async () => {
-    const query = (axiom.query as QueryV2).new();
+    const axiom = new AxiomV2QueryBuilder(config);
 
     const txHash = "0x8d2e6cbd7cf1f88ee174600f31b79382e0028e239bb1af8301ba6fc782758bc6";
     const { blockNumber, txIdx } = await getBlockNumberAndTxIdx(provider, txHash);
-
-    const receiptSubquery: ReceiptSubquery = buildReceiptSubquery(txHash).logsBloom(2);
-    axiom.appendDataSubquery(receiptSubquery);
+    axiom.appendDataSubquery({
+      blockNumber: blockNumber,
+      txIdx: txIdx,
+      fieldOrLogIdx: getFieldIdxReceiptLogsBloomIdx(2),
+      topicOrDataOrAddressIdx: 0,
+      eventSchema: bytes32(0),
+    });
     const dataQuery = axiom.getDataQuery();
 
     // Check the unbuilt subquery
     const subquery = dataQuery?.[0] as ReceiptSubquery;
-    expect(subquery?.txHash).toEqual(txHash);
+    expect(subquery?.blockNumber).toEqual(blockNumber);
+    expect(subquery?.txIdx).toEqual(txIdx);
     expect(subquery?.fieldOrLogIdx).toEqual(AxiomV2FieldConstant.Receipt.LogsBloomIdxOffset + 2);
 
     // Build the Query and validate the built subquery
@@ -209,20 +223,31 @@ describe("Data Subquery Builders", () => {
     expect(builtSubquery?.eventSchema).toEqual(bytes32(0));
   });
 
-  test("Build and append a nested mapping subquery", () => {
-    const query = (axiom.query as QueryV2).new();
-    const nestedMappingSubquery: SolidityNestedMappingSubquery = buildSolidityNestedMappingSubquery(blockNumber)
-      .address(WETH_ADDR)
-      .mappingSlot(0)
-      .keys([WETH_ADDR, WETH_WHALE, 100000]);
-    axiom.appendDataSubquery(nestedMappingSubquery);
+  test("Build and append a nested mapping subquery", async () => {
+    const axiom = new AxiomV2QueryBuilder(config);
+    axiom.appendDataSubquery({
+      blockNumber: blockNumber,
+      addr: WETH_ADDR,
+      mappingSlot: 0,
+      mappingDepth: 3,
+      keys: [WETH_ADDR, WETH_WHALE, 100000],
+    });
     const dataQuery = axiom.getDataQuery();
 
     const subquery = dataQuery?.[0] as SolidityNestedMappingSubquery;
     expect(subquery?.blockNumber).toEqual(blockNumber);
     expect(subquery?.addr).toEqual(WETH_ADDR);
-    expect(subquery?.mappingSlot).toEqual(bytes32(0));
+    expect(subquery?.mappingSlot).toEqual(0);
     expect(subquery?.mappingDepth).toEqual(3);
-    expect(subquery?.keys).toEqual([bytes32(WETH_ADDR), bytes32(WETH_WHALE), bytes32(100000)]);
+    expect(subquery?.keys).toEqual([WETH_ADDR, WETH_WHALE, 100000]);
+
+    // Build the Query and validate the built subquery
+    const built = await axiom.build();
+    const builtSubquery = built.dataQueryStruct.subqueries?.[0].subqueryData as SolidityNestedMappingSubquery;
+    expect(builtSubquery?.blockNumber).toEqual(blockNumber);
+    expect(builtSubquery?.addr).toEqual(WETH_ADDR);
+    expect(builtSubquery?.mappingSlot).toEqual(0);
+    expect(builtSubquery?.mappingDepth).toEqual(3);
+    expect(builtSubquery?.keys).toEqual([bytes32(WETH_ADDR), bytes32(WETH_WHALE), bytes32(100000)]);
   });
 });

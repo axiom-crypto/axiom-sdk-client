@@ -1,6 +1,7 @@
 import { bytes32, getBlockNumberAndTxIdx } from "@axiom-crypto/tools";
 import {
   AxiomV2QueryBuilder,
+  AxiomV2QueryBuilderConfig,
   ReceiptField,
   TxField,
 } from "../../../src";
@@ -47,6 +48,12 @@ async function getBlockAndIdx(provider: JsonRpcProvider, arr: string[], name: st
 }
 
 describe("Config Limit Manager", () => {
+  const config: AxiomV2QueryBuilderConfig = {
+    provider: process.env.PROVIDER_URI_SEPOLIA as string,
+    privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
+    chainId: "11155111",
+    version: "v2",
+  };
   const txHashesSmall = [
     "0x4db3409f8fd6ad120ef6e3714fb341d47bc8d49cac63280c7e4f9b39e5b0b8c3",
     "0xa766ddd8f6bc8ad0a254e7074106f3c374142633512059f54fa3eb619f8bf627",
@@ -457,12 +464,7 @@ describe("Config Limit Manager", () => {
   // }, 9999999);
 
   test("default config: 128 tx", async () => {
-    const axiom = new AxiomV2QueryBuilder({
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
-      chainId: "11155111",
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     for (let i = 0; i < 128; i++) {
       appendTx(axiom, txCache, txHashesSmall[i]);
     }
@@ -471,12 +473,7 @@ describe("Config Limit Manager", () => {
   }, 300000);
 
   test("default config: 128 rc", async () => {
-    const axiom = new AxiomV2QueryBuilder({
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
-      chainId: "11155111",
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     for (let i = 0; i < 128; i++) {
       appendReceipt(axiom, txCache, txHashesSmall[i]);
     }
@@ -485,12 +482,7 @@ describe("Config Limit Manager", () => {
   }, 300000);
 
   test("default config: 64 tx, 64 rc", async () => {
-    const axiom = new AxiomV2QueryBuilder({
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
-      chainId: "11155111",
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     for (let i = 0; i < 64; i++) {
       appendTx(axiom, txCache, txHashesSmall[i]);
       appendReceipt(axiom, txCache, txHashesSmall[i]);
@@ -500,12 +492,7 @@ describe("Config Limit Manager", () => {
   }, 300000);
 
   test("default config (fail): 65 tx, 64 rc", async () => {
-    const axiom = new AxiomV2QueryBuilder({
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
-      chainId: "11155111",
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     const testFn = () => {
       for (let i = 0; i < 64; i++) {
         appendTx(axiom, txCache, txHashesSmall[i]);
@@ -517,12 +504,7 @@ describe("Config Limit Manager", () => {
   }, 300000);
 
   test("large config: 1 lg tx, 15 small tx", async () => {
-    const axiom = new AxiomV2QueryBuilder({
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
-      chainId: "11155111",
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
 
     appendTx(axiom, txCache, txHashesLarge[0]);
     for (let i = 0; i < 15; i++) {
@@ -533,12 +515,7 @@ describe("Config Limit Manager", () => {
   }, 120000);
 
   test("large config: 1 lg rc, 15 small rc", async () => {
-    const axiom = new AxiomV2QueryBuilder({
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
-      chainId: "11155111",
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     appendReceipt(axiom, txCache, rcHashesLarge[0]);
     for (let i = 0; i < 15; i++) {
       appendReceipt(axiom, txCache, txHashesSmall[i]);
@@ -548,12 +525,7 @@ describe("Config Limit Manager", () => {
   }, 120000);
 
   test("large config: 1 lg tx, 16 small rc", async () => {
-    const axiom = new AxiomV2QueryBuilder({
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
-      chainId: "11155111",
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     for (let i = 0; i < 1; i++) {
       appendTx(axiom, txCache, txHashesLarge[i]);
     }
@@ -565,12 +537,7 @@ describe("Config Limit Manager", () => {
   }, 120000);
 
   test("large config (fail): 17 tx", async () => {
-    const axiom = new AxiomV2QueryBuilder({
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
-      chainId: "11155111",
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     const testFn = async () => {
       for (let i = 0; i < 1; i++) {
         appendTx(axiom, txCache, txHashesLarge[i]);
@@ -584,12 +551,7 @@ describe("Config Limit Manager", () => {
   }, 120000);
 
   test("large config (fail): 4 lg rc, 16 small rc", async () => {
-    const axiom = new AxiomV2QueryBuilder({
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
-      chainId: "11155111",
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     const testFn = async () => {
       for (let i = 0; i < 4; i++) {
         appendReceipt(axiom, txCache, rcHashesLarge[i]);
@@ -603,12 +565,7 @@ describe("Config Limit Manager", () => {
   }, 120000);
 
   test("large config (fail): 1 lg tx, 17 small rc", async () => {
-    const axiom = new AxiomV2QueryBuilder({
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
-      chainId: "11155111",
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     const testFn = async () => {
       for (let i = 0; i < 1; i++) {
         appendTx(axiom, txCache, txHashesLarge[i]);
@@ -622,12 +579,7 @@ describe("Config Limit Manager", () => {
   }, 120000);
   
   test("max config: 1 max tx, 3 large tx", async () => {
-    const axiom = new AxiomV2QueryBuilder({
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
-      chainId: "11155111",
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     appendTx(axiom, txCache, txHashesMax[0]);
     for (let i = 0; i < 3; i++) {
       appendTx(axiom, txCache, txHashesLarge[i]);
@@ -637,12 +589,7 @@ describe("Config Limit Manager", () => {
   }, 120000);
 
   test("max config: 1 max tx, 3 large tx, 1 max rc", async () => {
-    const axiom = new AxiomV2QueryBuilder({
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
-      chainId: "11155111",
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     appendTx(axiom, txCache, txHashesMax[0]);
     for (let i = 0; i < 3; i++) {
       appendTx(axiom, txCache, txHashesLarge[i]);
@@ -655,12 +602,7 @@ describe("Config Limit Manager", () => {
   }, 120000);
 
   test("max config (fail): 1 max tx, 4 large tx", async () => {
-    const axiom = new AxiomV2QueryBuilder({
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
-      chainId: "11155111",
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     const testFn = async () => {
       appendTx(axiom, txCache, txHashesMax[0]);
       for (let i = 0; i < 4; i++) {
@@ -672,12 +614,7 @@ describe("Config Limit Manager", () => {
   }, 120000);
 
   test("max config (fail): 2 max rc", async () => {
-    const axiom = new AxiomV2QueryBuilder({
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
-      chainId: "11155111",
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     const testFn = async () => {
       for (let i = 0; i < 2; i++) {
         appendReceipt(axiom, txCache, rcHashesMax[i]);
@@ -688,12 +625,7 @@ describe("Config Limit Manager", () => {
   }, 120000);
 
   test("max config (fail): 4 large rc, 1 max tx", async () => {
-    const axiom = new AxiomV2QueryBuilder({
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
-      chainId: "11155111",
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     const testFn = async () => {
       for (let i = 0; i < 4; i++) {
         appendReceipt(axiom, txCache, rcHashesLarge[i]);
@@ -705,12 +637,7 @@ describe("Config Limit Manager", () => {
   }, 120000);
 
   test("max config (fail): oversize 1 max rc (max config log data len)", async () => {
-    const axiom = new AxiomV2QueryBuilder({
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
-      chainId: "11155111",
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     const testFn = async () => {
       appendReceipt(axiom, txCache, rcHashesOverMax[0]);
       const built = await axiom.build(true);
@@ -719,12 +646,7 @@ describe("Config Limit Manager", () => {
   }, 120000);
 
   test("max config (fail): oversize 1 max rc (large config log data len)", async () => {
-    const axiom = new AxiomV2QueryBuilder({
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
-      chainId: "11155111",
-      version: "v2",
-    });
+    const axiom = new AxiomV2QueryBuilder(config);
     const testFn = async () => {
       appendReceipt(axiom, txCache, rcHashesOverMax[1]);
       const built = await axiom.build(true);

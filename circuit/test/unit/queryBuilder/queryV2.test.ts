@@ -133,7 +133,7 @@ describe("QueryV2", () => {
   const computeProof = ethers.concat(computeProofRaw);
 
   const config: AxiomV2QueryBuilderConfig = {
-    privateKey: process.env.PRIVATE_KEY_MAINNET as string,
+    privateKey: process.env.PRIVATE_KEY_ANVIL_DEFAULT as string,
     provider: process.env.PROVIDER_URI_MAINNET as string,
     version: "v2",
   };

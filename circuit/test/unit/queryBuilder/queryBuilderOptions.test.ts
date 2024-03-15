@@ -8,12 +8,12 @@ import { ConstantsV2 } from "../../../src/queryBuilder/constants";
 describe("QueryBuilderV2 Options", () => {
   const config: AxiomV2QueryBuilderConfig = {
     provider: process.env.PROVIDER_URI_MAINNET as string,
-    privateKey: process.env.PRIVATE_KEY_MAINNET as string,
+    privateKey: process.env.PRIVATE_KEY_ANVIL_DEFAULT as string,
     chainId: 1,
     version: "v2",
   };
   const wallet = new ethers.Wallet(
-    process.env.PRIVATE_KEY_MAINNET as string,
+    process.env.PRIVATE_KEY_ANVIL_DEFAULT as string,
     new ethers.JsonRpcProvider(process.env.PROVIDER_URI_MAINNET as string),
   );
   const blockNumber = 18300000;

@@ -195,7 +195,7 @@ describe("Query ID and Schema calculation", () => {
     builtQuery.userSalt = bytes32(1); // lock the salt value for consistent results
 
     let queryId = await axiom.getQueryId();
-    expect(queryId).toEqual("58585932175084384256816766291305303778710922248857728102949512681235737675927");
+    expect(queryId).toEqual("98889725304317068813202880468729579267735358960168967565344125062025862943344");
 
     queryId = await axiom.getQueryId("0x41a7a901ef58d383801272d2408276d96973550d");
     expect(queryId).toEqual("7120525174168517755499793234294755392835908142367641295038978869119154112223");

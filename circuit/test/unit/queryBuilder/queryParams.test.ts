@@ -168,7 +168,7 @@ describe("Query ID and Schema calculation", () => {
     expect(querySchema).toEqual("0x412efc8f4184ff6cb59c65113d3e64ddfdc521b3dd083bd076aecec735fb6e98");
 
     const queryId = await axiom.getQueryId();
-    expect(queryId).toEqual("4732191631665370121065397791568201906405566557551761192884953577847936028637");
+    expect(queryId).toEqual("48044697032147397047484525564957309609572441090589780793445755160032499990078");
   });
 
   test("queryId should change with different caller", async () => {

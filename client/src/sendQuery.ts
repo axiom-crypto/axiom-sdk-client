@@ -4,11 +4,14 @@ import {
   AxiomV2QueryOptions,
   DataSubquery,
   AxiomV2QueryBuilder,
+  AxiomV2QueryBuilderConfig,
 } from "@axiom-crypto/circuit";
-import { encodeFunctionData } from "viem";
-import { getMaxFeePerGas } from "./axiom/utils";
-import { AxiomV2ClientOptions, AxiomV2SendQueryArgs } from "./types";
+import { createPublicClient, encodeFunctionData, http } from "viem";
+import { convertChainIdToViemChain, getMaxFeePerGas } from "./axiom/utils";
+import { AbiType, AxiomV2ClientOptions, AxiomV2SendQueryArgs } from "./types";
 import { encodeFullQueryV2 } from "@axiom-crypto/core/packages/tools";
+import { getAxiomV2Abi, getAxiomV2QueryAddress } from "./lib";
+import { calculatePayment } from "./lib/paymentCalc";
 
 export const buildSendQuery = async (input: {
   axiom: AxiomV2QueryBuilder;
@@ -18,7 +21,7 @@ export const buildSendQuery = async (input: {
   caller: string;
   options: AxiomV2ClientOptions;
 }): Promise<AxiomV2SendQueryArgs> => {
-  const validate = input.options.validate ?? false;
+  const validate = input.options.validate ?? true;
   if (input.options.refundee === undefined) {
     throw new Error("Refundee is required");
   }
@@ -26,25 +29,37 @@ export const buildSendQuery = async (input: {
     input.options.maxFeePerGas = await getMaxFeePerGas(input.axiom);
   }
 
+  const publicClient = createPublicClient({
+    chain: convertChainIdToViemChain(input.axiom.config.chainId.toString()),
+    transport: http(input.axiom.config.providerUri),
+  });
+
+  const config: AxiomV2QueryBuilderConfig = {
+    provider: input.axiom.config.providerUri,
+    privateKey: input.options.privateKey,
+    chainId: input.axiom.config.chainId.toString(),
+    targetChainId: input.axiom.config.targetChainId.toString(),
+    version: input.axiom.config.version,
+    mock: input.axiom.config.mock,
+  };
   const queryOptions: AxiomV2QueryOptions = {
     maxFeePerGas: input.options.maxFeePerGas,
     callbackGasLimit: input.options.callbackGasLimit,
     overrideAxiomQueryFee: input.options.overrideAxiomQueryFee,
     refundee: input.options.refundee,
   };
-  const qb: AxiomV2QueryBuilder = query.new(
-    undefined,
+  input.axiom = new AxiomV2QueryBuilder(
+    config,
+    undefined,  // we set this as a setBuiltDataQuery below
     input.computeQuery,
     input.callback,
-    queryOptions
+    queryOptions,
   );
-
-  if (input.dataQuery.length > 0) {
-    qb.setBuiltDataQuery({
-      subqueries: input.dataQuery,
-      sourceChainId: input.axiom.config.chainId.toString(),
-    }, true);
-  }
+  input.axiom.setBuiltDataQuery({
+    sourceChainId: input.axiom.config.chainId.toString(),
+    subqueries: input.dataQuery,
+  });
+  
   const {
     sourceChainId,
     queryHash,
@@ -55,11 +70,11 @@ export const buildSendQuery = async (input: {
     userSalt,
     refundee,
     dataQuery,
-  } = await qb.build(validate);
-  const payment = await qb.calculateFee();
-  const id = await qb.getQueryId(input.caller);
-  const abi = input.axiom.getAxiomQueryAbi();
-  const axiomQueryAddress = input.options.queryAddress ?? input.axiom.getAxiomQueryAddress();
+  } = await input.axiom.build(validate);
+  const id = await input.axiom.getQueryId(input.caller);
+  const abi = getAxiomV2Abi(AbiType.Query);
+  const axiomQueryAddress = input.options.queryAddress ?? getAxiomV2QueryAddress(input.axiom.config.chainId.toString());
+  const payment = await calculatePayment(axiomQueryAddress, publicClient, input.options);
 
   let sendQueryArgs: any;
   if (!input.options.ipfsClient) {

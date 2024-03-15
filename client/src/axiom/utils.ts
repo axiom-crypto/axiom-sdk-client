@@ -1,14 +1,17 @@
 import {
-  AxiomSdkCore,
+  AxiomV2QueryBuilder,
   AxiomV2Callback,
   AxiomV2ComputeQuery,
   AxiomV2FeeData,
+} from "@axiom-crypto/circuit";
+import {
   getByteLength,
-} from "@axiom-crypto/core";
-import { AxiomV2SendQueryArgsParams, CircuitInputType } from "../types";
+} from "@axiom-crypto/circuit/pkg/tools";
+import { AbiType, AxiomV2SendQueryArgsParams, CircuitInputType } from "../types";
 import { createPublicClient, http } from 'viem';
 import { mainnet, sepolia } from 'viem/chains';
 import { ClientConstants } from "../constants";
+import { getAxiomV2Abi, getAxiomV2QueryAddress } from "../lib";
 
 export function convertInputSchemaToJsonString(args: {[arg: string]: CircuitInputType}): string {
   const inputs = Object.keys(args).map((key: string) => {
@@ -67,15 +70,15 @@ export function argsObjToArr(
   ]
 }
 
-export async function getMaxFeePerGas(axiom: AxiomSdkCore): Promise<string> {
+export async function getMaxFeePerGas(axiom: AxiomV2QueryBuilder): Promise<string> {
   const providerFeeData = (await axiom.config.provider.getFeeData()).maxFeePerGas as bigint;
   const publicClient = createPublicClient({
     chain: convertChainIdToViemChain(axiom.config.chainId.toString()),
     transport: http(axiom.config.providerUri),
   });
   let contractMinMaxFeePerGas = await publicClient.readContract({
-    address: axiom.getAxiomQueryAddress() as `0x${string}`,
-    abi: axiom.getAxiomQueryAbi(),
+    address: getAxiomV2QueryAddress(axiom.config.chainId.toString()) as `0x${string}`,
+    abi: getAxiomV2Abi(AbiType.Query),
     functionName: "minMaxFeePerGas",
     args: [],
   }) as bigint;

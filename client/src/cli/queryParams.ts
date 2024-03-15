@@ -1,5 +1,5 @@
 import path from 'path';
-import { AxiomSdkCore } from "@axiom-crypto/core";
+import { AxiomV2QueryBuilder } from "@axiom-crypto/circuit";
 import { getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
 import { buildSendQuery } from "../sendQuery";
 import { argsArrToObj } from '../axiom/utils';
@@ -34,8 +34,8 @@ export const queryParams = async (
   console.log(`Reading proven circuit JSON from: ${provenFile}`)
   const provenJson = readJsonFromFile(provenFile);
   const provider = getProvider(options.provider);
-  const axiom = new AxiomSdkCore({
-    providerUri: provider,
+  const axiom = new AxiomV2QueryBuilder({
+    provider,
     chainId: options.sourceChainId,
     version: "v2",
     mock: options.mock ?? false,

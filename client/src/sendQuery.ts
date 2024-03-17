@@ -15,7 +15,7 @@ import { viemChain } from "./lib/viem";
 import { getAxiomV2Abi, getAxiomV2QueryAddress } from "./lib";
 
 export const buildSendQuery = async (input: {
-  axiom: AxiomV2QueryBuilder;
+  queryBuilder: AxiomV2QueryBuilder;
   dataQuery: DataSubquery[];
   computeQuery: AxiomV2ComputeQuery;
   callback: AxiomV2Callback;
@@ -27,25 +27,24 @@ export const buildSendQuery = async (input: {
     throw new Error("Refundee is required");
   }
   if (input.options.maxFeePerGas == undefined) {
-    input.options.maxFeePerGas = await getMaxFeePerGas(input.axiom, input.options?.overrides);
+    input.options.maxFeePerGas = await getMaxFeePerGas(input.queryBuilder, input.options?.overrides);
   }
-  const chainId = input.axiom.config.chainId.toString();
+  const sourceChainId = input.queryBuilder.config.sourceChainId.toString();
 
   const config: AxiomV2QueryBuilderConfig = {
-    provider: input.axiom.config.providerUri,
-    privateKey: input.options.privateKey,
-    chainId: input.axiom.config.chainId.toString(),
-    targetChainId: input.axiom.config.targetChainId.toString(),
-    version: input.axiom.config.version,
-    mock: input.axiom.config.mock,
+    provider: input.queryBuilder.config.providerUri,
+    sourceChainId: input.queryBuilder.config.sourceChainId.toString(),
+    targetChainId: input.queryBuilder.config.targetChainId.toString(),
+    version: input.queryBuilder.config.version,
+    mock: input.queryBuilder.config.mock,
+    refundee: input.options.refundee,
   };
   const queryOptions: AxiomV2QueryOptions = {
     maxFeePerGas: input.options.maxFeePerGas,
     callbackGasLimit: input.options.callbackGasLimit,
     overrideAxiomQueryFee: input.options.overrideAxiomQueryFee,
-    refundee: input.options.refundee,
   };
-  input.axiom = new AxiomV2QueryBuilder(
+  input.queryBuilder = new AxiomV2QueryBuilder(
     config,
     undefined,  // we set this as a setBuiltDataQuery below
     input.computeQuery,
@@ -53,8 +52,8 @@ export const buildSendQuery = async (input: {
     queryOptions,
   );
   if (input.dataQuery.length > 0) {
-    input.axiom.setBuiltDataQuery({
-      sourceChainId: chainId,
+    input.queryBuilder.setBuiltDataQuery({
+      sourceChainId,
       subqueries: input.dataQuery,
     }, true);
   }
@@ -68,14 +67,14 @@ export const buildSendQuery = async (input: {
     userSalt,
     refundee,
     dataQuery,
-  } = await input.axiom.build(validate);
-  const id = await input.axiom.getQueryId(input.caller);
+  } = await input.queryBuilder.build(validate);
+  const id = await input.queryBuilder.getQueryId(input.caller);
   const abi = getAxiomV2Abi(AbiType.Query);
-  const axiomQueryAddress = input.options?.overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
+  const axiomQueryAddress = input.options?.overrides?.queryAddress ?? getAxiomV2QueryAddress(sourceChainId);
 
   const publicClient = createPublicClient({
-    chain: viemChain(chainId, input.axiom.config.providerUri),
-    transport: http(input.axiom.config.providerUri),
+    chain: viemChain(sourceChainId, input.queryBuilder.config.providerUri),
+    transport: http(input.queryBuilder.config.providerUri),
   });
   const payment = await calculatePayment(axiomQueryAddress, publicClient, input.options);
 
@@ -87,7 +86,7 @@ export const buildSendQuery = async (input: {
       functionName: "sendQuery",
       value: payment,
       args: [
-        chainId,
+        sourceChainId,
         dataQueryHash,
         computeQuery,
         callback,
@@ -97,14 +96,14 @@ export const buildSendQuery = async (input: {
         dataQuery,
       ],
       queryId: id,
-      mock: input.axiom.config.mock,
+      mock: input.queryBuilder.config.mock,
     };
   } else {
     const encodedQuery = encodeFullQueryV2(
-      chainId,
+      sourceChainId,
       refundee,
       {
-        sourceChainId: chainId,
+        sourceChainId,
         subqueries: input.dataQuery,
       },
       computeQuery,
@@ -132,7 +131,7 @@ export const buildSendQuery = async (input: {
         refundee,
       ],
       queryId: id,
-      mock: input.axiom.config.mock,
+      mock: input.queryBuilder.config.mock,
     };
   }
 

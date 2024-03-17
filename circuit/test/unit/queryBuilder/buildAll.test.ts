@@ -50,7 +50,7 @@ describe("Build Query w/ ComputeQuery, DataQuery, Callback, and Options set (cor
 
   test("should initialize with private key; build QueryV2 with dataQuery, computeQuery, and callback", async () => {
     const config: AxiomV2QueryBuilderConfig = {
-      privateKey: process.env.PRIVATE_KEY as string,
+      caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
       provider: process.env.PROVIDER_URI_SEPOLIA as string,
       version: "v2",
     };
@@ -123,6 +123,7 @@ describe("Build Query w/ ComputeQuery, DataQuery, Callback, and Options set (cor
   test("should initialize without private key; build QueryV2 with dataQuery, computeQuery, and callback", async () => {
     const config: AxiomV2QueryBuilderConfig = {
       provider: process.env.PROVIDER_URI_SEPOLIA as string,
+      caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
       version: "v2",
     };
 

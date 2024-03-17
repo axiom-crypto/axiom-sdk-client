@@ -32,28 +32,29 @@ export {
 
 export interface AxiomV2QueryBuilderConfig {
   provider: string;
-  chainId?: number | string | BigInt;
+  caller?: string;
+  refundee?: string;
+  sourceChainId?: number | string | BigInt;
   targetChainId?: number | string | BigInt;
   version?: string;
-  privateKey?: string;
   mock?: boolean;
 }
 
 export interface InternalConfig {
   providerUri: string;
-  chainId: BigInt;
+  sourceChainId: BigInt;
   targetChainId: BigInt;
   mock: boolean;
   provider: ethers.JsonRpcProvider;
   version: string;
-  signer?: ethers.Wallet;
+  caller: string;
+  refundee: string;
 }
 
 export interface AxiomV2QueryOptions {
   maxFeePerGas?: string;
   callbackGasLimit?: number;
   overrideAxiomQueryFee?: string;
-  refundee?: string;
 }
 
 export interface BuiltQueryV2 {

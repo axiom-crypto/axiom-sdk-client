@@ -9,11 +9,11 @@ export function handleProvider(config: AxiomV2QueryBuilderConfig): AxiomV2QueryB
 }
 
 export function handleChainId(config: AxiomV2QueryBuilderConfig): AxiomV2QueryBuilderConfig {
-  if (config.chainId === undefined) {
-    config.chainId = 1;
+  if (config.sourceChainId === undefined) {
+    config.sourceChainId = 1;
   }
   if (config.targetChainId === undefined) {
-    config.targetChainId = config.chainId;
+    config.targetChainId = config.sourceChainId;
   }
   return config;
 }
@@ -70,4 +70,18 @@ export function parseMock(mock: boolean | undefined, chainId: BigInt): boolean {
     return false;
   }
   return mock;
+}
+
+export function parseAddress(address?: string): string {
+  if (!address) {
+    return "";
+  }
+  if (!address.startsWith("0x")) {
+    address = "0x" + address;
+  }
+  if (address.length !== 42) {
+    throw new Error("Invalid address: must be 42 characters long");
+  }
+  address = address.toLowerCase();
+  return address;
 }

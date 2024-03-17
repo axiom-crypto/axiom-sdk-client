@@ -13,7 +13,7 @@ describe("Scaffold", () => {
         "address": "CircuitValue",
         "claimedBlockNumber": "CircuitValue"
       }`,
-      chainId: 5,
+      sourceChainId: 5,
       mock: true,
     });
     const defaultInputs = {

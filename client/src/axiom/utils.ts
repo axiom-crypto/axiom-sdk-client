@@ -81,11 +81,11 @@ export function argsObjToArr(
 }
 
 export async function getMaxFeePerGas(axiom: AxiomV2QueryBuilder, overrides?: AxiomV2ClientOverrides): Promise<string> {
-  const axiomQueryAddress = overrides?.queryAddress ?? getAxiomV2QueryAddress(axiom.config.chainId.toString());
+  const axiomQueryAddress = overrides?.queryAddress ?? getAxiomV2QueryAddress(axiom.config.sourceChainId.toString());
 
   const providerFeeData = (await axiom.config.provider.getFeeData()).maxFeePerGas as bigint;
   const publicClient = createPublicClient({
-    chain: viemChain(axiom.config.chainId.toString(), axiom.config.providerUri),
+    chain: viemChain(axiom.config.sourceChainId.toString(), axiom.config.providerUri),
     transport: http(axiom.config.providerUri),
   });
 

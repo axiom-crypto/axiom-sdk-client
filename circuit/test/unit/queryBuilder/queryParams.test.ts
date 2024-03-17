@@ -15,8 +15,8 @@ import {
 describe("Query ID and Schema calculation", () => {
   const config: AxiomV2QueryBuilderConfig = {
     provider: process.env.PROVIDER_URI_MAINNET as string,
-    privateKey: process.env.PRIVATE_KEY_ANVIL_DEFAULT as string,
-    chainId: 1,
+    caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    sourceChainId: 1,
     version: "v2",
   };
   const axiom = new AxiomV2QueryBuilder(config);
@@ -198,6 +198,6 @@ describe("Query ID and Schema calculation", () => {
     expect(queryId).toEqual("98889725304317068813202880468729579267735358960168967565344125062025862943344");
 
     queryId = await axiom.getQueryId("0x41a7a901ef58d383801272d2408276d96973550d");
-    expect(queryId).toEqual("7120525174168517755499793234294755392835908142367641295038978869119154112223");
+    expect(queryId).toEqual("62886233841812629436578595916260905602794710735771458585228955613176673015071");
   });
 });

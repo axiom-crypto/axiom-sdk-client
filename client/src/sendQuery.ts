@@ -37,7 +37,7 @@ export const buildSendQuery = async (input: {
     targetChainId: input.queryBuilder.config.targetChainId.toString(),
     version: input.queryBuilder.config.version,
     mock: input.queryBuilder.config.mock,
-    refundee: input.options.refundee,
+    refundee: input.options.refundee ?? input.caller,
   };
   const queryOptions: AxiomV2QueryOptions = {
     maxFeePerGas: input.options.maxFeePerGas,

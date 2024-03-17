@@ -42,8 +42,7 @@ export interface AxiomV2CompiledCircuit {
 }
 
 export interface AxiomV2ClientOptions extends AxiomV2QueryOptions {
-  caller?: string;
-  privateKey?: string;
+  refundee?: string;
   ipfsClient?: IpfsClient;
   overrides?: AxiomV2ClientOverrides;
 }

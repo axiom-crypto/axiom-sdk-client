@@ -7,11 +7,12 @@ import {
   AxiomV2QueryBuilderConfig,
 } from "@axiom-crypto/circuit";
 import { createPublicClient, encodeFunctionData, http } from "viem";
-import { convertChainIdToViemChain, getMaxFeePerGas } from "./axiom/utils";
+import { getMaxFeePerGas } from "./axiom/utils";
 import { AbiType, AxiomV2ClientOptions, AxiomV2SendQueryArgs } from "./types";
 import { encodeFullQueryV2 } from "@axiom-crypto/core/packages/tools";
-import { getAxiomV2Abi, getAxiomV2QueryAddress } from "./lib";
 import { calculatePayment } from "./lib/paymentCalc";
+import { viemChain } from "./lib/viem";
+import { getAxiomV2Abi, getAxiomV2QueryAddress } from "./lib";
 
 export const buildSendQuery = async (input: {
   axiom: AxiomV2QueryBuilder;
@@ -21,18 +22,14 @@ export const buildSendQuery = async (input: {
   caller: string;
   options: AxiomV2ClientOptions;
 }): Promise<AxiomV2SendQueryArgs> => {
-  const validate = input.options.validate ?? true;
+  const validate = input.options?.overrides?.validateBuild ?? true;
   if (input.options.refundee === undefined) {
     throw new Error("Refundee is required");
   }
   if (input.options.maxFeePerGas == undefined) {
-    input.options.maxFeePerGas = await getMaxFeePerGas(input.axiom);
+    input.options.maxFeePerGas = await getMaxFeePerGas(input.axiom, input.options?.overrides);
   }
-
-  const publicClient = createPublicClient({
-    chain: convertChainIdToViemChain(input.axiom.config.chainId.toString()),
-    transport: http(input.axiom.config.providerUri),
-  });
+  const chainId = input.axiom.config.chainId.toString();
 
   const config: AxiomV2QueryBuilderConfig = {
     provider: input.axiom.config.providerUri,
@@ -55,13 +52,14 @@ export const buildSendQuery = async (input: {
     input.callback,
     queryOptions,
   );
-  input.axiom.setBuiltDataQuery({
-    sourceChainId: input.axiom.config.chainId.toString(),
-    subqueries: input.dataQuery,
-  });
+  if (input.dataQuery.length > 0) {
+    input.axiom.setBuiltDataQuery({
+      sourceChainId: chainId,
+      subqueries: input.dataQuery,
+    }, true);
+  }
   
   const {
-    sourceChainId,
     queryHash,
     dataQueryHash,
     computeQuery,
@@ -73,7 +71,12 @@ export const buildSendQuery = async (input: {
   } = await input.axiom.build(validate);
   const id = await input.axiom.getQueryId(input.caller);
   const abi = getAxiomV2Abi(AbiType.Query);
-  const axiomQueryAddress = input.options.queryAddress ?? getAxiomV2QueryAddress(input.axiom.config.chainId.toString());
+  const axiomQueryAddress = input.options?.overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
+
+  const publicClient = createPublicClient({
+    chain: viemChain(chainId, input.axiom.config.providerUri),
+    transport: http(input.axiom.config.providerUri),
+  });
   const payment = await calculatePayment(axiomQueryAddress, publicClient, input.options);
 
   let sendQueryArgs: any;
@@ -82,9 +85,9 @@ export const buildSendQuery = async (input: {
       address: axiomQueryAddress as `0x${string}`,
       abi: abi,
       functionName: "sendQuery",
-      value: BigInt(payment),
+      value: payment,
       args: [
-        sourceChainId,
+        chainId,
         dataQueryHash,
         computeQuery,
         callback,
@@ -98,10 +101,10 @@ export const buildSendQuery = async (input: {
     };
   } else {
     const encodedQuery = encodeFullQueryV2(
-      sourceChainId,
+      chainId,
       refundee,
       {
-        sourceChainId: input.axiom.config.chainId.toString(),
+        sourceChainId: chainId,
         subqueries: input.dataQuery,
       },
       computeQuery,

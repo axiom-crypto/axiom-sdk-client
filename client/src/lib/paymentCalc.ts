@@ -1,6 +1,5 @@
 import { ClientConstants } from "../constants";
-import { AxiomV2QueryOptions } from "@axiom-crypto/circuit";
-import { AbiType, AxiomV2ClientOverrides } from "../types";
+import { AbiType, AxiomV2ClientOverrides, AxiomV2QueryOptions } from "../types";
 import { PublicClient } from "viem";
 import { getAxiomV2QueryAddress } from "./address";
 import { getAxiomV2Abi } from "./abi";

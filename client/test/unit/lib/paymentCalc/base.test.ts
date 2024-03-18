@@ -8,8 +8,8 @@ import inputs from "../../../integration/circuits/quickstart/average.inputs.json
 describe("PaymentCalc: Base", () => {
   const CHAIN_ID = "84532";
   const publicClient = createPublicClient({
-    chain: viemChain(CHAIN_ID, process.env.PROVIDER_URI_84532 as string),
-    transport: http(process.env.PROVIDER_URI_84532 as string),
+    chain: viemChain(CHAIN_ID, process.env[`PROVIDER_URI_${CHAIN_ID}`] as string),
+    transport: http(process.env[`PROVIDER_URI_${CHAIN_ID}`] as string),
   });
 
   test("Payment calculation default based on options", async () => {
@@ -17,7 +17,7 @@ describe("PaymentCalc: Base", () => {
       circuit,
       compiledCircuit,
       chainId: CHAIN_ID,
-      provider: process.env.PROVIDER_URI_84532 as string,
+      provider: process.env[`PROVIDER_URI_${CHAIN_ID}`] as string,
       privateKey: process.env.PRIVATE_KEY_ANVIL as string,
       callback: {
         target: "0x81908149E769236F1c9e62b468d07899CB95890F",
@@ -37,7 +37,7 @@ describe("PaymentCalc: Base", () => {
       circuit,
       compiledCircuit,
       chainId: CHAIN_ID,
-      provider: process.env.PROVIDER_URI_84532 as string,
+      provider: process.env[`PROVIDER_URI_${CHAIN_ID}`] as string,
       privateKey: process.env.PRIVATE_KEY_ANVIL as string,
       callback: {
         target: "0x81908149E769236F1c9e62b468d07899CB95890F",
@@ -58,7 +58,7 @@ describe("PaymentCalc: Base", () => {
       circuit,
       compiledCircuit,
       chainId: CHAIN_ID,
-      provider: process.env.PROVIDER_URI_84532 as string,
+      provider: process.env[`PROVIDER_URI_${CHAIN_ID}`] as string,
       privateKey: process.env.PRIVATE_KEY_ANVIL as string,
       callback: {
         target: "0x81908149E769236F1c9e62b468d07899CB95890F",

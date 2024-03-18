@@ -13,7 +13,7 @@ export const config = {
 
 export const circuit = async (inputs: CircuitInputs) => {
   const blockNumber = 5000000;
-  for (let i = 0; i < 129; i++) {
+  for (let i = 0; i < 256; i++) {
     const header = await getHeader(blockNumber + i).receiptsRoot();
     addToCallback(header);
   }

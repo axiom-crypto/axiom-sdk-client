@@ -21,7 +21,6 @@ export async function generateCircuit(circuitPath: string) {
   if (existsSync(inputsPath)) {
     inputs = (await import(inputsPath)).default;
   }
-  console.log(inputs)
 
   return {
     circuit: (await import(circuitFile)).circuit,

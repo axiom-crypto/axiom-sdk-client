@@ -54,6 +54,5 @@ export function getAxiomV2QueryAddress(
 }
 
 export function getOpStackL1BlockAttributesAddress() {
-  // return "0x420000000000000000000000000000000000000F";
   return "0x4200000000000000000000000000000000000015";
 }

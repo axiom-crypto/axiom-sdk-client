@@ -70,6 +70,7 @@ export interface AxiomV2SendQueryArgsParams {
 export interface AxiomV2ClientOverrides {
   queryAddress?: string;
   validateBuild?: boolean;
+  projectedCallbackCost?: bigint;
 }
 
 export {

@@ -27,6 +27,20 @@ const axiomV2QueryAddresses = {
     [baseSepolia.id.toString()]: "",
     [scrollSepolia.id.toString()]: "",
   },
+  [base.id.toString()]: {
+    [mainnet.id.toString()]: "",
+    [arbitrum.id.toString()]: "",
+    [optimism.id.toString()]: "",
+    [base.id.toString()]: "",
+    [scroll.id.toString()]: "",
+  },
+  [baseSepolia.id.toString()]: {
+    [sepolia.id.toString()]: "",
+    [arbitrumSepolia.id.toString()]: "",
+    [optimismSepolia.id.toString()]: "",
+    [baseSepolia.id.toString()]: "0xd142AC39325Fc96F2252ee163c3087F7099a5B69",
+    [scrollSepolia.id.toString()]: "",
+  },
 };
 
 export function getAxiomV2QueryAddress(
@@ -37,4 +51,8 @@ export function getAxiomV2QueryAddress(
     targetChainId = chainId;
   }
   return axiomV2QueryAddresses?.[chainId]?.[targetChainId] ?? "";
+}
+
+export function getOptimismL1BlockAttributesAddress() {
+  return "0x4200000000000000000000000000000000000015";
 }

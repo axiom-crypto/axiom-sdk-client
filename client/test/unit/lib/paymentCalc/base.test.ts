@@ -1,15 +1,15 @@
-import { Axiom } from "../../../src";
+import { Axiom } from "../../../../src";
 import { createPublicClient, http } from "viem";
-import { viemChain } from "../../../src/lib/viem";
-import { circuit } from "../../integration/circuits/quickstart/average.circuit";
-import compiledCircuit from "../circuits/average.compiled.json";
-import inputs from "../../integration/circuits/quickstart/average.inputs.json";
+import { viemChain } from "../../../../src/lib/viem";
+import { circuit } from "../../../integration/circuits/quickstart/average.circuit";
+import compiledCircuit from "../../circuits/average.compiled.json";
+import inputs from "../../../integration/circuits/quickstart/average.inputs.json";
 
-describe("PaymentCalc", () => {
-  const CHAIN_ID = "11155111";
+describe("PaymentCalc: Base", () => {
+  const CHAIN_ID = "84532";
   const publicClient = createPublicClient({
-    chain: viemChain(CHAIN_ID, process.env.PROVIDER_URI_SEPOLIA as string),
-    transport: http(process.env.PROVIDER_URI_SEPOLIA as string),
+    chain: viemChain(CHAIN_ID, process.env.PROVIDER_URI_84532 as string),
+    transport: http(process.env.PROVIDER_URI_84532 as string),
   });
 
   test("Payment calculation default based on options", async () => {
@@ -17,10 +17,10 @@ describe("PaymentCalc", () => {
       circuit,
       compiledCircuit,
       chainId: CHAIN_ID,
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
+      provider: process.env.PROVIDER_URI_84532 as string,
+      privateKey: process.env.PRIVATE_KEY_ANVIL as string,
       callback: {
-        target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
+        target: "0x81908149E769236F1c9e62b468d07899CB95890F",
       },
       options: {
         maxFeePerGas: "5000000000",
@@ -37,10 +37,10 @@ describe("PaymentCalc", () => {
       circuit,
       compiledCircuit,
       chainId: CHAIN_ID,
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
+      provider: process.env.PROVIDER_URI_84532 as string,
+      privateKey: process.env.PRIVATE_KEY_ANVIL as string,
       callback: {
-        target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
+        target: "0x81908149E769236F1c9e62b468d07899CB95890F",
       },
       options: {
         maxFeePerGas: "500000000000",
@@ -58,10 +58,10 @@ describe("PaymentCalc", () => {
       circuit,
       compiledCircuit,
       chainId: CHAIN_ID,
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
+      provider: process.env.PROVIDER_URI_84532 as string,
+      privateKey: process.env.PRIVATE_KEY_ANVIL as string,
       callback: {
-        target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
+        target: "0x81908149E769236F1c9e62b468d07899CB95890F",
       },
       options: {
         maxFeePerGas: "5000000000",

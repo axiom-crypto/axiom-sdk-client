@@ -4,6 +4,13 @@ export interface CircuitInputs {}
 
 export const defaultInputs = {};
 
+export const config = {
+  capacity: {
+    maxOutputs: 256,
+    maxSubqueries: 256,
+  },
+};
+
 export const circuit = async (inputs: CircuitInputs) => {
   const blockNumber = 5000000;
   for (let i = 0; i < 129; i++) {

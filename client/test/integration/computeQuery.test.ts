@@ -75,5 +75,5 @@ describe("Build ComputeQuery with DataQuery", () => {
     const receipt = await axiom.sendQuery();
     // Transaction will be sent successfully but fulfill tx may not succeed
     expect(receipt.status).toBe('success');
-  }, 90000);
+  }, 120000);
 });

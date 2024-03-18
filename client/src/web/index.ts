@@ -29,7 +29,7 @@ export class AxiomCircuit<T> extends AxiomBaseCircuit<T> {
       extraData: input.callbackExtraData,
     };
     return await buildSendQuery({
-      axiom: this.axiom,
+      queryBuilder: this.queryBuilder,
       dataQuery: this.dataQuery,
       computeQuery: this.computeQuery,
       callback: axiomCallback,

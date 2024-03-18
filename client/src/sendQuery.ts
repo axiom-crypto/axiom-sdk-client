@@ -1,12 +1,11 @@
 import {
-  AxiomSdkCore,
   AxiomV2Callback,
   AxiomV2ComputeQuery,
   AxiomV2QueryOptions,
   DataSubquery,
-  QueryBuilderV2,
-  QueryV2,
-} from "@axiom-crypto/core";
+  AxiomV2QueryBuilder,
+  AxiomV2QueryBuilderConfig,
+} from "@axiom-crypto/circuit";
 import { createPublicClient, encodeFunctionData, http } from "viem";
 import { getMaxFeePerGas } from "./axiom/utils";
 import { AbiType, AxiomV2ClientOptions, AxiomV2SendQueryArgs } from "./types";
@@ -16,7 +15,7 @@ import { viemChain } from "./lib/viem";
 import { getAxiomV2Abi, getAxiomV2QueryAddress } from "./lib";
 
 export const buildSendQuery = async (input: {
-  axiom: AxiomSdkCore;
+  queryBuilder: AxiomV2QueryBuilder;
   dataQuery: DataSubquery[];
   computeQuery: AxiomV2ComputeQuery;
   callback: AxiomV2Callback;
@@ -24,34 +23,41 @@ export const buildSendQuery = async (input: {
   options: AxiomV2ClientOptions;
 }): Promise<AxiomV2SendQueryArgs> => {
   const validate = input.options?.overrides?.validateBuild ?? true;
-  const query = input.axiom.query as QueryV2;
   if (input.options.refundee === undefined) {
     throw new Error("Refundee is required");
   }
   if (input.options.maxFeePerGas == undefined) {
-    input.options.maxFeePerGas = await getMaxFeePerGas(input.axiom, input.options?.overrides);
+    input.options.maxFeePerGas = await getMaxFeePerGas(input.queryBuilder, input.options?.overrides);
   }
-  const chainId = input.axiom.config.chainId.toString();
+  const sourceChainId = input.queryBuilder.config.sourceChainId.toString();
 
+  const config: AxiomV2QueryBuilderConfig = {
+    provider: input.queryBuilder.config.providerUri,
+    sourceChainId: input.queryBuilder.config.sourceChainId.toString(),
+    targetChainId: input.queryBuilder.config.targetChainId.toString(),
+    version: input.queryBuilder.config.version,
+    mock: input.queryBuilder.config.mock,
+    refundee: input.options.refundee ?? input.caller,
+  };
   const queryOptions: AxiomV2QueryOptions = {
     maxFeePerGas: input.options.maxFeePerGas,
     callbackGasLimit: input.options.callbackGasLimit,
     overrideAxiomQueryFee: input.options.overrideAxiomQueryFee,
-    refundee: input.options.refundee,
   };
-  const qb: QueryBuilderV2 = query.new(
-    undefined,
+  input.queryBuilder = new AxiomV2QueryBuilder(
+    config,
+    undefined,  // we set this as a setBuiltDataQuery below
     input.computeQuery,
     input.callback,
-    queryOptions
+    queryOptions,
   );
-
   if (input.dataQuery.length > 0) {
-    qb.setBuiltDataQuery({
+    input.queryBuilder.setBuiltDataQuery({
+      sourceChainId,
       subqueries: input.dataQuery,
-      sourceChainId: chainId,
     }, true);
   }
+  
   const {
     queryHash,
     dataQueryHash,
@@ -61,14 +67,14 @@ export const buildSendQuery = async (input: {
     userSalt,
     refundee,
     dataQuery,
-  } = await qb.build(validate);
-  const id = await qb.getQueryId(input.caller);
+  } = await input.queryBuilder.build(validate);
+  const id = await input.queryBuilder.getQueryId(input.caller);
   const abi = getAxiomV2Abi(AbiType.Query);
-  const axiomQueryAddress = input.options?.overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
+  const axiomQueryAddress = input.options?.overrides?.queryAddress ?? getAxiomV2QueryAddress(sourceChainId);
 
   const publicClient = createPublicClient({
-    chain: viemChain(chainId, input.axiom.config.providerUri),
-    transport: http(input.axiom.config.providerUri),
+    chain: viemChain(sourceChainId, input.queryBuilder.config.providerUri),
+    transport: http(input.queryBuilder.config.providerUri),
   });
   const payment = await calculatePayment(axiomQueryAddress, publicClient, input.options);
 
@@ -80,7 +86,7 @@ export const buildSendQuery = async (input: {
       functionName: "sendQuery",
       value: payment,
       args: [
-        chainId,
+        sourceChainId,
         dataQueryHash,
         computeQuery,
         callback,
@@ -90,14 +96,14 @@ export const buildSendQuery = async (input: {
         dataQuery,
       ],
       queryId: id,
-      mock: input.axiom.config.mock,
+      mock: input.queryBuilder.config.mock,
     };
   } else {
     const encodedQuery = encodeFullQueryV2(
-      chainId,
+      sourceChainId,
       refundee,
       {
-        sourceChainId: chainId,
+        sourceChainId,
         subqueries: input.dataQuery,
       },
       computeQuery,
@@ -125,7 +131,7 @@ export const buildSendQuery = async (input: {
         refundee,
       ],
       queryId: id,
-      mock: input.axiom.config.mock,
+      mock: input.queryBuilder.config.mock,
     };
   }
 

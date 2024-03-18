@@ -59,5 +59,5 @@ describe("Send Query using Axiom client", () => {
     }
 
     expect(queryHash).toEqual(sendQueryArgs.args[0]);
-  }, 90000);
+  }, 120000);
 });

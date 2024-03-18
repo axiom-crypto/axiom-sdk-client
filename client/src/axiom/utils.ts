@@ -1,8 +1,10 @@
 import {
-  AxiomSdkCore,
+  AxiomV2QueryBuilder,
   AxiomV2Callback,
   AxiomV2ComputeQuery,
   AxiomV2FeeData,
+} from "@axiom-crypto/circuit";
+import {
   getByteLength,
 } from "@axiom-crypto/core";
 import { AbiType, AxiomV2ClientOverrides, AxiomV2SendQueryArgsParams, CircuitInputType } from "../types";
@@ -78,12 +80,12 @@ export function argsObjToArr(
   ]
 }
 
-export async function getMaxFeePerGas(axiom: AxiomSdkCore, overrides?: AxiomV2ClientOverrides): Promise<string> {
-  const axiomQueryAddress = overrides?.queryAddress ?? getAxiomV2QueryAddress(axiom.config.chainId.toString());
+export async function getMaxFeePerGas(axiom: AxiomV2QueryBuilder, overrides?: AxiomV2ClientOverrides): Promise<string> {
+  const axiomQueryAddress = overrides?.queryAddress ?? getAxiomV2QueryAddress(axiom.config.sourceChainId.toString());
 
   const providerFeeData = (await axiom.config.provider.getFeeData()).maxFeePerGas as bigint;
   const publicClient = createPublicClient({
-    chain: viemChain(axiom.config.chainId.toString(), axiom.config.providerUri),
+    chain: viemChain(axiom.config.sourceChainId.toString(), axiom.config.providerUri),
     transport: http(axiom.config.providerUri),
   });
 

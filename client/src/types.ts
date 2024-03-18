@@ -1,12 +1,15 @@
-import { AxiomV2CircuitCapacity, CircuitConfig } from "@axiom-crypto/circuit/types";
 import {
   AxiomV2Callback,
+  AxiomV2CircuitCapacity,
   AxiomV2ComputeQuery,
   AxiomV2FeeData,
   AxiomV2QueryOptions,
+  CircuitConfig,
+} from "@axiom-crypto/circuit";
+import {
   ByteLengths,
   IpfsClient,
-} from "@axiom-crypto/core";
+} from "@axiom-crypto/circuit/pkg/tools";
 
 const solidityTypes = Object.keys(ByteLengths);
 const solidityInputTypes = [...solidityTypes, ...solidityTypes.map((type: string) => `${type}[]`)] as const;
@@ -39,8 +42,7 @@ export interface AxiomV2CompiledCircuit {
 }
 
 export interface AxiomV2ClientOptions extends AxiomV2QueryOptions {
-  caller?: string;
-  privateKey?: string;
+  refundee?: string;
   ipfsClient?: IpfsClient;
   overrides?: AxiomV2ClientOverrides;
 }
@@ -78,7 +80,7 @@ export {
   AxiomV2DataQuery,
   AxiomV2QueryOptions,
   AxiomV2FeeData,
-} from "@axiom-crypto/core";
+} from "@axiom-crypto/circuit";
 
 export enum AbiType {
   Query,

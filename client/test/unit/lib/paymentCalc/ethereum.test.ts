@@ -53,7 +53,7 @@ describe("PaymentCalc: Ethereum", () => {
     expect(args?.value).toEqual(500213000000000000000n);
   }, 20000);
 
-  test("Payment calculation high based on options", async () => {
+  test("Payment calculation low based on options", async () => {
     const axiom = new Axiom({
       circuit,
       compiledCircuit,

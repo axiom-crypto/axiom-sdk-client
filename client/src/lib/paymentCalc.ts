@@ -27,8 +27,8 @@ export async function calculatePayment(
     ClientConstants.FALLBACK_PROOF_VERIFICATION_GAS
   );
 
+  // Get the projected callback cost; mainnet will return 0
   const projectedCallbackCost = await getProjectedCallbackCost(chainId, publicClient, maxFeePerGas, callbackGasLimit, proofVerificationGas);
-  console.log("projectedCallbackCost", projectedCallbackCost);
 
   // Get overrideAxiomQueryFee from either equation or options
   let overrideAxiomQueryFee: bigint;
@@ -38,9 +38,7 @@ export async function calculatePayment(
     // overrideAxiomQueryFee = AXIOM_QUERY_FEE + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas)
     overrideAxiomQueryFee = ClientConstants.FALLBACK_AXIOM_QUERY_FEE_WEI + 
       projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas);
-    console.log("overrideAxiomQueryFee", overrideAxiomQueryFee);
   }
-  console.log("mfpg * (cgl + pvg)", maxFeePerGas * (callbackGasLimit + proofVerificationGas));
 
   // Get axiomQueryFee from contract if on ethereum, otherwise use L2 equation
   let axiomQueryFee = await getAxiomV2QueryValue(
@@ -50,9 +48,8 @@ export async function calculatePayment(
     [],
     ClientConstants.FALLBACK_AXIOM_QUERY_FEE_WEI
   );
-  console.log("axiomQueryFee", axiomQueryFee);
   
-  // Check if the override value, if set, is greater than the contract/default value and write it if so
+  // max(overrideAxiomQueryFee, axiomQueryFee)
   if (overrideAxiomQueryFee > axiomQueryFee) {
     axiomQueryFee = overrideAxiomQueryFee;
   }
@@ -81,15 +78,14 @@ export async function getProjectedCallbackCost(
     // projectedCallbackCost = 
     //   maxFeePerGas * (callbackGasLimit + proofVerificationGas) +    
     //   AXIOM_PROOF_CALLDATA_BYTES * 16 * (L1BlockAttributes.baseFeeScalar * L1BlockAttributes.basefee + 
-    //   L1BlockAttributes.blobBaseFeeScalar / 16 * L1BlockAttributes.blobBaseFee) 
+    //   L1BlockAttributes.blobBaseFeeScalar / 16 * L1BlockAttributes.blobBaseFee) / 1e6
     const baseFeeScalar = await getOpStackL1AttributesValue(publicClient, "baseFeeScalar", []);
-    const baseFee = await getOpStackL1AttributesValue(publicClient, "baseFee", []);
+    const baseFee = await getOpStackL1AttributesValue(publicClient, "basefee", []);
     const blobBaseFeeScalar = await getOpStackL1AttributesValue(publicClient, "blobBaseFeeScalar", []);
     const blobBaseFee = await getOpStackL1AttributesValue(publicClient, "blobBaseFee", []);
-    console.log(baseFeeScalar, baseFee, blobBaseFeeScalar, blobBaseFee);
     return maxFeePerGas * (callbackGasLimit + proofVerificationGas) + 
-      BigInt(ClientConstants.AXIOM_PROOF_CALLDATA_BYTES) * 16n * 
-      (baseFeeScalar * baseFee + blobBaseFeeScalar / 16n * blobBaseFee);
+      BigInt(ClientConstants.AXIOM_PROOF_CALLDATA_BYTES) * 
+      (16n * baseFeeScalar * baseFee + blobBaseFeeScalar * blobBaseFee) / BigInt(1e6);
   } else if (isArbitrumChain(chainId)) {
     // on Arbitrum
     // projectedCallbackCost = 

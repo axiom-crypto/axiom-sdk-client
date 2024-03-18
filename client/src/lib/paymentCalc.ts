@@ -1,8 +1,8 @@
 import { ClientConstants } from "../constants";
 import { AbiType, AxiomV2ClientOverrides, AxiomV2ClientOptions } from "../types";
 import { PublicClient } from "viem";
-import { getAxiomV2QueryAddress, getOptimismL1BlockAttributesAddress } from "./address";
-import { getAxiomV2Abi, getOptimismL1BlockAttributesAbi } from "./abi";
+import { getAxiomV2QueryAddress, getOpStackL1BlockAttributesAddress } from "./address";
+import { getAxiomV2Abi, getOpStackL1BlockAttributesAbi } from "./abi";
 import { isArbitrumChain, isMainnetChain, isOpStackChain, isScrollChain } from "./chain";
 
 export async function calculatePayment(
@@ -27,34 +27,39 @@ export async function calculatePayment(
     ClientConstants.FALLBACK_PROOF_VERIFICATION_GAS
   );
 
-  // Get axiomQueryFee from contract if on ethereum, otherwise use L2 equation
-  let axiomQueryFee;
-  if (isMainnetChain(chainId)) {
-    axiomQueryFee = await getAxiomV2QueryValue(
-      publicClient,
-      axiomV2QueryAddr,
-      "axiomQueryFee",
-      [],
-      ClientConstants.FALLBACK_AXIOM_QUERY_FEE_WEI
-    );
+  const projectedCallbackCost = await getProjectedCallbackCost(chainId, publicClient, maxFeePerGas, callbackGasLimit, proofVerificationGas);
+  console.log("projectedCallbackCost", projectedCallbackCost);
+
+  // Get overrideAxiomQueryFee from either equation or options
+  let overrideAxiomQueryFee: bigint;
+  if (options?.overrideAxiomQueryFee !== undefined) {
+    overrideAxiomQueryFee = BigInt(options.overrideAxiomQueryFee);
   } else {
     // overrideAxiomQueryFee = AXIOM_QUERY_FEE + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas)
-    axiomQueryFee = ClientConstants.FALLBACK_AXIOM_QUERY_FEE_WEI + 
-      await getProjectedCallbackCost(chainId, publicClient, maxFeePerGas, callbackGasLimit, proofVerificationGas) - 
-      maxFeePerGas * (callbackGasLimit + proofVerificationGas);
+    overrideAxiomQueryFee = ClientConstants.FALLBACK_AXIOM_QUERY_FEE_WEI + 
+      projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas);
+    console.log("overrideAxiomQueryFee", overrideAxiomQueryFee);
   }
+  console.log("mfpg * (cgl + pvg)", maxFeePerGas * (callbackGasLimit + proofVerificationGas));
+
+  // Get axiomQueryFee from contract if on ethereum, otherwise use L2 equation
+  let axiomQueryFee = await getAxiomV2QueryValue(
+    publicClient,
+    axiomV2QueryAddr,
+    "axiomQueryFee",
+    [],
+    ClientConstants.FALLBACK_AXIOM_QUERY_FEE_WEI
+  );
+  console.log("axiomQueryFee", axiomQueryFee);
   
   // Check if the override value, if set, is greater than the contract/default value and write it if so
-  if (options?.overrideAxiomQueryFee !== undefined && BigInt(options.overrideAxiomQueryFee) > axiomQueryFee) {
-    axiomQueryFee = BigInt(options.overrideAxiomQueryFee);
+  if (overrideAxiomQueryFee > axiomQueryFee) {
+    axiomQueryFee = overrideAxiomQueryFee;
   }
 
   // Calculate payment
   let payment = axiomQueryFee + maxFeePerGas * (proofVerificationGas + callbackGasLimit);
-
-  const minimumPayment = await getProjectedCallbackCost(chainId, publicClient, maxFeePerGas, callbackGasLimit, proofVerificationGas) + 
-    ClientConstants.FALLBACK_AXIOM_QUERY_FEE_WEI;
-
+  const minimumPayment = projectedCallbackCost + ClientConstants.FALLBACK_AXIOM_QUERY_FEE_WEI;
   if (payment < minimumPayment) {
     payment = minimumPayment;
   }
@@ -76,11 +81,11 @@ export async function getProjectedCallbackCost(
     // projectedCallbackCost = 
     //   maxFeePerGas * (callbackGasLimit + proofVerificationGas) +    
     //   AXIOM_PROOF_CALLDATA_BYTES * 16 * (L1BlockAttributes.baseFeeScalar * L1BlockAttributes.basefee + 
-    //   L1BlockAttributes.blogBaseFeeScalar / 16 * L1BlockAttributes.blobBaseFee) 
-    const baseFeeScalar = await getOptimismL1Value(publicClient, "baseFeeScalar", []);
-    const baseFee = await getOptimismL1Value(publicClient, "basefee", []);
-    const blobBaseFeeScalar = await getOptimismL1Value(publicClient, "blobBaseFeeScalar", []);
-    const blobBaseFee = await getOptimismL1Value(publicClient, "blobBaseFee", []);
+    //   L1BlockAttributes.blobBaseFeeScalar / 16 * L1BlockAttributes.blobBaseFee) 
+    const baseFeeScalar = await getOpStackL1AttributesValue(publicClient, "baseFeeScalar", []);
+    const baseFee = await getOpStackL1AttributesValue(publicClient, "baseFee", []);
+    const blobBaseFeeScalar = await getOpStackL1AttributesValue(publicClient, "blobBaseFeeScalar", []);
+    const blobBaseFee = await getOpStackL1AttributesValue(publicClient, "blobBaseFee", []);
     console.log(baseFeeScalar, baseFee, blobBaseFeeScalar, blobBaseFee);
     return maxFeePerGas * (callbackGasLimit + proofVerificationGas) + 
       BigInt(ClientConstants.AXIOM_PROOF_CALLDATA_BYTES) * 16n * 
@@ -118,6 +123,32 @@ export async function getAxiomBalance(
   return balance.toString();
 }
 
+async function readContractValue(
+  publicClient: PublicClient,
+  address: string,
+  abi: any[],
+  functionName: string,
+  args: any[],
+  fallback?: bigint,
+): Promise<bigint> {
+  let value;
+  try {
+    value = BigInt(await publicClient.readContract({
+      address: address as `0x${string}`,
+      abi,
+      functionName,
+      args,
+    }));
+  } catch (e: any) {
+    console.log(`Unable to read ${functionName} from contract ${address}`);
+  }
+  value = BigInt(value ?? 0);
+  if (fallback !== undefined && value === 0n) {
+    value = fallback;
+  }
+  return value;
+}
+
 async function getAxiomV2QueryValue(
   publicClient: PublicClient,
   axiomV2QueryAddr: string,
@@ -143,15 +174,16 @@ async function getAxiomV2QueryValue(
   return value;
 }
 
-async function getOptimismL1Value(
+async function getOpStackL1AttributesValue(
   publicClient: PublicClient,
   functionName: string,
   args: any[],
 ): Promise<bigint> {
-  return BigInt(await publicClient.readContract({
-    address: getOptimismL1BlockAttributesAddress() as `0x${string}`,
-    abi: getOptimismL1BlockAttributesAbi(),
+  const value = await publicClient.readContract({
+    address: getOpStackL1BlockAttributesAddress() as `0x${string}`,
+    abi: getOpStackL1BlockAttributesAbi(),
     functionName,
     args,
-  })); // in wei
+  }); // in wei
+  return BigInt(value);
 }

@@ -1,6 +1,7 @@
 import { AbiType } from "../types";
 import AxiomV2QueryAbi from "./abi/AxiomV2Query.json";
-import OptimismL1BlockAttributesAbi from "./abi/L1BlockAttributes.json";
+import OpStackL1BlockAttributesAbi from "./abi/OpStackL1BlockAttributes.json";
+import OpStackGasPriceOracleAbi from "./abi/OpStackGasPriceOracle.json";
 
 export function getAxiomV2Abi(
   type: AbiType,
@@ -13,6 +14,6 @@ export function getAxiomV2Abi(
   }
 }
 
-export function getOptimismL1BlockAttributesAbi() {
-  return OptimismL1BlockAttributesAbi;
+export function getOpStackL1BlockAttributesAbi() {
+  return OpStackL1BlockAttributesAbi;
 }

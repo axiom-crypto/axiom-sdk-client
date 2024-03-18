@@ -53,6 +53,7 @@ export function getAxiomV2QueryAddress(
   return axiomV2QueryAddresses?.[chainId]?.[targetChainId] ?? "";
 }
 
-export function getOptimismL1BlockAttributesAddress() {
+export function getOpStackL1BlockAttributesAddress() {
+  // return "0x420000000000000000000000000000000000000F";
   return "0x4200000000000000000000000000000000000015";
 }

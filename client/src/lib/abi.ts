@@ -17,3 +17,7 @@ export function getAxiomV2Abi(
 export function getOpStackL1BlockAttributesAbi() {
   return OpStackL1BlockAttributesAbi;
 }
+
+export function getOpStackGasPriceOracleAbi() {
+  return OpStackGasPriceOracleAbi;
+}

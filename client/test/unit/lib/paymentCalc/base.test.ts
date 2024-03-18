@@ -28,7 +28,7 @@ describe("PaymentCalc: Base", () => {
     proofVerificationGas: bigint
   ) => {
     return maxFeePerGas * (callbackGasLimit + proofVerificationGas) + 
-      BigInt(ClientConstants.AXIOM_PROOF_CALLDATA_BYTES) * 
+      BigInt(ClientConstants.AXIOM_PROOF_CALLDATA_LEN) * 
       (16n * baseFeeScalar * basefee + blobBaseFeeScalar * blobBaseFee) / BigInt(1e6);
   }
 

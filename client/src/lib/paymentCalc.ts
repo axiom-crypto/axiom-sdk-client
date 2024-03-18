@@ -1,9 +1,10 @@
 import { ClientConstants } from "../constants";
 import { AbiType, AxiomV2ClientOverrides, AxiomV2ClientOptions } from "../types";
 import { PublicClient } from "viem";
-import { getAxiomV2QueryAddress, getOpStackL1BlockAttributesAddress } from "./address";
-import { getAxiomV2Abi, getOpStackL1BlockAttributesAbi } from "./abi";
+import { getAxiomV2QueryAddress, getOpStackGasPriceOracleAddress, getOpStackL1BlockAttributesAddress } from "./address";
+import { getAxiomV2Abi, getOpStackGasPriceOracleAbi, getOpStackL1BlockAttributesAbi } from "./abi";
 import { isArbitrumChain, isMainnetChain, isOpStackChain, isScrollChain } from "./chain";
+import { publicActionsL2 } from 'viem/op-stack';
 
 export async function calculatePayment(
   chainId: string,
@@ -77,26 +78,21 @@ export async function getProjectedCallbackCost(
     // on OP Stack
     // projectedCallbackCost = 
     //   maxFeePerGas * (callbackGasLimit + proofVerificationGas) +    
-    //   AXIOM_PROOF_CALLDATA_BYTES * 16 * (L1BlockAttributes.baseFeeScalar * L1BlockAttributes.basefee + 
+    //   AXIOM_PROOF_CALLDATA_LEN * 16 * (L1BlockAttributes.baseFeeScalar * L1BlockAttributes.basefee + 
     //   L1BlockAttributes.blobBaseFeeScalar / 16 * L1BlockAttributes.blobBaseFee) / 1e6
-    const baseFeeScalar = await getOpStackL1AttributesValue(publicClient, "baseFeeScalar", []);
-    const baseFee = await getOpStackL1AttributesValue(publicClient, "basefee", []);
-    const blobBaseFeeScalar = await getOpStackL1AttributesValue(publicClient, "blobBaseFeeScalar", []);
-    const blobBaseFee = await getOpStackL1AttributesValue(publicClient, "blobBaseFee", []);
-    return maxFeePerGas * (callbackGasLimit + proofVerificationGas) + 
-      BigInt(ClientConstants.AXIOM_PROOF_CALLDATA_BYTES) * 
-      (16n * baseFeeScalar * baseFee + blobBaseFeeScalar * blobBaseFee) / BigInt(1e6);
+    const l1Fee = await getOpStackL1GasPriceOracleValue(publicClient, "getL1Fee", [ClientConstants.AXIOM_PROOF_CALLDATA_BYTES]);
+    return maxFeePerGas * (callbackGasLimit + proofVerificationGas) + l1Fee;
   } else if (isArbitrumChain(chainId)) {
     // on Arbitrum
     // projectedCallbackCost = 
     //   maxFeePerGas * (callbackGasLimit + proofVerificationGas) +
-    //   AXIOM_PROOF_CALLDATA_BYTES * 16 * ArbGasInfo.getL1BaseFeeEstimate()
+    //   AXIOM_PROOF_CALLDATA_LEN * 16 * ArbGasInfo.getL1BaseFeeEstimate()
     return 0n; // WIP
   } else if (isScrollChain(chainId)) {
     // on Scroll
     // projectedCallbackCost = 
     //   maxFeePerGas * (callbackGasLimit + proofVerificationGas) +   
-    //   AXIOM_PROOF_CALLDATA_BYTES * 16 * L1GasPriceOracle.l1BaseFee()
+    //   AXIOM_PROOF_CALLDATA_LEN * 16 * L1GasPriceOracle.l1BaseFee()
     return 0n; // WIP
   } else {    
     return 0n;
@@ -170,14 +166,15 @@ async function getAxiomV2QueryValue(
   return value;
 }
 
-async function getOpStackL1AttributesValue(
+async function getOpStackL1GasPriceOracleValue(
   publicClient: PublicClient,
   functionName: string,
   args: any[],
 ): Promise<bigint> {
+  publicClient = publicClient.extend(publicActionsL2());
   const value = await publicClient.readContract({
-    address: getOpStackL1BlockAttributesAddress() as `0x${string}`,
-    abi: getOpStackL1BlockAttributesAbi(),
+    address: getOpStackGasPriceOracleAddress() as `0x${string}`,
+    abi: getOpStackGasPriceOracleAbi(),
     functionName,
     args,
   }); // in wei

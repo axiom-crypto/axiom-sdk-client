@@ -1,6 +1,6 @@
-import { encodeAxiomV2CircuitMetadata } from "../../src/encoder";
+import { encodeAxiomV2CircuitMetadata } from "../../../src/encoder";
 import { AxiomV2CircuitConstant } from "@axiom-crypto/tools";
-import { AxiomV2CircuitMetadataParams } from "../../src/types";
+import { AxiomV2CircuitMetadataParams } from "../../../src/types";
 
 describe("Encoder", () => {
   test("Encode AxiomV2CircuitMetadata", () => {

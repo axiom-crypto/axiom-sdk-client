@@ -67,7 +67,7 @@ export async function calculatePayment(
     }
     return payment;
   } else {
-    if (options?.overrideAxiomQueryFee !== undefined) {
+    if (options?.overrideAxiomQueryFee !== undefined && BigInt(options.overrideAxiomQueryFee) > axiomQueryFee) {
       axiomQueryFee = BigInt(options.overrideAxiomQueryFee);
     }
     return axiomQueryFee + maxFeePerGas * (proofVerificationGas + callbackGasLimit);

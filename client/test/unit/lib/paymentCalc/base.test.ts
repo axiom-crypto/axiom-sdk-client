@@ -1,4 +1,4 @@
-import { Axiom, getOpStackL1BlockAttributesAbi, getOpStackL1BlockAttributesAddress, getProjectedCallbackCost } from "../../../../src";
+import { Axiom, getOpStackL1BlockAttributesAbi, getOpStackL1BlockAttributesAddress } from "../../../../src";
 import { createPublicClient, http } from "viem";
 import { viemChain } from "../../../../src/lib/viem";
 import { circuit } from "../../../integration/circuits/quickstart/average.circuit";

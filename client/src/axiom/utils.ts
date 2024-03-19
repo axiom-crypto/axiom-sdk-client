@@ -7,7 +7,6 @@ import {
 } from "@axiom-crypto/core";
 import { AbiType, AxiomV2ClientOverrides, AxiomV2SendQueryArgsParams, CircuitInputType } from "../types";
 import { createPublicClient, http } from 'viem';
-import { ClientConstants } from "../constants";
 import { getAxiomV2Abi, getAxiomV2QueryAddress, viemChain } from "../lib";
 import { getChainDefaults } from "../lib/chain";
 
@@ -70,7 +69,8 @@ export function argsObjToArr(
 }
 
 export async function getMaxFeePerGas(axiom: AxiomSdkCore, overrides?: AxiomV2ClientOverrides): Promise<string> {
-  const axiomQueryAddress = overrides?.queryAddress ?? getAxiomV2QueryAddress(axiom.config.chainId.toString());
+  const chainId = axiom.config.chainId.toString();
+  const axiomQueryAddress = overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
 
   const providerFeeData = (await axiom.config.provider.getFeeData()).maxFeePerGas as bigint;
   const publicClient = createPublicClient({
@@ -86,7 +86,7 @@ export async function getMaxFeePerGas(axiom: AxiomSdkCore, overrides?: AxiomV2Cl
       args: [],
     }) as bigint;
     if (contractMinMaxFeePerGas === 0n) {
-      contractMinMaxFeePerGas = ClientConstants.MIN_MAX_FEE_PER_GAS;
+      contractMinMaxFeePerGas = getChainDefaults(chainId).maxFeePerGasWei;
     }
     if (providerFeeData > contractMinMaxFeePerGas) {
       return providerFeeData.toString();
@@ -94,7 +94,7 @@ export async function getMaxFeePerGas(axiom: AxiomSdkCore, overrides?: AxiomV2Cl
     console.log(`Network gas price below threshold. Using contract-defined minimum maxFeePerGas of ${contractMinMaxFeePerGas.toString()}`);
     return contractMinMaxFeePerGas.toString();
   } catch (e) {
-    const defaultMaxFeePerGas = getChainDefaults(axiom.config.chainId.toString()).maxFeePerGasWei.toString();
+    const defaultMaxFeePerGas = getChainDefaults(chainId).maxFeePerGasWei.toString();
     console.log(`Unable to read minMaxFeePerGas from contract, returning default value of ${defaultMaxFeePerGas}`);
     return defaultMaxFeePerGas;
   }

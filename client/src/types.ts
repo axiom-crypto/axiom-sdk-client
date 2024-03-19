@@ -72,6 +72,7 @@ export interface AxiomV2ClientOverrides {
 
 export interface ChainDefaults {
   maxFeePerGasWei: bigint;
+  minMaxFeePerGasWei: bigint;
   callbackGasLimit: bigint;
   proofVerificationGas: bigint;
   axiomQueryFeeWei: bigint;

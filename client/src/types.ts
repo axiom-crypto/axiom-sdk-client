@@ -19,9 +19,8 @@ export interface AxiomV2ClientConfig<T> {
   provider: string;
   callback: AxiomV2CallbackInput;
   privateKey?: string;
-  version?: string;
   capacity?: AxiomV2CircuitCapacity;
-  ipfsClient?: IpfsClient;
+  options?: AxiomV2ClientOptions;
 }
 
 export interface AxiomV2CallbackInput {
@@ -40,10 +39,8 @@ export interface AxiomV2CompiledCircuit {
 
 export interface AxiomV2ClientOptions extends AxiomV2QueryOptions {
   caller?: string;
-  privateKey?: string;
-  validate?: boolean;
   ipfsClient?: IpfsClient;
-  queryAddress?: string;
+  overrides?: AxiomV2ClientOverrides;
 }
 
 export interface AxiomV2SendQueryArgs {
@@ -66,6 +63,19 @@ export interface AxiomV2SendQueryArgsParams {
   userSalt: string,
   refundee: string,
   dataQuery: string,
+}
+
+export interface AxiomV2ClientOverrides {
+  queryAddress?: string;
+  validateBuild?: boolean;
+}
+
+export interface ChainDefaults {
+  maxFeePerGasWei: bigint;
+  minMaxFeePerGasWei: bigint;
+  callbackGasLimit: bigint;
+  proofVerificationGas: bigint;
+  axiomQueryFeeWei: bigint;
 }
 
 export {

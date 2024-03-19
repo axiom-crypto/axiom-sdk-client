@@ -3,7 +3,7 @@ import { AbiType, AxiomV2ClientOverrides, AxiomV2ClientOptions } from "../types"
 import { PublicClient } from "viem";
 import { getAxiomV2QueryAddress, getOpStackGasPriceOracleAddress } from "./address";
 import { getAxiomV2Abi, getOpStackGasPriceOracleAbi } from "./abi";
-import { isArbitrumChain, isOpStackChain, isScrollChain } from "./chain";
+import { isArbitrumChain, isMainnetChain, isOpStackChain, isScrollChain } from "./chain";
 import { publicActionsL2 } from 'viem/op-stack';
 import { readContractValue } from "./viem";
 
@@ -40,7 +40,12 @@ export async function calculatePayment(
     ClientConstants.FALLBACK_AXIOM_QUERY_FEE_WEI
   );
 
-  if (isOpStackChain(chainId) || isArbitrumChain(chainId) || isScrollChain(chainId)) {
+  if (isMainnetChain(chainId)) {
+    if (options.overrideAxiomQueryFee !== undefined && BigInt(options.overrideAxiomQueryFee) > axiomQueryFee) {
+      axiomQueryFee = BigInt(options.overrideAxiomQueryFee);
+    }
+    return axiomQueryFee + maxFeePerGas * (proofVerificationGas + callbackGasLimit);)
+  } else if (isOpStackChain(chainId) || isArbitrumChain(chainId) || isScrollChain(chainId)) {
     // Get the projected callback cost
     const projectedCallbackCost = await getProjectedL2CallbackCost(chainId, publicClient, maxFeePerGas, callbackGasLimit, proofVerificationGas);
 
@@ -67,10 +72,7 @@ export async function calculatePayment(
     }
     return payment;
   } else {
-    if (options.overrideAxiomQueryFee !== undefined && BigInt(options.overrideAxiomQueryFee) > axiomQueryFee) {
-      axiomQueryFee = BigInt(options.overrideAxiomQueryFee);
-    }
-    return axiomQueryFee + maxFeePerGas * (proofVerificationGas + callbackGasLimit);
+    throw new Error(`Unsupported chain ${chainId}`);
   }
 }
 

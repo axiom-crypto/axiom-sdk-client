@@ -5,7 +5,7 @@ import { getAxiomV2QueryAddress, getOpStackGasPriceOracleAddress } from "./addre
 import { getAxiomV2Abi, getOpStackGasPriceOracleAbi } from "./abi";
 import { getChainDefaults, isArbitrumChain, isMainnetChain, isOpStackChain, isScrollChain } from "./chain";
 import { publicActionsL2 } from 'viem/op-stack';
-import { readContractValue } from "./viem";
+import { readContractValueBigInt } from "./viem";
 
 export async function calculatePayment(
   chainId: string,
@@ -23,7 +23,7 @@ export async function calculatePayment(
   const maxFeePerGas = BigInt(options.maxFeePerGas ?? defaults.maxFeePerGasWei);
 
   // Get proofVerificationGas from contract
-  const proofVerificationGas = await readContractValue(
+  const proofVerificationGas = await readContractValueBigInt(
     publicClient,
     axiomV2QueryAddr,
     getAxiomV2Abi(AbiType.Query),
@@ -33,7 +33,7 @@ export async function calculatePayment(
   );
 
   // Get axiomQueryFee from contract
-  let axiomQueryFee = await readContractValue(
+  let axiomQueryFee = await readContractValueBigInt(
     publicClient,
     axiomV2QueryAddr,
     getAxiomV2Abi(AbiType.Query),
@@ -90,7 +90,7 @@ export async function getProjectedL2CallbackCost(
     //   maxFeePerGas * (callbackGasLimit + proofVerificationGas) +    
     //   AXIOM_PROOF_CALLDATA_LEN * 16 * (L1BlockAttributes.baseFeeScalar * L1BlockAttributes.basefee + 
     //   L1BlockAttributes.blobBaseFeeScalar / 16 * L1BlockAttributes.blobBaseFee) / 1e6
-    const l1Fee = await readContractValue(
+    const l1Fee = await readContractValueBigInt(
       publicClient.extend(publicActionsL2()),
       getOpStackGasPriceOracleAddress() as `0x${string}`,
       getOpStackGasPriceOracleAbi(),

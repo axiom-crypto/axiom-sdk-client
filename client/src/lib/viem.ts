@@ -28,7 +28,7 @@ export const viemChain = (
   return chain;
 }
 
-export const readContractValue = async (
+export const readContractValueBigInt = async (
   publicClient: PublicClient,
   address: string,
   abi: any[],

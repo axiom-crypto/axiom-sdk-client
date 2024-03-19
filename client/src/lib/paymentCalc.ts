@@ -44,7 +44,7 @@ export async function calculatePayment(
     if (options.overrideAxiomQueryFee !== undefined && BigInt(options.overrideAxiomQueryFee) > axiomQueryFee) {
       axiomQueryFee = BigInt(options.overrideAxiomQueryFee);
     }
-    return axiomQueryFee + maxFeePerGas * (proofVerificationGas + callbackGasLimit);)
+    return axiomQueryFee + maxFeePerGas * (proofVerificationGas + callbackGasLimit);
   } else if (isOpStackChain(chainId) || isArbitrumChain(chainId) || isScrollChain(chainId)) {
     // Get the projected callback cost
     const projectedCallbackCost = await getProjectedL2CallbackCost(chainId, publicClient, maxFeePerGas, callbackGasLimit, proofVerificationGas);

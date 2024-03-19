@@ -10,15 +10,15 @@ import { readContractValue } from "./viem";
 export async function calculatePayment(
   chainId: string,
   publicClient: PublicClient,
-  options?: AxiomV2ClientOptions,
+  options: AxiomV2ClientOptions,
 ): Promise<bigint> {
-  const axiomV2QueryAddr = options?.overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
+  const axiomV2QueryAddr = options.overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
 
-  // Convert callback gas limit to wei
-  const callbackGasLimit = BigInt(options?.callbackGasLimit ?? ClientConstants.DEFAULT_CALLBACK_GAS_LIMIT);
+  // Get callback gas limit
+  const callbackGasLimit = BigInt(options.callbackGasLimit ?? ClientConstants.DEFAULT_CALLBACK_GAS_LIMIT);
 
   // Get maxFeePerGas
-  const maxFeePerGas = BigInt(options?.maxFeePerGas ?? ClientConstants.DEFAULT_MAX_FEE_PER_GAS_WEI);
+  const maxFeePerGas = BigInt(options.maxFeePerGas ?? ClientConstants.DEFAULT_MAX_FEE_PER_GAS_WEI);
 
   // Get proofVerificationGas from contract
   const proofVerificationGas = await readContractValue(
@@ -46,7 +46,7 @@ export async function calculatePayment(
 
     // Get overrideAxiomQueryFee from either equation or options
     let overrideAxiomQueryFee: bigint;
-    if (options?.overrideAxiomQueryFee !== undefined) {
+    if (options.overrideAxiomQueryFee !== undefined) {
       overrideAxiomQueryFee = BigInt(options.overrideAxiomQueryFee);
     } else {
       // overrideAxiomQueryFee = AXIOM_QUERY_FEE + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas)
@@ -63,11 +63,11 @@ export async function calculatePayment(
     let payment = axiomQueryFee + maxFeePerGas * (proofVerificationGas + callbackGasLimit);
     const minimumPayment = projectedCallbackCost + ClientConstants.FALLBACK_AXIOM_QUERY_FEE_WEI;
     if (payment < minimumPayment) {
-      payment = minimumPayment;
+      throw new Error(`Payment ${payment} is less than minimum payment ${minimumPayment}`);
     }
     return payment;
   } else {
-    if (options?.overrideAxiomQueryFee !== undefined && BigInt(options.overrideAxiomQueryFee) > axiomQueryFee) {
+    if (options.overrideAxiomQueryFee !== undefined && BigInt(options.overrideAxiomQueryFee) > axiomQueryFee) {
       axiomQueryFee = BigInt(options.overrideAxiomQueryFee);
     }
     return axiomQueryFee + maxFeePerGas * (proofVerificationGas + callbackGasLimit);

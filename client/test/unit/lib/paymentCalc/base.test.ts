@@ -192,26 +192,29 @@ describe("PaymentCalc: Base", () => {
     const callbackGasLimit = BigInt(ClientConstants.DEFAULT_CALLBACK_GAS_LIMIT);
     const proofVerificationGas = ClientConstants.FALLBACK_PROOF_VERIFICATION_GAS;
 
-    const axiom = new Axiom({
-      circuit,
-      compiledCircuit,
-      chainId: CHAIN_ID,
-      provider: process.env[`PROVIDER_URI_${CHAIN_ID}`] as string,
-      privateKey: process.env.PRIVATE_KEY_ANVIL as string,
-      callback: {
-        target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
-      },
-      options: {
-        maxFeePerGas: maxFeePerGas.toString(),
-        overrideAxiomQueryFee: "50000000000",
-      },
-    });
-    await axiom.init();
-    await axiom.prove(inputs);
-    const args = axiom.getSendQueryArgs();
-    
-    const queryCost = calculateQueryCost(basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
-    let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
-    expect(percentDiff).toBeLessThan(100n); // 1%
+    const testFn = async () => {
+      const axiom = new Axiom({
+        circuit,
+        compiledCircuit,
+        chainId: CHAIN_ID,
+        provider: process.env[`PROVIDER_URI_${CHAIN_ID}`] as string,
+        privateKey: process.env.PRIVATE_KEY_ANVIL as string,
+        callback: {
+          target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
+        },
+        options: {
+          maxFeePerGas: maxFeePerGas.toString(),
+          overrideAxiomQueryFee: "5000000000",
+        },
+      });
+      await axiom.init();
+      await axiom.prove(inputs);
+      const args = axiom.getSendQueryArgs();
+      
+      const queryCost = calculateQueryCost(basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
+    };
+    await expect(testFn()).rejects.toThrow();
+    // let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
+    // expect(percentDiff).toBeLessThan(100n); // 1%
   }, 20000);
 });

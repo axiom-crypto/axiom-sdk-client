@@ -3,7 +3,7 @@ import { AbiType, AxiomV2ClientOverrides, AxiomV2ClientOptions } from "../types"
 import { PublicClient } from "viem";
 import { getAxiomV2QueryAddress, getOpStackGasPriceOracleAddress } from "./address";
 import { getAxiomV2Abi, getOpStackGasPriceOracleAbi } from "./abi";
-import { isArbitrumChain, isMainnetChain, isOpStackChain, isScrollChain } from "./chain";
+import { getChainDefaults, isArbitrumChain, isMainnetChain, isOpStackChain, isScrollChain } from "./chain";
 import { publicActionsL2 } from 'viem/op-stack';
 import { readContractValue } from "./viem";
 
@@ -14,11 +14,13 @@ export async function calculatePayment(
 ): Promise<bigint> {
   const axiomV2QueryAddr = options.overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
 
+  const defaults = getChainDefaults(chainId);
+
   // Get callback gas limit
-  const callbackGasLimit = BigInt(options.callbackGasLimit ?? ClientConstants.DEFAULT_CALLBACK_GAS_LIMIT);
+  const callbackGasLimit = BigInt(options.callbackGasLimit ?? defaults.callbackGasLimit);
 
   // Get maxFeePerGas
-  const maxFeePerGas = BigInt(options.maxFeePerGas ?? ClientConstants.DEFAULT_MAX_FEE_PER_GAS_WEI);
+  const maxFeePerGas = BigInt(options.maxFeePerGas ?? defaults.maxFeePerGasWei);
 
   // Get proofVerificationGas from contract
   const proofVerificationGas = await readContractValue(
@@ -27,7 +29,7 @@ export async function calculatePayment(
     getAxiomV2Abi(AbiType.Query),
     "proofVerificationGas",
     [],
-    ClientConstants.FALLBACK_PROOF_VERIFICATION_GAS
+    defaults.proofVerificationGas
   );
 
   // Get axiomQueryFee from contract
@@ -37,7 +39,7 @@ export async function calculatePayment(
     getAxiomV2Abi(AbiType.Query),
     "axiomQueryFee",
     [],
-    ClientConstants.FALLBACK_AXIOM_QUERY_FEE_WEI
+    defaults.axiomQueryFeeWei
   );
 
   if (isMainnetChain(chainId)) {
@@ -55,8 +57,7 @@ export async function calculatePayment(
       overrideAxiomQueryFee = BigInt(options.overrideAxiomQueryFee);
     } else {
       // overrideAxiomQueryFee = AXIOM_QUERY_FEE + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas)
-      overrideAxiomQueryFee = ClientConstants.FALLBACK_AXIOM_QUERY_FEE_WEI + 
-        projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas);
+      overrideAxiomQueryFee = defaults.axiomQueryFeeWei + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas);
     }
 
     // max(overrideAxiomQueryFee, axiomQueryFee)
@@ -66,7 +67,7 @@ export async function calculatePayment(
 
     // Calculate payment
     let payment = axiomQueryFee + maxFeePerGas * (proofVerificationGas + callbackGasLimit);
-    const minimumPayment = projectedCallbackCost + ClientConstants.FALLBACK_AXIOM_QUERY_FEE_WEI;
+    const minimumPayment = projectedCallbackCost + defaults.axiomQueryFeeWei;
     if (payment < minimumPayment) {
       throw new Error(`Payment ${payment} is less than minimum payment ${minimumPayment}`);
     }

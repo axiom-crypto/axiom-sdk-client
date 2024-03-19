@@ -1,3 +1,6 @@
+import { BaseDefaults, MainnetDefaults } from "../constants";
+import { ChainDefaults } from "../types";
+
 export function isMainnetChain(chainId: string) {
   switch (chainId) {
     case "1":  // Mainnet
@@ -8,16 +11,31 @@ export function isMainnetChain(chainId: string) {
   }
 }
 
-export function isOpStackChain(chainId: string) {
+export function isOptimismChain(chainId: string) {
   switch (chainId) {
     case "10":  // Optimism
     case "11155420":  // Optimism Sepolia
+      return true;
+    default:
+      return false;
+  }
+}
+
+export function isBaseChain(chainId: string) {
+  switch (chainId) {
     case "8453":  // Base
     case "84532":  // Base Sepolia
       return true;
     default:
       return false;
   }
+}
+
+export function isOpStackChain(chainId: string) {
+  if (isOptimismChain(chainId) || isBaseChain(chainId)) {
+    return true;
+  }
+  return false;
 }
 
 export function isArbitrumChain(chainId: string) {
@@ -37,5 +55,15 @@ export function isScrollChain(chainId: string) {
       return true;
     default:
       return false;
+  }
+}
+
+export function getChainDefaults(chainId: string): Readonly<ChainDefaults> {
+  if (isMainnetChain(chainId)) {
+    return MainnetDefaults;
+  } else if (isBaseChain(chainId)) {
+    return BaseDefaults;
+  } else {
+    throw new Error(`Unsupported chain ${chainId}`);
   }
 }

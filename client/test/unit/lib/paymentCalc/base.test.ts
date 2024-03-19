@@ -5,6 +5,7 @@ import { circuit } from "../../../integration/circuits/quickstart/average.circui
 import compiledCircuit from "../../circuits/average.compiled.json";
 import inputs from "../../../integration/circuits/quickstart/average.inputs.json";
 import { ClientConstants } from "../../../../src/constants";
+import { getChainDefaults } from "../../../../src/lib/chain";
 
 describe("PaymentCalc: Base", () => {
   const CHAIN_ID = "84532"; // Base Sepolia
@@ -42,7 +43,7 @@ describe("PaymentCalc: Base", () => {
     proofVerificationGas: bigint
   ): bigint => {
     const projectedCallbackCost = calculateOpStackCallbackCost(basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
-    const overrideAxiomQueryFee = ClientConstants.FALLBACK_AXIOM_QUERY_FEE_WEI + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas);
+    const overrideAxiomQueryFee = getChainDefaults(CHAIN_ID).axiomQueryFeeWei + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas);
     const queryCost = overrideAxiomQueryFee + maxFeePerGas * (callbackGasLimit + proofVerificationGas);
     return queryCost;
   }
@@ -80,9 +81,9 @@ describe("PaymentCalc: Base", () => {
   });
 
   test("Payment calculation default based on options", async () => {
-    const maxFeePerGas = 5000000000n
-    const callbackGasLimit = BigInt(ClientConstants.DEFAULT_CALLBACK_GAS_LIMIT);
-    const proofVerificationGas = ClientConstants.FALLBACK_PROOF_VERIFICATION_GAS;
+    const maxFeePerGas = 5000000000n;
+    const callbackGasLimit = getChainDefaults(CHAIN_ID).callbackGasLimit;
+    const proofVerificationGas = getChainDefaults(CHAIN_ID).proofVerificationGas;
 
     const axiom = new Axiom({
       circuit,
@@ -109,7 +110,7 @@ describe("PaymentCalc: Base", () => {
   test("Payment calculation high based on options", async () => {
     const maxFeePerGas = 500000000000n;
     const callbackGasLimit = 1000000000n;
-    const proofVerificationGas = ClientConstants.FALLBACK_PROOF_VERIFICATION_GAS;
+    const proofVerificationGas = getChainDefaults(CHAIN_ID).proofVerificationGas;
 
     const axiom = new Axiom({
       circuit,
@@ -137,7 +138,7 @@ describe("PaymentCalc: Base", () => {
   test("Payment calculation low based on options", async () => {
     const maxFeePerGas = 5000000000n;
     const callbackGasLimit = 1000n;
-    const proofVerificationGas = ClientConstants.FALLBACK_PROOF_VERIFICATION_GAS;
+    const proofVerificationGas = getChainDefaults(CHAIN_ID).proofVerificationGas;
 
     const axiom = new Axiom({
       circuit,
@@ -164,8 +165,8 @@ describe("PaymentCalc: Base", () => {
 
   test("Set overrideAxiomQueryFee greater than standard payment", async () => {
     const maxFeePerGas = 5000000000n
-    const callbackGasLimit = BigInt(ClientConstants.DEFAULT_CALLBACK_GAS_LIMIT);
-    const proofVerificationGas = ClientConstants.FALLBACK_PROOF_VERIFICATION_GAS;
+    const callbackGasLimit = getChainDefaults(CHAIN_ID).callbackGasLimit;
+    const proofVerificationGas = getChainDefaults(CHAIN_ID).proofVerificationGas;
 
     const axiom = new Axiom({
       circuit,
@@ -189,8 +190,8 @@ describe("PaymentCalc: Base", () => {
 
   test("Set overrideAxiomQueryFee less than standard payment", async () => {
     const maxFeePerGas = 5000000000n;
-    const callbackGasLimit = BigInt(ClientConstants.DEFAULT_CALLBACK_GAS_LIMIT);
-    const proofVerificationGas = ClientConstants.FALLBACK_PROOF_VERIFICATION_GAS;
+    const callbackGasLimit = getChainDefaults(CHAIN_ID).callbackGasLimit;
+    const proofVerificationGas = getChainDefaults(CHAIN_ID).proofVerificationGas;
 
     const testFn = async () => {
       const axiom = new Axiom({

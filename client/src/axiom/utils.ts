@@ -9,6 +9,7 @@ import { AbiType, AxiomV2ClientOverrides, AxiomV2SendQueryArgsParams, CircuitInp
 import { createPublicClient, http } from 'viem';
 import { ClientConstants } from "../constants";
 import { getAxiomV2Abi, getAxiomV2QueryAddress, viemChain } from "../lib";
+import { getChainDefaults } from "../lib/chain";
 
 export function validateChainId(chainId: string) {
   switch (chainId) {
@@ -93,7 +94,8 @@ export async function getMaxFeePerGas(axiom: AxiomSdkCore, overrides?: AxiomV2Cl
     console.log(`Network gas price below threshold. Using contract-defined minimum maxFeePerGas of ${contractMinMaxFeePerGas.toString()}`);
     return contractMinMaxFeePerGas.toString();
   } catch (e) {
-    console.log(`Unable to read minMaxFeePerGas from contract, returning default value of ${ClientConstants.DEFAULT_MAX_FEE_PER_GAS_WEI}`);
-    return ClientConstants.DEFAULT_MAX_FEE_PER_GAS_WEI.toString();
+    const defaultMaxFeePerGas = getChainDefaults(axiom.config.chainId.toString()).maxFeePerGasWei.toString();
+    console.log(`Unable to read minMaxFeePerGas from contract, returning default value of ${defaultMaxFeePerGas}`);
+    return defaultMaxFeePerGas;
   }
 }

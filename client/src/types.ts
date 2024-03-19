@@ -70,6 +70,13 @@ export interface AxiomV2ClientOverrides {
   validateBuild?: boolean;
 }
 
+export interface ChainDefaults {
+  maxFeePerGasWei: bigint;
+  callbackGasLimit: bigint;
+  proofVerificationGas: bigint;
+  axiomQueryFeeWei: bigint;
+}
+
 export {
   AxiomV2Callback,
   AxiomV2ComputeQuery,

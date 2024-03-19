@@ -70,7 +70,7 @@ export const buildSendQuery = async (input: {
     chain: viemChain(chainId, input.axiom.config.providerUri),
     transport: http(input.axiom.config.providerUri),
   });
-  const payment = await calculatePayment(axiomQueryAddress, publicClient, input.options);
+  const payment = await calculatePayment(chainId, publicClient, input.options);
 
   let sendQueryArgs: any;
   if (!input.options.ipfsClient) {

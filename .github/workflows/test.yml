@@ -9,9 +9,11 @@ on:
   pull_request:
 
 env:
+  PRIVATE_KEY_ANVIL: ${{ secrets.PRIVATE_KEY_ANVIL }}
   PRIVATE_KEY_SEPOLIA: ${{ secrets.PRIVATE_KEY_SEPOLIA }}
   PROVIDER_URI_SEPOLIA: ${{ secrets.PROVIDER_URI_SEPOLIA }}
   PROVIDER_URI_GOERLI: ${{ secrets.PROVIDER_URI_GOERLI }}
+  PROVIDER_URI_84532: ${{ secrets.PROVIDER_URI_84532 }}
   PINATA_JWT: ${{ secrets.PINATA_JWT }}
 
 jobs:

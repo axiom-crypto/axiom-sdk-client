@@ -7,14 +7,15 @@ import {
 } from "@axiom-crypto/core";
 import { AbiType, AxiomV2ClientOverrides, AxiomV2SendQueryArgsParams, CircuitInputType } from "../types";
 import { createPublicClient, http } from 'viem';
-import { mainnet, sepolia } from 'viem/chains';
-import { ClientConstants } from "../constants";
 import { getAxiomV2Abi, getAxiomV2QueryAddress, viemChain } from "../lib";
+import { getChainDefaults } from "../lib/chain";
 
 export function validateChainId(chainId: string) {
   switch (chainId) {
     case "1": // Mainnet
     case "11155111":  // Sepolia
+    case "8453":  // Base
+    case "84532":  // Base Sepolia
       return;
     default:
       throw new Error(`Unsupported chainId ${chainId}`);
@@ -35,17 +36,6 @@ export function convertInputSchemaToJsonString(args: {[arg: string]: CircuitInpu
     return `"${key}": "CircuitValue256${postfix}"`;
   });
   return `{${inputs.map((inputLine: string) => `\n  ${inputLine}`)}\n}`;
-}
-
-export function convertChainIdToViemChain(chainId: string) {
-  switch(chainId) {
-    case "1":
-      return mainnet;
-    case "11155111":
-      return sepolia;
-    default:
-      throw new Error(`Unsupported chainId ${chainId}`);
-  }
 }
 
 export function argsArrToObj(
@@ -79,7 +69,8 @@ export function argsObjToArr(
 }
 
 export async function getMaxFeePerGas(axiom: AxiomSdkCore, overrides?: AxiomV2ClientOverrides): Promise<string> {
-  const axiomQueryAddress = overrides?.queryAddress ?? getAxiomV2QueryAddress(axiom.config.chainId.toString());
+  const chainId = axiom.config.chainId.toString();
+  const axiomQueryAddress = overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
 
   const providerFeeData = (await axiom.config.provider.getFeeData()).maxFeePerGas as bigint;
   const publicClient = createPublicClient({
@@ -95,15 +86,16 @@ export async function getMaxFeePerGas(axiom: AxiomSdkCore, overrides?: AxiomV2Cl
       args: [],
     }) as bigint;
     if (contractMinMaxFeePerGas === 0n) {
-      contractMinMaxFeePerGas = ClientConstants.MIN_MAX_FEE_PER_GAS;
+      contractMinMaxFeePerGas = getChainDefaults(chainId).minMaxFeePerGasWei;
     }
     if (providerFeeData > contractMinMaxFeePerGas) {
       return providerFeeData.toString();
     }
-    console.log(`Network gas price below threshold. Using contract-defined minimum maxFeePerGas of ${contractMinMaxFeePerGas.toString()}`);
+    console.log(`Network gas price below threshold. Using contract-defined minimum minMaxFeePerGas of ${contractMinMaxFeePerGas.toString()}`);
     return contractMinMaxFeePerGas.toString();
   } catch (e) {
-    console.log(`Unable to read minMaxFeePerGas from contract, returning default value of ${ClientConstants.DEFAULT_MAX_FEE_PER_GAS_WEI}`);
-    return ClientConstants.DEFAULT_MAX_FEE_PER_GAS_WEI.toString();
+    const defaultMinMaxFeePerGas = getChainDefaults(chainId).minMaxFeePerGasWei.toString();
+    console.log(`Unable to read minMaxFeePerGas from contract, returning default value of ${defaultMinMaxFeePerGas}`);
+    return defaultMinMaxFeePerGas;
   }
 }

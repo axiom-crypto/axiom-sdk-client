@@ -1,1 +1,45 @@
-{"version": "2.0.8"}
+{
+  "name": "axiom-sdk-client",
+  "version": "2.0.8",
+  "description": "Axiom client SDK for interacting with Axiom blockchain services",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "lint": "eslint . --ext .ts",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run lint",
+    "setLocal": "node scripts/setLocal.js",
+    "setRemote": "node scripts/setRemote.js",
+    "setVersions": "node scripts/setVersions.js",
+    "buildAll": "node scripts/buildAll.js",
+    "publishAll": "node scripts/publishAll.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/axiom-crypto/axiom-sdk-client.git"
+  },
+  "keywords": [
+    "axiom",
+    "sdk",
+    "client",
+    "blockchain",
+    "crypto"
+  ],
+  "author": "Axiom Crypto",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/axiom-crypto/axiom-sdk-client/issues"
+  },
+  "homepage": "https://github.com/axiom-crypto/axiom-sdk-client#readme",
+  "devDependencies": {
+    "@types/node": "^12.0.0",
+    "typescript": "^3.8.3",
+    "eslint": "^6.8.0",
+    "prettier": "^2.0.5"
+  },
+  "dependencies": {
+    "@axiom-crypto/base": "^1.0.0",
+    "axios": "^0.19.2",
+    "ethers": "^5.0.0"
+  }
+}

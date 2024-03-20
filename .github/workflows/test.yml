@@ -49,7 +49,7 @@ jobs:
           export PRIVATE_KEY=$ANVIL_PRIVATE_KEY # just needs to be in the correct format, no tx is sent in unit tests
           export PRIVATE_KEY_GOERLI=$ANVIL_PRIVATE_KEY
           pnpm test
-    
+
   client-tests:
     name: Client Tests
     runs-on: ubuntu-latest
@@ -73,7 +73,7 @@ jobs:
 
       - name: Set all packages to local and build
         working-directory: ./
-        run: pnpm local
+        run: node scripts/setLocal.js
 
       - name: Run Unit Tests (Client)
         working-directory: ./client
@@ -82,7 +82,7 @@ jobs:
       - name: Run Integration Tests (Client)
         working-directory: ./client
         run: pnpm test test/integration
-  
+
   harness:
     name: Harness Tests
     runs-on: ubuntu-latest
@@ -106,7 +106,7 @@ jobs:
 
       - name: Set all packages to local and build
         working-directory: ./
-        run: pnpm local
+        run: node scripts/setLocal.js
 
       - name: Run Integration Tests (Sepolia)
         working-directory: ./harness

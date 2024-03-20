@@ -1,0 +1,98 @@
+name: Update Dependent Repositories
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'package.json'
+
+jobs:
+  update-dependents:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Extract version from package.json
+        id: package_version
+        run: echo "::set-output name=VERSION::$(cat package.json | jq -r .version)"
+
+      - name: Check if version has changed
+        id: check_version
+        run: |
+          VERSION=$(cat package.json | jq -r .version)
+          LAST_VERSION=$(git tag --sort=-v:refname | head -n 1)
+          if [ "$VERSION" != "$LAST_VERSION" ]; then
+            echo "Version has changed from $LAST_VERSION to $VERSION"
+            echo "::set-output name=VERSION_CHANGED::true"
+          else
+            echo "Version has not changed"
+            echo "::set-output name=VERSION_CHANGED::false"
+            exit 78 # Neutral exit to stop the workflow
+          fi
+
+      - name: Check out axiom-quickstart repository
+        if: steps.check_version.outputs.VERSION_CHANGED == 'true'
+        uses: actions/checkout@v2
+        with:
+          repository: 'axiom-crypto/axiom-quickstart'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: 'axiom-quickstart'
+
+      - name: Update @axiom-crypto/client in axiom-quickstart
+        if: steps.check_version.outputs.VERSION_CHANGED == 'true'
+        run: |
+          cd axiom-quickstart
+          jq '.dependencies["@axiom-crypto/client"] = "${{ steps.package_version.outputs.VERSION }}"' package.json > temp.json
+          mv temp.json package.json
+          git config user.name 'github-actions'
+          git config user.email 'github-actions@github.com'
+          git add package.json
+          git commit -m 'Update @axiom-crypto/client to ${{ steps.package_version.outputs.VERSION }}'
+          git push
+
+      - name: Check out axiom-scaffold-nextjs repository
+        if: steps.check_version.outputs.VERSION_CHANGED == 'true'
+        uses: actions/checkout@v2
+        with:
+          repository: 'axiom-crypto/axiom-scaffold-nextjs'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: 'axiom-scaffold-nextjs'
+
+      - name: Update @axiom-crypto/react in axiom-scaffold-nextjs
+        if: steps.check_version.outputs.VERSION_CHANGED == 'true'
+        run: |
+          cd axiom-scaffold-nextjs
+          jq '.dependencies["@axiom-crypto/react"] = "${{ steps.package_version.outputs.VERSION }}"' package.json > temp.json
+          mv temp.json package.json
+          git config user.name 'github-actions'
+          git config user.email 'github-actions@github.com'
+          git add package.json
+          git commit -m 'Update @axiom-crypto/react to ${{ steps.package_version.outputs.VERSION }}'
+          git push
+
+      - name: Create Pull Request for axiom-quickstart
+        if: steps.check_version.outputs.VERSION_CHANGED == 'true'
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: "main"
+          destination_branch: "update-dependency-${{ steps.package_version.outputs.VERSION }}"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_title: "Update @axiom-crypto/client to ${{ steps.package_version.outputs.VERSION }}"
+          pr_body: "This PR updates the @axiom-crypto/client package to version ${{ steps.package_version.outputs.VERSION }}."
+
+      - name: Create Pull Request for axiom-scaffold-nextjs
+        if: steps.check_version.outputs.VERSION_CHANGED == 'true'
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: "main"
+          destination_branch: "update-dependency-${{ steps.package_version.outputs.VERSION }}"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_title: "Update @axiom-crypto/react to ${{ steps.package_version.outputs.VERSION }}"
+          pr_body: "This PR updates the @axiom-crypto/react package to version ${{ steps.package_version.outputs.VERSION }}."

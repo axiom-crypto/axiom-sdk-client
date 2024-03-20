@@ -12,12 +12,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: '20'
 
       - name: Extract version from package.json
         id: package_version
@@ -39,7 +39,7 @@ jobs:
 
       - name: Check out axiom-quickstart repository
         if: steps.check_version.outputs.VERSION_CHANGED == 'true'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: 'axiom-crypto/axiom-quickstart'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -59,7 +59,7 @@ jobs:
 
       - name: Check out axiom-scaffold-nextjs repository
         if: steps.check_version.outputs.VERSION_CHANGED == 'true'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: 'axiom-crypto/axiom-scaffold-nextjs'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -79,7 +79,7 @@ jobs:
 
       - name: Create Pull Request for axiom-quickstart
         if: steps.check_version.outputs.VERSION_CHANGED == 'true'
-        uses: repo-sync/pull-request@v2
+        uses: repo-sync/pull-request@v3
         with:
           source_branch: "main"
           destination_branch: "update-dependency-${{ steps.package_version.outputs.VERSION }}"
@@ -89,7 +89,7 @@ jobs:
 
       - name: Create Pull Request for axiom-scaffold-nextjs
         if: steps.check_version.outputs.VERSION_CHANGED == 'true'
-        uses: repo-sync/pull-request@v2
+        uses: repo-sync/pull-request@v3
         with:
           source_branch: "main"
           destination_branch: "update-dependency-${{ steps.package_version.outputs.VERSION }}"

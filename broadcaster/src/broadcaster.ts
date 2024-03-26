@@ -1,8 +1,8 @@
 import { PublicClient } from "viem";
 import { AxiomV2BroadcastClientConfig, AxiomV2BroadcastClientParams, BroadcastParams, Channel } from "./types";
 import { broadcasterWrite, viemPublicClient, viemWalletClient } from "./utils";
-import { getAxiomV2CoreAddress, getAxiomV2Abi, AbiType } from "@axiom-crypto/client";
 import { getAxiomV2BroadcasterAddress } from "./lib/address";
+import { getAxiomV2BroadcasterAbi } from "./lib";
 
 export class Broadcaster {
   protected source: AxiomV2BroadcastClientParams;
@@ -31,7 +31,7 @@ export class Broadcaster {
 
   public async getChannel(channel: Channel): Promise<string> {
     const broadcasterAddress = getAxiomV2BroadcasterAddress(this.source.chainId);
-    const broadcasterAbi = getAxiomV2Abi(AbiType.Broadcaster);
+    const broadcasterAbi = getAxiomV2BroadcasterAbi();
     const broadcastModuleAddr = await this.source.publicClient.readContract({
       address: broadcasterAddress,
       abi: broadcasterAbi,

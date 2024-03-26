@@ -6,9 +6,9 @@ import {
   TransactionReceipt,
 } from "viem"
 import { privateKeyToAccount } from 'viem/accounts';
-import { getAxiomV2Abi, AbiType } from "@axiom-crypto/client";
 import { AxiomV2BroadcastClientParams } from "./types";
 import { getAxiomV2BroadcasterAddress } from "./lib/address";
+import { getAxiomV2BroadcasterAbi } from "./lib";
 
 // Creates a generic viem Chain object that uses a specified chainId and provider
 // Can use `chainProperties` to override any field.
@@ -63,17 +63,18 @@ export const broadcasterWrite = async (
   if (!clientParams.walletClient) {
     throw new Error(`Wallet client for ${clientParams.chainId} is required for this operation`);
   }
-  const axiomV2Broadcaster = getAxiomV2BroadcasterAddress(clientParams.chainId);
+  const axiomV2BroadcasterAddress = getAxiomV2BroadcasterAddress(clientParams.chainId);
+  const axiomV2BroadcasterAbi = getAxiomV2BroadcasterAbi();
   const { request } = await clientParams.publicClient.simulateContract({
     account: clientParams.walletClient.account,
-    address: axiomV2Broadcaster,
-    abi: getAxiomV2Abi(AbiType.Broadcaster),
+    address: axiomV2BroadcasterAddress,
+    abi: axiomV2BroadcasterAbi,
     functionName: input.functionName,
     args: input.args,
   });
   const hash = await clientParams.walletClient.writeContract(request);
   if (!hash) {
-    throw new Error(`Contract call to ${axiomV2Broadcaster} failed: ${input.functionName}`);
+    throw new Error(`Contract call to ${axiomV2BroadcasterAddress} failed: ${input.functionName}`);
   }
   return await clientParams.publicClient.waitForTransactionReceipt({ hash });
 }

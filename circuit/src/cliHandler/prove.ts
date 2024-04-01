@@ -39,36 +39,31 @@ export const prove = async (
         results: cache,
     })
     const circuitInputs = readInputs(inputsFile, null);
-    try {
-        let computeQuery;
-        if (options.mock === true) {
-            circuit.loadSavedMock(compiled);
-            computeQuery = await circuit.mockProve(circuitInputs);
-        } else {
-            circuit.loadSaved(compiled);
-            computeQuery = await circuit.run(circuitInputs);
-        }
-        const computeResults = circuit.getComputeResults();
-        const dataQuery = circuit.getDataQuery();
-        const res = {
-            sourceChainId: circuit.getChainId(),
-            mock: options.mock ?? false,
-            computeQuery,
-            computeResults,
-            dataQuery,
-        }
-
-        let outfile = path.join(path.dirname(compiledPath), "proven.json");
-        if (options.outputs !== undefined) {
-            outfile = options.outputs;
-        }
-
-        saveJsonToFile(res, outfile);
-        if (options.cache) {
-            saveJsonToFile(circuit.getResults(), options.cache);
-        }
+    let computeQuery;
+    if (options.mock === true) {
+        circuit.loadSavedMock(compiled);
+        computeQuery = await circuit.mockProve(circuitInputs);
+    } else {
+        circuit.loadSaved(compiled);
+        computeQuery = await circuit.run(circuitInputs);
     }
-    catch (e) {
-        console.error(e);
+    const computeResults = circuit.getComputeResults();
+    const dataQuery = circuit.getDataQuery();
+    const res = {
+        sourceChainId: circuit.getChainId(),
+        mock: options.mock ?? false,
+        computeQuery,
+        computeResults,
+        dataQuery,
+    }
+
+    let outfile = path.join(path.dirname(compiledPath), "proven.json");
+    if (options.outputs !== undefined) {
+        outfile = options.outputs;
+    }
+
+    saveJsonToFile(res, outfile);
+    if (options.cache) {
+        saveJsonToFile(circuit.getResults(), options.cache);
     }
 }

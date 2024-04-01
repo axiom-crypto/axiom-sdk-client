@@ -38,38 +38,33 @@ export const compile = async (
         config: f.config?.config,
     })
     const circuitInputs = f.defaultInputs;
-    try {
-        const circuitFn = `const ${f.importName} = AXIOM_CLIENT_IMPORT\n${f.circuit.toString()}`;
-        const encoder = new TextEncoder();
-        const circuitBuild = encoder.encode(circuitFn);
-        const circuitString = Buffer.from(circuitBuild).toString('base64');
+    const circuitFn = `const ${f.importName} = AXIOM_CLIENT_IMPORT\n${f.circuit.toString()}`;
+    const encoder = new TextEncoder();
+    const circuitBuild = encoder.encode(circuitFn);
+    const circuitString = Buffer.from(circuitBuild).toString('base64');
 
-        let outfile = path.join(path.dirname(circuitPath), "data", "compiled.json");
-        if (options.outputs !== undefined) {
-            outfile = options.outputs;
-        }
+    let outfile = path.join(path.dirname(circuitPath), "data", "compiled.json");
+    if (options.outputs !== undefined) {
+        outfile = options.outputs;
+    }
 
-        if (existsSync(outfile)) {
-            const existingData = JSON.parse(readFileSync(outfile, 'utf8'));
-            if (existingData.circuit === circuitString) {
-                console.log(`Circuit ${circuitPath} already compiled to ${outfile}`);
-                return;
-            }
-        }
-
-        const res = options.mock ? await circuit.mockCompile(circuitInputs) : await circuit.compile(circuitInputs);
-
-        const build = {
-            ...res,
-            circuit: circuitString,
-        }
-
-        saveJsonToFile(build, outfile);
-        if (options.cache) {
-            saveJsonToFile(circuit.getResults(), options.cache);
+    if (existsSync(outfile)) {
+        const existingData = JSON.parse(readFileSync(outfile, 'utf8'));
+        if (existingData.circuit === circuitString) {
+            console.log(`Circuit ${circuitPath} already compiled to ${outfile}`);
+            return;
         }
     }
-    catch (e) {
-        console.error(e);
+
+    const res = options.mock ? await circuit.mockCompile(circuitInputs) : await circuit.compile(circuitInputs);
+
+    const build = {
+        ...res,
+        circuit: circuitString,
+    }
+
+    saveJsonToFile(build, outfile);
+    if (options.cache) {
+        saveJsonToFile(circuit.getResults(), options.cache);
     }
 }

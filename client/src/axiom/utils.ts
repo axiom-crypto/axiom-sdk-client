@@ -72,7 +72,8 @@ export async function getMaxFeePerGas(axiom: AxiomSdkCore, overrides?: AxiomV2Cl
   const chainId = axiom.config.chainId.toString();
   const axiomQueryAddress = overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
 
-  const providerFeeData = (await axiom.config.provider.getFeeData()).maxFeePerGas as bigint;
+  const providerFeeData = await axiom.config.provider.getFeeData();
+  const providerMaxFeePerGas = providerFeeData.maxFeePerGas ?? 0n;
   const publicClient = createPublicClient({
     chain: viemChain(axiom.config.chainId.toString(), axiom.config.providerUri),
     transport: http(axiom.config.providerUri),
@@ -88,8 +89,8 @@ export async function getMaxFeePerGas(axiom: AxiomSdkCore, overrides?: AxiomV2Cl
     if (contractMinMaxFeePerGas === 0n) {
       contractMinMaxFeePerGas = getChainDefaults(chainId).minMaxFeePerGasWei;
     }
-    if (providerFeeData > contractMinMaxFeePerGas) {
-      return providerFeeData.toString();
+    if (providerMaxFeePerGas > contractMinMaxFeePerGas) {
+      return providerMaxFeePerGas.toString();
     }
     console.log(`Network gas price below threshold. Using contract-defined minimum minMaxFeePerGas of ${contractMinMaxFeePerGas.toString()}`);
     return contractMinMaxFeePerGas.toString();

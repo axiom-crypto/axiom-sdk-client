@@ -14,8 +14,8 @@ export const MainnetDefaults: Readonly<ChainDefaults> = Object.freeze({
 });
 
 export const BaseDefaults: Readonly<ChainDefaults> = Object.freeze({
-  maxFeePerGasWei: 10000000n,
-  minMaxFeePerGasWei: 10000000n,
+  maxFeePerGasWei: 750000000n,
+  minMaxFeePerGasWei: 250000000n,
   callbackGasLimit: 100000n,
   proofVerificationGas: 420000n,
   axiomQueryFeeWei: 3000000000000000n,

@@ -25,14 +25,14 @@ describe("Build ComputeQuery with DataQuery", () => {
   test("simple computeQuery with dataQuery and address override", async () => {
     const { circuit, compiledCircuit, inputs } = await generateCircuit("computeQuery/simple");
     
-    const chainIdOverride = "8453";
+    const chainIdOverride = "84532";
     const addressOverride = "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef";
 
     const axiom = new Axiom({
       circuit: circuit,
       compiledCircuit: compiledCircuit,
       chainId: chainIdOverride,  // Base
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
+      provider: process.env.PROVIDER_URI_84532 as string,
       privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
       callback: {
         target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
@@ -49,7 +49,7 @@ describe("Build ComputeQuery with DataQuery", () => {
     if (!args) {
       throw new Error("Unable to get sendQuery args.");
     }
-    expect(args.args[0]).toBe(chainIdOverride)
+    expect(args.args[0]).toBe(chainIdOverride);
     expect(args.address).toBe(addressOverride);
   }, 90000);
 

@@ -10,8 +10,8 @@ import { validateChainId } from "./utils";
 import { PublicClient, TransactionReceipt, WalletClient, createPublicClient, createWalletClient, http } from "viem";
 import { privateKeyToAccount } from 'viem/accounts'
 import { AxiomV2Callback } from "@axiom-crypto/core";
-import { ClientConstants } from "../constants";
 import { viemChain } from "../lib";
+import { getChainDefaults } from "../lib/chain";
 
 export class Axiom<T> {
   protected config: AxiomV2ClientConfig<T>;
@@ -163,7 +163,7 @@ export class Axiom<T> {
     }
     const clientOptions: AxiomV2ClientOptions = {
       ...this.options,
-      callbackGasLimit: this.options?.callbackGasLimit ?? ClientConstants.CALLBACK_GAS_LIMIT,
+      callbackGasLimit: this.options?.callbackGasLimit ?? Number(getChainDefaults(this.config.chainId).callbackGasLimit),
       refundee: this.options?.refundee ?? this.walletClient?.account?.address,
       overrides: this.options?.overrides,
     };

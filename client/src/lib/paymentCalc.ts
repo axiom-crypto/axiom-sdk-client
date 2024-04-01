@@ -19,8 +19,11 @@ export async function calculatePayment(
   // Get callback gas limit
   const callbackGasLimit = BigInt(options.callbackGasLimit ?? defaults.callbackGasLimit);
 
-  // Get maxFeePerGas
-  const maxFeePerGas = BigInt(options.maxFeePerGas ?? defaults.maxFeePerGasWei);
+  // Get maxFeePerGas and set to SDK default's minMaxFeePerGasWei if less this value
+  let maxFeePerGas = BigInt(options.maxFeePerGas ?? defaults.maxFeePerGasWei);
+  if (maxFeePerGas < defaults.minMaxFeePerGasWei) {
+    maxFeePerGas = defaults.minMaxFeePerGasWei;
+  }
 
   // Get proofVerificationGas from contract
   const proofVerificationGas = await readContractValueBigInt(
@@ -87,9 +90,8 @@ export async function getProjectedL2CallbackCost(
   if (isOpStackChain(chainId)) {
     // on OP Stack
     // projectedCallbackCost = 
-    //   maxFeePerGas * (callbackGasLimit + proofVerificationGas) +    
-    //   AXIOM_PROOF_CALLDATA_LEN * 16 * (L1BlockAttributes.baseFeeScalar * L1BlockAttributes.basefee + 
-    //   L1BlockAttributes.blobBaseFeeScalar / 16 * L1BlockAttributes.blobBaseFee) / 1e6
+    //   maxFeePerGas * (callbackGasLimit + proofVerificationGas) +
+    //   opStackGasOracle.getL1Fee(AXIOM_PROOF_CALLDATA_BYTES)
     const l1Fee = await readContractValueBigInt(
       publicClient.extend(publicActionsL2()),
       getOpStackGasPriceOracleAddress() as `0x${string}`,

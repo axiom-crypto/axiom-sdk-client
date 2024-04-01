@@ -38,7 +38,7 @@ const axiomV2QueryAddresses = {
     [sepolia.id.toString()]: "",
     [arbitrumSepolia.id.toString()]: "",
     [optimismSepolia.id.toString()]: "",
-    [baseSepolia.id.toString()]: "0xd142AC39325Fc96F2252ee163c3087F7099a5B69",
+    [baseSepolia.id.toString()]: "0xfe059442B0379D5f22Bec384A588766f98A36812",
     [scrollSepolia.id.toString()]: "",
   },
 };

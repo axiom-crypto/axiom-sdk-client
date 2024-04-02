@@ -11,7 +11,7 @@ import { createPublicClient, encodeFunctionData, http } from "viem";
 import { getMaxFeePerGas } from "./axiom/utils";
 import { AbiType, AxiomV2ClientOptions, AxiomV2SendQueryArgs } from "./types";
 import { encodeFullQueryV2 } from "@axiom-crypto/core/packages/tools";
-import { calculatePayment } from "./lib/paymentCalc";
+import { calculateFeeDataExtended, calculatePayment } from "./lib/paymentCalc";
 import { viemChain } from "./lib/viem";
 import { getAxiomV2Abi, getAxiomV2QueryAddress } from "./lib";
 
@@ -31,14 +31,24 @@ export const buildSendQuery = async (input: {
   if (input.options.maxFeePerGas == undefined) {
     input.options.maxFeePerGas = await getMaxFeePerGas(input.axiom, input.options?.overrides);
   }
+
   const chainId = input.axiom.config.chainId.toString();
+  const axiomQueryAddress = input.options?.overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
+  const abi = getAxiomV2Abi(AbiType.Query);
+
+  const publicClient = createPublicClient({
+    chain: viemChain(chainId, input.axiom.config.providerUri),
+    transport: http(input.axiom.config.providerUri),
+  });
+
+  const feeDataExtended = await calculateFeeDataExtended(chainId, publicClient, input.options);
+  const payment = await calculatePayment(chainId, publicClient, feeDataExtended);
 
   const queryOptions: AxiomV2QueryOptions = {
-    maxFeePerGas: input.options.maxFeePerGas,
-    callbackGasLimit: input.options.callbackGasLimit,
-    overrideAxiomQueryFee: input.options.overrideAxiomQueryFee,
+    ...feeDataExtended,
     refundee: input.options.refundee,
   };
+
   const qb: QueryBuilderV2 = query.new(
     undefined,
     input.computeQuery,
@@ -63,14 +73,6 @@ export const buildSendQuery = async (input: {
     dataQuery,
   } = await qb.build(validate);
   const id = await qb.getQueryId(input.caller);
-  const abi = getAxiomV2Abi(AbiType.Query);
-  const axiomQueryAddress = input.options?.overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
-
-  const publicClient = createPublicClient({
-    chain: viemChain(chainId, input.axiom.config.providerUri),
-    transport: http(input.axiom.config.providerUri),
-  });
-  const payment = await calculatePayment(chainId, publicClient, input.options);
 
   let sendQueryArgs: any;
   if (!input.options.ipfsClient) {

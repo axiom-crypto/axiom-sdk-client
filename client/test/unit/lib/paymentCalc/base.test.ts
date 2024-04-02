@@ -30,7 +30,8 @@ describe("PaymentCalc: Base", () => {
   ) => {
     return maxFeePerGas * (callbackGasLimit + proofVerificationGas) + 
       BigInt(ClientConstants.AXIOM_PROOF_CALLDATA_LEN) * 
-      (16n * baseFeeScalar * basefee + blobBaseFeeScalar * blobBaseFee) / BigInt(1e6);
+      (16n * baseFeeScalar * basefee + blobBaseFeeScalar * blobBaseFee)  * 
+      BigInt(ClientConstants.L1_FEE_NUMERATOR) / BigInt(ClientConstants.L1_FEE_DENOMINATOR) / BigInt(1e6);
   }
 
   const calculateQueryCost = (

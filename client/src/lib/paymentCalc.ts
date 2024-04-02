@@ -90,14 +90,16 @@ export async function calculateFeeDataExtended(
       proofVerificationGas,
     };
   } else if (isOpStackChain(chainId) || isArbitrumChain(chainId) || isScrollChain(chainId)) {
+    const defaultAxiomQueryFee = getChainDefaults(chainId).axiomQueryFeeWei;
+
     // Get the projected callback cost
     const projectedCallbackCost = await getProjectedL2CallbackCost(chainId, publicClient, maxFeePerGas, callbackGasLimit, proofVerificationGas);
 
     // overrideAxiomQueryFeeL2 = AXIOM_QUERY_FEE + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas)
-    const overrideAxiomQueryFeeL2 = axiomQueryFee + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas);
+    const overrideAxiomQueryFeeL2 = defaultAxiomQueryFee + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas);
     
-    // overrideAxiomQueryFee = max(overrideAxiomQueryFeeL2, overrideAxiomQueryFee AXIOM_QUERY_FEE)
-    const largerAxiomQueryFee = overrideAxiomQueryFeeL2 > axiomQueryFee ? overrideAxiomQueryFeeL2 : axiomQueryFee;
+    // overrideAxiomQueryFee = max(overrideAxiomQueryFeeL2, overrideAxiomQueryFee, AXIOM_QUERY_FEE)
+    const largerAxiomQueryFee = overrideAxiomQueryFeeL2 > axiomQueryFee ? overrideAxiomQueryFeeL2 : defaultAxiomQueryFee;
     overrideAxiomQueryFee = overrideAxiomQueryFee > largerAxiomQueryFee ? overrideAxiomQueryFee : largerAxiomQueryFee;
     
     return {

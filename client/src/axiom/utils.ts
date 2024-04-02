@@ -89,9 +89,14 @@ export async function getMaxFeePerGas(axiom: AxiomSdkCore, overrides?: AxiomV2Cl
 
     const sdkMinMaxFeePerGas = getChainDefaults(chainId).minMaxFeePerGasWei;
     contractMinMaxFeePerGas = contractMinMaxFeePerGas === 0n ? sdkMinMaxFeePerGas : contractMinMaxFeePerGas;
-    const maxFeePerGas = BigInt(contractMinMaxFeePerGas) > providerMaxFeePerGas ? 
-                         (BigInt(contractMinMaxFeePerGas) > sdkMinMaxFeePerGas ? contractMinMaxFeePerGas : sdkMinMaxFeePerGas) : 
-                         (providerMaxFeePerGas > sdkMinMaxFeePerGas ? providerMaxFeePerGas : sdkMinMaxFeePerGas);
+    
+    let maxFeePerGas = contractMinMaxFeePerGas;
+    if (providerMaxFeePerGas > maxFeePerGas) {
+      maxFeePerGas = providerMaxFeePerGas;
+    }
+    if (sdkMinMaxFeePerGas > maxFeePerGas) {
+      maxFeePerGas = sdkMinMaxFeePerGas;
+    }
     
     if (maxFeePerGas === contractMinMaxFeePerGas) {
       console.log(`Network gas price below threshold. Using contract-defined minMaxFeePerGas: ${maxFeePerGas.toString()}`);

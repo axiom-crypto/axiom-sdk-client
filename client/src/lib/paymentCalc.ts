@@ -13,7 +13,10 @@ export async function calculatePayment(
   feeData: AxiomV2FeeDataExtended,
 ): Promise<bigint> {
   const defaults = getChainDefaults(chainId);
-  const payment = BigInt(feeData.overrideAxiomQueryFee) + BigInt(feeData.maxFeePerGas) * 
+
+  const queryFee = feeData.overrideAxiomQueryFee === "0" ? BigInt(feeData.axiomQueryFee) : BigInt(feeData.overrideAxiomQueryFee);
+
+  const payment = queryFee + BigInt(feeData.maxFeePerGas) * 
       (BigInt(feeData.callbackGasLimit) + feeData.proofVerificationGas);
 
   if (isMainnetChain(chainId)) {
@@ -83,6 +86,7 @@ export async function calculateFeeDataExtended(
       maxFeePerGas: maxFeePerGas.toString(),
       callbackGasLimit: Number(callbackGasLimit),
       overrideAxiomQueryFee: overrideAxiomQueryFee.toString(),
+      axiomQueryFee,
       proofVerificationGas,
     };
   } else if (isOpStackChain(chainId) || isArbitrumChain(chainId) || isScrollChain(chainId)) {
@@ -92,16 +96,15 @@ export async function calculateFeeDataExtended(
     // overrideAxiomQueryFeeL2 = AXIOM_QUERY_FEE + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas)
     const overrideAxiomQueryFeeL2 = axiomQueryFee + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas);
     
-    // overrideAxiomQueryFee = max(overrideAxiomQueryFeeL2, AXIOM_QUERY_FEE)
+    // overrideAxiomQueryFee = max(overrideAxiomQueryFeeL2, overrideAxiomQueryFee AXIOM_QUERY_FEE)
     const largerAxiomQueryFee = overrideAxiomQueryFeeL2 > axiomQueryFee ? overrideAxiomQueryFeeL2 : axiomQueryFee;
-
-    // overrideAxiomQueryFee = max(overrideAxiomQueryFee, larger)
     overrideAxiomQueryFee = overrideAxiomQueryFee > largerAxiomQueryFee ? overrideAxiomQueryFee : largerAxiomQueryFee;
     
     return {
       maxFeePerGas: maxFeePerGas.toString(),
       callbackGasLimit: Number(callbackGasLimit),
       overrideAxiomQueryFee: overrideAxiomQueryFee.toString(),
+      axiomQueryFee,
       proofVerificationGas,
     };
   } else {
@@ -128,7 +131,8 @@ export async function getProjectedL2CallbackCost(
       "getL1Fee",
       [ClientConstants.AXIOM_PROOF_CALLDATA_BYTES],
     );
-    return maxFeePerGas * (callbackGasLimit + proofVerificationGas) + l1Fee;
+    return maxFeePerGas * (callbackGasLimit + proofVerificationGas) + 
+      (l1Fee * ClientConstants.L1_FEE_NUMERATOR / ClientConstants.L1_FEE_DENOMINATOR);
   } else if (isArbitrumChain(chainId)) {
     // on Arbitrum
     // projectedCallbackCost = 

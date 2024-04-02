@@ -44,6 +44,7 @@ export interface AxiomV2ClientOptions extends AxiomV2QueryOptions {
 }
 
 export interface AxiomV2FeeDataExtended extends AxiomV2FeeData {
+  axiomQueryFee: bigint;
   proofVerificationGas: bigint;
 }
 

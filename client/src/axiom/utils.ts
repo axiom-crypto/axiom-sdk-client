@@ -86,14 +86,25 @@ export async function getMaxFeePerGas(axiom: AxiomSdkCore, overrides?: AxiomV2Cl
       functionName: "minMaxFeePerGas",
       args: [],
     }) as bigint;
-    if (contractMinMaxFeePerGas === 0n) {
-      contractMinMaxFeePerGas = getChainDefaults(chainId).minMaxFeePerGasWei;
+
+    const sdkMinMaxFeePerGas = getChainDefaults(chainId).minMaxFeePerGasWei;
+    contractMinMaxFeePerGas = contractMinMaxFeePerGas === 0n ? sdkMinMaxFeePerGas : contractMinMaxFeePerGas;
+    
+    let maxFeePerGas = contractMinMaxFeePerGas;
+    if (providerMaxFeePerGas > maxFeePerGas) {
+      maxFeePerGas = providerMaxFeePerGas;
     }
-    if (providerMaxFeePerGas > contractMinMaxFeePerGas) {
-      return providerMaxFeePerGas.toString();
+    if (sdkMinMaxFeePerGas > maxFeePerGas) {
+      maxFeePerGas = sdkMinMaxFeePerGas;
     }
-    console.log(`Network gas price below threshold. Using contract-defined minimum minMaxFeePerGas of ${contractMinMaxFeePerGas.toString()}`);
-    return contractMinMaxFeePerGas.toString();
+    
+    if (maxFeePerGas === contractMinMaxFeePerGas) {
+      console.log(`Network gas price below threshold. Using contract-defined minMaxFeePerGas: ${maxFeePerGas.toString()}`);
+    } else if (maxFeePerGas === sdkMinMaxFeePerGas) {
+      console.log(`Network gas price below threshold. Using SDK-defined minimum minMaxFeePerGas: ${maxFeePerGas.toString()}`);
+    }
+    
+    return maxFeePerGas.toString();
   } catch (e) {
     const defaultMinMaxFeePerGas = getChainDefaults(chainId).minMaxFeePerGasWei.toString();
     console.log(`Unable to read minMaxFeePerGas from contract, returning default value of ${defaultMinMaxFeePerGas}`);

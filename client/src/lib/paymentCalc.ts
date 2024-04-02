@@ -74,11 +74,11 @@ export async function calculateFeeDataExtended(
   );
 
   let overrideAxiomQueryFee = BigInt(options.overrideAxiomQueryFee ?? "0");
-  if (axiomQueryFee > overrideAxiomQueryFee) {
-    overrideAxiomQueryFee = axiomQueryFee;
-  }
 
   if (isMainnetChain(chainId)) { 
+    if (overrideAxiomQueryFee !== 0n && axiomQueryFee > overrideAxiomQueryFee) {
+      overrideAxiomQueryFee = axiomQueryFee;
+    } 
     return {
       maxFeePerGas: maxFeePerGas.toString(),
       callbackGasLimit: Number(callbackGasLimit),
@@ -91,9 +91,12 @@ export async function calculateFeeDataExtended(
 
     // overrideAxiomQueryFeeL2 = AXIOM_QUERY_FEE + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas)
     const overrideAxiomQueryFeeL2 = axiomQueryFee + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas);
-    if (overrideAxiomQueryFeeL2 > overrideAxiomQueryFee) {
-      overrideAxiomQueryFee = overrideAxiomQueryFeeL2;
-    }
+    
+    // overrideAxiomQueryFee = max(overrideAxiomQueryFeeL2, AXIOM_QUERY_FEE)
+    const largerAxiomQueryFee = overrideAxiomQueryFeeL2 > axiomQueryFee ? overrideAxiomQueryFeeL2 : axiomQueryFee;
+
+    // overrideAxiomQueryFee = max(overrideAxiomQueryFee, larger)
+    overrideAxiomQueryFee = overrideAxiomQueryFee > largerAxiomQueryFee ? overrideAxiomQueryFee : largerAxiomQueryFee;
     
     return {
       maxFeePerGas: maxFeePerGas.toString(),

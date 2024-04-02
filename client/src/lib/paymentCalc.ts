@@ -7,6 +7,13 @@ import { getChainDefaults, isArbitrumChain, isMainnetChain, isOpStackChain, isSc
 import { publicActionsL2 } from 'viem/op-stack';
 import { readContractValueBigInt } from "./viem";
 
+/**
+ * Calculate the payment amount (in wei) for axiom query.
+ * @param chainId The chain ID that we are using
+ * @param publicClient The viem PublicClient instance
+ * @param feeData Fee data calculated from `calculateFeeDataExtended` function
+ * @returns Payment amount in wei
+ */
 export async function calculatePayment(
   chainId: string,
   publicClient: PublicClient,
@@ -39,6 +46,13 @@ export async function calculatePayment(
   }
 }
 
+/**
+ * Calculate the fee data for axiom query.
+ * @param chainId The chain ID that we are using
+ * @param publicClient The viem PublicClient instance
+ * @param options The AxiomV2 client options object
+ * @returns AxiomV2FeeDataExtended struct
+ */
 export async function calculateFeeDataExtended(
   chainId: string,
   publicClient: PublicClient,
@@ -133,6 +147,7 @@ export async function getProjectedL2CallbackCost(
       "getL1Fee",
       [ClientConstants.AXIOM_PROOF_CALLDATA_BYTES],
     );
+    // 1.2x mutltiplier for L1 fee value to ensure the query is fulfilled
     return maxFeePerGas * (callbackGasLimit + proofVerificationGas) + 
       (l1Fee * ClientConstants.L1_FEE_NUMERATOR / ClientConstants.L1_FEE_DENOMINATOR);
   } else if (isArbitrumChain(chainId)) {

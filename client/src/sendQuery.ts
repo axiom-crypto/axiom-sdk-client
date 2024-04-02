@@ -117,7 +117,7 @@ export const buildSendQuery = async (input: {
       address: axiomQueryAddress as `0x${string}`,
       abi: abi,
       functionName: "sendQueryWithIpfsData",
-      value: BigInt(payment),
+      value: payment,
       args: [
         queryHash,
         ipfsHash,

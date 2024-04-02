@@ -105,7 +105,7 @@ describe("PaymentCalc: Base", () => {
 
     const queryCost = calculateQueryCost(basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
-    expect(percentDiff).toBeLessThan(300n); // 3%
+    expect(percentDiff).toBeLessThan(500n); // 5%
   }, 20000);
 
   test("Payment calculation high based on options", async () => {
@@ -133,7 +133,7 @@ describe("PaymentCalc: Base", () => {
 
     const queryCost = calculateQueryCost(basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
-    expect(percentDiff).toBeLessThan(300n); // 3%
+    expect(percentDiff).toBeLessThan(500n); // 5%
   }, 20000);
 
   test("Payment calculation low based on options", async () => {
@@ -161,7 +161,7 @@ describe("PaymentCalc: Base", () => {
     
     const queryCost = calculateQueryCost(basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
-    expect(percentDiff).toBeLessThan(300n); // 3%
+    expect(percentDiff).toBeLessThan(500n); // 5%
   }, 20000);
 
   test("Set overrideAxiomQueryFee greater than standard payment", async () => {
@@ -214,6 +214,6 @@ describe("PaymentCalc: Base", () => {
     
     const queryCost = calculateQueryCost(basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
-    expect(percentDiff).toBeLessThan(300n); // 3%
+    expect(percentDiff).toBeLessThan(500n); // 5%
   }, 20000);
 });

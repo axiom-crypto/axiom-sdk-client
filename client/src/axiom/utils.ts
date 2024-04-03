@@ -72,7 +72,8 @@ export async function getMaxFeePerGas(axiom: AxiomSdkCore, overrides?: AxiomV2Cl
   const chainId = axiom.config.chainId.toString();
   const axiomQueryAddress = overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
 
-  const providerFeeData = (await axiom.config.provider.getFeeData()).maxFeePerGas as bigint;
+  const providerFeeData = await axiom.config.provider.getFeeData();
+  const providerMaxFeePerGas = providerFeeData.maxFeePerGas ?? 0n;
   const publicClient = createPublicClient({
     chain: viemChain(axiom.config.chainId.toString(), axiom.config.providerUri),
     transport: http(axiom.config.providerUri),
@@ -85,14 +86,25 @@ export async function getMaxFeePerGas(axiom: AxiomSdkCore, overrides?: AxiomV2Cl
       functionName: "minMaxFeePerGas",
       args: [],
     }) as bigint;
-    if (contractMinMaxFeePerGas === 0n) {
-      contractMinMaxFeePerGas = getChainDefaults(chainId).minMaxFeePerGasWei;
+
+    const sdkMinMaxFeePerGas = getChainDefaults(chainId).minMaxFeePerGasWei;
+    contractMinMaxFeePerGas = contractMinMaxFeePerGas === 0n ? sdkMinMaxFeePerGas : contractMinMaxFeePerGas;
+    
+    let maxFeePerGas = contractMinMaxFeePerGas;
+    if (providerMaxFeePerGas > maxFeePerGas) {
+      maxFeePerGas = providerMaxFeePerGas;
     }
-    if (providerFeeData > contractMinMaxFeePerGas) {
-      return providerFeeData.toString();
+    if (sdkMinMaxFeePerGas > maxFeePerGas) {
+      maxFeePerGas = sdkMinMaxFeePerGas;
     }
-    console.log(`Network gas price below threshold. Using contract-defined minimum minMaxFeePerGas of ${contractMinMaxFeePerGas.toString()}`);
-    return contractMinMaxFeePerGas.toString();
+    
+    if (maxFeePerGas === contractMinMaxFeePerGas) {
+      console.log(`Network gas price below threshold. Using contract-defined minMaxFeePerGas: ${maxFeePerGas.toString()}`);
+    } else if (maxFeePerGas === sdkMinMaxFeePerGas) {
+      console.log(`Network gas price below threshold. Using SDK-defined minimum minMaxFeePerGas: ${maxFeePerGas.toString()}`);
+    }
+    
+    return maxFeePerGas.toString();
   } catch (e) {
     const defaultMinMaxFeePerGas = getChainDefaults(chainId).minMaxFeePerGasWei.toString();
     console.log(`Unable to read minMaxFeePerGas from contract, returning default value of ${defaultMinMaxFeePerGas}`);

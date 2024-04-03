@@ -43,6 +43,11 @@ export interface AxiomV2ClientOptions extends AxiomV2QueryOptions {
   overrides?: AxiomV2ClientOverrides;
 }
 
+export interface AxiomV2FeeDataExtended extends AxiomV2FeeData {
+  axiomQueryFee: bigint;
+  proofVerificationGas: bigint;
+}
+
 export interface AxiomV2SendQueryArgs {
   address: string;
   abi: any;

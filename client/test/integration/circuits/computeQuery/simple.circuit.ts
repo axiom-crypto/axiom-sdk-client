@@ -17,7 +17,7 @@ export interface CircuitInputs {
 }
 
 export const defaultInputs = {
-  blockNumber: 5100050,
+  blockNumber: 5100050, //$ account.eoa[0].blockNumber
 };
 
 export const circuit = async (inputs: CircuitInputs) => {

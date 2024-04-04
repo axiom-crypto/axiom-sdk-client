@@ -14,6 +14,10 @@ if (setVersion.toLowerCase() === "increment" || setVersion.toLowerCase() === "in
 }
 
 const packages = {
+  "axiom-sdk-client": {
+    path: "..",
+    version: "",
+  },
   "@axiom-crypto/circuit": {
     path: "../circuit",
     version: "",
@@ -32,7 +36,7 @@ const packages = {
   },
 };
 
-console.log("setVersion", setVersion);
+console.log("setVersions", setVersion);
 
 function setVersions() {
   // Write package version to all paths

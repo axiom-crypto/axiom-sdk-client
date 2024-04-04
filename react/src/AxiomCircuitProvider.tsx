@@ -6,14 +6,8 @@ import React, {
   useState,
 } from "react";
 import { Remote, wrap } from "comlink";
+import { AxiomV2CompiledCircuit, AxiomV2Callback, AxiomV2SendQueryArgs, AxiomV2ClientOptions, DEFAULT_CAPACITY } from "@axiom-crypto/client";
 import { AxiomCircuit } from "./worker";
-import { 
-  AxiomV2CompiledCircuit,
-  AxiomV2Callback,
-  AxiomV2SendQueryArgs,
-  AxiomV2ClientOptions,
-  DEFAULT_CAPACITY,
-} from "@axiom-crypto/client";
 
 type AxiomCircuitContextType<T> = {
   setOptions: React.Dispatch<React.SetStateAction<AxiomV2ClientOptions | null>>,
@@ -51,7 +45,7 @@ function AxiomCircuitProvider({
   const [refundee, setRefundee] = useState<string | null>(null);
   const [builtQuery, setBuiltQuery] = useState<AxiomV2SendQueryArgs | null>(null);
 
-  const workerApi = useRef<Remote<AxiomCircuit>>();
+  const workerApi = useRef<Remote<AxiomCircuit> | null>(null);
 
   const build = async () => {
     if (!inputs || !callback || !refundee) {
@@ -62,35 +56,29 @@ function AxiomCircuitProvider({
       return null;
     }
     const setup = async () => {
+      // Vite-compatible web worker instantiation
       const worker = new Worker(new URL("./worker", import.meta.url), { type: "module" });
-      const MyAxiomCircuit = wrap<typeof AxiomCircuit>(worker);
-      workerApi.current = await new MyAxiomCircuit({
-        provider,
-        inputSchema: compiledCircuit.inputSchema,
-        chainId,
-        f: compiledCircuit.circuit,
-      });
-      await workerApi.current.setup(window.navigator.hardwareConcurrency);
-      await workerApi.current?.loadSaved({
-        config: compiledCircuit.config,
-        capacity: compiledCircuit.capacity ?? DEFAULT_CAPACITY,
-        vk: compiledCircuit.vk,
-      });
+      workerApi.current = wrap<AxiomCircuit>(worker);
+      if (workerApi.current) {
+        await workerApi.current.setup(window.navigator.hardwareConcurrency);
+        await workerApi.current.loadSaved({
+          config: JSON.stringify(compiledCircuit.config),
+          capacity: compiledCircuit.capacity ?? DEFAULT_CAPACITY,
+        });
+      }
     }
 
     const generateQuery = async () => {
-      await workerApi.current?.run(inputs);
-      const res = await workerApi.current?.getSendQueryArgs({
-        options: options ?? {refundee},
-        callbackTarget: callback.target,
-        callbackExtraData: callback.extraData,
-        callerAddress: refundee,
-      });
-      if (res === undefined) {
-        return null;
+      if (workerApi.current) {
+        await workerApi.current.run();
+        const res = await workerApi.current.getSendQueryArgs();
+        if (res === undefined) {
+          return null;
+        }
+        setBuiltQuery(JSON.parse(res));
+        return JSON.parse(res);
       }
-      setBuiltQuery(res);
-      return res;
+      return null;
     }
     await setup();
     return await generateQuery();

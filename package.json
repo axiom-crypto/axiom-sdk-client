@@ -8,8 +8,8 @@
     "versions": "node scripts/setVersions.js",
     "build-all": "node scripts/buildAll.js",
     "publish-all": "node scripts/publishAll.js",
-    "find-test-data": "tsx scripts/findTestData.ts",
-    "generate-tests": "tsx scripts/generateTests.ts"
+    "find-test-data": "tsx scripts/test/findTestData.ts",
+    "generate-test-inputs": "tsx scripts/test/generateTestInputs.ts"
   },
   "keywords": [],
   "author": "Intrinsic Technologies",

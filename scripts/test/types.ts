@@ -6,5 +6,13 @@ export interface AddressId {
 export interface TxId {
   hash: string;
   blockNumber: number;
-  index: number;
+  txIdx: number;
+}
+
+export interface RcId {
+  hash: string;
+  blockNumber: number;
+  txIdx: number;
+  logIdx: number;
+  eventSchema: string;
 }

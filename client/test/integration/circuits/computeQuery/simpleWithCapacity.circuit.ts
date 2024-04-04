@@ -14,10 +14,12 @@ import {
 
 export interface CircuitInputs {
   blockNumber: CircuitValue;
+  addr: CircuitValue;
 }
 
 export const defaultInputs = {
-  blockNumber: 5100050,
+  blockNumber: 5100050, //$ account.eoa[1].blockNumber
+  addr: "0x83c8c0b395850ba55c830451cfaca4f2a667a983", //$ account.contract[1].address
 };
 
 export const config = {
@@ -28,7 +30,7 @@ export const config = {
 }
 
 export const circuit = async (inputs: CircuitInputs) => {
-  const addr = "0x83c8c0b395850ba55c830451cfaca4f2a667a983";
+  
   for (let i = 0; i < 4; i++) {
     const header = await getHeader(add(inputs.blockNumber, constant(i))).timestamp();
     const account = await getAccount(add(inputs.blockNumber, constant(i)), addr).balance();

@@ -6,7 +6,7 @@
     "txBlockNumber": 8279568,
     "txIdx": 1,
     "logIdx": 0,
-    "slot": 0,
-    "mappingSlot": 2,
-    "eventSchema": "0xb0444523268717a02698be47d0803aa7468c00acbed2f8bd93a0459cde61dd89"
+    "eventSchema": "0xb0444523268717a02698be47d0803aa7468c00acbed2f8bd93a0459cde61dd89",
+    "slot": "0",
+    "mappingSlot": 2
 }

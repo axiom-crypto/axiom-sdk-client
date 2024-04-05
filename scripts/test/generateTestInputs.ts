@@ -7,7 +7,7 @@
 import fs from 'fs';
 import path from 'path';
 
-const CHAIN_ID = "84532";
+const CHAIN_ID = "11155111";
 const INPUT_DIR = "./client/test/integration";
 const CHAINDATA_PATH = `./client/test/chainData/${CHAIN_ID}.json`;
 
@@ -26,7 +26,7 @@ function readCircuitFile(chainData: any, file: string) {
   // Iterate over each line and check for your condition
   for (const line of lines) {
     if (line.match(/.*\/\/\$ .*/)) {
-      const key = line.split(":")[0].trim();
+      const key = line.split(":")[0].trim().replace(/"/g, '');
       const cmd = line.split("//$")[1].trim();
       if (cmd.includes("chainId")) {
         const chains = cmd.split("=")[1].split(",");

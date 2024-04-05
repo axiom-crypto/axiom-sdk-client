@@ -9,7 +9,8 @@
     "build-all": "node scripts/buildAll.js",
     "publish-all": "node scripts/publishAll.js",
     "find-test-data": "tsx scripts/test/findTestData.ts",
-    "generate-test-inputs": "tsx scripts/test/generateTestInputs.ts"
+    "generate-test-inputs": "tsx scripts/test/generateTestInputs.ts",
+    "deploy-test-inputs": "./scripts/test/solidity_sized_tx_contract/script/start.sh"
   },
   "keywords": [],
   "author": "Intrinsic Technologies",

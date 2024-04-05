@@ -5,7 +5,7 @@ import { Axiom } from "../../src";
 
 export function parseArgs(): { chainId: string } {
   let args: { chainId: string } = { chainId: "" };
-  process.argv.slice(3).map((arg) => {
+  process.argv.slice(2).map((arg) => {
     let [key, value] = arg.split("=");
     key = key.replace("--", "");
     args[key as keyof typeof args] = value;

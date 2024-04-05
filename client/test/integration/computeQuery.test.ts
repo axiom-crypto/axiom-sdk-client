@@ -1,41 +1,28 @@
 
 import { Axiom } from "../../src";
-import { generateCircuit } from "./circuitTest";
+import { generateCircuit, getTarget, parseArgs, runTestPass } from "./circuitTest";
+
+const { chainId } = parseArgs();
 
 describe("Build ComputeQuery with DataQuery", () => {
   test("simple computeQuery with dataQuery", async () => {
-    const { circuit, compiledCircuit, inputs } = await generateCircuit("computeQuery/simple");
-
-    const axiom = new Axiom({
-      circuit: circuit,
-      compiledCircuit: compiledCircuit,
-      chainId: "11155111",  // Sepolia
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
-      callback: {
-        target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
-      },
-    });
-    await axiom.init();
-    await axiom.prove(inputs);
-    const receipt = await axiom.sendQuery();
-    expect(receipt.status).toBe('success');
+    await runTestPass(chainId, "computeQuery/simple");
   }, 90000);
 
   test("simple computeQuery with dataQuery and address override", async () => {
-    const { circuit, compiledCircuit, inputs } = await generateCircuit("computeQuery/simple");
+    const { circuit, compiledCircuit, inputs } = await generateCircuit(chainId, "computeQuery/simple");
     
     const chainIdOverride = "84532";
     const addressOverride = "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef";
 
     const axiom = new Axiom({
-      circuit: circuit,
-      compiledCircuit: compiledCircuit,
-      chainId: chainIdOverride,  // Base
-      provider: process.env.PROVIDER_URI_84532 as string,
-      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
+      circuit,
+      compiledCircuit,
+      chainId: chainIdOverride,
+      provider: process.env[`PROVIDER_URI_${chainIdOverride}`] as string,
+      privateKey: process.env[`PRIVATE_KEY_${chainIdOverride}`] as string,
       callback: {
-        target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
+        target: getTarget(chainId),
       },
       options: {
         overrides: {
@@ -54,26 +41,11 @@ describe("Build ComputeQuery with DataQuery", () => {
   }, 90000);
 
   test("simple computeQuery with non-default capacity", async () => {
-    const { circuit, compiledCircuit, inputs } = await generateCircuit("computeQuery/simpleWithCapacity");
-
-    const axiom = new Axiom({
-      circuit: circuit,
-      compiledCircuit: compiledCircuit,
-      chainId: "11155111",  // Sepolia
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
-      callback: {
-        target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
-      },
+    await runTestPass(chainId, "computeQuery/simpleWithCapacity", {
       capacity: {
         maxOutputs: 256,
         maxSubqueries: 256,
       },
     });
-    await axiom.init();
-    await axiom.prove(inputs);
-    const receipt = await axiom.sendQuery();
-    // Transaction will be sent successfully but fulfill tx may not succeed
-    expect(receipt.status).toBe('success');
   }, 90000);
 });

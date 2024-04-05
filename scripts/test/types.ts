@@ -3,6 +3,12 @@ export interface AddressId {
   address: string;
 }
 
+export interface StorageId {
+  blockNumber: number;
+  address: string;
+  slot: number;
+}
+
 export interface TxId {
   hash: string;
   blockNumber: number;

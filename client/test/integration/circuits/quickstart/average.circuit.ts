@@ -22,8 +22,8 @@ export interface CircuitInputs {
 // Default inputs to use for compiling the circuit. These values should be different than the inputs fed into
 // the circuit at proving time.
 export const defaultInputs = {
-  "blockNumber": 4000000,
-  "address": "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701"
+  "blockNumber": 4000000, //$ account.eoa[4].blockNumber
+  "address": "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701" //$ account.eoa[4].address
 };
 
 // The function name `circuit` is searched for by default by our Axiom CLI; if you decide to 

@@ -1,3 +1,5 @@
+//$ chainId=1,11155111
+
 import {
   CircuitValue,
   addToCallback,
@@ -18,8 +20,8 @@ export interface CircuitInputs {
 }
 
 export const defaultInputs = {
-  blockNumber: 5005300,
-  txIdx: 0,
+  blockNumber: 5005300, //$ tx.type["3"][0].blockNumber
+  txIdx: 0, //$ tx.type["3"][0].txIdx
 };
 
 export const circuit =async (inputs: CircuitInputs) => {

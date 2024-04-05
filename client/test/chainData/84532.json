@@ -278,131 +278,163 @@
     "nonzero": [
       {
         "blockNumber": 8279568,
-        "address": "0x4200000000000000000000000000000000000007"
+        "address": "0x4200000000000000000000000000000000000007",
+        "slot": "0"
       },
       {
         "blockNumber": 8279568,
-        "address": "0xd32e3ace3272e2037003ca54ca7e5676f9b8d06c"
+        "address": "0xd32e3ace3272e2037003ca54ca7e5676f9b8d06c",
+        "slot": "0"
       },
       {
         "blockNumber": 8279504,
-        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438"
+        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438",
+        "slot": "0"
       },
       {
         "blockNumber": 8279440,
-        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438"
+        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438",
+        "slot": "0"
       },
       {
         "blockNumber": 8279440,
-        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438"
+        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438",
+        "slot": "0"
       },
       {
         "blockNumber": 8279440,
-        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438"
+        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438",
+        "slot": "0"
       },
       {
         "blockNumber": 8279376,
-        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438"
+        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438",
+        "slot": "0"
       },
       {
         "blockNumber": 8279248,
-        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438"
+        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438",
+        "slot": "0"
       },
       {
         "blockNumber": 8279120,
-        "address": "0x73104cf245566f86f29afff705447b15b58309ce"
+        "address": "0x73104cf245566f86f29afff705447b15b58309ce",
+        "slot": "0"
       },
       {
         "blockNumber": 8279120,
-        "address": "0x698938b31c44456ff4e21c2c2234bbb8019578d3"
+        "address": "0x698938b31c44456ff4e21c2c2234bbb8019578d3",
+        "slot": "0"
       },
       {
         "blockNumber": 8278992,
-        "address": "0x182c14399bcc7c9f0280ad07913cb07ba1775cb6"
+        "address": "0x182c14399bcc7c9f0280ad07913cb07ba1775cb6",
+        "slot": "0"
       },
       {
         "blockNumber": 8278864,
-        "address": "0x94cc0aac535ccdb3c01d6787d6413c739ae12bc4"
+        "address": "0x94cc0aac535ccdb3c01d6787d6413c739ae12bc4",
+        "slot": "0"
       },
       {
         "blockNumber": 8278800,
-        "address": "0x182c14399bcc7c9f0280ad07913cb07ba1775cb6"
+        "address": "0x182c14399bcc7c9f0280ad07913cb07ba1775cb6",
+        "slot": "0"
       },
       {
         "blockNumber": 8278672,
-        "address": "0x251aba234ae9bfc485a494fb774026124390cdd7"
+        "address": "0x251aba234ae9bfc485a494fb774026124390cdd7",
+        "slot": "0"
       },
       {
         "blockNumber": 8278672,
-        "address": "0x961ad289351459a45fc90884ef3ab0278ea95dde"
+        "address": "0x961ad289351459a45fc90884ef3ab0278ea95dde",
+        "slot": "0"
       },
       {
         "blockNumber": 8278672,
-        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438"
+        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438",
+        "slot": "0"
       },
       {
         "blockNumber": 8278672,
-        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438"
+        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438",
+        "slot": "0"
       },
       {
         "blockNumber": 8278544,
-        "address": "0x698938b31c44456ff4e21c2c2234bbb8019578d3"
+        "address": "0x698938b31c44456ff4e21c2c2234bbb8019578d3",
+        "slot": "0"
       },
       {
         "blockNumber": 8278544,
-        "address": "0xb77eb4b4862dca31212555e25f8b5729b346e78a"
+        "address": "0xb77eb4b4862dca31212555e25f8b5729b346e78a",
+        "slot": "0"
       },
       {
         "blockNumber": 8278544,
-        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438"
+        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438",
+        "slot": "0"
       },
       {
         "blockNumber": 8278416,
-        "address": "0x326490a8f5dcaeaa4a2ad9ea902990c5b0834d9b"
+        "address": "0x326490a8f5dcaeaa4a2ad9ea902990c5b0834d9b",
+        "slot": "0"
       },
       {
         "blockNumber": 8278416,
-        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438"
+        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438",
+        "slot": "0"
       },
       {
         "blockNumber": 8278416,
-        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438"
+        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438",
+        "slot": "0"
       },
       {
         "blockNumber": 8278416,
-        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438"
+        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438",
+        "slot": "0"
       },
       {
         "blockNumber": 8278352,
-        "address": "0xc3f572c71621e9a5941befb3582f4196abdcdc41"
+        "address": "0xc3f572c71621e9a5941befb3582f4196abdcdc41",
+        "slot": "0"
       },
       {
         "blockNumber": 8278288,
-        "address": "0xa24a68dd788e1d7eb4ca517765cfb2b7e217e7a3"
+        "address": "0xa24a68dd788e1d7eb4ca517765cfb2b7e217e7a3",
+        "slot": "0"
       },
       {
         "blockNumber": 8278288,
-        "address": "0x182c14399bcc7c9f0280ad07913cb07ba1775cb6"
+        "address": "0x182c14399bcc7c9f0280ad07913cb07ba1775cb6",
+        "slot": "0"
       },
       {
         "blockNumber": 8278288,
-        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438"
+        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438",
+        "slot": "0"
       },
       {
         "blockNumber": 8278032,
-        "address": "0xdcca5e53526f324b9232ebb680001ce25d66661c"
+        "address": "0xdcca5e53526f324b9232ebb680001ce25d66661c",
+        "slot": "0"
       },
       {
         "blockNumber": 8277904,
-        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438"
+        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438",
+        "slot": "0"
       },
       {
         "blockNumber": 8277776,
-        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438"
+        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438",
+        "slot": "0"
       },
       {
         "blockNumber": 8277712,
-        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438"
+        "address": "0x5911cdc73325d3fb3208b8d93ff44e0cfc3dc438",
+        "slot": "0"
       }
     ]
   },

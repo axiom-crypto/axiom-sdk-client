@@ -28,9 +28,9 @@ export interface CircuitInputs {
   txBlockNumber: CircuitValue;
   txIdx: CircuitValue;
   logIdx: CircuitValue;
+  eventSchema: CircuitValue256;
   slot: CircuitValue256;
   mappingSlot: CircuitValue256;
-  eventSchema: CircuitValue256;
 }
 
 export const defaultInputs = {
@@ -41,9 +41,9 @@ export const defaultInputs = {
   txBlockNumber: 8279504, //$ rc.events[0].blockNumber
   txIdx: 14, //$ rc.events[0].txIdx
   logIdx: 6, //$ rc.events[0].logIdx
+  eventSchema: "0x7c1fc233fcf8cadbae2477cb12888718dbcbca4a2c72cea0903b5aa7cf4a7e23", //$ rc.events[0].eventSchema
   slot: 0, //$ storage.nonzero[0].slot
   mappingSlot: 1, //$ tx.type["2"][0].txIdx
-  eventSchema: "0x7c1fc233fcf8cadbae2477cb12888718dbcbca4a2c72cea0903b5aa7cf4a7e23", //$ rc.events[0].eventSchema
 }
 
 export const circuit = async (inputs: CircuitInputs) => {
@@ -107,7 +107,7 @@ export const circuit = async (inputs: CircuitInputs) => {
   // get the 4-byte function selector that was called
   let functionSelector = await tx.functionSelector();
   // access bytes [32, 64) of calldata
-  let calldata = await tx.calldata(1);
+  // let calldata = await tx.calldata(1);
 
   let receipt = getReceipt(inputs.txBlockNumber, inputs.txIdx);
   // access the address that emitted the log event at index 0

@@ -7,8 +7,9 @@
 import fs from 'fs';
 import path from 'path';
 
+const CHAIN_ID = "84532";
 const INPUT_DIR = "./client/test/integration";
-const CHAINDATA_PATH = "./client/test/chainData/84532.json";
+const CHAINDATA_PATH = `./client/test/chainData/${CHAIN_ID}.json`;
 
 function readCircuitFile(chainData: any, file: string) {
   console.log(`Reading file: ${file}`)
@@ -18,8 +19,9 @@ function readCircuitFile(chainData: any, file: string) {
   // Split the content by new lines to get an array of lines
   const lines = fileContent.split(/\r?\n/);
   
-  // Convert to an object
+  // Inputs objects to store
   const inputs = {};
+  const defaultInputs = {};
 
   // Iterate over each line and check for your condition
   for (const line of lines) {
@@ -31,9 +33,15 @@ function readCircuitFile(chainData: any, file: string) {
         if (!chains.includes(chainData.chainId)) {
           return;
         }
+        continue;
       }
+      const idx = extractIndex(cmd);
+      const newIdx = idx + 1;
       const value = eval(`chainData.${cmd}`);
+      const replacedCmd = cmd.replace(`[${idx}]`, `[${newIdx}]`);
+      const defaultValue = eval(`chainData.${replacedCmd}`);
       inputs[key] = value;
+      defaultInputs[key] = defaultValue;
     }
   }
 
@@ -41,15 +49,18 @@ function readCircuitFile(chainData: any, file: string) {
     return;
   }
   
-  // Get current directory of file
+  // Save inputs files
   const dir = path.dirname(file);
   const fileName = path.basename(file).split(".")[0];
   const chainId = chainData.chainId;
   const newDir = path.join(dir, chainId);
   fs.mkdirSync(newDir, { recursive: true });
-  const filePath = path.join(newDir, `${fileName}.inputs.json`);
-  fs.writeFileSync(filePath, JSON.stringify(inputs, null, 4));
-  console.log(`Wrote inputs to ${filePath}`);
+  const inputsPath = path.join(newDir, `${fileName}.inputs.json`);
+  const defaultInputsPath = path.join(newDir, `${fileName}.defaultInputs.json`);
+  fs.writeFileSync(inputsPath, JSON.stringify(inputs, null, 4));
+  fs.writeFileSync(defaultInputsPath, JSON.stringify(defaultInputs, null, 4));
+  console.log(`Wrote inputs to ${inputsPath}`);
+  console.log(`Wrote defaultInputs to ${defaultInputsPath}`);
 }
 
 function getFiles(chainData: any, dir: string) {
@@ -67,9 +78,18 @@ function getFiles(chainData: any, dir: string) {
   }
 }
 
+function extractIndex(s: string): number {
+  const match = s.match(/\[(\d+)\](?![^\[]*"\])/);
+  if (match && match[1]) {
+    const number = parseInt(match[1], 10);
+    return number;
+  }
+  return -1;
+}
+
 function main() {
   const chainData = JSON.parse(fs.readFileSync(CHAINDATA_PATH, 'utf8'));
-  
+
   // Recursively read all files in the INPUT_DIR directory
   getFiles(chainData, INPUT_DIR);
 }

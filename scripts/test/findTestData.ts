@@ -2,12 +2,22 @@ import { ethers } from "ethers";
 import dotenv from "dotenv";
 import { getFullBlock, getRawReceipt, getNumBytes, objectToRlp, bytes32 } from "@axiom-crypto/tools";
 import fs from 'fs';
-import { AddressId, RcId, TxId } from "./types";
+import { AddressId, RcId, StorageId, TxId } from "./types";
 dotenv.config();
 
+// (Optional) End block to sample. 0 = current block.
 const END_BLOCK = 0;
+
+// Number of blocks to sample
 const BLOCK_SAMPLES = 128;
+
+// Interval between blocks to sample
 const BLOCK_INTERVAL = 64;
+
+// Block numbers to include in the search (useful if certain events happened at specific blocks)
+const INCLUDE_BLOCKS: number[] = [
+  8285121,
+];
 
 const provider = new ethers.JsonRpcProvider(process.env.PROVIDER_URI);
 
@@ -28,21 +38,16 @@ let data = {
   account: {
     eoa: [] as AddressId[],
     contract: [] as AddressId[],
-    stats: {
-      avgBalance: 0,
-      avgCodeSize: 0,
-      balances: [] as string[],
-      codeSizes: [] as string[],
-    },
   },
   storage: {
-    nonzero: [] as AddressId[], // nonzero at slot 0
+    nonzero: [] as StorageId[], // nonzero at slot 0
   },
   tx: {
     type: {
       "0": [] as TxId[],
       "1": [] as TxId[],
       "2": [] as TxId[],
+      "3": [] as TxId[],
     },
     category: {
       "default": [] as TxId[], // 8192b, 4096b rlp
@@ -61,34 +66,9 @@ let data = {
     },
     events: [] as RcId[],
   },
-  // totalTx: 0,
-  // numTxType: {
-  //   "0": 0,
-  //   "1": 0,
-  //   "2": 0,
-  // } as any,
-  // txDataAvgSize: 0,
-  // txDataAvgSizeNonzero: 0,
-  // numAccessListTotal: 0,
-  // numAccessListTxType: {
-  //   "1": 0,
-  //   "2": 0,
-  // } as any,
-  // accessListAvgSize: {
-  //   "1": 0,
-  //   "2": 0,
-  // } as any,
-
-  // // Data for calculations
-  // txDataSizes: [] as number[],  // size in bytes
-  // accessListSizes: {
-  //   "1": [] as number[],  // size in bytes
-  //   "2": [] as number[],  // size in bytes
-  // } as any,
-  // logDataSizes: [] as number[],  // size in bytes
 }
 
-function pushMaxSize<T>(arr: T[], itm: T, size: number = 32) {
+function pushArrayUpto<T>(arr: T[], itm: T, size: number = 32) {
   if (arr.length === size) {
     return;
   }
@@ -104,12 +84,12 @@ async function parseAccount(tx: any): Promise<string[]> {
     }
     const code = await provider.getCode(account);
     if (code === '0x') {
-      pushMaxSize(data.account.eoa, {
+      pushArrayUpto(data.account.eoa, {
         blockNumber: Number(tx.blockNumber),
         address: account
       });
     } else {
-      pushMaxSize(data.account.contract, {
+      pushArrayUpto(data.account.contract, {
         blockNumber: Number(tx.blockNumber),
         address: account
       });
@@ -124,11 +104,14 @@ async function parseStorage(contracts: string[], blockNumber: string) {
     return;
   }
   for await (const contract of contracts) {
-    const storage = await provider.getStorage(contract, 0, blockNumber);
+    // Random slot from 0 to 10
+    const randomSlot = Math.floor(Math.random() * 11);
+    const storage = await provider.getStorage(contract, randomSlot, blockNumber);
     if (storage !== bytes32(0)) {
-      pushMaxSize(data.storage.nonzero, {
+      pushArrayUpto(data.storage.nonzero, {
         blockNumber: Number(blockNumber),
         address: contract,
+        slot: randomSlot,
       });
     }
   }
@@ -141,25 +124,26 @@ async function parseTx(tx: any) {
     blockNumber: Number(tx.blockNumber),
     txIdx: Number(tx.transactionIndex),
   };
-  if (!(type === "0" || type === "1" || type === "2")) {
+  if (!(type === "0" || type === "1" || type === "2" || type === "3")) {
     return;
   }
-  pushMaxSize(data.tx.type[type], txId);
+  pushArrayUpto(data.tx.type[type], txId);
   const numBytesTxData = getNumBytes(tx.input);
-  if (tx.accessList !== undefined && tx.accessList !== null && tx.accessList.length !== 0) {
-    const accessListRlp = objectToRlp(tx.accessList ?? {});
-    const aclNumBytesRlp = getNumBytes(accessListRlp);
-
-    if (numBytesTxData < 8192 && aclNumBytesRlp < 800) {
-      pushMaxSize(data.tx.category.default, txId);
-    } else if (numBytesTxData < 32768 && aclNumBytesRlp < 1024) {
-      pushMaxSize(data.tx.category.large, txId);
-    } else if (numBytesTxData < 333000 && aclNumBytesRlp < 131072) {
-      pushMaxSize(data.tx.category.max, txId);
-    } else {
-      pushMaxSize(data.tx.category.oversize, txId);
-    }
+  // if (tx.accessList !== undefined && tx.accessList !== null && tx.accessList.length !== 0) {
+  //   return;
+  // }
+  const accessListRlp = objectToRlp(tx.accessList ?? {});
+  const aclNumBytesRlp = getNumBytes(accessListRlp);
+  if (numBytesTxData < 8192 && aclNumBytesRlp < 800) {
+    pushArrayUpto(data.tx.category.default, txId);
+  } else if (numBytesTxData < 32768 && aclNumBytesRlp < 1024) {
+    pushArrayUpto(data.tx.category.large, txId);
+  } else if (numBytesTxData < 333000 && aclNumBytesRlp < 131072) {
+    pushArrayUpto(data.tx.category.max, txId);
+  } else {
+    pushArrayUpto(data.tx.category.oversize, txId);
   }
+  
 }
 
 async function parseReceipt(tx: any) {
@@ -180,7 +164,7 @@ async function parseReceipt(tx: any) {
         logIdx: i,
         eventSchema: log.topics[0],
       };
-      pushMaxSize(data.rc.events, rcId);
+      pushArrayUpto(data.rc.events, rcId);
     }
     const logData = log.data;
     const logDataSize = getNumBytes(logData);
@@ -195,15 +179,15 @@ async function parseReceipt(tx: any) {
     txIdx: Number(tx.transactionIndex),
   };
   if (numLogs < 20 && maxLogDataSize < 800) {
-    pushMaxSize(data.rc.category.default, txId);
+    pushArrayUpto(data.rc.category.default, txId);
   } else if (numLogs < 80 && maxLogDataSize < 1024) {
-    pushMaxSize(data.rc.category.medium, txId);
+    pushArrayUpto(data.rc.category.medium, txId);
   } else if (numLogs < 80 && maxLogDataSize < 2048) {
-    pushMaxSize(data.rc.category.large, txId);
+    pushArrayUpto(data.rc.category.large, txId);
   } else if (numLogs < 400 && maxLogDataSize < 1024){
-    pushMaxSize(data.rc.category.max, txId);
+    pushArrayUpto(data.rc.category.max, txId);
   } else {
-    pushMaxSize(data.rc.category.oversize, txId);
+    pushArrayUpto(data.rc.category.oversize, txId);
   }
 }
 
@@ -215,10 +199,18 @@ async function main() {
     currentBlock = await provider.getBlockNumber();
   }
   data.blockRange.end = currentBlock;
+
+  let blocksToProcess: number[] = [...INCLUDE_BLOCKS];
   for (let i = 0; i < BLOCK_SAMPLES; i++) {
-    console.log("Currently processing block:", currentBlock - i * BLOCK_INTERVAL);
-    const blockNumber = currentBlock - i * BLOCK_INTERVAL;
-    data.blockRange.start = blockNumber;
+    blocksToProcess.push(currentBlock - i * BLOCK_INTERVAL);
+  }
+  for (let i = 0; i < blocksToProcess.length; i++) {
+    console.log("Currently processing block:", blocksToProcess[i]);
+    const blockNumber = blocksToProcess[i];
+    if (blockNumber < data.blockRange.start) {
+      data.blockRange.start = blockNumber;
+    }
+    
     const block = await getFullBlock(provider, blockNumber);
     // console.log(blockNumber, block)
 
@@ -234,18 +226,11 @@ async function main() {
     }
 
     console.log(JSON.stringify(data, null, 2));
-    console.log("Remaining iterations:", BLOCK_SAMPLES - i - 1);
+    console.log("Remaining iterations:", blocksToProcess.length - i - 1);
   }
 
-  // Calculate stats
-  // data.txDataAvgSize = data.txDataSizes.reduce((a, b) => a + b, 0) / data.txDataSizes.length;
-  // const nonzeroTxDataSizes = data.txDataSizes.filter((x) => x !== 0);
-  // data.txDataAvgSizeNonzero = nonzeroTxDataSizes.reduce((a, b) => a + b, 0) / nonzeroTxDataSizes.length;
-  // data.accessListAvgSize["1"] = data.accessListSizes["1"].reduce((a: number, b: number) => a + b, 0) / data.accessListSizes["1"].length;
-  // data.accessListAvgSize["2"] = data.accessListSizes["2"].reduce((a: number, b: number) => a + b, 0) / data.accessListSizes["2"].length;
-
+  // Write output file
   const outfile = `testdata chain${chainId} blocks${data.blockRange.start}-${data.blockRange.end}.json`;
-  // fs.mkdirSync('./scripts/test/out', { recursive: true });
   fs.writeFileSync(`./scripts/test/out/${outfile}`, JSON.stringify(data, null, 2));
 }
 main();

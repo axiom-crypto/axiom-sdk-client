@@ -2,22 +2,23 @@ import { Axiom } from "../../src";
 import { PinataIpfsClient } from "@axiom-crypto/core";
 import { ByteStringReader, decodeFullQueryV2 } from "@axiom-crypto/core/packages/tools";
 import { getQueryHashV2, getDataQueryHashFromSubqueries } from "@axiom-crypto/tools";
-import { generateCircuit } from "./circuitTest";
+import { generateCircuit, getTarget, parseArgs } from "./circuitTest";
+
+const { chainId } = parseArgs();
 
 describe("Send Query using Axiom client", () => {
   test("Send a query with IPFS", async () => {
-    const { circuit, compiledCircuit, inputs } = await generateCircuit("sendQuery/average");
-
     const ipfsClient = new PinataIpfsClient(process.env.PINATA_JWT as string);
-
+    
+    const { circuit, compiledCircuit, inputs } = await generateCircuit(chainId, "sendQuery/average");
     const axiom = new Axiom({
       circuit,
       compiledCircuit,
-      chainId: "11155111",  // Sepolia
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_SEPOLIA as string,
+      chainId,
+      provider: process.env[`PROVIDER_URI_${chainId}`] as string,
+      privateKey: process.env[`PRIVATE_KEY_${chainId}`] as string,
       callback: {
-        target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
+        target: getTarget(chainId),
       },
       options: {
         ipfsClient: ipfsClient,

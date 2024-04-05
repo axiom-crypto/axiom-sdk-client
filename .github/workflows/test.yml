@@ -11,6 +11,8 @@ on:
 env:
   PRIVATE_KEY_ANVIL: ${{ secrets.PRIVATE_KEY_ANVIL }}
   PRIVATE_KEY_SEPOLIA: ${{ secrets.PRIVATE_KEY_SEPOLIA }}
+  PRIVATE_KEY_84532: ${{ secrets.PRIVATE_KEY_84532 }}
+  PRIVATE_KEY_11155111: ${{ secrets.PRIVATE_KEY_11155111 }}
   PROVIDER_URI_SEPOLIA: ${{ secrets.PROVIDER_URI_SEPOLIA }}
   PROVIDER_URI_GOERLI: ${{ secrets.PROVIDER_URI_GOERLI }}
   PROVIDER_URI_1: ${{ secrets.PROVIDER_URI_1 }}
@@ -52,8 +54,8 @@ jobs:
           export PRIVATE_KEY_GOERLI=$ANVIL_PRIVATE_KEY
           pnpm test
     
-  client-tests:
-    name: Client Tests
+  client-unit-tests:
+    name: Client Unit Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -81,10 +83,64 @@ jobs:
         working-directory: ./client
         run: pnpm test test/unit
 
+  client-integration-tests-11155111:
+    name: Client Integration Tests (11155111)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: "Install Node.js"
+        uses: "actions/setup-node@v4"
+        with:
+          node-version: "20.x"
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
+          cache-dependency-path: client/pnpm-lock.yaml
+
+      - name: Set all packages to local and build
+        working-directory: ./
+        run: pnpm local
+
       - name: Run Integration Tests (Client)
         working-directory: ./client
-        run: pnpm test test/integration
+        run: pnpm test test/integration -- --chainId=11155111
   
+  client-integration-tests-84532:
+    name: Client Integration Tests (84532)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: "Install Node.js"
+        uses: "actions/setup-node@v4"
+        with:
+          node-version: "20.x"
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
+          cache-dependency-path: client/pnpm-lock.yaml
+
+      - name: Set all packages to local and build
+        working-directory: ./
+        run: pnpm local
+
+      - name: Run Integration Tests (Client)
+        working-directory: ./client
+        run: pnpm test test/integration -- --chainId=84532
+
   harness:
     name: Harness Tests
     runs-on: ubuntu-latest

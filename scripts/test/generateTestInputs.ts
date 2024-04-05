@@ -11,7 +11,7 @@ const INPUT_DIR = "./client/test/integration";
 const CHAINDATA_PATH = "./client/test/chainData/84532.json";
 
 function readCircuitFile(chainData: any, file: string) {
-  console.log(`Reading file: ${file}`);
+  console.log(`Reading file: ${file}`)
   // Read the entire file content
   const fileContent = fs.readFileSync(file, 'utf8');
 
@@ -25,9 +25,14 @@ function readCircuitFile(chainData: any, file: string) {
   for (const line of lines) {
     if (line.match(/.*\/\/\$ .*/)) {
       const key = line.split(":")[0].trim();
-      const valueLookup = line.split("//$")[1].trim();
-      const value = eval(`chainData.${valueLookup}`);
-      console.log(key, valueLookup, value);
+      const cmd = line.split("//$")[1].trim();
+      if (cmd.includes("chainId")) {
+        const chains = cmd.split("=")[1].split(",");
+        if (!chains.includes(chainData.chainId)) {
+          return;
+        }
+      }
+      const value = eval(`chainData.${cmd}`);
       inputs[key] = value;
     }
   }
@@ -42,7 +47,9 @@ function readCircuitFile(chainData: any, file: string) {
   const chainId = chainData.chainId;
   const newDir = path.join(dir, chainId);
   fs.mkdirSync(newDir, { recursive: true });
-  fs.writeFileSync(path.join(newDir, `${fileName}.inputs.json`), JSON.stringify(inputs, null, 4));
+  const filePath = path.join(newDir, `${fileName}.inputs.json`);
+  fs.writeFileSync(filePath, JSON.stringify(inputs, null, 4));
+  console.log(`Wrote inputs to ${filePath}`);
 }
 
 function getFiles(chainData: any, dir: string) {

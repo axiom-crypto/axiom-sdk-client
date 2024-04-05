@@ -30,14 +30,13 @@ export const config = {
 }
 
 export const circuit = async (inputs: CircuitInputs) => {
-  
   for (let i = 0; i < 4; i++) {
     const header = await getHeader(add(inputs.blockNumber, constant(i))).timestamp();
-    const account = await getAccount(add(inputs.blockNumber, constant(i)), addr).balance();
-    const storage = await getStorage(add(inputs.blockNumber, constant(i)), addr).slot(0);
+    const account = await getAccount(add(inputs.blockNumber, constant(i)), inputs.addr).balance();
+    const storage = await getStorage(add(inputs.blockNumber, constant(i)), inputs.addr).slot(0);
     const tx = await getTx(add(inputs.blockNumber, constant(i)), 0).to();
     const rc = await getReceipt(add(inputs.blockNumber, constant(i)), 0).status();
-    const mapping = await getSolidityMapping(add(inputs.blockNumber, constant(i)), addr, 0).key(0);
+    const mapping = await getSolidityMapping(add(inputs.blockNumber, constant(i)), inputs.addr, 0).key(0);
     const r0 = add(header.toCircuitValue(), account.toCircuitValue());
     const r1 = add(r0, storage.toCircuitValue());
     const r2 = mul(tx.toCircuitValue(), mapping.toCircuitValue());

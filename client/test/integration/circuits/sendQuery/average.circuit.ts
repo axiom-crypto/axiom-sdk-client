@@ -22,8 +22,8 @@ export interface CircuitInputs {
 // Default inputs to use for compiling the circuit. These values should be different than the inputs fed into
 // the circuit at proving time.
 export const defaultInputs = {
-  "blockNumber": 4000000,
-  "address": "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701"
+  "blockNumber": 4000000, //$ account.eoa[5].blockNumber
+  "address": "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701" //$ account.eoa[5].address
 };
 
 // The function name `circuit` is searched for by default by our Axiom CLI; if you decide to 
@@ -32,10 +32,10 @@ export const defaultInputs = {
 export const circuit = async (inputs: CircuitInputs) => {
   // Number of samples to take. Note that this must be a constant value and NOT an input because the size of 
   // the circuit must be known at compile time.
-  const samples = 8;
+  const samples = 32;
 
   // Number of blocks between each sample.
-  const spacing = 900;
+  const spacing = 5000;
 
   // Validate that the block number is greater than the number of samples times the spacing
   if (inputs.blockNumber.value() <= (samples * spacing)) {

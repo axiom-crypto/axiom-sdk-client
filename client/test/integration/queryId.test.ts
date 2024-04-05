@@ -2,20 +2,20 @@ import { Axiom } from "../../src";
 import { bytes32 } from "@axiom-crypto/core";
 import { generateCircuit, getTarget, parseArgs, runTestPass } from "./circuitTest";
 
-const { chainId } = parseArgs();
+const CHAIN_ID = process.env.CHAIN_ID as string;
 
 describe("QueryID Integration Tests", () => {
   test("check queryId matches emitted event", async () => {
-    const { circuit, compiledCircuit, inputs } = await generateCircuit(chainId, "queryId/basic");
+    const { circuit, compiledCircuit, inputs } = await generateCircuit(CHAIN_ID, "queryId/basic");
 
     const axiom = new Axiom({
       circuit,
       compiledCircuit,
-      chainId,
-      provider: process.env[`PROVIDER_URI_${chainId}`] as string,
-      privateKey: process.env[`PRIVATE_KEY_${chainId}`] as string,
+      chainId: CHAIN_ID,
+      provider: process.env[`PROVIDER_URI_${CHAIN_ID}`] as string,
+      privateKey: process.env[`PRIVATE_KEY_${CHAIN_ID}`] as string,
       callback: {
-        target: getTarget(chainId),
+        target: getTarget(CHAIN_ID),
       },
     });
     await axiom.init();

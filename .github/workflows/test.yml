@@ -110,7 +110,7 @@ jobs:
 
       - name: Run Integration Tests (Client)
         working-directory: ./client
-        run: pnpm test test/integration -- --chainId=11155111
+        run: CHAIN_ID=11155111 pnpm test test/integration
   
   client-integration-tests-84532:
     name: Client Integration Tests (84532)
@@ -139,7 +139,7 @@ jobs:
 
       - name: Run Integration Tests (Client)
         working-directory: ./client
-        run: pnpm test test/integration -- --chainId=84532
+        run: CHAIN_ID=84532 pnpm test test/integration
 
   harness:
     name: Harness Tests

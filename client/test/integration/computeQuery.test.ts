@@ -2,15 +2,15 @@
 import { Axiom } from "../../src";
 import { generateCircuit, getTarget, parseArgs, runTestPass } from "./circuitTest";
 
-const { chainId } = parseArgs();
+const CHAIN_ID = process.env.CHAIN_ID as string;
 
 describe("Build ComputeQuery with DataQuery", () => {
   test("simple computeQuery with dataQuery", async () => {
-    await runTestPass(chainId, "computeQuery/simple");
+    await runTestPass(CHAIN_ID, "computeQuery/simple");
   }, 90000);
 
   test("simple computeQuery with dataQuery and address override", async () => {
-    const { circuit, compiledCircuit, inputs } = await generateCircuit(chainId, "computeQuery/simple");
+    const { circuit, compiledCircuit, inputs } = await generateCircuit(CHAIN_ID, "computeQuery/simple");
     
     const chainIdOverride = "84532";
     const addressOverride = "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef";
@@ -22,7 +22,7 @@ describe("Build ComputeQuery with DataQuery", () => {
       provider: process.env[`PROVIDER_URI_${chainIdOverride}`] as string,
       privateKey: process.env[`PRIVATE_KEY_${chainIdOverride}`] as string,
       callback: {
-        target: getTarget(chainId),
+        target: getTarget(CHAIN_ID),
       },
       options: {
         overrides: {
@@ -41,7 +41,7 @@ describe("Build ComputeQuery with DataQuery", () => {
   }, 90000);
 
   test("simple computeQuery with non-default capacity", async () => {
-    await runTestPass(chainId, "computeQuery/simpleWithCapacity", {
+    await runTestPass(CHAIN_ID, "computeQuery/simpleWithCapacity", {
       capacity: {
         maxOutputs: 256,
         maxSubqueries: 256,

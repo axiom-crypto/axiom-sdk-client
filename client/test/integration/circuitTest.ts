@@ -51,10 +51,15 @@ export async function generateCircuit(chainId: string, circuitPath: string) {
   const inputsPath = path.resolve(`./test/integration/circuits/${folder}/${chainId}/${fileBase}.inputs.json`);
   const defaultInputsPath = path.resolve(`./test/integration/circuits/${folder}/${chainId}/${fileBase}.defaultInputs.json`);
   
+  let externalDefaults = false;
+  if (existsSync(defaultInputsPath)) {
+    externalDefaults = true;
+  }
+
   if (existsSync(compiledPath)) {
     rmSync(compiledPath);
   }
-  execSync(`node ./dist/cli/index.js circuit compile ${circuitFile} -o ${compiledPath} -d ${defaultInputsPath} -p ${provider}`, { stdio: 'inherit' });
+  execSync(`node ./dist/cli/index.js circuit compile ${circuitFile} -o ${compiledPath} ${externalDefaults ? defaultInputsPath : ""} -p ${provider}`, { stdio: 'inherit' });
 
   let inputs = {};
   if (existsSync(inputsPath)) {

@@ -1,31 +1,29 @@
 import { CircuitValue, add, addToCallback, constant, mul } from "@axiom-crypto/circuit";
 
 export interface CircuitInputs {
-  x: CircuitValue[];
-  y: CircuitValue[];
 }
 
 export const defaultInputs = {
-  x: [10,5,20,15,8,9,2,8,1,5,1,2,5,1,95,3,2,60,9,11],
-  y: [8,2,5,6,2,18,2,20,5,2,29,5,5,2,8,22,3,5,2,40]
 };
 
 export const circuit = async (inputs: CircuitInputs) => {
-  let xRes: CircuitValue[] = [];
-    for (let i = 0; i < inputs.x.length; i++) {
+    const x = [10,5,20,15,8,9,2,8,1,5,1,2,5,1,95,3,2,60,9,11];
+    const y = [8,2,5,6,2,18,2,20,5,2,29,5,5,2,8,22,3,5,2,40];
+    let xRes: CircuitValue[] = [];
+    for (let i = 0; i < x.length; i++) {
         // x^2 + y
-        const x_2 = mul(inputs.x[i], inputs.x[i]);
-        const val = add(x_2, inputs.y[i]);
+        const x_2 = mul(x[i], x[i]);
+        const val = add(x_2, y[i]);
         if (i < 4) {
             xRes.push(val);
         }
     }
 
     let yRes: CircuitValue[] = [];
-    for (let i = 0; i < inputs.y.length; i++) {
+    for (let i = 0; i < y.length; i++) {
         // x^2 + y
-        const y_2 = mul(inputs.y[i], inputs.y[i]);
-        const val = add(y_2, inputs.x[i]);
+        const y_2 = mul(y[i], y[i]);
+        const val = add(y_2, x[i]);
         if (i < 4) {
             yRes.push(val);
         }

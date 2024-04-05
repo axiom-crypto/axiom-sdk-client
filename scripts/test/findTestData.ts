@@ -9,14 +9,14 @@ dotenv.config();
 const END_BLOCK = 0;
 
 // Number of blocks to sample
-const BLOCK_SAMPLES = 128;
+const BLOCK_SAMPLES = 32;
 
 // Interval between blocks to sample
 const BLOCK_INTERVAL = 64;
 
 // Block numbers to include in the search (useful if certain events happened at specific blocks)
 const INCLUDE_BLOCKS: number[] = [
-  8285121,
+  // 8285121,
 ];
 
 const provider = new ethers.JsonRpcProvider(process.env.PROVIDER_URI);

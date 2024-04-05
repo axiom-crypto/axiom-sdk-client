@@ -59,7 +59,7 @@ export async function generateCircuit(chainId: string, circuitPath: string) {
   if (existsSync(compiledPath)) {
     rmSync(compiledPath);
   }
-  execSync(`node ./dist/cli/index.js circuit compile ${circuitFile} -o ${compiledPath} ${externalDefaults ? defaultInputsPath : ""} -p ${provider}`, { stdio: 'inherit' });
+  execSync(`node ./dist/cli/index.js circuit compile ${circuitFile} -o ${compiledPath} ${externalDefaults ? "-d " + defaultInputsPath : ""} -p ${provider}`, { stdio: 'inherit' });
 
   let inputs = {};
   if (existsSync(inputsPath)) {

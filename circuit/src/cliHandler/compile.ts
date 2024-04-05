@@ -40,6 +40,7 @@ export const compile = async (
     })
     let circuitInputs = f.defaultInputs;
     if (options.defaultInputs !== undefined) {
+        console.log("Using default inputs from file:", options.defaultInputs);
         circuitInputs = readJsonFromFile(options.defaultInputs);
     }
     const circuitFn = `const ${f.importName} = AXIOM_CLIENT_IMPORT\n${f.circuit.toString()}`;

@@ -22,7 +22,13 @@
     "outDir": "dist",
     "types": [
       "node"
-    ]
+    ],
+    "paths": {
+      "@axiom-crypto/circuit": ["../circuit/dist"],
+      "@axiom-crypto/client": ["./dist"],
+      "@axiom-crypto/harness": ["../harness/dist"],
+      "@axiom-crypto/react": ["../react/dist"]
+    }
   },
   "include": [
     "src/**/*.ts",
@@ -39,4 +45,3 @@
     "esm": true
   }
 }
-  

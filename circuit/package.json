@@ -4,11 +4,11 @@
   "author": "Intrinsic Technologies",
   "license": "MIT",
   "description": "Client SDK to write custom queries for Axiom, the ZK Coprocessor for Ethereum.",
-  "main": "js/index.js",
-  "types": "index.d.ts",
-  "browser": "web/index.js",
+  "main": "dist/js/index.js",
+  "types": "dist/index.d.ts",
+  "browser": "dist/web/index.js",
   "scripts": {
-    "build": "rm -rf ./dist/* && tsc && tsx scripts/postTsc.js && $npm_execpath run build:docs",
+    "build": "rm -rf ./dist/* && tsc && tsx scripts/postTsc.js && rushx build:docs",
     "build:docs": "./scripts/buildDocs.sh",
     "test": "jest"
   },

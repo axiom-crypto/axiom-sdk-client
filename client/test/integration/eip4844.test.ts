@@ -8,9 +8,8 @@ describe("EIP-4844 transaction", () => {
     if (!(CHAIN_ID === "1" || CHAIN_ID === "11155111")) {
       return;
     }
-    const { circuit, compiledCircuit, inputs } = await generateCircuit(CHAIN_ID, "eip4844/eip4844receipt");
-
     const testFn = async () => {
+      const { circuit, compiledCircuit, inputs } = await generateCircuit(CHAIN_ID, "eip4844/eip4844receipt");
       const axiom = new Axiom({
         circuit,
         compiledCircuit,

@@ -9,7 +9,12 @@ on:
   pull_request:
 
 env:
+<<<<<<< HEAD
   PRIVATE_KEY_ANVIL: ${{ secrets.PRIVATE_KEY_ANVIL }}
+=======
+  # Publicly known Anvil default private key
+  PRIVATE_KEY_ANVIL_DEFAULT: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+>>>>>>> 9a202ea (Use anvil default private key)
   PRIVATE_KEY_SEPOLIA: ${{ secrets.PRIVATE_KEY_SEPOLIA }}
   PROVIDER_URI_MAINNET: ${{ secrets.PROVIDER_URI_MAINNET }}
   PROVIDER_URI_SEPOLIA: ${{ secrets.PROVIDER_URI_SEPOLIA }}

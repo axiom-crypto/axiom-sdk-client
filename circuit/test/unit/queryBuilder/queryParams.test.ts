@@ -15,7 +15,7 @@ import {
 describe("Query ID and Schema calculation", () => {
   const config: AxiomV2QueryBuilderConfig = {
     provider: process.env.PROVIDER_URI_MAINNET as string,
-    privateKey: process.env.PRIVATE_KEY_MAINNET as string,
+    privateKey: process.env.PRIVATE_KEY_ANVIL_DEFAULT as string,
     chainId: 1,
     version: "v2",
   };

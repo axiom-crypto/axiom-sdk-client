@@ -1,12 +1,10 @@
 import {
-  AxiomSdkCore,
   AxiomV2Callback,
   AxiomV2ComputeQuery,
   AxiomV2QueryOptions,
   DataSubquery,
-  QueryBuilderV2,
-  QueryV2,
-} from "@axiom-crypto/core";
+  AxiomV2QueryBuilder,
+} from "@axiom-crypto/circuit";
 import { createPublicClient, encodeFunctionData, http } from "viem";
 import { getMaxFeePerGas } from "./axiom/utils";
 import { AbiType, AxiomV2ClientOptions, AxiomV2SendQueryArgs } from "./types";
@@ -16,7 +14,7 @@ import { viemChain } from "./lib/viem";
 import { getAxiomV2Abi, getAxiomV2QueryAddress } from "./lib";
 
 export const buildSendQuery = async (input: {
-  axiom: AxiomSdkCore;
+  axiom: AxiomV2QueryBuilder;
   dataQuery: DataSubquery[];
   computeQuery: AxiomV2ComputeQuery;
   callback: AxiomV2Callback;
@@ -24,7 +22,6 @@ export const buildSendQuery = async (input: {
   options: AxiomV2ClientOptions;
 }): Promise<AxiomV2SendQueryArgs> => {
   const validate = input.options?.overrides?.validateBuild ?? true;
-  const query = input.axiom.query as QueryV2;
   if (input.options.refundee === undefined) {
     throw new Error("Refundee is required");
   }
@@ -49,7 +46,7 @@ export const buildSendQuery = async (input: {
     refundee: input.options.refundee,
   };
 
-  const qb: QueryBuilderV2 = query.new(
+  input.axiom = new AxiomV2QueryBuilder(
     undefined,
     input.computeQuery,
     input.callback,
@@ -57,7 +54,7 @@ export const buildSendQuery = async (input: {
   );
 
   if (input.dataQuery.length > 0) {
-    qb.setBuiltDataQuery({
+    input.axiom.setBuiltDataQuery({
       subqueries: input.dataQuery,
       sourceChainId: chainId,
     }, true);
@@ -71,8 +68,8 @@ export const buildSendQuery = async (input: {
     userSalt,
     refundee,
     dataQuery,
-  } = await qb.build(validate);
-  const id = await qb.getQueryId(input.caller);
+  } = await input.axiom.build(validate);
+  const id = await input.axiom.getQueryId(input.caller);
 
   let sendQueryArgs: any;
   if (!input.options.ipfsClient) {

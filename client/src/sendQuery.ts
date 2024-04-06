@@ -9,7 +9,7 @@ import {
 } from "@axiom-crypto/core";
 import { createPublicClient, encodeFunctionData, http } from "viem";
 import { getMaxFeePerGas } from "./axiom/utils";
-import { AbiType, AxiomV2ClientOptions, AxiomV2SendQueryArgs } from "./types";
+import { AxiomV2ClientOptions, AxiomV2SendQueryArgs } from "./types";
 import { encodeFullQueryV2 } from "@axiom-crypto/core/packages/tools";
 import { calculateFeeDataExtended, calculatePayment } from "./lib/paymentCalc";
 import { viemChain } from "./lib/viem";
@@ -34,7 +34,7 @@ export const buildSendQuery = async (input: {
 
   const chainId = input.axiom.config.chainId.toString();
   const axiomQueryAddress = input.options?.overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
-  const abi = getAxiomV2Abi(AbiType.Query);
+  const abi = getAxiomV2Abi();
 
   const publicClient = createPublicClient({
     chain: viemChain(chainId, input.axiom.config.providerUri),

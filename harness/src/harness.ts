@@ -1,7 +1,7 @@
 import { buildCircuit } from "./template/buildCircuit";
 import path from 'path';
 import fs from 'fs';
-import { compile, prove } from "@axiom-crypto/client/cli/components";
+import { compile, prove } from "@axiom-crypto/client";
 
 export const harness = async (
   inputPath: string,

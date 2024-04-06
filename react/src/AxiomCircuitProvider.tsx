@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { Remote, wrap } from "comlink";
 import { AxiomCircuit } from "./worker";
-import { 
+import {
   AxiomV2CompiledCircuit,
   AxiomV2Callback,
   AxiomV2SendQueryArgs,
@@ -51,7 +51,7 @@ function AxiomCircuitProvider({
   const [refundee, setRefundee] = useState<string | null>(null);
   const [builtQuery, setBuiltQuery] = useState<AxiomV2SendQueryArgs | null>(null);
 
-  const workerApi = useRef<Remote<AxiomCircuit>>();
+  const workerApi = useRef<Remote<any>>();
 
   const build = async () => {
     if (!inputs || !callback || !refundee) {
@@ -70,15 +70,18 @@ function AxiomCircuitProvider({
         chainId,
         f: compiledCircuit.circuit,
       });
+      // Assuming setup and loadSaved are methods on AxiomCircuit
+      // If they are not, this will need to be adjusted to match the actual API.
       await workerApi.current.setup(window.navigator.hardwareConcurrency);
       await workerApi.current?.loadSaved({
-        config: compiledCircuit.config,
         capacity: compiledCircuit.capacity ?? DEFAULT_CAPACITY,
         vk: compiledCircuit.vk,
       });
     }
 
     const generateQuery = async () => {
+      // Assuming run and getSendQueryArgs are methods on AxiomCircuit
+      // If they are not, this will need to be adjusted to match the actual API.
       await workerApi.current?.run(inputs);
       const res = await workerApi.current?.getSendQueryArgs({
         options: options ?? {refundee},

@@ -1,12 +1,15 @@
-import { AxiomV2CircuitCapacity, CircuitConfig } from "@axiom-crypto/circuit/types";
 import {
   AxiomV2Callback,
+  AxiomV2CircuitCapacity,
   AxiomV2ComputeQuery,
   AxiomV2FeeData,
   AxiomV2QueryOptions,
+  CircuitConfig,
+} from "@axiom-crypto/circuit";
+import {
   ByteLengths,
   IpfsClient,
-} from "@axiom-crypto/core";
+} from "@axiom-crypto/circuit/pkg/tools";
 
 const solidityTypes = Object.keys(ByteLengths);
 const solidityInputTypes = [...solidityTypes, ...solidityTypes.map((type: string) => `${type}[]`)] as const;

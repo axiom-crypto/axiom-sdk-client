@@ -27,7 +27,9 @@
     "chalk": "^4.1.2",
     "commander": "^11.1.0",
     "prompts": "^2.4.2",
-    "viem": "^2.3.1"
+    "viem": "^2.3.1",
+    "@axiom-crypto/circuit": "2.0.8",
+    "@axiom-crypto/core": "2.3.8"
   },
   "devDependencies": {
     "@types/jest": "^29.5.11",

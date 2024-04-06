@@ -67,7 +67,6 @@ export class Axiom<T> {
 
   async init() {
     await this.axiomCircuit.loadSaved({
-      config: this.compiledCircuit.config,
       capacity: this.capacity ?? this.compiledCircuit.capacity ?? DEFAULT_CAPACITY,
       vk: this.compiledCircuit.vk,
     });
@@ -96,7 +95,7 @@ export class Axiom<T> {
 
   async prove(input: UserInput<T>): Promise<AxiomV2SendQueryArgs> {
     await this.axiomCircuit.run(input);
-    return await this.buildSendQueryArgs(); 
+    return await this.buildSendQueryArgs();
   }
 
   async sendQuery(): Promise<TransactionReceipt> {
@@ -135,7 +134,7 @@ export class Axiom<T> {
     if (args === undefined) {
       throw new Error("SendQuery args have not been built yet. Please run `prove` first.");
     }
-    try { 
+    try {
       const { request } = await this.publicClient.simulateContract({
         address: args.address as `0x${string}`,
         abi: args.abi,
@@ -167,7 +166,7 @@ export class Axiom<T> {
       refundee: this.options?.refundee ?? this.walletClient?.account?.address,
       overrides: this.options?.overrides,
     };
-    
+
     this.sendQueryArgs = await this.axiomCircuit.getSendQueryArgs({
       callbackTarget: this.callback.target,
       callbackExtraData: this.callback.extraData ?? "0x",

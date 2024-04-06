@@ -1,4 +1,4 @@
-import { AxiomV2CircuitCapacity, CircuitConfig } from "@axiom-crypto/circuit/types";
+import { AxiomV2CircuitCapacity } from "@axiom-crypto/circuit";
 import {
   AxiomV2Callback,
   AxiomV2ComputeQuery,
@@ -30,7 +30,6 @@ export interface AxiomV2CallbackInput {
 
 export interface AxiomV2CompiledCircuit {
   vk: string;
-  config: CircuitConfig;
   querySchema: string;
   inputSchema: string;
   circuit: string;
@@ -86,11 +85,7 @@ export interface ChainDefaults {
 export {
   AxiomV2Callback,
   AxiomV2ComputeQuery,
-  AxiomV2DataQuery,
   AxiomV2QueryOptions,
   AxiomV2FeeData,
-} from "@axiom-crypto/core";
-
-export enum AbiType {
-  Query,
-}
+  AxiomV2CircuitCapacity,
+};

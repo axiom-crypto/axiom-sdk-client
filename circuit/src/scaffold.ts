@@ -13,10 +13,14 @@ import {
 } from "@axiom-crypto/core";
 import { BaseCircuitScaffold } from "@axiom-crypto/halo2-lib-js";
 import { DEFAULT_CAPACITY, DEFAULT_CIRCUIT_CONFIG, SUBQUERY_FE, USER_OUTPUT_FE } from "./constants";
-import { AxiomV2CircuitCapacity, AxiomV2CircuitConfig, RawInput } from "./types";
+import { AxiomV2CircuitCapacity, RawInput } from "./types";
 import { encodeAxiomV2CircuitMetadata } from "./encoder";
 
 const DEADBEEF_BYTES32 = "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef";
+
+export interface AxiomV2CircuitConfig {
+  capacity: AxiomV2CircuitCapacity;
+}
 
 export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   protected resultLen: number;
@@ -35,7 +39,6 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     provider: string,
     f: (inputs: T) => Promise<void>,
     inputSchema?: string | object,
-    config?: CircuitConfig,
     mock?: boolean,
     chainId?: number | string | bigint,
     shouldTime?: boolean,
@@ -45,15 +48,14 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     super();
     this.resultLen = 0;
     this.provider = inputs.provider;
-    this.config = inputs.config ?? DEFAULT_CIRCUIT_CONFIG;
     this.capacity = inputs.capacity ?? DEFAULT_CAPACITY;
     if (
-      this.capacity?.maxOutputs !== DEFAULT_CAPACITY.maxOutputs || 
+      this.capacity?.maxOutputs !== DEFAULT_CAPACITY.maxOutputs ||
       this.capacity?.maxSubqueries !== DEFAULT_CAPACITY.maxSubqueries
     ) {
       console.warn("Using a non-default capacity for the circuit will result in a query that cannot be fulfilled on-chain.");
     }
-    
+
     this.dataQuery = [];
     this.axiom = new AxiomSdkCore({
       providerUri: inputs.provider,
@@ -88,25 +90,20 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
 
   async loadSaved(input: {
     vk: string;
-    config: CircuitConfig;
     capacity?: AxiomV2CircuitCapacity;
   }) {
-    this.config = input.config;
     this.capacity = input.capacity ?? DEFAULT_CAPACITY;
     await this.loadParamsAndVk(base64ToByteArray(input.vk));
   }
 
   loadSavedMock(input: {
-    config: CircuitConfig;
     capacity?: AxiomV2CircuitCapacity;
   }) {
-    this.config = input.config;
     this.capacity = input.capacity ?? DEFAULT_CAPACITY;
   }
 
   circuitConfig(): AxiomV2CircuitConfig {
     return {
-      config: this.config,
       capacity: this.capacity,
     }
   }

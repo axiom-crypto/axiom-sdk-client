@@ -24,10 +24,14 @@
       "node"
     ],
     "paths": {
-      "@axiom-crypto/circuit": ["../circuit/dist"],
+      "@axiom-crypto/circuit": ["../../common/temp/node_modules/@axiom-crypto/circuit"],
       "@axiom-crypto/client": ["./dist"],
-      "@axiom-crypto/harness": ["../harness/dist"],
-      "@axiom-crypto/react": ["../react/dist"]
+      "@axiom-crypto/harness": ["../../common/temp/node_modules/@axiom-crypto/harness"],
+      "@axiom-crypto/react": ["../../common/temp/node_modules/@axiom-crypto/react"],
+      "@axiom-crypto/core": ["../../common/temp/node_modules/@axiom-crypto/core"],
+      "@axiom-crypto/halo2-lib-js": ["../../common/temp/node_modules/@axiom-crypto/halo2-lib-js"],
+      "@axiom-crypto/halo2-wasm": ["../../common/temp/node_modules/@axiom-crypto/halo2-wasm"],
+      "@axiom-crypto/tools": ["../../common/temp/node_modules/@axiom-crypto/tools"]
     }
   },
   "include": [

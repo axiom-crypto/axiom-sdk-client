@@ -5,7 +5,7 @@ import {
   AxiomV2FeeData,
   getByteLength,
 } from "@axiom-crypto/core";
-import { AbiType, AxiomV2ClientOverrides, AxiomV2SendQueryArgsParams, CircuitInputType } from "../types";
+import { AxiomV2ClientOverrides, AxiomV2SendQueryArgsParams, CircuitInputType } from "../types";
 import { createPublicClient, http } from 'viem';
 import { getAxiomV2Abi, getAxiomV2QueryAddress, viemChain } from "../lib";
 import { getChainDefaults } from "../lib/chain";
@@ -32,7 +32,7 @@ export function convertInputSchemaToJsonString(args: {[arg: string]: CircuitInpu
     }
     if (getByteLength(argType) < 32) {
       return `"${key}": "CircuitValue${postfix}"`;
-    } 
+    }
     return `"${key}": "CircuitValue256${postfix}"`;
   });
   return `{${inputs.map((inputLine: string) => `\n  ${inputLine}`)}\n}`;
@@ -82,14 +82,14 @@ export async function getMaxFeePerGas(axiom: AxiomSdkCore, overrides?: AxiomV2Cl
   try {
     let contractMinMaxFeePerGas = await publicClient.readContract({
       address: axiomQueryAddress as `0x${string}`,
-      abi: getAxiomV2Abi(AbiType.Query),
+      abi: getAxiomV2Abi(),
       functionName: "minMaxFeePerGas",
       args: [],
     }) as bigint;
 
     const sdkMinMaxFeePerGas = getChainDefaults(chainId).minMaxFeePerGasWei;
     contractMinMaxFeePerGas = contractMinMaxFeePerGas === 0n ? sdkMinMaxFeePerGas : contractMinMaxFeePerGas;
-    
+
     let maxFeePerGas = contractMinMaxFeePerGas;
     if (providerMaxFeePerGas > maxFeePerGas) {
       maxFeePerGas = providerMaxFeePerGas;
@@ -97,13 +97,13 @@ export async function getMaxFeePerGas(axiom: AxiomSdkCore, overrides?: AxiomV2Cl
     if (sdkMinMaxFeePerGas > maxFeePerGas) {
       maxFeePerGas = sdkMinMaxFeePerGas;
     }
-    
+
     if (maxFeePerGas === contractMinMaxFeePerGas) {
       console.log(`Network gas price below threshold. Using contract-defined minMaxFeePerGas: ${maxFeePerGas.toString()}`);
     } else if (maxFeePerGas === sdkMinMaxFeePerGas) {
       console.log(`Network gas price below threshold. Using SDK-defined minimum minMaxFeePerGas: ${maxFeePerGas.toString()}`);
     }
-    
+
     return maxFeePerGas.toString();
   } catch (e) {
     const defaultMinMaxFeePerGas = getChainDefaults(chainId).minMaxFeePerGasWei.toString();

@@ -32,7 +32,20 @@ circuit
   .option("-o, --outputs [outputs]", "outputs json file")
   .option("-f, --function [function]", "function name in typescript circuit")
   .option("--cache [cache]", "cache output file")
-  .action(compile);
+  .option("--force", "force compilation even if output file exists")
+  .action((circuitPath, options) => {
+    console.log("Compile command initiated with path:", circuitPath);
+    console.log("Options received:", options);
+    try {
+      if (options.force) {
+        console.log("--force option used, forcing compilation.");
+      }
+      compile(circuitPath, options);
+      console.log("Compile function executed successfully.");
+    } catch (error) {
+      console.error("Error during compilation:", error);
+    }
+  });
 
 circuit
   .command("prove")

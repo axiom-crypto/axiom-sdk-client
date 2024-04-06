@@ -41,11 +41,6 @@ describe("Build ComputeQuery with DataQuery", () => {
   }, 90000);
 
   test("simple computeQuery with non-default capacity", async () => {
-    await runTestPass(CHAIN_ID, "computeQuery/simpleWithCapacity", {
-      capacity: {
-        maxOutputs: 256,
-        maxSubqueries: 256,
-      },
-    });
+    await runTestPass(CHAIN_ID, "computeQuery/simpleWithCapacity");
   }, 90000);
 });

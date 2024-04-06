@@ -1,0 +1,12 @@
+export declare const SharedConstants: Readonly<{
+    EIP2930_BLOCK: 12244000;
+    EIP1559_BLOCK: 12965000;
+}>;
+export declare const Versions: string[];
+export type VersionsType = (typeof Versions)[number];
+export declare const ContractEvents: Readonly<{
+    QueryInitiatedOnchain: "QueryInitiatedOnchain";
+    QueryFulfilled: "QueryFulfilled";
+}>;
+export declare function updateConstants(versionData: any, version: string, updateObject: any): any;
+//# sourceMappingURL=constants.d.ts.map

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
+  "rushVersion": "5.69.0",
+  "pnpmVersion": "6.32.10",
+  "nodeSupportedVersionRange": ">=18.0.0 <19.0.0",
+
+  "projects": [
+    {
+      "packageName": "@axiom-crypto/circuit",
+      "projectFolder": "circuit",
+      "reviewCategory": "libraries"
+    },
+    {
+      "packageName": "@axiom-crypto/client",
+      "projectFolder": "client",
+      "reviewCategory": "applications"
+    },
+    {
+      "packageName": "@axiom-crypto/harness",
+      "projectFolder": "harness",
+      "reviewCategory": "tools"
+    },
+    {
+      "packageName": "@axiom-crypto/react",
+      "projectFolder": "react",
+      "reviewCategory": "libraries"
+    }
+  ]
+}

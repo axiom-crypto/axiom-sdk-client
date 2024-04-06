@@ -1,0 +1,84 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getFieldIdxReceiptLogAddress = exports.getFieldIdxReceiptLogsBloomIdx = exports.getFieldIdxReceiptDataIdx = exports.getFieldIdxReceiptTopicIdx = exports.getFieldIdxReceiptLogIdx = exports.getFieldIdxReceiptTxIndex = exports.getFieldIdxReceiptBlockNumber = exports.getFieldIdxReceiptTxType = exports.getFieldIdxTxDataLength = exports.getFieldIdxTxCalldataHash = exports.getFieldIdxTxFunctionSelector = exports.getFieldIdxTxIndex = exports.getFieldIdxTxBlockNumber = exports.getFieldIdxTxType = exports.getFieldIdxTxContractDataIdx = exports.getFieldIdxTxCalldataIdx = exports.getFieldIdxHeaderExtraDataLen = exports.getFieldIdxHeaderTxSize = exports.getFieldIdxHeaderTxHash = exports.getFieldIdxHeaderLogsBloomIdx = void 0;
+const constants_1 = require("../../constants");
+function getFieldIdxHeaderLogsBloomIdx(idx) {
+    return constants_1.AxiomV2FieldConstant.Header.LogsBloomFieldIdxOffset + idx;
+}
+exports.getFieldIdxHeaderLogsBloomIdx = getFieldIdxHeaderLogsBloomIdx;
+function getFieldIdxHeaderTxHash() {
+    return constants_1.AxiomV2FieldConstant.Header.HashFieldIdx;
+}
+exports.getFieldIdxHeaderTxHash = getFieldIdxHeaderTxHash;
+function getFieldIdxHeaderTxSize() {
+    return constants_1.AxiomV2FieldConstant.Header.HeaderSizeFieldIdx;
+}
+exports.getFieldIdxHeaderTxSize = getFieldIdxHeaderTxSize;
+function getFieldIdxHeaderExtraDataLen() {
+    return constants_1.AxiomV2FieldConstant.Header.ExtraDataLenFieldIdx;
+}
+exports.getFieldIdxHeaderExtraDataLen = getFieldIdxHeaderExtraDataLen;
+function getFieldIdxTxCalldataIdx(idx) {
+    return constants_1.AxiomV2FieldConstant.Tx.CalldataIdxOffset + idx;
+}
+exports.getFieldIdxTxCalldataIdx = getFieldIdxTxCalldataIdx;
+function getFieldIdxTxContractDataIdx(idx) {
+    return constants_1.AxiomV2FieldConstant.Tx.ContractDataIdxOffset + idx;
+}
+exports.getFieldIdxTxContractDataIdx = getFieldIdxTxContractDataIdx;
+function getFieldIdxTxType() {
+    return constants_1.AxiomV2FieldConstant.Tx.TxTypeFieldIdx;
+}
+exports.getFieldIdxTxType = getFieldIdxTxType;
+function getFieldIdxTxBlockNumber() {
+    return constants_1.AxiomV2FieldConstant.Tx.BlockNumberFieldIdx;
+}
+exports.getFieldIdxTxBlockNumber = getFieldIdxTxBlockNumber;
+function getFieldIdxTxIndex() {
+    return constants_1.AxiomV2FieldConstant.Tx.TxIndexFieldIdx;
+}
+exports.getFieldIdxTxIndex = getFieldIdxTxIndex;
+function getFieldIdxTxFunctionSelector() {
+    return constants_1.AxiomV2FieldConstant.Tx.FunctionSelectorFieldIdx;
+}
+exports.getFieldIdxTxFunctionSelector = getFieldIdxTxFunctionSelector;
+function getFieldIdxTxCalldataHash() {
+    return constants_1.AxiomV2FieldConstant.Tx.CalldataHashFieldIdx;
+}
+exports.getFieldIdxTxCalldataHash = getFieldIdxTxCalldataHash;
+function getFieldIdxTxDataLength() {
+    return constants_1.AxiomV2FieldConstant.Tx.DataLengthFieldIdx;
+}
+exports.getFieldIdxTxDataLength = getFieldIdxTxDataLength;
+function getFieldIdxReceiptTxType() {
+    return constants_1.AxiomV2FieldConstant.Receipt.TxTypeFieldIdx;
+}
+exports.getFieldIdxReceiptTxType = getFieldIdxReceiptTxType;
+function getFieldIdxReceiptBlockNumber() {
+    return constants_1.AxiomV2FieldConstant.Receipt.BlockNumberFieldIdx;
+}
+exports.getFieldIdxReceiptBlockNumber = getFieldIdxReceiptBlockNumber;
+function getFieldIdxReceiptTxIndex() {
+    return constants_1.AxiomV2FieldConstant.Receipt.TxIndexFieldIdx;
+}
+exports.getFieldIdxReceiptTxIndex = getFieldIdxReceiptTxIndex;
+function getFieldIdxReceiptLogIdx(idx) {
+    return constants_1.AxiomV2FieldConstant.Receipt.LogIdxOffset + idx;
+}
+exports.getFieldIdxReceiptLogIdx = getFieldIdxReceiptLogIdx;
+function getFieldIdxReceiptTopicIdx(idx) {
+    return idx;
+}
+exports.getFieldIdxReceiptTopicIdx = getFieldIdxReceiptTopicIdx;
+function getFieldIdxReceiptDataIdx(idx) {
+    return constants_1.AxiomV2FieldConstant.Receipt.DataIdxOffset + idx;
+}
+exports.getFieldIdxReceiptDataIdx = getFieldIdxReceiptDataIdx;
+function getFieldIdxReceiptLogsBloomIdx(idx) {
+    return constants_1.AxiomV2FieldConstant.Receipt.LogsBloomIdxOffset + idx;
+}
+exports.getFieldIdxReceiptLogsBloomIdx = getFieldIdxReceiptLogsBloomIdx;
+function getFieldIdxReceiptLogAddress() {
+    return constants_1.AxiomV2FieldConstant.Receipt.AddressIdx;
+}
+exports.getFieldIdxReceiptLogAddress = getFieldIdxReceiptLogAddress;

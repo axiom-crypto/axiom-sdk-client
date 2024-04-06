@@ -1,0 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AxiomSdkCore = void 0;
+var axiom_1 = require("./axiom");
+Object.defineProperty(exports, "AxiomSdkCore", { enumerable: true, get: function () { return axiom_1.AxiomSdkCore; } });
+//# sourceMappingURL=index.js.map

@@ -1,0 +1,15 @@
+import { CircuitValue256 } from "./CircuitValue256";
+export declare class CircuitValue {
+    private _value;
+    private _cell;
+    private _circuit;
+    constructor({ value, cell }: {
+        value?: bigint | number | string;
+        cell?: number;
+    });
+    cell(): number;
+    value(): bigint;
+    number(): number;
+    address(): string;
+    toCircuitValue256(): CircuitValue256;
+}

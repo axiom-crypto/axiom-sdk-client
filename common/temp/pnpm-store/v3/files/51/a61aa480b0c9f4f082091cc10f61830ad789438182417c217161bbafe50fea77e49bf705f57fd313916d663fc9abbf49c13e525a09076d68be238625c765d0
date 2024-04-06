@@ -1,0 +1,44 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.convertBase64ToUint8Arr = exports.fetchAndConvertToUint8Array = void 0;
+function fetchAndConvertToUint8Array(url) {
+    return new Promise(function (resolve, reject) {
+        // Check if running in Node.js environment
+        if (typeof process !== "undefined" &&
+            process.versions &&
+            process.versions.node) {
+            var https = require("https");
+            https.get(url, function (res) {
+                var chunks = [];
+                res.on("data", function (chunk) { return chunks.push(chunk); });
+                res.on("end", function () {
+                    var binaryData = Buffer.concat(chunks);
+                    resolve(new Uint8Array(binaryData));
+                });
+                res.on("error", reject);
+            });
+        }
+        // Check if running in browser or web worker environment
+        else if (typeof window !== "undefined" || typeof self !== "undefined") {
+            fetch(url)
+                .then(function (response) { return response.arrayBuffer(); })
+                .then(function (buffer) {
+                resolve(new Uint8Array(buffer));
+            })
+                .catch(reject);
+        }
+        else {
+            reject(new Error("Environment not supported"));
+        }
+    });
+}
+exports.fetchAndConvertToUint8Array = fetchAndConvertToUint8Array;
+var convertBase64ToUint8Arr = function (b64str) {
+    var binstr = atob(b64str);
+    var buf = new Uint8Array(binstr.length);
+    Array.prototype.forEach.call(binstr, function (ch, i) {
+        buf[i] = ch.charCodeAt(0);
+    });
+    return buf;
+};
+exports.convertBase64ToUint8Arr = convertBase64ToUint8Arr;

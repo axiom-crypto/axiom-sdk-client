@@ -1,0 +1,7 @@
+export declare const joinArrays: (...args: any[]) => any[];
+export declare const convertRawInput: (input: any) => any;
+export declare const convertBase64ToUint8Arr: (b64str: string) => Uint8Array;
+export declare const getInputFunctionSignature: (inputs: string) => string;
+export declare const createInterfaceFromInputs: (inputs: string) => string;
+export declare const lowercase: (str: string) => string;
+export declare const uppercase: (str: string) => string;

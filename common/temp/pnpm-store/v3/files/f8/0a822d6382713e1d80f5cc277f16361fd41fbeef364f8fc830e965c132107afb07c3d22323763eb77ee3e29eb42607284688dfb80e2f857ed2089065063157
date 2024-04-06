@@ -1,0 +1,20 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.calculateCalldataGas = void 0;
+const tools_1 = require("@axiom-crypto/tools");
+function calculateCalldataGas(hexString) {
+    let gas = 0;
+    const reader = new tools_1.ByteStringReader(hexString);
+    while (reader.getNumBytesRemaining() > 0) {
+        const byte = reader.readBytes(1);
+        if (byte === "0x00") {
+            gas += 4;
+        }
+        else {
+            gas += 16;
+        }
+    }
+    return gas;
+}
+exports.calculateCalldataGas = calculateCalldataGas;
+//# sourceMappingURL=gasCalc.js.map

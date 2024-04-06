@@ -1,0 +1,149 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ConfigLimitManager = void 0;
+const tools_1 = require("@axiom-crypto/tools");
+const constants_1 = require("../../constants");
+// ConfigLimitManager handles the logic for determining the maximum number of subqueries
+// of transaction and receipt types by getting the size of various parameters of the 
+// Transaction and Receipt. Global parameters for all subqueries are still enforced by 
+// QueryBuliderV2.
+class ConfigLimitManager {
+    constructor() {
+        this.globalConfig = constants_1.SubqueryConfig.Default;
+        this.txSizeCategory = constants_1.TxSizeCategory.Default;
+        this.receiptSizeCategory = constants_1.ReceiptSizeCategory.Default;
+        this.numTxSubqueries = 0;
+        this.numReceiptSubqueries = 0;
+    }
+    processTx(tx) {
+        // Check total data length
+        const txDataLen = (0, tools_1.getNumBytes)(tx.input);
+        // Check access list length
+        let aclNumBytesRlp = 0;
+        if (tx.type === "0x1" || tx.type === "0x2") {
+            const accessListRlp = (0, tools_1.objectToRlp)(tx.accessList ?? {});
+            aclNumBytesRlp = (0, tools_1.getNumBytes)(accessListRlp);
+        }
+        // Validate max bounds
+        if (txDataLen > constants_1.ConstantsV2.TxSizeCategory.Max.MaxDataLen) {
+            throw new Error(`Transaction data length (${txDataLen} bytes) exceeds supported maximum (${constants_1.ConstantsV2.TxSizeCategory.Max.MaxDataLen} bytes)`);
+        }
+        if (aclNumBytesRlp > constants_1.ConstantsV2.TxSizeCategory.Max.MaxAccessListRlpLen) {
+            throw new Error(`Transaction access list length (${aclNumBytesRlp} bytes) exceeds supported maximum (${constants_1.ConstantsV2.TxSizeCategory.Max.MaxAccessListRlpLen} bytes)`);
+        }
+        // Check the size category for this tx
+        let thisTxSize = constants_1.TxSizeCategory.Default;
+        if (txDataLen > constants_1.ConstantsV2.TxSizeCategory.Large.MaxDataLen ||
+            aclNumBytesRlp > constants_1.ConstantsV2.TxSizeCategory.Large.MaxAccessListRlpLen) {
+            thisTxSize = constants_1.TxSizeCategory.Max;
+        }
+        else if (txDataLen > constants_1.ConstantsV2.TxSizeCategory.Default.MaxDataLen ||
+            aclNumBytesRlp > constants_1.ConstantsV2.TxSizeCategory.Default.MaxAccessListRlpLen) {
+            thisTxSize = constants_1.TxSizeCategory.Large;
+        }
+        // Set size category if it's greater than the current size category
+        if (thisTxSize > this.txSizeCategory) {
+            this.txSizeCategory = thisTxSize;
+        }
+        // Increment txSubqueries
+        this.numTxSubqueries++;
+        // Update Global config size based on txSizeCategory if size is smaller
+        let thisTxGlobalSize = constants_1.SubqueryConfig.Default;
+        switch (this.txSizeCategory) {
+            case constants_1.TxSizeCategory.Large:
+                thisTxGlobalSize = constants_1.SubqueryConfig.AllLarge;
+                break;
+            case constants_1.TxSizeCategory.Max:
+                this.globalConfig = constants_1.SubqueryConfig.AllMax;
+                break;
+            default:
+                break;
+        }
+        if (thisTxGlobalSize > this.globalConfig) {
+            this.globalConfig = thisTxGlobalSize;
+        }
+        // Check the subquery count
+        const config = constants_1.ConstantsV2.SubqueryConfigs[this.globalConfig];
+        if (this.numTxSubqueries > config.MaxTxSubqueries) {
+            throw new Error(`Exceeded maximum number of tx subqueries (${this.numTxSubqueries}) for config: ${this.globalConfig}`);
+        }
+        if (this.numReceiptSubqueries > config.MaxReceiptSubqueries) {
+            throw new Error(`Exceeded maximum number of receipt subqueries (${this.numReceiptSubqueries}) for config: ${this.globalConfig}`);
+        }
+    }
+    processReceipt(rc) {
+        // Get num logs
+        const numLogs = rc.logs.length;
+        // Get max log data length
+        let maxLogDataLen = 0;
+        for (const log of rc.logs) {
+            const logDataLen = (0, tools_1.getNumBytes)(log.data);
+            if (logDataLen > maxLogDataLen) {
+                maxLogDataLen = logDataLen;
+            }
+        }
+        // Validate max bounds
+        if (!((maxLogDataLen <= constants_1.ConstantsV2.ReceiptSizeCategory.Large.MaxLogDataLen
+            && numLogs <= constants_1.ConstantsV2.ReceiptSizeCategory.Large.MaxNumLogs) ||
+            (maxLogDataLen <= constants_1.ConstantsV2.ReceiptSizeCategory.Max.MaxLogDataLen
+                && numLogs <= constants_1.ConstantsV2.ReceiptSizeCategory.Max.MaxNumLogs))) {
+            throw new Error(`Receipt size (${maxLogDataLen} bytes, ${numLogs} logs) exceeds either Large or Max config categories`);
+        }
+        // Check the size category for this receipt
+        let thisLogDataLenSize = constants_1.ReceiptSizeCategory.Default;
+        if (maxLogDataLen > constants_1.ConstantsV2.ReceiptSizeCategory.Medium.MaxLogDataLen) {
+            thisLogDataLenSize = constants_1.ReceiptSizeCategory.Large;
+        }
+        else if (maxLogDataLen > constants_1.ConstantsV2.ReceiptSizeCategory.Default.MaxLogDataLen) {
+            thisLogDataLenSize = constants_1.ReceiptSizeCategory.Medium;
+        }
+        let thisNumLogsSize = constants_1.ReceiptSizeCategory.Default;
+        if (numLogs > constants_1.ConstantsV2.ReceiptSizeCategory.Large.MaxNumLogs) {
+            thisNumLogsSize = constants_1.ReceiptSizeCategory.Max;
+        }
+        else if (numLogs > constants_1.ConstantsV2.ReceiptSizeCategory.Default.MaxNumLogs) {
+            thisNumLogsSize = constants_1.ReceiptSizeCategory.Medium;
+        }
+        const thisReceiptSize = Math.max(thisLogDataLenSize, thisNumLogsSize);
+        // Set size category if it's greater than the current size category
+        if (thisReceiptSize > this.receiptSizeCategory) {
+            this.receiptSizeCategory = thisReceiptSize;
+        }
+        // Increment receiptSubqueries
+        this.numReceiptSubqueries++;
+        // Update Global config size based on receiptSizeCategory if size is smaller
+        let thisReceiptGlobalSize = constants_1.SubqueryConfig.Default;
+        switch (this.receiptSizeCategory) {
+            case constants_1.ReceiptSizeCategory.Large:
+                thisReceiptGlobalSize = constants_1.SubqueryConfig.AllLarge;
+                break;
+            case constants_1.ReceiptSizeCategory.Max:
+                this.globalConfig = constants_1.SubqueryConfig.AllMax;
+                break;
+            default:
+                break;
+        }
+        if (thisReceiptGlobalSize > this.globalConfig) {
+            this.globalConfig = thisReceiptGlobalSize;
+        }
+        // Check the subquery count
+        const config = constants_1.ConstantsV2.SubqueryConfigs[this.globalConfig];
+        if (this.numReceiptSubqueries > config.MaxReceiptSubqueries) {
+            throw new Error(`Exceeded maximum number of receipt subqueries (${this.numReceiptSubqueries}) for config: ${this.globalConfig}`);
+        }
+        if (this.numTxSubqueries > config.MaxTxSubqueries) {
+            throw new Error(`Exceeded maximum number of tx subqueries (${this.numTxSubqueries}) for config: ${this.globalConfig}`);
+        }
+    }
+    getGlobalConfig() {
+        return this.globalConfig;
+    }
+    getTxSizeCategory() {
+        return this.txSizeCategory;
+    }
+    getReceiptSizeCategory() {
+        return this.receiptSizeCategory;
+    }
+}
+exports.ConfigLimitManager = ConfigLimitManager;
+//# sourceMappingURL=configLimitManager.js.map

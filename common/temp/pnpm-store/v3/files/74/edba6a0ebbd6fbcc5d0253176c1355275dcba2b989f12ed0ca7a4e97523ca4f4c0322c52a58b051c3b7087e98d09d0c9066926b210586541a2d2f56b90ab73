@@ -1,0 +1,18 @@
+export declare function getSlotForMapping(mappingSlot: number | string | BigInt, keyType: string, key: number | string | BigInt): string;
+export declare function getSlotForArray(arraySlot: number | string | BigInt, arrayType: string, arrayIdx: number | string | BigInt): string;
+export declare function checkFitsInSlot(types: string[]): boolean;
+/**
+ * Packs a 32-byte EVM storage slot from left to right with the given types and data
+ * @param types Array of fixed-length Solidity types
+ * @param data Array of data
+ * @returns 32-byte hex string of packed data
+ */
+export declare function packSlot(types: string[], data: string[]): string;
+/**
+ * Unpacks a 32-byte EVM storage slot into an array of data, read from left to right
+ * @param types Array of fixed-length Solidity types
+ * @param slot 32-byte hex string of slot
+ * @returns Array of data
+ */
+export declare function unpackSlot(types: string[], slot: string): string[];
+export declare function isAssignedSlot(key: string, proof: string[]): boolean;

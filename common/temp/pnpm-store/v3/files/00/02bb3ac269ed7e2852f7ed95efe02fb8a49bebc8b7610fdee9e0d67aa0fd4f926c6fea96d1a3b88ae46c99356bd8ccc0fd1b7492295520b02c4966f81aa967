@@ -1,0 +1,12 @@
+import { ethers } from "ethers";
+export declare function concatHexStrings(...args: string[]): string;
+export declare function sortBlockNumber(a: number, b: number): number;
+export declare function sortAddress(a?: string, b?: string): number;
+export declare function sortSlot(a?: ethers.BigNumberish, b?: ethers.BigNumberish): number;
+export declare function deepSort(arr: any[], keys: string[], sortFns: ((a: any, b: any) => number)[]): any[];
+export declare function sortByNumber(a: number, b: number): number;
+export declare function sortByHex(a: string, b: string): number;
+export declare function deepCopyObject(obj: any): any;
+export declare function fillArray(length: number, value: string): any[];
+export declare function resizeArray(arr: string[], size: number, defaultValue: string): string[];
+//# sourceMappingURL=utils.d.ts.map

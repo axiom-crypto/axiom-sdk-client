@@ -1,0 +1,334 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.decodeBeaconValidatorsSubquery = exports.decodeSolidityNestedMappingSubquery = exports.decodeReceiptSubquery = exports.decodeTxSubquery = exports.decodeStorageSubquery = exports.decodeAccountSubquery = exports.decodeHeaderSubquery = exports.decodeResult = exports.decodeFeeData = exports.decodeCallback = exports.decodeComputeQuery = exports.decodeDataQuery = exports.decodeFullQueryV2 = exports.decodeQueryV2 = void 0;
+const constants_1 = require("../../constants");
+const byteStringReader_1 = require("../../utils/byteStringReader");
+const constants_2 = require("./constants");
+const types_1 = require("./types");
+/**
+ * Decodes a query string into an AxiomV2Query object
+ * @param query The query as a bytes hex string without the first byte (version number)
+ * @returns The decoded query as a QueryV2 object
+ */
+function decodeQueryV2(query) {
+    const reader = new byteStringReader_1.ByteStringReader(query);
+    const sourceChainId = reader.readBytes(8);
+    const caller = reader.readBytes(20);
+    const dataQueryHash = reader.readBytes(32);
+    const computeQuery = decodeComputeQuery(reader);
+    if (!computeQuery) {
+        console.warn(`Unable to decode compute query at index ${reader.currentIdx}`);
+        return null;
+    }
+    const callback = decodeCallback(reader);
+    if (!callback) {
+        console.warn(`Unable to decode callback at index ${reader.currentIdx}`);
+        return null;
+    }
+    const feeData = decodeFeeData(reader);
+    if (!feeData) {
+        console.warn(`Unable to decode fee data at index ${reader.currentIdx}`);
+        return null;
+    }
+    const userSalt = reader.readBytes(32);
+    const refundee = reader.readBytes(20);
+    if (!reader.validateAllBytesRead()) {
+        console.warn(`All nibbles not read: ${reader.currentIdx} / ${reader.byteString.length}`);
+        return null;
+    }
+    return {
+        version: constants_2.ConstantsV2.VERSION,
+        sourceChainId,
+        caller,
+        dataQueryHash,
+        computeQuery,
+        callback,
+        userSalt,
+        feeData,
+        refundee,
+    };
+}
+exports.decodeQueryV2 = decodeQueryV2;
+function decodeFullQueryV2(query) {
+    const reader = new byteStringReader_1.ByteStringReader(query);
+    // Need to include version here because it is not called by the decodeQuery function
+    const version = reader.readInt(1);
+    if (version !== constants_2.ConstantsV2.VERSION) {
+        throw new Error(`Invalid version number: ${version}`);
+    }
+    const sourceChainId = reader.readBytes(8);
+    const caller = reader.readBytes(20);
+    const dataQuery = decodeDataQuery(reader);
+    if (!dataQuery) {
+        console.warn(`Unable to decode data query at index ${reader.currentIdx}`);
+        return null;
+    }
+    const computeQuery = decodeComputeQuery(reader);
+    if (!computeQuery) {
+        console.warn(`Unable to decode compute query at index ${reader.currentIdx}`);
+        return null;
+    }
+    const callback = decodeCallback(reader);
+    if (!callback) {
+        console.warn(`Unable to decode callback at index ${reader.currentIdx}`);
+        return null;
+    }
+    const feeData = decodeFeeData(reader);
+    if (!feeData) {
+        console.warn(`Unable to decode fee data at index ${reader.currentIdx}`);
+        return null;
+    }
+    const userSalt = reader.readBytes(32);
+    const refundee = reader.readBytes(20);
+    if (!reader.validateAllBytesRead()) {
+        console.warn(`All nibbles not read: ${reader.currentIdx} / ${reader.byteString.length}`);
+        return null;
+    }
+    return {
+        version,
+        sourceChainId,
+        caller,
+        dataQuery,
+        computeQuery,
+        callback,
+        userSalt,
+        feeData,
+        refundee,
+    };
+}
+exports.decodeFullQueryV2 = decodeFullQueryV2;
+function decodeDataQuery(reader) {
+    const sourceChainId = reader.readBytes(8);
+    const subqueryLen = reader.readInt(2);
+    const subqueries = [];
+    for (let i = 0; i < subqueryLen; i++) {
+        const type = reader.readInt(2);
+        switch (type) {
+            case types_1.DataSubqueryType.Header:
+                const headerSubquery = decodeHeaderSubquery(reader);
+                if (!headerSubquery) {
+                    console.warn(`Unable to decode header subquery at index ${reader.currentIdx}`);
+                    return null;
+                }
+                subqueries.push({
+                    type: types_1.DataSubqueryType.Header,
+                    subqueryData: headerSubquery,
+                });
+                break;
+            case types_1.DataSubqueryType.Account:
+                const accountSubquery = decodeAccountSubquery(reader);
+                if (!accountSubquery) {
+                    console.warn(`Unable to decode account subquery at index ${reader.currentIdx}`);
+                    return null;
+                }
+                subqueries.push({
+                    type: types_1.DataSubqueryType.Account,
+                    subqueryData: accountSubquery,
+                });
+                break;
+            case types_1.DataSubqueryType.Storage:
+                const storageSubquery = decodeStorageSubquery(reader);
+                if (!storageSubquery) {
+                    console.warn(`Unable to decode storage subquery at index ${reader.currentIdx}`);
+                    return null;
+                }
+                subqueries.push({
+                    type: types_1.DataSubqueryType.Storage,
+                    subqueryData: storageSubquery,
+                });
+                break;
+            case types_1.DataSubqueryType.Transaction:
+                const txSubquery = decodeTxSubquery(reader);
+                if (!txSubquery) {
+                    console.warn(`Unable to decode tx subquery at index ${reader.currentIdx}`);
+                    return null;
+                }
+                subqueries.push({
+                    type: types_1.DataSubqueryType.Transaction,
+                    subqueryData: txSubquery,
+                });
+                break;
+            case types_1.DataSubqueryType.Receipt:
+                const receiptSubquery = decodeReceiptSubquery(reader);
+                if (!receiptSubquery) {
+                    console.warn(`Unable to decode receipt subquery at index ${reader.currentIdx}`);
+                    return null;
+                }
+                subqueries.push({
+                    type: types_1.DataSubqueryType.Receipt,
+                    subqueryData: receiptSubquery,
+                });
+                break;
+            case types_1.DataSubqueryType.SolidityNestedMapping:
+                const solidityNestedMappingSubquery = decodeSolidityNestedMappingSubquery(reader);
+                if (!solidityNestedMappingSubquery) {
+                    console.warn(`Unable to decode solidity nested mapping subquery at index ${reader.currentIdx}`);
+                    return null;
+                }
+                subqueries.push({
+                    type: types_1.DataSubqueryType.SolidityNestedMapping,
+                    subqueryData: solidityNestedMappingSubquery,
+                });
+                break;
+            case types_1.DataSubqueryType.BeaconValidator:
+                const beaconValidatorSubquery = decodeBeaconValidatorsSubquery(reader);
+                if (!beaconValidatorSubquery) {
+                    console.warn(`Unable to decode beacon validator subquery at index ${reader.currentIdx}`);
+                    return null;
+                }
+                subqueries.push({
+                    type: types_1.DataSubqueryType.BeaconValidator,
+                    subqueryData: beaconValidatorSubquery,
+                });
+                break;
+            default:
+                throw new Error(`Unknown subquery type ${type} at index ${reader.currentIdx}`);
+        }
+    }
+    // We do not check all bytes are read here because we are passing in a querySlice that is
+    // longer than the actual dataQuery.
+    return {
+        sourceChainId,
+        subqueries,
+    };
+}
+exports.decodeDataQuery = decodeDataQuery;
+function decodeComputeQuery(reader) {
+    const k = reader.readInt(1);
+    const resultLen = reader.readInt(2);
+    if (k === 0) {
+        return {
+            k,
+            resultLen,
+            vkey: [],
+            computeProof: "",
+        };
+    }
+    const vkeyLen = reader.readInt(1);
+    const vkey = reader.readFixedLenBytes32(vkeyLen);
+    const computeProof = reader.readVarLenBytes(constants_1.AxiomV2CircuitConstant.UserProofLenBytes);
+    return {
+        k,
+        resultLen,
+        vkey,
+        computeProof,
+    };
+}
+exports.decodeComputeQuery = decodeComputeQuery;
+function decodeCallback(reader) {
+    const target = reader.readBytes(20);
+    const extraData = reader.readVarLenBytes(2);
+    return {
+        target,
+        extraData,
+    };
+}
+exports.decodeCallback = decodeCallback;
+function decodeFeeData(reader) {
+    const maxFeePerGas = reader.readBytes(8);
+    const callbackGasLimit = reader.readInt(4);
+    const overrideAxiomQueryFee = reader.readBytes(32);
+    return {
+        maxFeePerGas,
+        callbackGasLimit,
+        overrideAxiomQueryFee,
+    };
+}
+exports.decodeFeeData = decodeFeeData;
+function decodeResult(query) {
+    const reader = new byteStringReader_1.ByteStringReader(query);
+    const sourceChainId = reader.readBytes(8);
+    const dataResultsRoot = reader.readBytes(32);
+    const dataResultsPoseidonRoot = reader.readBytes(32);
+    const computeResultsHash = reader.readBytes(32);
+    if (!reader.validateAllBytesRead()) {
+        return null;
+    }
+    return {
+        sourceChainId,
+        dataResultsRoot,
+        dataResultsPoseidonRoot,
+        computeResultsHash,
+    };
+}
+exports.decodeResult = decodeResult;
+function decodeHeaderSubquery(reader) {
+    const blockNumber = reader.readInt(4);
+    const fieldIdx = reader.readInt(4);
+    return {
+        blockNumber,
+        fieldIdx,
+    };
+}
+exports.decodeHeaderSubquery = decodeHeaderSubquery;
+function decodeAccountSubquery(reader) {
+    const blockNumber = reader.readInt(4);
+    const addr = reader.readBytes(20);
+    const fieldIdx = reader.readInt(4);
+    return {
+        blockNumber,
+        addr,
+        fieldIdx,
+    };
+}
+exports.decodeAccountSubquery = decodeAccountSubquery;
+function decodeStorageSubquery(reader) {
+    const blockNumber = reader.readInt(4);
+    const addr = reader.readBytes(20);
+    const slot = reader.readBytes(32);
+    return {
+        blockNumber,
+        addr,
+        slot,
+    };
+}
+exports.decodeStorageSubquery = decodeStorageSubquery;
+function decodeTxSubquery(reader) {
+    const blockNumber = reader.readInt(4);
+    const txIdx = reader.readInt(2);
+    const fieldOrCalldataIdx = reader.readInt(4);
+    return {
+        blockNumber,
+        txIdx,
+        fieldOrCalldataIdx,
+    };
+}
+exports.decodeTxSubquery = decodeTxSubquery;
+function decodeReceiptSubquery(reader) {
+    const blockNumber = reader.readInt(4);
+    const txIdx = reader.readInt(2);
+    const fieldOrLogIdx = reader.readInt(4);
+    const topicOrDataOrAddressIdx = reader.readInt(4);
+    const eventSchema = reader.readBytes(32);
+    return {
+        blockNumber,
+        txIdx,
+        fieldOrLogIdx,
+        topicOrDataOrAddressIdx,
+        eventSchema,
+    };
+}
+exports.decodeReceiptSubquery = decodeReceiptSubquery;
+function decodeSolidityNestedMappingSubquery(reader) {
+    const blockNumber = reader.readInt(4);
+    const addr = reader.readBytes(20);
+    const mappingSlot = reader.readBytes(32);
+    const mappingDepth = reader.readInt(1);
+    let keys = [];
+    for (let i = 0; i < mappingDepth; i++) {
+        keys.push(reader.readBytes(32));
+    }
+    return {
+        blockNumber,
+        addr,
+        mappingSlot,
+        mappingDepth,
+        keys,
+    };
+}
+exports.decodeSolidityNestedMappingSubquery = decodeSolidityNestedMappingSubquery;
+function decodeBeaconValidatorsSubquery(reader) {
+    // WIP
+    return {};
+}
+exports.decodeBeaconValidatorsSubquery = decodeBeaconValidatorsSubquery;

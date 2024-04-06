@@ -1,0 +1,6 @@
+This workspace does not appear to be tracked by Git. Rush will proceed without
+incremental execution, caching, and change detection.
+
+Invoking: rm -rf dist && node scripts/preBuild.js && tsc && node scripts/postBuild.js 
+
+src/harness.ts(4,32): error TS2307: Cannot find module '@axiom-crypto/client/cli/components' or its corresponding type declarations.

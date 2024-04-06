@@ -1,0 +1,452 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.QueryBuilderV2 = void 0;
+const ethers_1 = require("ethers");
+const tools_1 = require("@axiom-crypto/tools");
+const constants_1 = require("../constants");
+const validate_1 = require("./dataSubquery/validate");
+const utils_1 = require("./dataSubquery/utils");
+const build_1 = require("./dataSubquery/build");
+const utils_2 = require("../../shared/utils");
+const configLimitManager_1 = require("./dataSubquery/configLimitManager");
+class QueryBuilderV2 {
+    constructor(config, dataQuery, computeQuery, callback, options) {
+        this.config = config;
+        this.options = this.setOptions(options ?? {});
+        this.dataSubqueryCount = (0, utils_2.deepCopyObject)(constants_1.ConstantsV2.EmptyDataSubqueryCount);
+        if (dataQuery !== undefined) {
+            this.append(dataQuery);
+        }
+        if (computeQuery !== undefined) {
+            this.computeQuery = this.handleComputeQueryRequest(computeQuery);
+        }
+        if (callback !== undefined) {
+            this.callback = this.handleCallback(callback);
+        }
+    }
+    /**
+     * Gets the current set of unbuilt data subqueries
+     * @returns Array of unbuilt data subqueries
+     */
+    getDataQuery() {
+        return this.dataQuery;
+    }
+    /**
+     * Gets the current compute query
+     * @returns The current compute query
+     */
+    getComputeQuery() {
+        return this.computeQuery;
+    }
+    /**
+     * Gets the callback information
+     * @returns The current callback information
+     */
+    getCallback() {
+        return this.callback;
+    }
+    /**
+     * Gets the current Query options
+     * @returns The current Query options
+     */
+    getOptions() {
+        return this.options;
+    }
+    /**
+     * Gets the current count of each type of data subquery
+     * @returns Subquery counts
+     */
+    getDataSubqueryCount() {
+        return this.dataSubqueryCount;
+    }
+    /**
+     * Gets the built Query. Built Query resets if any data is changed.
+     * @returns The built Query; undefined if Query has not been built yet
+     */
+    getBuiltQuery() {
+        return this.builtQuery;
+    }
+    /**
+     * Gets the hash of the querySchema of the computeQuery
+     * @returns Query schema hash
+     */
+    getQuerySchema() {
+        return (0, tools_1.getQuerySchemaHash)(this.computeQuery?.k ?? 0, this.computeQuery?.resultLen ?? this.getDefaultResultLen(), this.computeQuery?.vkey ?? []);
+    }
+    /**
+     * Gets the hash of the data query
+     * @returns Data query hash
+     */
+    getDataQueryHash() {
+        if (this.builtQuery === undefined) {
+            throw new Error("Query must first be built with `.build()` before getting data query hash. If Query is modified after building, you will need to run `.build()` again.");
+        }
+        return (0, tools_1.getDataQueryHashFromSubqueries)(this.config.chainId.toString(), this.builtQuery.dataQueryStruct.subqueries);
+    }
+    getQueryHash() {
+        if (this.builtQuery === undefined) {
+            throw new Error("Query must first be built with `.build()` before getting query hash. If Query is modified after building, you will need to run `.build()` again.");
+        }
+        const computeQuery = this.computeQuery ?? (0, utils_2.deepCopyObject)(constants_1.ConstantsV2.EmptyComputeQueryObject);
+        return (0, tools_1.getQueryHashV2)(this.config.chainId.toString(), this.getDataQueryHash(), computeQuery);
+    }
+    setDataQuery(dataQuery) {
+        this.unsetBuiltQuery();
+        this.dataQuery = undefined;
+        this.resetSubqueryCount();
+        this.append(dataQuery);
+    }
+    setComputeQuery(computeQuery) {
+        this.unsetBuiltQuery();
+        this.computeQuery = this.handleComputeQueryRequest(computeQuery);
+    }
+    setCallback(callback) {
+        this.unsetBuiltQuery();
+        this.callback = this.handleCallback(callback);
+    }
+    setOptions(options) {
+        this.unsetBuiltQuery();
+        this.options = {
+            maxFeePerGas: options?.maxFeePerGas ?? constants_1.ConstantsV2.DefaultMaxFeePerGasWei,
+            callbackGasLimit: options?.callbackGasLimit ?? constants_1.ConstantsV2.DefaultCallbackGasLimit,
+            overrideAxiomQueryFee: options?.overrideAxiomQueryFee ?? constants_1.ConstantsV2.DefaultOverrideAxiomQueryFee,
+            refundee: options?.refundee,
+        };
+        return this.options;
+    }
+    /**
+     * Append a `UnbuiltSubquery[]` object to the current dataQuery
+     * @param dataQuery A `UnbuiltSubquery[]` object to append
+     */
+    append(dataSubqueries, skipValidate) {
+        this.unsetBuiltQuery();
+        if (this.dataQuery === undefined) {
+            this.dataQuery = [];
+        }
+        if (this.dataQuery?.length + dataSubqueries.length > constants_1.ConstantsV2.UserMaxTotalSubqueries) {
+            throw new Error(`Cannot add more than ${constants_1.ConstantsV2.UserMaxTotalSubqueries} subqueries`);
+        }
+        for (const subquery of dataSubqueries) {
+            const type = (0, utils_1.getUnbuiltSubqueryTypeFromKeys)(Object.keys(subquery));
+            this.updateSubqueryCount(type, skipValidate);
+        }
+        // Append new dataSubqueries to existing dataQuery
+        this.dataQuery = [...(this.dataQuery ?? []), ...dataSubqueries];
+    }
+    /**
+     * Appends a single subquery to the current dataQuery
+     * @param dataSubquery The data of the subquery to append
+     * @param type (optional) The type of subquery to append. If not provided, the type will be
+     *             inferred from the keys of the subquery.
+     */
+    appendDataSubquery(dataSubquery) {
+        this.append([dataSubquery]);
+    }
+    /**
+     * Appends a built DataQuery. This is used when receiving a DataQuery from a ComputeQuery.
+     * Setting this will take precedence over setting any UnbuiltSubqueries via `append()`.
+     */
+    setBuiltDataQuery(dataQuery, skipValidate) {
+        this.resetSubqueryCount();
+        for (const subquery of dataQuery.subqueries) {
+            this.updateSubqueryCount(subquery.type, skipValidate);
+        }
+        this.builtDataQuery = dataQuery;
+    }
+    /**
+     * Queries the required subquery data and builds the entire Query object into the format
+     * that is required by the backend/ZK circuit
+     * @param validate (optional) Runs validation on the Query before attempting to build it
+     * @returns A built Query object
+     */
+    async build(validate) {
+        if (validate === true) {
+            const valid = await this.validate();
+            if (!valid) {
+                throw new Error("Query validation failed");
+            }
+        }
+        // Check if Query can be built: needs at least a dataQuery or computeQuery
+        let validDataQuery = true;
+        if (this.builtDataQuery === undefined && (this.dataQuery === undefined || this.dataQuery.length === 0)) {
+            validDataQuery = false;
+        }
+        let validComputeQuery = true;
+        if (this.computeQuery === undefined || this.computeQuery.k === 0) {
+            validComputeQuery = false;
+        }
+        if (!validDataQuery && !validComputeQuery) {
+            throw new Error("Cannot build Query without either a data query or a compute query");
+        }
+        // Handle Data Query
+        let dataQuery, dataQueryHash, dataQueryStruct;
+        if (this.builtDataQuery === undefined) {
+            // Parse and get fetch appropriate data for all data subqueries
+            const builtDataSubqueries = await (0, build_1.buildDataSubqueries)(this.config.provider, this.dataQuery ?? []);
+            // Encode & build data query
+            dataQuery = (0, build_1.encodeBuilderDataQuery)(this.config.chainId, builtDataSubqueries);
+            dataQueryHash = (0, tools_1.getDataQueryHashFromSubqueries)(this.config.chainId.toString(), builtDataSubqueries);
+            dataQueryStruct = (0, build_1.buildDataQuery)(this.config.chainId, builtDataSubqueries);
+        }
+        else {
+            dataQuery = (0, tools_1.encodeDataQuery)(this.builtDataQuery.sourceChainId, this.builtDataQuery.subqueries);
+            dataQueryHash = (0, tools_1.getDataQueryHashFromSubqueries)(this.builtDataQuery.sourceChainId, this.builtDataQuery.subqueries);
+            dataQueryStruct = (0, utils_2.deepCopyObject)(this.builtDataQuery);
+        }
+        // Handle compute query
+        let defaultResultLen = this.getDefaultResultLen();
+        let computeQuery = {
+            k: 0,
+            resultLen: defaultResultLen,
+            vkey: [],
+            computeProof: "0x00",
+        };
+        if (this.computeQuery !== undefined) {
+            computeQuery.k = this.computeQuery.k;
+            computeQuery.resultLen = this.computeQuery?.resultLen ?? defaultResultLen;
+            computeQuery.vkey = this.computeQuery.vkey;
+            computeQuery.computeProof = this.computeQuery.computeProof;
+        }
+        const querySchema = (0, tools_1.getQuerySchemaHash)(computeQuery.k, computeQuery.resultLen ?? defaultResultLen, computeQuery.vkey);
+        // Get the hash of the full Query
+        const queryHash = (0, tools_1.getQueryHashV2)(this.config.chainId.toString(), dataQueryHash, computeQuery);
+        // Handle callback
+        const callback = {
+            target: this.callback?.target ?? ethers_1.ethers.ZeroAddress,
+            extraData: this.callback?.extraData ?? ethers_1.ethers.ZeroHash,
+        };
+        // FeeData
+        const feeData = {
+            maxFeePerGas: this.options.maxFeePerGas,
+            callbackGasLimit: this.options.callbackGasLimit,
+            overrideAxiomQueryFee: this.options.overrideAxiomQueryFee,
+        };
+        // Get the refundee address
+        const caller = await this.config.signer?.getAddress();
+        const refundee = this.options?.refundee ?? caller ?? "";
+        // Calculate a salt
+        const userSalt = this.calculateUserSalt();
+        this.builtQuery = {
+            sourceChainId: this.config.chainId.toString(),
+            targetChainId: this.config.targetChainId.toString(),
+            queryHash,
+            dataQuery,
+            dataQueryHash,
+            dataQueryStruct,
+            computeQuery,
+            querySchema,
+            callback,
+            feeData,
+            userSalt,
+            refundee,
+        };
+        return this.builtQuery;
+    }
+    /**
+     * @returns {boolean} Whether the query is valid or not
+     */
+    async validate() {
+        // Check if data subqueries are valid
+        const data = await this.validateDataSubqueries();
+        // Check if compute query is valid
+        const compute = await this.validateComputeQuery();
+        // Check if callback is valid
+        const callback = await this.validateCallback();
+        return data && compute && callback;
+    }
+    /**
+     * Gets a queryId for a built Query (requires `privateKey` to be set in AxiomSdkCoreConfig)
+     * @returns uint256 queryId
+     */
+    async getQueryId(caller) {
+        if (this.builtQuery === undefined) {
+            throw new Error("Must query with `build()` first before getting queryId");
+        }
+        // Get required queryId params
+        if (caller === undefined) {
+            if (this.config.signer === undefined) {
+                throw new Error("Unable to get signer; ensure you have set `privateKey` in AxiomSdkCoreConfig");
+            }
+            const callerAddr = await this.config.signer?.getAddress();
+            if (callerAddr === "") {
+                throw new Error("Unable to get signer address; ensure you have set `privateKey` in AxiomSdkCoreConfig");
+            }
+            caller = callerAddr;
+        }
+        const targetChainId = this.builtQuery.targetChainId;
+        const refundee = this.options?.refundee ?? caller;
+        const salt = this.builtQuery.userSalt;
+        const queryHash = this.builtQuery.queryHash;
+        const callbackHash = (0, tools_1.getCallbackHash)(this.builtQuery.callback.target, this.builtQuery.callback.extraData);
+        // Calculate the queryId
+        const queryId = (0, tools_1.getQueryId)(targetChainId, caller, salt, queryHash, callbackHash, refundee);
+        return BigInt(queryId).toString();
+    }
+    unsetBuiltQuery() {
+        // Reset built query if any data is changed
+        this.builtQuery = undefined;
+    }
+    calculateUserSalt() {
+        return ethers_1.ethers.hexlify(ethers_1.ethers.randomBytes(32));
+    }
+    getDefaultResultLen() {
+        return Math.min(this.dataQuery?.length ?? 0, tools_1.AxiomV2CircuitConstant.UserMaxOutputs);
+    }
+    handleComputeQueryRequest(computeQuery) {
+        computeQuery.resultLen = computeQuery.resultLen ?? this.getDefaultResultLen();
+        computeQuery.vkey = computeQuery.vkey.map((x) => (0, tools_1.bytes32)(x));
+        return computeQuery;
+    }
+    handleCallback(callback) {
+        callback.target = callback.target.toLowerCase();
+        callback.extraData = callback.extraData.toLowerCase();
+        return callback;
+    }
+    async validateDataSubqueries() {
+        if (this.dataQuery === undefined || this.dataQuery.length === 0) {
+            return true;
+        }
+        const provider = this.config.provider;
+        let validQuery = true;
+        const configLimitManager = new configLimitManager_1.ConfigLimitManager();
+        for (const subquery of this.dataQuery) {
+            const type = (0, utils_1.getUnbuiltSubqueryTypeFromKeys)(Object.keys(subquery));
+            switch (type) {
+                case tools_1.DataSubqueryType.Header:
+                    validQuery = validQuery && (await (0, validate_1.validateHeaderSubquery)(provider, subquery));
+                    break;
+                case tools_1.DataSubqueryType.Account:
+                    validQuery = validQuery && (await (0, validate_1.validateAccountSubquery)(provider, subquery));
+                    break;
+                case tools_1.DataSubqueryType.Storage:
+                    validQuery = validQuery && (await (0, validate_1.validateStorageSubquery)(provider, subquery));
+                    break;
+                case tools_1.DataSubqueryType.Transaction:
+                    validQuery =
+                        validQuery && (await (0, validate_1.validateTxSubquery)(provider, subquery, configLimitManager));
+                    break;
+                case tools_1.DataSubqueryType.Receipt:
+                    validQuery =
+                        validQuery &&
+                            (await (0, validate_1.validateReceiptSubquery)(provider, subquery, configLimitManager));
+                    break;
+                case tools_1.DataSubqueryType.SolidityNestedMapping:
+                    validQuery =
+                        validQuery &&
+                            (await (0, validate_1.validateSolidityNestedMappingSubquery)(provider, subquery));
+                    break;
+                case tools_1.DataSubqueryType.BeaconValidator:
+                    validQuery =
+                        validQuery && (await (0, validate_1.validateBeaconSubquery)(provider, subquery));
+                    break;
+                default:
+                    throw new Error(`Invalid subquery type: ${type}`);
+            }
+        }
+        return validQuery;
+    }
+    async validateComputeQuery() {
+        if (this.computeQuery === undefined) {
+            return true;
+        }
+        let valid = true;
+        // Check resultLen
+        if (this.computeQuery.resultLen !== undefined &&
+            this.computeQuery.resultLen > tools_1.AxiomV2CircuitConstant.UserMaxOutputs) {
+            console.warn(`Callback resultLen is greater than maxOutputs (${tools_1.AxiomV2CircuitConstant.UserMaxOutputs})`);
+            valid = false;
+        }
+        // Check that vkey and computeProof are not zero if k is nonzero
+        if (this.computeQuery.k !== 0) {
+            if (this.computeQuery.vkey.length === 0) {
+                console.warn("Compute query vkey is empty");
+                valid = false;
+            }
+            if (this.computeQuery.computeProof.length === 0) {
+                console.warn("Compute query computeProof is empty");
+                valid = false;
+            }
+        }
+        return valid;
+    }
+    async validateCallback() {
+        if (this.callback === undefined) {
+            return true;
+        }
+        let valid = true;
+        let target = this.callback.target;
+        if (target === undefined || target === "" || target === ethers_1.ethers.ZeroAddress) {
+            console.warn("Callback target is empty");
+            valid = false;
+        }
+        let extraData = this.callback.extraData;
+        if (extraData === undefined) {
+            console.warn("Callback extraData is undefined");
+            valid = false;
+        }
+        else {
+            // Check if extra data is bytes32-aligned
+            if (extraData.startsWith("0x")) {
+                extraData = extraData.slice(2);
+            }
+            if (extraData.length % 64 !== 0) {
+                console.warn("Callback extraData is not bytes32-aligned; EVM will automatically right-append zeros to data that is not a multiple of 32 bytes, which is probably not what you want.");
+                valid = false;
+            }
+        }
+        return valid;
+    }
+    resetSubqueryCount() {
+        this.dataSubqueryCount = (0, utils_2.deepCopyObject)(constants_1.ConstantsV2.EmptyDataSubqueryCount);
+    }
+    updateSubqueryCount(type, skipValidate) {
+        this.dataSubqueryCount.total++;
+        if (skipValidate)
+            return;
+        if (this.dataSubqueryCount.total > constants_1.ConstantsV2.UserMaxTotalSubqueries) {
+            throw new Error(`Cannot add more than ${constants_1.ConstantsV2.UserMaxTotalSubqueries} subqueries`);
+        }
+        switch (type) {
+            case tools_1.DataSubqueryType.Header:
+                this.dataSubqueryCount.header++;
+                if (this.dataSubqueryCount.header > constants_1.ConstantsV2.MaxSameSubqueryType) {
+                    throw new Error(`Cannot add more than ${constants_1.ConstantsV2.MaxSameSubqueryType} Header subqueries`);
+                }
+                break;
+            case tools_1.DataSubqueryType.Account:
+                this.dataSubqueryCount.account++;
+                if (this.dataSubqueryCount.account > constants_1.ConstantsV2.MaxSameSubqueryType) {
+                    throw new Error(`Cannot add more than ${constants_1.ConstantsV2.MaxSameSubqueryType} Account + Storage + Nested Mapping subqueries`);
+                }
+                break;
+            case tools_1.DataSubqueryType.Storage:
+                this.dataSubqueryCount.storage++;
+                if (this.dataSubqueryCount.storage > constants_1.ConstantsV2.MaxSameSubqueryType) {
+                    throw new Error(`Cannot add more than ${constants_1.ConstantsV2.MaxSameSubqueryType} Account + Storage + Nested Mapping subqueries`);
+                }
+                break;
+            case tools_1.DataSubqueryType.Transaction:
+                this.dataSubqueryCount.transaction++;
+                if (this.dataSubqueryCount.transaction > constants_1.ConstantsV2.MaxSameSubqueryType) {
+                    throw new Error(`Cannot add more than ${constants_1.ConstantsV2.MaxSameSubqueryType} Transaction subqueries`);
+                }
+                break;
+            case tools_1.DataSubqueryType.Receipt:
+                this.dataSubqueryCount.receipt++;
+                if (this.dataSubqueryCount.receipt > constants_1.ConstantsV2.MaxSameSubqueryType) {
+                    throw new Error(`Cannot add more than ${constants_1.ConstantsV2.MaxSameSubqueryType} Receipt subqueries`);
+                }
+                break;
+            case tools_1.DataSubqueryType.SolidityNestedMapping:
+                this.dataSubqueryCount.solidityNestedMapping++;
+                if (this.dataSubqueryCount.solidityNestedMapping > constants_1.ConstantsV2.MaxSameSubqueryType) {
+                    throw new Error(`Cannot add more than ${constants_1.ConstantsV2.MaxSameSubqueryType} Account + Storage + Nested Mapping subqueries`);
+                }
+                break;
+            default:
+                throw new Error(`Unknown subquery type: ${type}`);
+        }
+    }
+}
+exports.QueryBuilderV2 = QueryBuilderV2;
+//# sourceMappingURL=queryBuilderV2.js.map

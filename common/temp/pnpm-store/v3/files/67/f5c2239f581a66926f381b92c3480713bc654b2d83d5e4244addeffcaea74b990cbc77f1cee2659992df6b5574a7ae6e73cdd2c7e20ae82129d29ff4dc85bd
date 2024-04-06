@@ -1,0 +1,72 @@
+export declare const AxiomV2CircuitConstant: Readonly<{
+    NumSubqueryTypes: number;
+    SourceChainIdBytes: number;
+    EncodedKBytes: number;
+    EncodedVkeyLengthBytes: number;
+    SubqueryTypeBytes: number;
+    FieldIdxBytes: number;
+    FieldIdxBits: number;
+    UserAdviceCols: number;
+    UserLookupAdviceCols: number;
+    UserInstanceCols: number;
+    UserFixedCols: number;
+    UserResultBytes: number;
+    UserResultFieldElements: number;
+    UserResultLenBytes: number;
+    UserProofLenBytes: number;
+    UserMaxOutputs: number;
+    UserMaxSubqueries: number;
+    MaxSubqueryInputs: number;
+    MaxSubqueryOutputs: number;
+    MaxSolidityMappingKeys: number;
+    ComponentCapacities: {
+        Total: number;
+        Header: number;
+        Account: number;
+        Storage: number;
+        Tx: number;
+        Receipt: number;
+        SolidityMapping: number;
+        Keccak: number;
+    };
+    TxChipConfig: {
+        MaxDataByteLen: number;
+        MaxAccessListLen: number;
+    };
+    ReceiptChipConfig: {
+        MaxDataByteLen: number;
+        MaxLogNum: number;
+    };
+}>;
+export declare const AxiomV2FieldConstant: Readonly<{
+    Header: {
+        LogsBloomFieldIdxOffset: number;
+        HashFieldIdx: number;
+        HeaderSizeFieldIdx: number;
+        ExtraDataLenFieldIdx: number;
+    };
+    Tx: {
+        FieldIdxOffset: number;
+        CalldataIdxOffset: number;
+        ContractDataIdxOffset: number;
+        TxTypeFieldIdx: number;
+        BlockNumberFieldIdx: number;
+        TxIndexFieldIdx: number;
+        FunctionSelectorFieldIdx: number;
+        CalldataHashFieldIdx: number;
+        DataLengthFieldIdx: number;
+        ContractDeploySelectorValue: number;
+        NoCalldataSelectorValue: number;
+    };
+    Receipt: {
+        FieldIdxOffset: number;
+        LogIdxOffset: number;
+        TopicIdxOffset: number;
+        DataIdxOffset: number;
+        LogsBloomIdxOffset: number;
+        AddressIdx: number;
+        TxTypeFieldIdx: number;
+        BlockNumberFieldIdx: number;
+        TxIndexFieldIdx: number;
+    };
+}>;

@@ -1,0 +1,32 @@
+{
+    "Header": {
+        "LogsBloomFieldIdxOffset": 70,
+        "HashFieldIdx": 50,
+        "HeaderSizeFieldIdx": 51,
+        "ExtraDataLenFieldIdx": 52
+    },
+    "Tx": {
+        "FieldIdxOffset": 0,
+        "CalldataIdxOffset": 100,
+        "ContractDataIdxOffset": 100000,
+        "TxTypeFieldIdx": 51,
+        "BlockNumberFieldIdx": 52,
+        "TxIndexFieldIdx": 53,
+        "FunctionSelectorFieldIdx": 54,
+        "CalldataHashFieldIdx": 55,
+        "DataLengthFieldIdx": 56,
+        "ContractDeploySelectorValue": 60,
+        "NoCalldataSelectorValue": 61
+    },
+    "Receipt": {
+        "FieldIdxOffset": 0,
+        "LogIdxOffset": 100,
+        "TopicIdxOffset": 0,
+        "DataIdxOffset": 100,
+        "LogsBloomIdxOffset": 70,
+        "AddressIdx": 50,
+        "TxTypeFieldIdx": 51,
+        "BlockNumberFieldIdx": 52,
+        "TxIndexFieldIdx": 53
+    }
+}

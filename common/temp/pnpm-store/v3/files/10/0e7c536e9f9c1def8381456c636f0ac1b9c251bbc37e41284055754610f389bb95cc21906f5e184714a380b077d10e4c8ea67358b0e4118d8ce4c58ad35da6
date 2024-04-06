@@ -1,0 +1,10 @@
+import { ethers } from "ethers";
+export declare function getFullBlock(provider: ethers.JsonRpcProvider, blockNumber: number): Promise<any>;
+export declare function getAccountData(provider: ethers.JsonRpcProvider, blockNumber: number, addr: string, slots: ethers.BigNumberish[]): Promise<any>;
+export declare function getRawTransaction(provider: ethers.JsonRpcProvider, txHash: string): Promise<any | null>;
+export declare function getRawReceipt(provider: ethers.JsonRpcProvider, txHash: string): Promise<any | null>;
+export declare function getTxHash(provider: ethers.JsonRpcProvider, blockNumber: number, txIdx: number): Promise<string | null>;
+export declare function getBlockNumberAndTxIdx(provider: ethers.JsonRpcProvider, txHash: string): Promise<{
+    blockNumber: number | null;
+    txIdx: number | null;
+}>;

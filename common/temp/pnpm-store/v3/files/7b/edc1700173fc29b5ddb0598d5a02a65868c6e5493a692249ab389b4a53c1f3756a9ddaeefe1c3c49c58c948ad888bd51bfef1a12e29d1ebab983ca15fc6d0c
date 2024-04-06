@@ -1,0 +1,434 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getSolidityNestedMappingValue = exports.getReceiptFieldValue = exports.getTxFieldValue = exports.getStorageFieldValue = exports.getAccountFieldValue = exports.getHeaderFieldValue = void 0;
+const ethers_1 = require("ethers");
+const utils_1 = require("../utils");
+const codec_1 = require("../codec");
+const getters_1 = require("./getters");
+const constants_1 = require("../constants");
+const constants_2 = require("../constants/common/constants");
+async function getHeaderFieldValue(provider, { blockNumber, fieldIdx }, logger = console) {
+    const block = await (0, getters_1.getFullBlock)(provider, blockNumber);
+    if (!block) {
+        logger.info(`Block ${blockNumber} does not exist`);
+        return null;
+    }
+    const getValue = () => {
+        if (fieldIdx >= constants_1.AxiomV2FieldConstant.Header.LogsBloomFieldIdxOffset &&
+            fieldIdx < constants_1.AxiomV2FieldConstant.Header.LogsBloomFieldIdxOffset + 8) {
+            const logIdx = fieldIdx - constants_1.AxiomV2FieldConstant.Header.LogsBloomFieldIdxOffset;
+            if (!block.logsBloom || logIdx >= block.logsBloom.slice(2).length / 64) {
+                return null;
+            }
+            const reader = new utils_1.ByteStringReader(block.logsBloom);
+            for (let i = 0; i < logIdx; i++) {
+                reader.readBytes("bytes32");
+            }
+            const logsBloomValue = reader.readBytes("bytes32");
+            return logsBloomValue;
+        }
+        switch (fieldIdx) {
+            case codec_1.HeaderField.ParentHash:
+                return block.parentHash ?? null;
+            case codec_1.HeaderField.Sha3Uncles:
+                return block.sha3Uncles ?? null;
+            case codec_1.HeaderField.Miner:
+                return block.miner ?? null;
+            case codec_1.HeaderField.StateRoot:
+                return block.stateRoot ?? null;
+            case codec_1.HeaderField.TransactionsRoot:
+                return block.transactionsRoot ?? null;
+            case codec_1.HeaderField.ReceiptsRoot:
+                return block.receiptsRoot ?? null;
+            case codec_1.HeaderField.LogsBloom:
+                return block.logsBloom?.slice(0, 66) ?? null;
+            case codec_1.HeaderField.Difficulty:
+                return block.difficulty ?? null;
+            case codec_1.HeaderField.Number:
+                return block.number ?? null;
+            case codec_1.HeaderField.GasLimit:
+                return block.gasLimit ?? null;
+            case codec_1.HeaderField.GasUsed:
+                return block.gasUsed ?? null;
+            case codec_1.HeaderField.Timestamp:
+                return block.timestamp ?? null;
+            case codec_1.HeaderField.ExtraData:
+                // Get the first 32 bytes of extra data, and right pad with 0s
+                return block.extraData?.slice(0, 66).padEnd(66, "0") ?? null;
+            case codec_1.HeaderField.MixHash:
+                return block.mixHash ?? null;
+            case codec_1.HeaderField.Nonce:
+                return block.nonce ?? null;
+            case codec_1.HeaderField.BaseFeePerGas:
+                return block.baseFeePerGas ?? null;
+            case codec_1.HeaderField.WithdrawalsRoot:
+                return block.withdrawalsRoot ?? null;
+            // case HeaderField.BlobGasUsed:
+            //   return block.blobGasUsed ?? null;
+            // case HeaderField.ExcessBlobGas:
+            //   return block.excessBlobGas ?? null;
+            // case HeaderField.ParentBeaconBlockRoot:
+            //   return block.parentBeaconBlockRoot ?? null;
+            case constants_1.AxiomV2FieldConstant.Header.HashFieldIdx:
+                return block.hash ?? null;
+            case constants_1.AxiomV2FieldConstant.Header.HeaderSizeFieldIdx:
+                return (0, utils_1.getNumBytes)((0, utils_1.rlpEncodeBlockHeader)(block));
+            case constants_1.AxiomV2FieldConstant.Header.ExtraDataLenFieldIdx:
+                if (!block.extraData) {
+                    return 0;
+                }
+                return (0, utils_1.getNumBytes)(block.extraData);
+            default:
+                logger.info(`Invalid header field: ${fieldIdx}`);
+                return null;
+        }
+    };
+    const value = getValue();
+    if (!value)
+        return null;
+    return (0, utils_1.bytes32)(value);
+}
+exports.getHeaderFieldValue = getHeaderFieldValue;
+async function getAccountFieldValue(provider, { blockNumber, addr, fieldIdx }, logger = console) {
+    const block = await (0, getters_1.getFullBlock)(provider, blockNumber);
+    if (!block) {
+        logger.info(`Block ${blockNumber} does not exist`);
+        return null;
+    }
+    if (!ethers_1.ethers.isAddress(addr)) {
+        logger.info(`Address ${addr} is not a correctly-formed EVM address`);
+        return getNonexistentAccountFieldValue(fieldIdx);
+    }
+    const account = await (0, getters_1.getAccountData)(provider, blockNumber, addr, []);
+    if (!account) {
+        logger.info(`proof is null for block ${blockNumber}, address ${addr}`);
+        return getNonexistentAccountFieldValue(fieldIdx);
+    }
+    const accountProof = account.accountProof;
+    if (!(0, utils_1.isAssignedSlot)(addr, accountProof)) {
+        return getNonexistentAccountFieldValue(fieldIdx);
+    }
+    const stateRoot = ethers_1.ethers.keccak256(accountProof[0]);
+    if (stateRoot !== block.stateRoot) {
+        logger.info(`State root mismatch: ${block.stateRoot} (block) ${stateRoot} (accountProof)`);
+        return null;
+    }
+    const getValue = () => {
+        switch (fieldIdx) {
+            case codec_1.AccountField.Nonce:
+                return account.nonce ?? 0;
+            case codec_1.AccountField.Balance:
+                return account.balance ?? 0;
+            case codec_1.AccountField.StorageRoot:
+                return account.storageHash ?? constants_2.CommonConstants.StorageHashEmpty;
+            case codec_1.AccountField.CodeHash:
+                return account.codeHash ?? constants_2.CommonConstants.CodeHashEmpty;
+            default:
+                logger.info(`Invalid account field: ${fieldIdx}`);
+                return null;
+        }
+    };
+    const value = getValue();
+    if (!value)
+        return null;
+    return (0, utils_1.bytes32)(value);
+}
+exports.getAccountFieldValue = getAccountFieldValue;
+async function getStorageFieldValue(provider, { blockNumber, addr, slot }, logger = console) {
+    const block = await (0, getters_1.getFullBlock)(provider, blockNumber);
+    if (!block) {
+        logger.info(`Block ${blockNumber} does not exist`);
+        return null;
+    }
+    if (!ethers_1.ethers.isAddress(addr)) {
+        logger.info(`Address ${addr} is not a valid address`);
+        return null;
+    }
+    slot = (0, utils_1.bytes32)(slot);
+    let slots = [slot];
+    const account = await (0, getters_1.getAccountData)(provider, blockNumber, addr, slots);
+    if (!account) {
+        logger.info(`proof is null for block ${blockNumber}, address ${addr}`);
+        return null;
+    }
+    const accountProof = account.accountProof;
+    const stateRoot = ethers_1.ethers.keccak256(accountProof[0]);
+    if (stateRoot !== block.stateRoot) {
+        logger.info(`State root mismatch: ${block.stateRoot} (block) ${stateRoot} (accountProof)`);
+        return null;
+    }
+    const storageProof = account.storageProof[0];
+    const proof = storageProof.proof;
+    let value = storageProof.value;
+    if (proof.length === 0) {
+        logger.info(`Slot ${slot} has empty MPT proof in account ${addr} at block ${blockNumber}`);
+        return ethers_1.ZeroHash;
+    }
+    value = (0, utils_1.bytes32)(value);
+    if (!(0, utils_1.isAssignedSlot)(slot, proof) && value !== ethers_1.ZeroHash) {
+        logger.warn(`eth_getProof returned non-zero value on an empty slot`);
+        return null;
+    }
+    const storageHash = ethers_1.ethers.keccak256(proof[0]);
+    if (account.storageHash !== storageHash) {
+        logger.info(`Storage hash mismatch: ${account.storageHash} (account) ${storageHash} (storageProof)`);
+        return null;
+    }
+    return value;
+}
+exports.getStorageFieldValue = getStorageFieldValue;
+async function getTxFieldValue(provider, { blockNumber, txIdx, fieldOrCalldataIdx }, logger = console, tx) {
+    if (!tx || tx?.hash === undefined || tx.hash === "") {
+        // To preserve compatibility w/ ethers provder interface and return object flow, we'll
+        // use one RPC call to first get the txHash
+        const txHash = await (0, getters_1.getTxHash)(provider, blockNumber, txIdx);
+        if (!txHash) {
+            logger.info(`Failed to find txHash for block ${blockNumber} txIdx ${txIdx}`);
+            return null;
+        }
+        tx = await (0, getters_1.getRawTransaction)(provider, txHash);
+        if (!tx) {
+            logger.info(`Failed to find tx for txHash ${txHash}`);
+            return null;
+        }
+    }
+    const getValue = (tx, type) => {
+        if (fieldOrCalldataIdx < constants_1.AxiomV2FieldConstant.Tx.CalldataIdxOffset) {
+            switch (fieldOrCalldataIdx) {
+                case codec_1.TxField.ChainId:
+                    if (type === codec_1.TxType.Legacy) {
+                        return null;
+                    }
+                    return tx?.chainId ?? null;
+                case codec_1.TxField.Nonce:
+                    return tx?.nonce ?? null;
+                case codec_1.TxField.MaxPriorityFeePerGas:
+                    if (type === codec_1.TxType.Legacy || type === codec_1.TxType.Eip2930) {
+                        return null;
+                    }
+                    return tx?.maxPriorityFeePerGas ?? null;
+                case codec_1.TxField.MaxFeePerGas:
+                    if (type === codec_1.TxType.Legacy || type === codec_1.TxType.Eip2930) {
+                        return null;
+                    }
+                    return tx?.maxFeePerGas ?? null;
+                case codec_1.TxField.GasLimit:
+                    return tx?.gas ?? null;
+                case codec_1.TxField.To:
+                    return tx?.to ?? null;
+                case codec_1.TxField.Value:
+                    return tx?.value ?? null;
+                case codec_1.TxField.Data:
+                    if (tx?.input === "0x") {
+                        return "0x0";
+                    }
+                    return tx?.input?.slice(0, 66) ?? null;
+                case codec_1.TxField.GasPrice:
+                    if (type === codec_1.TxType.Eip1559) {
+                        return null;
+                    }
+                    return tx?.gasPrice ?? null;
+                case codec_1.TxField.v:
+                    return tx?.v ?? null;
+                case codec_1.TxField.r:
+                    return tx?.r ?? null;
+                case codec_1.TxField.s:
+                    return tx?.s ?? null;
+                case constants_1.AxiomV2FieldConstant.Tx.TxTypeFieldIdx:
+                    return tx?.type ?? null;
+                case constants_1.AxiomV2FieldConstant.Tx.BlockNumberFieldIdx:
+                    return tx?.blockNumber ?? null;
+                case constants_1.AxiomV2FieldConstant.Tx.TxIndexFieldIdx:
+                    return tx?.transactionIndex ?? null;
+                case constants_1.AxiomV2FieldConstant.Tx.FunctionSelectorFieldIdx:
+                    if (!tx.to && !!tx.input) {
+                        return constants_1.AxiomV2FieldConstant.Tx.ContractDeploySelectorValue;
+                    }
+                    if (tx.input === "0x") {
+                        return constants_1.AxiomV2FieldConstant.Tx.NoCalldataSelectorValue;
+                    }
+                    if (tx.input.length < 10) {
+                        return null;
+                    }
+                    const selectorReader = new utils_1.ByteStringReader(tx.input);
+                    const selector = selectorReader.readBytes("bytes4"); // function selector
+                    return selector;
+                case constants_1.AxiomV2FieldConstant.Tx.CalldataHashFieldIdx:
+                    return ethers_1.ethers.keccak256(tx.input);
+                case constants_1.AxiomV2FieldConstant.Tx.DataLengthFieldIdx:
+                    return (0, utils_1.getNumBytes)(tx.input);
+                default:
+                    logger.info(`Invalid tx field index: ${fieldOrCalldataIdx}`);
+                    return null;
+            }
+        }
+        if (fieldOrCalldataIdx < constants_1.AxiomV2FieldConstant.Tx.ContractDataIdxOffset) {
+            // Parse calldata blob (ignoring function selector) to get calldata at specified idx
+            const calldata = tx.input;
+            const calldataIdx = fieldOrCalldataIdx - constants_1.AxiomV2FieldConstant.Tx.CalldataIdxOffset;
+            if (!tx.input ||
+                // Slice off the 0x plus 4 bytes of the function signature. The EVM encodes all calldata datatypes
+                // as 32-bytes regardless of size, so the remaining items minus function signature are 32 bytes each.
+                calldataIdx >= tx.input.slice(10).length / 64) {
+                return null;
+            }
+            const reader = new utils_1.ByteStringReader(calldata);
+            const _functionSignature = reader.readBytes("bytes4"); // unused
+            for (let i = 0; i < calldataIdx; i++) {
+                reader.readBytes("bytes32");
+            }
+            const calldataValue = reader.readBytes("bytes32");
+            return calldataValue;
+        }
+        // Get contractData Idx
+        // Contract construction: https://blog.smlxl.io/evm-contract-construction-93c98cc4ca96
+        const contractDataIdx = fieldOrCalldataIdx - constants_1.AxiomV2FieldConstant.Tx.ContractDataIdxOffset;
+        const contractData = tx.input;
+        const numSlots = Math.ceil(tx.input.slice(2).length / 64);
+        if (!tx.input || contractDataIdx >= numSlots) {
+            return null;
+        }
+        if (contractDataIdx === numSlots - 1) {
+            // Special case for last slot: we need to pad the last slot with 0s to 32 bytes
+            return (0, utils_1.toLeHex)(tx.input.slice(2 + (numSlots - 1) * 64), 32);
+        }
+        const reader = new utils_1.ByteStringReader(contractData);
+        for (let i = 0; i < contractDataIdx; i++) {
+            reader.readBytes("bytes32");
+        }
+        const contractDataValue = reader.readBytes("bytes32");
+        return contractDataValue;
+    };
+    const type = Number(tx?.type);
+    if (type === codec_1.TxType.Eip4844) {
+        logger.error(`EIP-4844 transactions are not yet supported`);
+        return null;
+    }
+    const value = getValue(tx, type);
+    if (!value)
+        return null;
+    return (0, utils_1.bytes32)(value);
+}
+exports.getTxFieldValue = getTxFieldValue;
+async function getReceiptFieldValue(provider, { blockNumber, txIdx, fieldOrLogIdx, topicOrDataOrAddressIdx, eventSchema }, logger = console, receipt) {
+    if (!receipt || receipt?.transactionHash === undefined || receipt.transactionHash === "") {
+        // To preserve compatibility w/ ethers provder interface and return object flow, we'll
+        // use one RPC call to first get the txHash
+        const txHash = await (0, getters_1.getTxHash)(provider, blockNumber, txIdx);
+        if (!txHash) {
+            logger.info(`Failed to find txHash for block ${blockNumber} txIdx ${txIdx}`);
+            return null;
+        }
+        // const receipt = await provider.getTransactionReceipt(txHash);
+        receipt = await (0, getters_1.getRawReceipt)(provider, txHash);
+        if (!receipt) {
+            logger.info(`Failed to find receipt for txHash ${txHash}`);
+            return null;
+        }
+    }
+    const getValue = (receipt) => {
+        if (fieldOrLogIdx >= constants_1.AxiomV2FieldConstant.Receipt.LogsBloomIdxOffset &&
+            fieldOrLogIdx < constants_1.AxiomV2FieldConstant.Receipt.LogsBloomIdxOffset + 8) {
+            const logIdx = fieldOrLogIdx - constants_1.AxiomV2FieldConstant.Receipt.LogsBloomIdxOffset;
+            if (!receipt.logsBloom || logIdx >= receipt.logsBloom.slice(2).length / 64) {
+                return null;
+            }
+            const reader = new utils_1.ByteStringReader(receipt.logsBloom);
+            for (let i = 0; i < logIdx; i++) {
+                reader.readBytes("bytes32");
+            }
+            const logsBloomValue = reader.readBytes("bytes32");
+            return logsBloomValue;
+        }
+        if (fieldOrLogIdx < constants_1.AxiomV2FieldConstant.Receipt.LogIdxOffset) {
+            switch (fieldOrLogIdx) {
+                case codec_1.ReceiptField.Status:
+                    return receipt?.status ?? null;
+                case codec_1.ReceiptField.PostState:
+                    return receipt?.root ?? null;
+                case codec_1.ReceiptField.CumulativeGas:
+                    return receipt?.cumulativeGasUsed ?? null;
+                case codec_1.ReceiptField.LogsBloom:
+                    return receipt?.logsBloom ?? null;
+                case codec_1.ReceiptField.Logs:
+                    logger.info("Use `getFieldIdxReceiptLogIdx(idx) to get a log at index `idx` in this transaction");
+                    return null;
+                case constants_1.AxiomV2FieldConstant.Receipt.TxTypeFieldIdx:
+                    return receipt?.type ?? null;
+                case constants_1.AxiomV2FieldConstant.Receipt.BlockNumberFieldIdx:
+                    return receipt?.blockNumber ?? null;
+                case constants_1.AxiomV2FieldConstant.Receipt.TxIndexFieldIdx:
+                    return receipt?.transactionIndex ?? null;
+                default:
+                    logger.info(`Invalid receipt field index: ${fieldOrLogIdx}`);
+                    return null;
+            }
+        }
+        const logIdx = fieldOrLogIdx - constants_1.AxiomV2FieldConstant.Receipt.LogIdxOffset;
+        const logItem = receipt.logs[logIdx] ?? null;
+        if (!logItem) {
+            logger.info(`log is null for block ${blockNumber} txIdx ${txIdx} fieldOrLogIdx ${fieldOrLogIdx}`);
+            return null;
+        }
+        const topics = logItem.topics;
+        if (eventSchema !== ethers_1.ZeroHash && eventSchema !== topics[0]) {
+            logger.info(`eventSchema do not match topics`);
+            return null;
+        }
+        if (topicOrDataOrAddressIdx < constants_1.AxiomV2FieldConstant.Receipt.DataIdxOffset) {
+            // Return topic
+            if (topicOrDataOrAddressIdx < logItem.topics.length) {
+                return logItem.topics[topicOrDataOrAddressIdx];
+            }
+            // Return address
+            if (topicOrDataOrAddressIdx === constants_1.AxiomV2FieldConstant.Receipt.AddressIdx) {
+                return logItem.address ?? null;
+            }
+            logger.info("Invalid topic index: ", topicOrDataOrAddressIdx);
+            return null;
+        }
+        // Return data
+        const dataIdx = topicOrDataOrAddressIdx - constants_1.AxiomV2FieldConstant.Receipt.DataIdxOffset;
+        if (!logItem.data || dataIdx >= logItem.data.slice(2).length / 64) {
+            return null;
+        }
+        const reader = new utils_1.ByteStringReader(logItem.data);
+        for (let i = 0; i < dataIdx; i++) {
+            reader.readBytes("bytes32");
+        }
+        const dataValue = reader.readBytes("bytes32");
+        return dataValue;
+    };
+    if (Number(receipt?.type) === codec_1.TxType.Eip4844) {
+        logger.error(`EIP-4844 transaction receipts are not yet supported`);
+        return null;
+    }
+    const value = getValue(receipt);
+    if (!value)
+        return null;
+    return (0, utils_1.bytes32)(value);
+}
+exports.getReceiptFieldValue = getReceiptFieldValue;
+async function getSolidityNestedMappingValue(provider, { blockNumber, addr, mappingSlot, mappingDepth, keys }, logger = console) {
+    let slot = (0, utils_1.bytes32)(mappingSlot);
+    for (let i = 0; i < mappingDepth; i++) {
+        const key = (0, utils_1.bytes32)(keys[i]);
+        slot = ethers_1.ethers.keccak256(ethers_1.ethers.concat([key, slot]));
+    }
+    return await getStorageFieldValue(provider, { blockNumber, addr, slot }, logger);
+}
+exports.getSolidityNestedMappingValue = getSolidityNestedMappingValue;
+function getNonexistentAccountFieldValue(fieldIdx) {
+    switch (fieldIdx) {
+        case codec_1.AccountField.Nonce:
+            return (0, utils_1.bytes32)(0);
+        case codec_1.AccountField.Balance:
+            return (0, utils_1.bytes32)(0);
+        case codec_1.AccountField.StorageRoot:
+            return constants_2.CommonConstants.StorageHashEmpty;
+        case codec_1.AccountField.CodeHash:
+            return (0, utils_1.bytes32)(0);
+        default:
+            throw new Error(`Unknown AccountField index: ${fieldIdx}`);
+    }
+}

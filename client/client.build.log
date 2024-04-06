@@ -1,0 +1,27 @@
+This workspace does not appear to be tracked by Git. Rush will proceed without
+incremental execution, caching, and change detection.
+
+Invoking: rm -rf ./dist/* && node scripts/preTsc.js && tsc && node scripts/postTsc.js 
+
+src/axiom/axiom.ts(8,69): error TS2307: Cannot find module '@axiom-crypto/circuit' or its corresponding type declarations.
+src/axiom/axiom.ts(69,29): error TS2339: Property 'loadSaved' does not exist on type 'AxiomCircuit<T>'.
+src/axiom/axiom.ts(98,29): error TS2339: Property 'run' does not exist on type 'AxiomCircuit<T>'.
+src/cli/components.ts(3,25): error TS2307: Cannot find module '@axiom-crypto/circuit/cliHandler' or its corresponding type declarations.
+src/cli/components.ts(4,23): error TS2307: Cannot find module '@axiom-crypto/circuit/cliHandler' or its corresponding type declarations.
+src/cli/index.ts(2,25): error TS2307: Cannot find module '@axiom-crypto/circuit/cliHandler' or its corresponding type declarations.
+src/cli/index.ts(3,23): error TS2307: Cannot find module '@axiom-crypto/circuit/cliHandler' or its corresponding type declarations.
+src/index.ts(5,15): error TS2307: Cannot find module '@axiom-crypto/circuit' or its corresponding type declarations.
+src/js/index.ts(1,34): error TS2307: Cannot find module '@axiom-crypto/circuit/js/' or its corresponding type declarations.
+src/js/index.ts(4,40): error TS2307: Cannot find module '@axiom-crypto/circuit/types' or its corresponding type declarations.
+src/js/index.ts(26,15): error TS2339: Property 'computeQuery' does not exist on type 'AxiomCircuit<T>'.
+src/js/index.ts(32,19): error TS2339: Property 'axiom' does not exist on type 'AxiomCircuit<T>'.
+src/js/index.ts(33,23): error TS2339: Property 'dataQuery' does not exist on type 'AxiomCircuit<T>'.
+src/js/index.ts(34,26): error TS2339: Property 'computeQuery' does not exist on type 'AxiomCircuit<T>'.
+src/types.ts(1,55): error TS2307: Cannot find module '@axiom-crypto/circuit/types' or its corresponding type declarations.
+src/web/index.ts(1,34): error TS2307: Cannot find module '@axiom-crypto/circuit/web/' or its corresponding type declarations.
+src/web/index.ts(5,40): error TS2307: Cannot find module '@axiom-crypto/circuit/types' or its corresponding type declarations.
+src/web/index.ts(26,15): error TS2339: Property 'computeQuery' does not exist on type 'AxiomCircuit<T>'.
+src/web/index.ts(32,19): error TS2339: Property 'axiom' does not exist on type 'AxiomCircuit<T>'.
+src/web/index.ts(33,23): error TS2339: Property 'dataQuery' does not exist on type 'AxiomCircuit<T>'.
+src/web/index.ts(34,26): error TS2339: Property 'computeQuery' does not exist on type 'AxiomCircuit<T>'.
+src/web/index.ts(43,15): error TS2307: Cannot find module '@axiom-crypto/circuit' or its corresponding type declarations.

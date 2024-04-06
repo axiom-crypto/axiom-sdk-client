@@ -1,0 +1,11 @@
+import { ethers } from "ethers";
+import { AxiomV2DataQuery } from "@axiom-crypto/tools";
+import { DataSubquery, DataSubqueryType, UnbuiltSubquery } from "../../types";
+/**
+ * Builds UnbuiltSubquery[] into DataSubquery[]
+ */
+export declare function buildDataSubqueries(provider: ethers.JsonRpcProvider, subqueries: UnbuiltSubquery[]): Promise<DataSubquery[]>;
+export declare function encodeBuilderDataQuery(chainId: number | string | BigInt, allSubqueries: DataSubquery[]): string;
+export declare function buildDataQuery(chainId: number | string | BigInt, allSubqueries: DataSubquery[]): AxiomV2DataQuery;
+export declare function buildDataSubquery(provider: ethers.JsonRpcProvider, subquery: UnbuiltSubquery, type: DataSubqueryType): Promise<DataSubquery>;
+//# sourceMappingURL=build.d.ts.map

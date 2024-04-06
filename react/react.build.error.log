@@ -1,0 +1,3 @@
+Error calculating the state of the repo. (inner error: Error: git hash-object exited with status 128: fatal: Unable to hash common/temp/pnpm-local
+). Continuing without diffing files.
+

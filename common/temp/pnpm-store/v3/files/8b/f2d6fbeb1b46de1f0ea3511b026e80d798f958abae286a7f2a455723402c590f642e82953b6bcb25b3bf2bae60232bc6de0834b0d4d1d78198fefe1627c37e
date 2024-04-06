@@ -1,0 +1,58 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getBlockNumberAndTxIdx = exports.getTxHash = exports.getRawReceipt = exports.getRawTransaction = exports.getAccountData = exports.getFullBlock = void 0;
+const utils_1 = require("../utils");
+async function getFullBlock(provider, blockNumber) {
+    const fullBlock = await provider.send("eth_getBlockByNumber", [
+        (0, utils_1.shortenedHex)(blockNumber),
+        true,
+    ]);
+    return fullBlock;
+}
+exports.getFullBlock = getFullBlock;
+async function getAccountData(provider, blockNumber, addr, slots) {
+    const accountData = await provider.send("eth_getProof", [
+        addr,
+        slots,
+        (0, utils_1.shortenedHex)(blockNumber),
+    ]);
+    return accountData;
+}
+exports.getAccountData = getAccountData;
+async function getRawTransaction(provider, txHash) {
+    const txData = await provider.send("eth_getTransactionByHash", [txHash]);
+    return txData;
+}
+exports.getRawTransaction = getRawTransaction;
+async function getRawReceipt(provider, txHash) {
+    const receiptData = await provider.send("eth_getTransactionReceipt", [
+        txHash,
+    ]);
+    return receiptData;
+}
+exports.getRawReceipt = getRawReceipt;
+async function getTxHash(provider, blockNumber, txIdx) {
+    const tx = await provider.send("eth_getTransactionByBlockNumberAndIndex", [
+        (0, utils_1.shortenedHex)(blockNumber),
+        (0, utils_1.shortenedHex)(txIdx),
+    ]);
+    if (!tx || tx?.hash === "undefined") {
+        return null;
+    }
+    return tx.hash;
+}
+exports.getTxHash = getTxHash;
+async function getBlockNumberAndTxIdx(provider, txHash) {
+    const tx = await getRawTransaction(provider, txHash);
+    if (!tx) {
+        return {
+            blockNumber: null,
+            txIdx: null,
+        };
+    }
+    return {
+        blockNumber: tx.blockNumber ? Number(tx.blockNumber) : null,
+        txIdx: tx.transactionIndex ? Number(tx.transactionIndex) : null,
+    };
+}
+exports.getBlockNumberAndTxIdx = getBlockNumberAndTxIdx;

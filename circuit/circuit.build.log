@@ -1,0 +1,6 @@
+This workspace does not appear to be tracked by Git. Rush will proceed without
+incremental execution, caching, and change detection.
+
+Invoking: rm -rf ./dist/* && tsc && tsx scripts/postTsc.js && $npm_execpath run build:docs 
+
+sh: 1: run: not found

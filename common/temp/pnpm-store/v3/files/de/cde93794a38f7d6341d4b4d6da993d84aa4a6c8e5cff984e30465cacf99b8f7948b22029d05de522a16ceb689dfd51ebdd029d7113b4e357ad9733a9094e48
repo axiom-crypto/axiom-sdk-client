@@ -1,0 +1,15 @@
+export interface IpfsResult {
+    status: number;
+    value: string | number | boolean | null;
+}
+export declare abstract class IpfsClient {
+    protected name: string;
+    constructor(name: string);
+    abstract getSize(hashOrCid: string): Promise<IpfsResult>;
+    abstract read(hashOrCid: string): Promise<IpfsResult>;
+    abstract pin(data: string): Promise<IpfsResult>;
+    abstract unpin(hashOrCid: string): Promise<IpfsResult>;
+    convertIpfsCidToBytes32(ipfsCid: string): string;
+    convertBytes32ToIpfsCid(bytes32Hex: string): string;
+    getName(): string;
+}

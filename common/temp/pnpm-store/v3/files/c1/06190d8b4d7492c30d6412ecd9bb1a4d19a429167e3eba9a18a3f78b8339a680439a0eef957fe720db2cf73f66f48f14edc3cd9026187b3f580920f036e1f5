@@ -1,0 +1,74 @@
+import { AccountField, ReceiptField, TxField, HeaderField } from "@axiom-crypto/tools";
+import { UnbuiltAccountSubquery, UnbuiltHeaderSubquery, UnbuiltReceiptSubquery, UnbuiltSolidityNestedMappingSubquery, UnbuiltStorageSubquery, UnbuiltTxSubquery } from "../../types";
+/**
+ * Builder for a Header data subquery
+ * @param blockNumber Block number to query
+ */
+export declare const buildHeaderSubquery: (blockNumber: number | string | BigInt) => Readonly<{
+    field: (field: HeaderField) => UnbuiltHeaderSubquery;
+    logsBloom: (logsBloomIdx: number) => UnbuiltHeaderSubquery;
+}>;
+/**
+ * Builder for an Account data subquery
+ * @param blockNumber Block number to query
+ */
+export declare const buildAccountSubquery: (blockNumber: number | string | BigInt) => Readonly<{
+    address: (address: string) => Readonly<{
+        field: (field: AccountField) => UnbuiltAccountSubquery;
+    }>;
+}>;
+/**
+ * Builder for a Storage data subquery
+ * @param blockNumber Block number to query
+ */
+export declare const buildStorageSubquery: (blockNumber: number | string | BigInt) => Readonly<{
+    address: (address: string) => Readonly<{
+        slot: (slot: number | string | BigInt) => UnbuiltStorageSubquery;
+    }>;
+}>;
+/**
+ * Builder for a Transaction data subquery
+ * @param txHash Transaction hash to query
+ */
+export declare const buildTxSubquery: (txHash: string) => Readonly<{
+    field: (field: TxField) => UnbuiltTxSubquery;
+    calldata: (dataIdx: number | string | BigInt) => UnbuiltTxSubquery;
+    contractData: (dataIdx: number | string | BigInt) => UnbuiltTxSubquery;
+    txType: () => UnbuiltTxSubquery;
+    blockNumber: () => UnbuiltTxSubquery;
+    txIndex: () => UnbuiltTxSubquery;
+    functionSelector: () => UnbuiltTxSubquery;
+    calldataHash: () => UnbuiltTxSubquery;
+}>;
+/**
+ * Builder for a Receipt data subquery
+ * @param txHash Transaction hash to query
+ */
+export declare const buildReceiptSubquery: (txHash: string) => Readonly<{
+    field: (field: ReceiptField) => UnbuiltReceiptSubquery;
+    logsBloom: (logsBloomIdx: number) => UnbuiltReceiptSubquery;
+    log: (logIdx: number) => Readonly<{
+        topic: (topicIdx: number) => Readonly<{
+            eventSchema: (eventSchema: string) => UnbuiltReceiptSubquery;
+        }>;
+        data: (dataIdx: number) => Readonly<{
+            eventSchema: (eventSchema: string) => UnbuiltReceiptSubquery;
+        }>;
+        address: () => UnbuiltReceiptSubquery;
+    }>;
+    txType: () => UnbuiltReceiptSubquery;
+    blockNumber: () => UnbuiltReceiptSubquery;
+    txIndex: () => UnbuiltReceiptSubquery;
+}>;
+/**
+ * Builder for a Solidity Nested Mapping data subquery
+ * @param blockNumber Block number to query
+ */
+export declare const buildSolidityNestedMappingSubquery: (blockNumber: number | string | BigInt) => Readonly<{
+    address: (address: string) => Readonly<{
+        mappingSlot: (mappingSlot: number | string | BigInt) => Readonly<{
+            keys: (keys: (number | string | BigInt)[]) => UnbuiltSolidityNestedMappingSubquery;
+        }>;
+    }>;
+}>;
+//# sourceMappingURL=subqueryBuilder.d.ts.map

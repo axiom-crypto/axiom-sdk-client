@@ -1,0 +1,81 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.shortenedHex = exports.removeZerosLeft = exports.validateBytes32 = exports.validateBytes4 = exports.validateAddress = exports.resizeArray = exports.toLeHex = exports.bytes32OrNull = exports.bytes32 = exports.getNumBytes = void 0;
+const ethers_1 = require("ethers");
+function getNumBytes(hexStr) {
+    if (hexStr === undefined || hexStr === null) {
+        return 0;
+    }
+    if (hexStr.startsWith("0x")) {
+        hexStr = hexStr.slice(2);
+    }
+    // Pad length to closest full byte
+    return Math.ceil(hexStr.length / 2);
+}
+exports.getNumBytes = getNumBytes;
+function bytes32(data) {
+    return ethers_1.ethers.toBeHex(data, 32);
+}
+exports.bytes32 = bytes32;
+function bytes32OrNull(data) {
+    if (data === undefined || data === null) {
+        return null;
+    }
+    return bytes32(data);
+}
+exports.bytes32OrNull = bytes32OrNull;
+function toLeHex(data, numBytes) {
+    if (data.startsWith("0x")) {
+        data = data.slice(2);
+    }
+    if (data.length % 2 !== 0) {
+        throw new Error("Invalid hex string");
+    }
+    return "0x" + data.padEnd(numBytes * 2, "0");
+}
+exports.toLeHex = toLeHex;
+function resizeArray(arr, size, defaultValue) {
+    if (arr.length < size) {
+        return arr.concat(Array(size - arr.length).fill(defaultValue));
+    }
+    return arr.slice(0, size);
+}
+exports.resizeArray = resizeArray;
+function validateAddress(address) {
+    if (!ethers_1.ethers.isAddress(address)) {
+        throw new Error(`Invalid address: ${address}`);
+    }
+}
+exports.validateAddress = validateAddress;
+function validateBytes4(bytes) {
+    if (!ethers_1.ethers.isBytesLike(bytes) || getNumBytes(bytes) !== 4) {
+        throw new Error(`Invalid bytes4: ${bytes}`);
+    }
+}
+exports.validateBytes4 = validateBytes4;
+function validateBytes32(bytes32) {
+    if (!ethers_1.ethers.isBytesLike(bytes32) || getNumBytes(bytes32) !== 32) {
+        throw new Error(`Invalid bytes32: ${bytes32}`);
+    }
+}
+exports.validateBytes32 = validateBytes32;
+function removeZerosLeft(hex) {
+    if (hex.substring(0, 2) === "0x") {
+        const hexSubstr = hex.substring(2, hex.length);
+        if (hexSubstr === "" || Number(hexSubstr) === 0) {
+            return "0x0";
+        }
+        const stripped = hexSubstr.replace(/^0+/, "");
+        return `0x${stripped}`;
+    }
+    hex = hex.replace(/^0+/, "");
+    if (hex === "") {
+        return "0x0";
+    }
+    return `0x${hex}`;
+}
+exports.removeZerosLeft = removeZerosLeft;
+function shortenedHex(num) {
+    return removeZerosLeft(ethers_1.ethers.toBeHex(num));
+}
+exports.shortenedHex = shortenedHex;

@@ -1,0 +1,15 @@
+import { ReceiptSizeCategory, SubqueryConfig, TxSizeCategory } from "../../constants";
+export declare class ConfigLimitManager {
+    globalConfig: SubqueryConfig;
+    txSizeCategory: TxSizeCategory;
+    receiptSizeCategory: ReceiptSizeCategory;
+    numTxSubqueries: number;
+    numReceiptSubqueries: number;
+    constructor();
+    processTx(tx: any): void;
+    processReceipt(rc: any): void;
+    getGlobalConfig(): SubqueryConfig;
+    getTxSizeCategory(): TxSizeCategory;
+    getReceiptSizeCategory(): ReceiptSizeCategory;
+}
+//# sourceMappingURL=configLimitManager.d.ts.map

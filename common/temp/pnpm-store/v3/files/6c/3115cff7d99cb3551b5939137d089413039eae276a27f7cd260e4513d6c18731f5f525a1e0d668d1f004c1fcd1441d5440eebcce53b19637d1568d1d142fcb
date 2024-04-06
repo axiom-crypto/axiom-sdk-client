@@ -1,0 +1,99 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isAssignedSlot = exports.unpackSlot = exports.packSlot = exports.checkFitsInSlot = exports.getSlotForArray = exports.getSlotForMapping = void 0;
+const ethers_1 = require("ethers");
+const byteLength_1 = require("./byteLength");
+const byteStringReader_1 = require("./byteStringReader");
+function getSlotForMapping(mappingSlot, keyType, key) {
+    const packed = ethers_1.AbiCoder.defaultAbiCoder().encode([keyType, "uint256"], [key, mappingSlot]);
+    return ethers_1.ethers.keccak256(packed);
+}
+exports.getSlotForMapping = getSlotForMapping;
+function getSlotForArray(arraySlot, arrayType, arrayIdx) {
+    const packed = ethers_1.AbiCoder.defaultAbiCoder().encode(["uint256"], [arraySlot]);
+    const baseSlot = ethers_1.ethers.keccak256(packed);
+    const typeSize = (0, byteLength_1.getByteLength)(arrayType);
+    let slot = BigInt(baseSlot) +
+        BigInt(arrayIdx.valueOf()) / BigInt(Math.floor(32 / typeSize));
+    return "0x" + slot.toString(16);
+}
+exports.getSlotForArray = getSlotForArray;
+function checkFitsInSlot(types) {
+    const lengths = types
+        .map((type) => (0, byteLength_1.getByteLength)(type))
+        .reduce((a, b) => a + b, 0);
+    if (lengths > 32) {
+        return false;
+    }
+    return true;
+}
+exports.checkFitsInSlot = checkFitsInSlot;
+/**
+ * Packs a 32-byte EVM storage slot from left to right with the given types and data
+ * @param types Array of fixed-length Solidity types
+ * @param data Array of data
+ * @returns 32-byte hex string of packed data
+ */
+function packSlot(types, data) {
+    if (!checkFitsInSlot(types)) {
+        throw new Error("Data does not fit in slot");
+    }
+    const packed = ethers_1.ethers.solidityPacked(types, data);
+    return ethers_1.ethers.zeroPadValue(packed, 32);
+}
+exports.packSlot = packSlot;
+/**
+ * Unpacks a 32-byte EVM storage slot into an array of data, read from left to right
+ * @param types Array of fixed-length Solidity types
+ * @param slot 32-byte hex string of slot
+ * @returns Array of data
+ */
+function unpackSlot(types, slot) {
+    if (!checkFitsInSlot(types)) {
+        throw new Error("Data does not fit in slot");
+    }
+    if (!slot.startsWith("0x")) {
+        throw new Error("Invalid slot value (needs to start with 0x)");
+    }
+    if (slot.length % 2 !== 0) {
+        throw new Error("Invalid slot value (length must be even)");
+    }
+    const dataLength = types
+        .map((type) => (0, byteLength_1.getByteLength)(type))
+        .reduce((a, b) => a + b, 0);
+    const leftZeroes = (32 - dataLength) * 2;
+    const reader = new byteStringReader_1.ByteStringReader(slot);
+    reader.setIndex(leftZeroes);
+    let values = [];
+    for (let i = 0; i < types.length; i++) {
+        const value = reader.readBytes((0, byteLength_1.getByteLength)(types[i]));
+        values.push(value);
+    }
+    return values;
+}
+exports.unpackSlot = unpackSlot;
+function isAssignedSlot(key, proof) {
+    const keyHash = ethers_1.ethers.keccak256(key);
+    let claimedKeyHash = "0x";
+    let keyIdx = 0;
+    for (let i = 0; i < proof.length; i += 1) {
+        const parsedNode = ethers_1.ethers.decodeRlp(proof[i]);
+        if (parsedNode.length === 17) {
+            claimedKeyHash += keyHash[keyIdx + 2];
+            keyIdx += 1;
+        }
+        else {
+            const prefix = parsedNode[0][2];
+            if (prefix === "1" || prefix === "3") {
+                claimedKeyHash += parsedNode[0].slice(3);
+                keyIdx = keyIdx + parsedNode[0].length - 3;
+            }
+            else {
+                claimedKeyHash += parsedNode[0].slice(4);
+                keyIdx = keyIdx + parsedNode[0].length - 4;
+            }
+        }
+    }
+    return keyHash === claimedKeyHash;
+}
+exports.isAssignedSlot = isAssignedSlot;

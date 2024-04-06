@@ -1,0 +1,2158 @@
+import { startWorkers } from './snippets/wasm-bindgen-rayon-61c530a5c67cc8eb/src/workerHelpers.js';
+
+let wasm;
+
+const cachedTextDecoder = (typeof TextDecoder !== 'undefined' ? new TextDecoder('utf-8', { ignoreBOM: true, fatal: true }) : { decode: () => { throw Error('TextDecoder not available') } } );
+
+if (typeof TextDecoder !== 'undefined') { cachedTextDecoder.decode(); };
+
+let cachedUint8Memory0 = null;
+
+function getUint8Memory0() {
+    if (cachedUint8Memory0 === null || cachedUint8Memory0.buffer !== wasm.memory.buffer) {
+        cachedUint8Memory0 = new Uint8Array(wasm.memory.buffer);
+    }
+    return cachedUint8Memory0;
+}
+
+function getStringFromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    return cachedTextDecoder.decode(getUint8Memory0().slice(ptr, ptr + len));
+}
+
+const heap = new Array(128).fill(undefined);
+
+heap.push(undefined, null, true, false);
+
+let heap_next = heap.length;
+
+function addHeapObject(obj) {
+    if (heap_next === heap.length) heap.push(heap.length + 1);
+    const idx = heap_next;
+    heap_next = heap[idx];
+
+    heap[idx] = obj;
+    return idx;
+}
+
+function getObject(idx) { return heap[idx]; }
+
+function dropObject(idx) {
+    if (idx < 132) return;
+    heap[idx] = heap_next;
+    heap_next = idx;
+}
+
+function takeObject(idx) {
+    const ret = getObject(idx);
+    dropObject(idx);
+    return ret;
+}
+
+function isLikeNone(x) {
+    return x === undefined || x === null;
+}
+
+let cachedFloat64Memory0 = null;
+
+function getFloat64Memory0() {
+    if (cachedFloat64Memory0 === null || cachedFloat64Memory0.buffer !== wasm.memory.buffer) {
+        cachedFloat64Memory0 = new Float64Array(wasm.memory.buffer);
+    }
+    return cachedFloat64Memory0;
+}
+
+let cachedInt32Memory0 = null;
+
+function getInt32Memory0() {
+    if (cachedInt32Memory0 === null || cachedInt32Memory0.buffer !== wasm.memory.buffer) {
+        cachedInt32Memory0 = new Int32Array(wasm.memory.buffer);
+    }
+    return cachedInt32Memory0;
+}
+
+let WASM_VECTOR_LEN = 0;
+
+const cachedTextEncoder = (typeof TextEncoder !== 'undefined' ? new TextEncoder('utf-8') : { encode: () => { throw Error('TextEncoder not available') } } );
+
+const encodeString = function (arg, view) {
+    const buf = cachedTextEncoder.encode(arg);
+    view.set(buf);
+    return {
+        read: arg.length,
+        written: buf.length
+    };
+};
+
+function passStringToWasm0(arg, malloc, realloc) {
+
+    if (realloc === undefined) {
+        const buf = cachedTextEncoder.encode(arg);
+        const ptr = malloc(buf.length, 1) >>> 0;
+        getUint8Memory0().subarray(ptr, ptr + buf.length).set(buf);
+        WASM_VECTOR_LEN = buf.length;
+        return ptr;
+    }
+
+    let len = arg.length;
+    let ptr = malloc(len, 1) >>> 0;
+
+    const mem = getUint8Memory0();
+
+    let offset = 0;
+
+    for (; offset < len; offset++) {
+        const code = arg.charCodeAt(offset);
+        if (code > 0x7F) break;
+        mem[ptr + offset] = code;
+    }
+
+    if (offset !== len) {
+        if (offset !== 0) {
+            arg = arg.slice(offset);
+        }
+        ptr = realloc(ptr, len, len = offset + arg.length * 3, 1) >>> 0;
+        const view = getUint8Memory0().subarray(ptr + offset, ptr + len);
+        const ret = encodeString(arg, view);
+
+        offset += ret.written;
+    }
+
+    WASM_VECTOR_LEN = offset;
+    return ptr;
+}
+
+let cachedBigInt64Memory0 = null;
+
+function getBigInt64Memory0() {
+    if (cachedBigInt64Memory0 === null || cachedBigInt64Memory0.buffer !== wasm.memory.buffer) {
+        cachedBigInt64Memory0 = new BigInt64Array(wasm.memory.buffer);
+    }
+    return cachedBigInt64Memory0;
+}
+
+function debugString(val) {
+    // primitive types
+    const type = typeof val;
+    if (type == 'number' || type == 'boolean' || val == null) {
+        return  `${val}`;
+    }
+    if (type == 'string') {
+        return `"${val}"`;
+    }
+    if (type == 'symbol') {
+        const description = val.description;
+        if (description == null) {
+            return 'Symbol';
+        } else {
+            return `Symbol(${description})`;
+        }
+    }
+    if (type == 'function') {
+        const name = val.name;
+        if (typeof name == 'string' && name.length > 0) {
+            return `Function(${name})`;
+        } else {
+            return 'Function';
+        }
+    }
+    // objects
+    if (Array.isArray(val)) {
+        const length = val.length;
+        let debug = '[';
+        if (length > 0) {
+            debug += debugString(val[0]);
+        }
+        for(let i = 1; i < length; i++) {
+            debug += ', ' + debugString(val[i]);
+        }
+        debug += ']';
+        return debug;
+    }
+    // Test for built-in
+    const builtInMatches = /\[object ([^\]]+)\]/.exec(toString.call(val));
+    let className;
+    if (builtInMatches.length > 1) {
+        className = builtInMatches[1];
+    } else {
+        // Failed to match the standard '[object ClassName]'
+        return toString.call(val);
+    }
+    if (className == 'Object') {
+        // we're a user defined class or Object
+        // JSON.stringify avoids problems with cycles, and is generally much
+        // easier than looping through ownProperties of `val`.
+        try {
+            return 'Object(' + JSON.stringify(val) + ')';
+        } catch (_) {
+            return 'Object';
+        }
+    }
+    // errors
+    if (val instanceof Error) {
+        return `${val.name}: ${val.message}\n${val.stack}`;
+    }
+    // TODO we could test for more things here, like `Set`s and `Map`s.
+    return className;
+}
+
+function _assertClass(instance, klass) {
+    if (!(instance instanceof klass)) {
+        throw new Error(`expected instance of ${klass.name}`);
+    }
+    return instance.ptr;
+}
+
+let cachedUint32Memory0 = null;
+
+function getUint32Memory0() {
+    if (cachedUint32Memory0 === null || cachedUint32Memory0.buffer !== wasm.memory.buffer) {
+        cachedUint32Memory0 = new Uint32Array(wasm.memory.buffer);
+    }
+    return cachedUint32Memory0;
+}
+
+function passArray32ToWasm0(arg, malloc) {
+    const ptr = malloc(arg.length * 4, 4) >>> 0;
+    getUint32Memory0().set(arg, ptr / 4);
+    WASM_VECTOR_LEN = arg.length;
+    return ptr;
+}
+
+function getArrayU32FromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    return getUint32Memory0().subarray(ptr / 4, ptr / 4 + len);
+}
+
+function passArray8ToWasm0(arg, malloc) {
+    const ptr = malloc(arg.length * 1, 1) >>> 0;
+    getUint8Memory0().set(arg, ptr / 1);
+    WASM_VECTOR_LEN = arg.length;
+    return ptr;
+}
+
+function getArrayU8FromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    return getUint8Memory0().subarray(ptr / 1, ptr / 1 + len);
+}
+/**
+*/
+export function initPanicHook() {
+    wasm.initPanicHook();
+}
+
+function handleError(f, args) {
+    try {
+        return f.apply(this, args);
+    } catch (e) {
+        wasm.__wbindgen_exn_store(addHeapObject(e));
+    }
+}
+/**
+* @param {number} num_threads
+* @returns {Promise<any>}
+*/
+export function initThreadPool(num_threads) {
+    const ret = wasm.initThreadPool(num_threads);
+    return takeObject(ret);
+}
+
+/**
+* @param {number} receiver
+*/
+export function wbg_rayon_start_worker(receiver) {
+    wasm.wbg_rayon_start_worker(receiver);
+}
+
+/**
+*/
+export class Bn254Fq2Point {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(Bn254Fq2Point.prototype);
+        obj.__wbg_ptr = ptr;
+
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_bn254fq2point_free(ptr);
+    }
+    /**
+    * @returns {Bn254FqPoint}
+    */
+    c0() {
+        const ret = wasm.bn254fq2point_c0(this.__wbg_ptr);
+        return Bn254FqPoint.__wrap(ret);
+    }
+    /**
+    * @returns {Bn254FqPoint}
+    */
+    c1() {
+        const ret = wasm.bn254fq2point_c1(this.__wbg_ptr);
+        return Bn254FqPoint.__wrap(ret);
+    }
+}
+/**
+* We use 3 limbs with 88 bits each.
+* NOT constrained to be less than the prime.
+*/
+export class Bn254FqPoint {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(Bn254FqPoint.prototype);
+        obj.__wbg_ptr = ptr;
+
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_bn254fqpoint_free(ptr);
+    }
+    /**
+    * @param {Halo2LibWasm} lib_wasm
+    * @returns {JsCircuitValue256}
+    */
+    to_circuit_value_256(lib_wasm) {
+        _assertClass(lib_wasm, Halo2LibWasm);
+        const ret = wasm.bn254fqpoint_to_circuit_value_256(this.__wbg_ptr, lib_wasm.__wbg_ptr);
+        return JsCircuitValue256.__wrap(ret);
+    }
+}
+/**
+*/
+export class Bn254G1AffinePoint {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(Bn254G1AffinePoint.prototype);
+        obj.__wbg_ptr = ptr;
+
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_bn254g1affinepoint_free(ptr);
+    }
+    /**
+    * @returns {Bn254FqPoint}
+    */
+    x() {
+        const ret = wasm.bn254g1affinepoint_x(this.__wbg_ptr);
+        return Bn254FqPoint.__wrap(ret);
+    }
+    /**
+    * @returns {Bn254FqPoint}
+    */
+    y() {
+        const ret = wasm.bn254g1affinepoint_y(this.__wbg_ptr);
+        return Bn254FqPoint.__wrap(ret);
+    }
+}
+/**
+*/
+export class Bn254G2AffinePoint {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(Bn254G2AffinePoint.prototype);
+        obj.__wbg_ptr = ptr;
+
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_bn254g2affinepoint_free(ptr);
+    }
+    /**
+    * @returns {Bn254Fq2Point}
+    */
+    x() {
+        const ret = wasm.bn254g2affinepoint_x(this.__wbg_ptr);
+        return Bn254Fq2Point.__wrap(ret);
+    }
+    /**
+    * @returns {Bn254Fq2Point}
+    */
+    y() {
+        const ret = wasm.bn254g2affinepoint_y(this.__wbg_ptr);
+        return Bn254Fq2Point.__wrap(ret);
+    }
+}
+/**
+*/
+export class Halo2LibWasm {
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_halo2libwasm_free(ptr);
+    }
+    /**
+    * @param {Halo2Wasm} circuit
+    */
+    constructor(circuit) {
+        _assertClass(circuit, Halo2Wasm);
+        const ret = wasm.halo2libwasm_new(circuit.__wbg_ptr);
+        this.__wbg_ptr = ret >>> 0;
+        return this;
+    }
+    /**
+    */
+    config() {
+        wasm.halo2libwasm_config(this.__wbg_ptr);
+    }
+    /**
+    * @param {number} a
+    * @param {number} b
+    * @returns {number}
+    */
+    add(a, b) {
+        const ret = wasm.halo2libwasm_add(this.__wbg_ptr, a, b);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} a
+    * @param {number} b
+    * @returns {number}
+    */
+    sub(a, b) {
+        const ret = wasm.halo2libwasm_sub(this.__wbg_ptr, a, b);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} a
+    * @returns {number}
+    */
+    neg(a) {
+        const ret = wasm.halo2libwasm_neg(this.__wbg_ptr, a);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} a
+    * @param {number} b
+    * @returns {number}
+    */
+    mul(a, b) {
+        const ret = wasm.halo2libwasm_mul(this.__wbg_ptr, a, b);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} a
+    * @param {number} b
+    * @param {number} c
+    * @returns {number}
+    */
+    mul_add(a, b, c) {
+        const ret = wasm.halo2libwasm_mul_add(this.__wbg_ptr, a, b, c);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} a
+    * @param {number} b
+    * @returns {number}
+    */
+    mul_not(a, b) {
+        const ret = wasm.halo2libwasm_mul_not(this.__wbg_ptr, a, b);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} a
+    */
+    assert_bit(a) {
+        wasm.halo2libwasm_assert_bit(this.__wbg_ptr, a);
+    }
+    /**
+    * @param {number} a
+    * @param {number} b
+    * @returns {number}
+    */
+    div_unsafe(a, b) {
+        const ret = wasm.halo2libwasm_div_unsafe(this.__wbg_ptr, a, b);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} a
+    * @param {string} b
+    */
+    assert_is_const(a, b) {
+        const ptr0 = passStringToWasm0(b, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.halo2libwasm_assert_is_const(this.__wbg_ptr, a, ptr0, len0);
+    }
+    /**
+    * @param {Uint32Array} a
+    * @param {Uint32Array} b
+    * @returns {number}
+    */
+    inner_product(a, b) {
+        const ptr0 = passArray32ToWasm0(a, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passArray32ToWasm0(b, wasm.__wbindgen_malloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.halo2libwasm_inner_product(this.__wbg_ptr, ptr0, len0, ptr1, len1);
+        return ret >>> 0;
+    }
+    /**
+    * @param {Uint32Array} a
+    * @returns {number}
+    */
+    sum(a) {
+        const ptr0 = passArray32ToWasm0(a, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.halo2libwasm_sum(this.__wbg_ptr, ptr0, len0);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} a
+    * @param {number} b
+    * @returns {number}
+    */
+    and(a, b) {
+        const ret = wasm.halo2libwasm_and(this.__wbg_ptr, a, b);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} a
+    * @param {number} b
+    * @returns {number}
+    */
+    or(a, b) {
+        const ret = wasm.halo2libwasm_or(this.__wbg_ptr, a, b);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} a
+    * @returns {number}
+    */
+    not(a) {
+        const ret = wasm.halo2libwasm_not(this.__wbg_ptr, a);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} a
+    * @returns {number}
+    */
+    dec(a) {
+        const ret = wasm.halo2libwasm_dec(this.__wbg_ptr, a);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} a
+    * @param {number} b
+    * @param {number} sel
+    * @returns {number}
+    */
+    select(a, b, sel) {
+        const ret = wasm.halo2libwasm_select(this.__wbg_ptr, a, b, sel);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} a
+    * @param {number} b
+    * @param {number} c
+    * @returns {number}
+    */
+    or_and(a, b, c) {
+        const ret = wasm.halo2libwasm_or_and(this.__wbg_ptr, a, b, c);
+        return ret >>> 0;
+    }
+    /**
+    * @param {Uint32Array} a
+    * @returns {Uint32Array}
+    */
+    bits_to_indicator(a) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            const ptr0 = passArray32ToWasm0(a, wasm.__wbindgen_malloc);
+            const len0 = WASM_VECTOR_LEN;
+            wasm.halo2libwasm_bits_to_indicator(retptr, this.__wbg_ptr, ptr0, len0);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            var v2 = getArrayU32FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_free(r0, r1 * 4, 4);
+            return v2;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+    * @param {number} a
+    * @param {string} b
+    * @returns {Uint32Array}
+    */
+    idx_to_indicator(a, b) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            const ptr0 = passStringToWasm0(b, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            wasm.halo2libwasm_idx_to_indicator(retptr, this.__wbg_ptr, a, ptr0, len0);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            var v2 = getArrayU32FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_free(r0, r1 * 4, 4);
+            return v2;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+    * @param {Uint32Array} a
+    * @param {Uint32Array} indicator
+    * @returns {number}
+    */
+    select_by_indicator(a, indicator) {
+        const ptr0 = passArray32ToWasm0(a, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passArray32ToWasm0(indicator, wasm.__wbindgen_malloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.halo2libwasm_select_by_indicator(this.__wbg_ptr, ptr0, len0, ptr1, len1);
+        return ret >>> 0;
+    }
+    /**
+    * @param {Uint32Array} a
+    * @param {number} idx
+    * @returns {number}
+    */
+    select_from_idx(a, idx) {
+        const ptr0 = passArray32ToWasm0(a, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.halo2libwasm_select_from_idx(this.__wbg_ptr, ptr0, len0, idx);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} a
+    * @returns {number}
+    */
+    is_zero(a) {
+        const ret = wasm.halo2libwasm_is_zero(this.__wbg_ptr, a);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} a
+    * @param {number} b
+    * @returns {number}
+    */
+    is_equal(a, b) {
+        const ret = wasm.halo2libwasm_is_equal(this.__wbg_ptr, a, b);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} a
+    * @param {string} num_bits
+    * @returns {Uint32Array}
+    */
+    num_to_bits(a, num_bits) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            const ptr0 = passStringToWasm0(num_bits, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            wasm.halo2libwasm_num_to_bits(retptr, this.__wbg_ptr, a, ptr0, len0);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            var v2 = getArrayU32FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_free(r0, r1 * 4, 4);
+            return v2;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+    * @param {number} a
+    * @param {number} b
+    */
+    constrain_equal(a, b) {
+        wasm.halo2libwasm_constrain_equal(this.__wbg_ptr, a, b);
+    }
+    /**
+    * @param {number} a
+    * @param {string} b
+    */
+    range_check(a, b) {
+        const ptr0 = passStringToWasm0(b, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.halo2libwasm_range_check(this.__wbg_ptr, a, ptr0, len0);
+    }
+    /**
+    * @param {number} a
+    * @param {number} b
+    * @param {string} size
+    */
+    check_less_than(a, b, size) {
+        const ptr0 = passStringToWasm0(size, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.halo2libwasm_check_less_than(this.__wbg_ptr, a, b, ptr0, len0);
+    }
+    /**
+    * @param {number} a
+    * @param {string} b
+    */
+    check_less_than_safe(a, b) {
+        const ptr0 = passStringToWasm0(b, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.halo2libwasm_check_less_than_safe(this.__wbg_ptr, a, ptr0, len0);
+    }
+    /**
+    * @param {number} a
+    * @param {number} b
+    * @param {string} size
+    * @returns {number}
+    */
+    is_less_than(a, b, size) {
+        const ptr0 = passStringToWasm0(size, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.halo2libwasm_is_less_than(this.__wbg_ptr, a, b, ptr0, len0);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} a
+    * @param {string} b
+    * @returns {number}
+    */
+    is_less_than_safe(a, b) {
+        const ptr0 = passStringToWasm0(b, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.halo2libwasm_is_less_than_safe(this.__wbg_ptr, a, ptr0, len0);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} a
+    * @param {string} b
+    * @param {string} size
+    * @returns {Uint32Array}
+    */
+    div_mod(a, b, size) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            const ptr0 = passStringToWasm0(b, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(size, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            wasm.halo2libwasm_div_mod(retptr, this.__wbg_ptr, a, ptr0, len0, ptr1, len1);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            var v3 = getArrayU32FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_free(r0, r1 * 4, 4);
+            return v3;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+    * Returns a 256-bit hi-lo pair from a single CircuitValue
+    *
+    * See `check_hi_lo` for what is constrained.
+    *
+    * * `a`: the CircuitValue to split into hi-lo
+    * @param {number} a
+    * @returns {Uint32Array}
+    */
+    to_hi_lo(a) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.halo2libwasm_to_hi_lo(retptr, this.__wbg_ptr, a);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            var v1 = getArrayU32FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_free(r0, r1 * 4, 4);
+            return v1;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+    * Returns a single CircuitValue from a hi-lo pair
+    *
+    * NOTE: this can fail if the hi-lo pair is greater than the Fr modulus.
+    * See `check_hi_lo` for what is constrained.
+    *
+    * * `hi`: the high 128 bits of the CircuitValue
+    * * `lo`: the low 128 bits of the CircuitValue
+    * @param {number} hi
+    * @param {number} lo
+    * @returns {number}
+    */
+    from_hi_lo(hi, lo) {
+        const ret = wasm.halo2libwasm_from_hi_lo(this.__wbg_ptr, hi, lo);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} a
+    * @param {number} b
+    * @param {string} a_size
+    * @param {string} b_size
+    * @returns {Uint32Array}
+    */
+    div_mod_var(a, b, a_size, b_size) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            const ptr0 = passStringToWasm0(a_size, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(b_size, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            wasm.halo2libwasm_div_mod_var(retptr, this.__wbg_ptr, a, b, ptr0, len0, ptr1, len1);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            var v3 = getArrayU32FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_free(r0, r1 * 4, 4);
+            return v3;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+    * @param {number} a
+    * @param {number} b
+    * @param {string} max_bits
+    * @returns {number}
+    */
+    pow_var(a, b, max_bits) {
+        const ptr0 = passStringToWasm0(max_bits, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.halo2libwasm_pow_var(this.__wbg_ptr, a, b, ptr0, len0);
+        return ret >>> 0;
+    }
+    /**
+    * @param {Uint32Array} a
+    * @returns {number}
+    */
+    poseidon(a) {
+        const ptr0 = passArray32ToWasm0(a, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.halo2libwasm_poseidon(this.__wbg_ptr, ptr0, len0);
+        return ret >>> 0;
+    }
+    /**
+    * @param {string} val
+    * @returns {number}
+    */
+    witness(val) {
+        const ptr0 = passStringToWasm0(val, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.halo2libwasm_witness(this.__wbg_ptr, ptr0, len0);
+        return ret >>> 0;
+    }
+    /**
+    * @param {string} val
+    * @returns {number}
+    */
+    constant(val) {
+        const ptr0 = passStringToWasm0(val, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.halo2libwasm_constant(this.__wbg_ptr, ptr0, len0);
+        return ret >>> 0;
+    }
+    /**
+    * @param {Halo2Wasm} circuit
+    * @param {number} a
+    * @param {number} col
+    */
+    make_public(circuit, a, col) {
+        _assertClass(circuit, Halo2Wasm);
+        wasm.halo2libwasm_make_public(this.__wbg_ptr, circuit.__wbg_ptr, a, col);
+    }
+    /**
+    * @param {Halo2Wasm} circuit
+    * @param {number} a
+    */
+    log(circuit, a) {
+        _assertClass(circuit, Halo2Wasm);
+        wasm.halo2libwasm_log(this.__wbg_ptr, circuit.__wbg_ptr, a);
+    }
+    /**
+    * @param {number} a
+    * @returns {string}
+    */
+    value(a) {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.halo2libwasm_value(retptr, this.__wbg_ptr, a);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            deferred1_0 = r0;
+            deferred1_1 = r1;
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+    * @returns {number}
+    */
+    lookup_bits() {
+        const ret = wasm.halo2libwasm_lookup_bits(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+    * Takes in CircuitValue256 in hi-lo form and loads internal CircuitBn254Fq type (we use 3 limbs of 88 bits).
+    * This function does not range check `hi,lo` to be `uint128` in case it's already done elsewhere.
+    * @param {JsCircuitValue256} val
+    * @returns {Bn254FqPoint}
+    */
+    load_bn254_fq(val) {
+        _assertClass(val, JsCircuitValue256);
+        var ptr0 = val.__destroy_into_raw();
+        const ret = wasm.halo2libwasm_load_bn254_fq(this.__wbg_ptr, ptr0);
+        return Bn254FqPoint.__wrap(ret);
+    }
+    /**
+    * Doesn't range check limbs of g1_point.
+    * Does not allow you to load identity point.
+    * @param {JsCircuitBn254G1Affine} point
+    * @returns {Bn254G1AffinePoint}
+    */
+    load_bn254_g1(point) {
+        _assertClass(point, JsCircuitBn254G1Affine);
+        var ptr0 = point.__destroy_into_raw();
+        const ret = wasm.halo2libwasm_load_bn254_g1(this.__wbg_ptr, ptr0);
+        return Bn254G1AffinePoint.__wrap(ret);
+    }
+    /**
+    * `g1_points` should be array of `CircuitBn254G1Affine` in hi-lo form.
+    * This function does not range check `hi,lo` to be `uint128` in case it's already done elsewhere.
+    * Prevents any g1_points from being identity.
+    * @param {Array<any>} g1_points
+    * @returns {Bn254G1AffinePoint}
+    */
+    bn254_g1_sum(g1_points) {
+        const ret = wasm.halo2libwasm_bn254_g1_sum(this.__wbg_ptr, addHeapObject(g1_points));
+        return Bn254G1AffinePoint.__wrap(ret);
+    }
+    /**
+    * `g1_point_1` and `g1_point_2` are `CircuitBn254G1Affine` points in hi-lo form.
+    * This function does not range check `hi,lo` to be `uint128` in case it's already done elsewhere
+    * and also it constraints that g1_point_1.x != g1_point_2.x
+    * Prevents any g1_points from being identity.
+    * @param {JsCircuitBn254G1Affine} g1_point_1
+    * @param {JsCircuitBn254G1Affine} g1_point_2
+    * @returns {Bn254G1AffinePoint}
+    */
+    bn254_g1_sub_unequal(g1_point_1, g1_point_2) {
+        _assertClass(g1_point_1, JsCircuitBn254G1Affine);
+        var ptr0 = g1_point_1.__destroy_into_raw();
+        _assertClass(g1_point_2, JsCircuitBn254G1Affine);
+        var ptr1 = g1_point_2.__destroy_into_raw();
+        const ret = wasm.halo2libwasm_bn254_g1_sub_unequal(this.__wbg_ptr, ptr0, ptr1);
+        return Bn254G1AffinePoint.__wrap(ret);
+    }
+    /**
+    * Doesn't range check limbs of g2_point.
+    * Does not allow you to load identity point.
+    * @param {JsCircuitBn254G2Affine} point
+    * @returns {Bn254G2AffinePoint}
+    */
+    load_bn254_g2(point) {
+        _assertClass(point, JsCircuitBn254G2Affine);
+        var ptr0 = point.__destroy_into_raw();
+        const ret = wasm.halo2libwasm_load_bn254_g2(this.__wbg_ptr, ptr0);
+        return Bn254G2AffinePoint.__wrap(ret);
+    }
+    /**
+    * `g2_points` should be array of `CircuitBn254G2Affine` in hi-lo form.
+    * This function does not range check `hi,lo` to be `uint128` in case it's already done elsewhere.
+    * Prevents any g2_points from being identity.
+    * @param {Array<any>} g2_points
+    * @returns {Bn254G2AffinePoint}
+    */
+    bn254_g2_sum(g2_points) {
+        const ret = wasm.halo2libwasm_bn254_g2_sum(this.__wbg_ptr, addHeapObject(g2_points));
+        return Bn254G2AffinePoint.__wrap(ret);
+    }
+    /**
+    * Verifies that e(lhs_g1, lhs_g2) = e(rhs_g1, rhs_g2) by checking e(lhs_g1, lhs_g2)*e(-rhs_g1, rhs_g2) === 1
+    * Returns [CircuitValue] for the result as a boolean (1 if signature verification is successful).
+    * None of the points should be identity.
+    * @param {Bn254G1AffinePoint} lhs_g1
+    * @param {Bn254G2AffinePoint} lhs_g2
+    * @param {Bn254G1AffinePoint} rhs_g1
+    * @param {Bn254G2AffinePoint} rhs_g2
+    * @returns {number}
+    */
+    bn254_pairing_check(lhs_g1, lhs_g2, rhs_g1, rhs_g2) {
+        _assertClass(lhs_g1, Bn254G1AffinePoint);
+        var ptr0 = lhs_g1.__destroy_into_raw();
+        _assertClass(lhs_g2, Bn254G2AffinePoint);
+        var ptr1 = lhs_g2.__destroy_into_raw();
+        _assertClass(rhs_g1, Bn254G1AffinePoint);
+        var ptr2 = rhs_g1.__destroy_into_raw();
+        _assertClass(rhs_g2, Bn254G2AffinePoint);
+        var ptr3 = rhs_g2.__destroy_into_raw();
+        const ret = wasm.halo2libwasm_bn254_pairing_check(this.__wbg_ptr, ptr0, ptr1, ptr2, ptr3);
+        return ret >>> 0;
+    }
+    /**
+    * Doesn't range check limbs of point.
+    * Pubkey is a point on
+    * @param {JsCircuitSecp256k1Affine} point
+    * @returns {Secp256k1AffinePoint}
+    */
+    load_secp256k1_pubkey(point) {
+        _assertClass(point, JsCircuitSecp256k1Affine);
+        var ptr0 = point.__destroy_into_raw();
+        const ret = wasm.halo2libwasm_load_secp256k1_pubkey(this.__wbg_ptr, ptr0);
+        return Secp256k1AffinePoint.__wrap(ret);
+    }
+    /**
+    * Assumes all `JsCircuitValue256` limbs have been range checked to be `u128`.
+    * @param {Secp256k1AffinePoint} pubkey
+    * @param {JsCircuitValue256} r
+    * @param {JsCircuitValue256} s
+    * @param {JsCircuitValue256} msg_hash
+    * @returns {number}
+    */
+    verify_secp256k1_ecdsa_signature(pubkey, r, s, msg_hash) {
+        _assertClass(pubkey, Secp256k1AffinePoint);
+        var ptr0 = pubkey.__destroy_into_raw();
+        _assertClass(r, JsCircuitValue256);
+        var ptr1 = r.__destroy_into_raw();
+        _assertClass(s, JsCircuitValue256);
+        var ptr2 = s.__destroy_into_raw();
+        _assertClass(msg_hash, JsCircuitValue256);
+        var ptr3 = msg_hash.__destroy_into_raw();
+        const ret = wasm.halo2libwasm_verify_secp256k1_ecdsa_signature(this.__wbg_ptr, ptr0, ptr1, ptr2, ptr3);
+        return ret >>> 0;
+    }
+    /**
+    * @param {bigint} sk
+    * @param {bigint} msg_hash
+    * @param {bigint} k
+    * @returns {number}
+    */
+    ecdsa_benchmark(sk, msg_hash, k) {
+        const ret = wasm.halo2libwasm_ecdsa_benchmark(this.__wbg_ptr, sk, msg_hash, k);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} hi
+    * @param {number} lo
+    * @returns {JsCircuitValue256}
+    */
+    to_js_circuit_value_256(hi, lo) {
+        const ret = wasm.halo2libwasm_to_js_circuit_value_256(this.__wbg_ptr, hi, lo);
+        return JsCircuitValue256.__wrap(ret);
+    }
+    /**
+    * @param {JsCircuitValue256} x
+    * @param {JsCircuitValue256} y
+    * @returns {JsCircuitBn254G1Affine}
+    */
+    to_js_circuit_bn254_g1_affine(x, y) {
+        _assertClass(x, JsCircuitValue256);
+        var ptr0 = x.__destroy_into_raw();
+        _assertClass(y, JsCircuitValue256);
+        var ptr1 = y.__destroy_into_raw();
+        const ret = wasm.halo2libwasm_to_js_circuit_bn254_fq2(this.__wbg_ptr, ptr0, ptr1);
+        return JsCircuitBn254G1Affine.__wrap(ret);
+    }
+    /**
+    * @param {JsCircuitValue256} c0
+    * @param {JsCircuitValue256} c1
+    * @returns {JsCircuitBn254Fq2}
+    */
+    to_js_circuit_bn254_fq2(c0, c1) {
+        _assertClass(c0, JsCircuitValue256);
+        var ptr0 = c0.__destroy_into_raw();
+        _assertClass(c1, JsCircuitValue256);
+        var ptr1 = c1.__destroy_into_raw();
+        const ret = wasm.halo2libwasm_to_js_circuit_bn254_fq2(this.__wbg_ptr, ptr0, ptr1);
+        return JsCircuitBn254Fq2.__wrap(ret);
+    }
+    /**
+    * @param {JsCircuitBn254Fq2} x
+    * @param {JsCircuitBn254Fq2} y
+    * @returns {JsCircuitBn254G2Affine}
+    */
+    to_js_circuit_bn254_g2_affine(x, y) {
+        _assertClass(x, JsCircuitBn254Fq2);
+        var ptr0 = x.__destroy_into_raw();
+        _assertClass(y, JsCircuitBn254Fq2);
+        var ptr1 = y.__destroy_into_raw();
+        const ret = wasm.halo2libwasm_to_js_circuit_bn254_g2_affine(this.__wbg_ptr, ptr0, ptr1);
+        return JsCircuitBn254G2Affine.__wrap(ret);
+    }
+    /**
+    * @param {JsCircuitValue256} x
+    * @param {JsCircuitValue256} y
+    * @returns {JsCircuitSecp256k1Affine}
+    */
+    to_js_circuit_secp256k1_affine(x, y) {
+        _assertClass(x, JsCircuitValue256);
+        var ptr0 = x.__destroy_into_raw();
+        _assertClass(y, JsCircuitValue256);
+        var ptr1 = y.__destroy_into_raw();
+        const ret = wasm.halo2libwasm_to_js_circuit_bn254_fq2(this.__wbg_ptr, ptr0, ptr1);
+        return JsCircuitSecp256k1Affine.__wrap(ret);
+    }
+}
+/**
+*/
+export class Halo2Wasm {
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_halo2wasm_free(ptr);
+    }
+    /**
+    */
+    constructor() {
+        const ret = wasm.halo2wasm_new();
+        this.__wbg_ptr = ret >>> 0;
+        return this;
+    }
+    /**
+    */
+    clear() {
+        wasm.halo2wasm_clear(this.__wbg_ptr);
+    }
+    /**
+    */
+    clearInstances() {
+        wasm.halo2wasm_clearInstances(this.__wbg_ptr);
+    }
+    /**
+    * @param {Uint8Array} proof
+    */
+    verify(proof) {
+        const ptr0 = passArray8ToWasm0(proof, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.halo2wasm_verify(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
+    * @param {number} col
+    * @returns {Uint32Array}
+    */
+    getInstances(col) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.halo2wasm_getInstances(retptr, this.__wbg_ptr, col);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            var v1 = getArrayU32FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_free(r0, r1 * 4, 4);
+            return v1;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+    * @param {Uint32Array} instances
+    * @param {number} col
+    */
+    setInstances(instances, col) {
+        const ptr0 = passArray32ToWasm0(instances, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.halo2wasm_setInstances(this.__wbg_ptr, ptr0, len0, col);
+    }
+    /**
+    * @param {number} col
+    * @returns {any}
+    */
+    getInstanceValues(col) {
+        const ret = wasm.halo2wasm_getInstanceValues(this.__wbg_ptr, col);
+        return takeObject(ret);
+    }
+    /**
+    * @param {CircuitConfig} config
+    */
+    config(config) {
+        wasm.halo2wasm_config(this.__wbg_ptr, addHeapObject(config));
+    }
+    /**
+    * @returns {CircuitStats}
+    */
+    getCircuitStats() {
+        const ret = wasm.halo2wasm_getCircuitStats(this.__wbg_ptr);
+        return takeObject(ret);
+    }
+    /**
+    * @returns {Uint8Array}
+    */
+    getVk() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.halo2wasm_getVk(retptr, this.__wbg_ptr);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            var v1 = getArrayU8FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_free(r0, r1 * 1, 1);
+            return v1;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+    * @returns {Uint8Array}
+    */
+    getPartialVk() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.halo2wasm_getPartialVk(retptr, this.__wbg_ptr);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            var v1 = getArrayU8FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_free(r0, r1 * 1, 1);
+            return v1;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+    * @returns {Uint8Array}
+    */
+    getPk() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.halo2wasm_getPk(retptr, this.__wbg_ptr);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            var v1 = getArrayU8FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_free(r0, r1 * 1, 1);
+            return v1;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+    */
+    assignInstances() {
+        wasm.halo2wasm_assignInstances(this.__wbg_ptr);
+    }
+    /**
+    */
+    mock() {
+        wasm.halo2wasm_mock(this.__wbg_ptr);
+    }
+    /**
+    * @param {Uint8Array} params
+    */
+    loadParams(params) {
+        const ptr0 = passArray8ToWasm0(params, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.halo2wasm_loadParams(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
+    * @param {Uint8Array} vk
+    */
+    loadVk(vk) {
+        const ptr0 = passArray8ToWasm0(vk, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.halo2wasm_loadVk(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
+    * @param {Uint8Array} pk
+    */
+    loadPk(pk) {
+        const ptr0 = passArray8ToWasm0(pk, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.halo2wasm_loadPk(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
+    */
+    genVk() {
+        wasm.halo2wasm_genVk(this.__wbg_ptr);
+    }
+    /**
+    */
+    genPk() {
+        wasm.halo2wasm_genPk(this.__wbg_ptr);
+    }
+    /**
+    * @returns {Uint8Array}
+    */
+    prove() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.halo2wasm_prove(retptr, this.__wbg_ptr);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            var v1 = getArrayU8FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_free(r0, r1 * 1, 1);
+            return v1;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+    * For console logging only.
+    * @param {string} a
+    */
+    log(a) {
+        const ptr0 = passStringToWasm0(a, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.halo2wasm_log(this.__wbg_ptr, ptr0, len0);
+    }
+}
+/**
+*/
+export class JsCircuitBn254Fq2 {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(JsCircuitBn254Fq2.prototype);
+        obj.__wbg_ptr = ptr;
+
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_jscircuitbn254fq2_free(ptr);
+    }
+    /**
+    * @returns {JsCircuitValue256}
+    */
+    get c0() {
+        const ret = wasm.__wbg_get_jscircuitbn254fq2_c0(this.__wbg_ptr);
+        return JsCircuitValue256.__wrap(ret);
+    }
+    /**
+    * @param {JsCircuitValue256} arg0
+    */
+    set c0(arg0) {
+        _assertClass(arg0, JsCircuitValue256);
+        var ptr0 = arg0.__destroy_into_raw();
+        wasm.__wbg_set_jscircuitbn254fq2_c0(this.__wbg_ptr, ptr0);
+    }
+    /**
+    * @returns {JsCircuitValue256}
+    */
+    get c1() {
+        const ret = wasm.__wbg_get_jscircuitbn254fq2_c1(this.__wbg_ptr);
+        return JsCircuitValue256.__wrap(ret);
+    }
+    /**
+    * @param {JsCircuitValue256} arg0
+    */
+    set c1(arg0) {
+        _assertClass(arg0, JsCircuitValue256);
+        var ptr0 = arg0.__destroy_into_raw();
+        wasm.__wbg_set_jscircuitbn254fq2_c1(this.__wbg_ptr, ptr0);
+    }
+    /**
+    * @param {JsCircuitValue256} c0
+    * @param {JsCircuitValue256} c1
+    */
+    constructor(c0, c1) {
+        _assertClass(c0, JsCircuitValue256);
+        var ptr0 = c0.__destroy_into_raw();
+        _assertClass(c1, JsCircuitValue256);
+        var ptr1 = c1.__destroy_into_raw();
+        const ret = wasm.jscircuitbn254fq2_new(ptr0, ptr1);
+        this.__wbg_ptr = ret >>> 0;
+        return this;
+    }
+}
+/**
+*/
+export class JsCircuitBn254G1Affine {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(JsCircuitBn254G1Affine.prototype);
+        obj.__wbg_ptr = ptr;
+
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_jscircuitbn254g1affine_free(ptr);
+    }
+    /**
+    * @returns {JsCircuitValue256}
+    */
+    get x() {
+        const ret = wasm.__wbg_get_jscircuitbn254fq2_c0(this.__wbg_ptr);
+        return JsCircuitValue256.__wrap(ret);
+    }
+    /**
+    * @param {JsCircuitValue256} arg0
+    */
+    set x(arg0) {
+        _assertClass(arg0, JsCircuitValue256);
+        var ptr0 = arg0.__destroy_into_raw();
+        wasm.__wbg_set_jscircuitbn254fq2_c0(this.__wbg_ptr, ptr0);
+    }
+    /**
+    * @returns {JsCircuitValue256}
+    */
+    get y() {
+        const ret = wasm.__wbg_get_jscircuitbn254fq2_c1(this.__wbg_ptr);
+        return JsCircuitValue256.__wrap(ret);
+    }
+    /**
+    * @param {JsCircuitValue256} arg0
+    */
+    set y(arg0) {
+        _assertClass(arg0, JsCircuitValue256);
+        var ptr0 = arg0.__destroy_into_raw();
+        wasm.__wbg_set_jscircuitbn254fq2_c1(this.__wbg_ptr, ptr0);
+    }
+    /**
+    * @param {JsCircuitValue256} x
+    * @param {JsCircuitValue256} y
+    */
+    constructor(x, y) {
+        _assertClass(x, JsCircuitValue256);
+        var ptr0 = x.__destroy_into_raw();
+        _assertClass(y, JsCircuitValue256);
+        var ptr1 = y.__destroy_into_raw();
+        const ret = wasm.jscircuitbn254fq2_new(ptr0, ptr1);
+        this.__wbg_ptr = ret >>> 0;
+        return this;
+    }
+}
+/**
+*/
+export class JsCircuitBn254G2Affine {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(JsCircuitBn254G2Affine.prototype);
+        obj.__wbg_ptr = ptr;
+
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_jscircuitbn254g2affine_free(ptr);
+    }
+    /**
+    * @returns {JsCircuitBn254Fq2}
+    */
+    get x() {
+        const ret = wasm.__wbg_get_jscircuitbn254g2affine_x(this.__wbg_ptr);
+        return JsCircuitBn254Fq2.__wrap(ret);
+    }
+    /**
+    * @param {JsCircuitBn254Fq2} arg0
+    */
+    set x(arg0) {
+        _assertClass(arg0, JsCircuitBn254Fq2);
+        var ptr0 = arg0.__destroy_into_raw();
+        wasm.__wbg_set_jscircuitbn254g2affine_x(this.__wbg_ptr, ptr0);
+    }
+    /**
+    * @returns {JsCircuitBn254Fq2}
+    */
+    get y() {
+        const ret = wasm.__wbg_get_jscircuitbn254g2affine_y(this.__wbg_ptr);
+        return JsCircuitBn254Fq2.__wrap(ret);
+    }
+    /**
+    * @param {JsCircuitBn254Fq2} arg0
+    */
+    set y(arg0) {
+        _assertClass(arg0, JsCircuitBn254Fq2);
+        var ptr0 = arg0.__destroy_into_raw();
+        wasm.__wbg_set_jscircuitbn254g2affine_y(this.__wbg_ptr, ptr0);
+    }
+    /**
+    * @param {JsCircuitBn254Fq2} x
+    * @param {JsCircuitBn254Fq2} y
+    */
+    constructor(x, y) {
+        _assertClass(x, JsCircuitBn254Fq2);
+        var ptr0 = x.__destroy_into_raw();
+        _assertClass(y, JsCircuitBn254Fq2);
+        var ptr1 = y.__destroy_into_raw();
+        const ret = wasm.jscircuitbn254g2affine_new(ptr0, ptr1);
+        this.__wbg_ptr = ret >>> 0;
+        return this;
+    }
+}
+/**
+*/
+export class JsCircuitSecp256k1Affine {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(JsCircuitSecp256k1Affine.prototype);
+        obj.__wbg_ptr = ptr;
+
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_jscircuitsecp256k1affine_free(ptr);
+    }
+    /**
+    * @returns {JsCircuitValue256}
+    */
+    get x() {
+        const ret = wasm.__wbg_get_jscircuitbn254fq2_c0(this.__wbg_ptr);
+        return JsCircuitValue256.__wrap(ret);
+    }
+    /**
+    * @param {JsCircuitValue256} arg0
+    */
+    set x(arg0) {
+        _assertClass(arg0, JsCircuitValue256);
+        var ptr0 = arg0.__destroy_into_raw();
+        wasm.__wbg_set_jscircuitbn254fq2_c0(this.__wbg_ptr, ptr0);
+    }
+    /**
+    * @returns {JsCircuitValue256}
+    */
+    get y() {
+        const ret = wasm.__wbg_get_jscircuitbn254fq2_c1(this.__wbg_ptr);
+        return JsCircuitValue256.__wrap(ret);
+    }
+    /**
+    * @param {JsCircuitValue256} arg0
+    */
+    set y(arg0) {
+        _assertClass(arg0, JsCircuitValue256);
+        var ptr0 = arg0.__destroy_into_raw();
+        wasm.__wbg_set_jscircuitbn254fq2_c1(this.__wbg_ptr, ptr0);
+    }
+    /**
+    * @param {JsCircuitValue256} x
+    * @param {JsCircuitValue256} y
+    */
+    constructor(x, y) {
+        _assertClass(x, JsCircuitValue256);
+        var ptr0 = x.__destroy_into_raw();
+        _assertClass(y, JsCircuitValue256);
+        var ptr1 = y.__destroy_into_raw();
+        const ret = wasm.jscircuitbn254fq2_new(ptr0, ptr1);
+        this.__wbg_ptr = ret >>> 0;
+        return this;
+    }
+}
+/**
+* When this type is used, it is **ASSUMED** that the corresponding `hi,lo` [AssignedValue]s have been range checked to be 128 bits each.
+*/
+export class JsCircuitValue256 {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(JsCircuitValue256.prototype);
+        obj.__wbg_ptr = ptr;
+
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_jscircuitvalue256_free(ptr);
+    }
+    /**
+    * @returns {number}
+    */
+    get hi() {
+        const ret = wasm.__wbg_get_jscircuitvalue256_hi(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set hi(arg0) {
+        wasm.__wbg_set_jscircuitvalue256_hi(this.__wbg_ptr, arg0);
+    }
+    /**
+    * @returns {number}
+    */
+    get lo() {
+        const ret = wasm.__wbg_get_jscircuitvalue256_lo(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set lo(arg0) {
+        wasm.__wbg_set_jscircuitvalue256_lo(this.__wbg_ptr, arg0);
+    }
+    /**
+    * @param {number} hi
+    * @param {number} lo
+    */
+    constructor(hi, lo) {
+        const ret = wasm.jscircuitvalue256_new(hi, lo);
+        this.__wbg_ptr = ret >>> 0;
+        return this;
+    }
+}
+/**
+*/
+export class Secp256k1AffinePoint {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(Secp256k1AffinePoint.prototype);
+        obj.__wbg_ptr = ptr;
+
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_secp256k1affinepoint_free(ptr);
+    }
+    /**
+    * @returns {Secp256k1FpPoint}
+    */
+    x() {
+        const ret = wasm.bn254g1affinepoint_x(this.__wbg_ptr);
+        return Secp256k1FpPoint.__wrap(ret);
+    }
+    /**
+    * @returns {Secp256k1FpPoint}
+    */
+    y() {
+        const ret = wasm.bn254g1affinepoint_y(this.__wbg_ptr);
+        return Secp256k1FpPoint.__wrap(ret);
+    }
+}
+/**
+* We use 3 limbs with 88 bits each.
+* NOT constrained to be less than the prime.
+*/
+export class Secp256k1FpPoint {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(Secp256k1FpPoint.prototype);
+        obj.__wbg_ptr = ptr;
+
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_secp256k1fppoint_free(ptr);
+    }
+    /**
+    * @param {Halo2LibWasm} lib_wasm
+    * @returns {JsCircuitValue256}
+    */
+    to_circuit_value_256(lib_wasm) {
+        _assertClass(lib_wasm, Halo2LibWasm);
+        const ret = wasm.bn254fqpoint_to_circuit_value_256(this.__wbg_ptr, lib_wasm.__wbg_ptr);
+        return JsCircuitValue256.__wrap(ret);
+    }
+}
+/**
+* We use 3 limbs with 88 bits each.
+* NOT constrained to be less than the prime.
+*/
+export class Secp256k1FqPoint {
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_secp256k1fqpoint_free(ptr);
+    }
+    /**
+    * @param {Halo2LibWasm} lib_wasm
+    * @returns {JsCircuitValue256}
+    */
+    to_circuit_value_256(lib_wasm) {
+        _assertClass(lib_wasm, Halo2LibWasm);
+        const ret = wasm.bn254fqpoint_to_circuit_value_256(this.__wbg_ptr, lib_wasm.__wbg_ptr);
+        return JsCircuitValue256.__wrap(ret);
+    }
+}
+/**
+*/
+export class wbg_rayon_PoolBuilder {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(wbg_rayon_PoolBuilder.prototype);
+        obj.__wbg_ptr = ptr;
+
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_wbg_rayon_poolbuilder_free(ptr);
+    }
+    /**
+    * @returns {number}
+    */
+    numThreads() {
+        const ret = wasm.wbg_rayon_poolbuilder_numThreads(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+    * @returns {number}
+    */
+    receiver() {
+        const ret = wasm.wbg_rayon_poolbuilder_receiver(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+    */
+    build() {
+        wasm.wbg_rayon_poolbuilder_build(this.__wbg_ptr);
+    }
+}
+
+async function __wbg_load(module, imports) {
+    if (typeof Response === 'function' && module instanceof Response) {
+        if (typeof WebAssembly.instantiateStreaming === 'function') {
+            try {
+                return await WebAssembly.instantiateStreaming(module, imports);
+
+            } catch (e) {
+                if (module.headers.get('Content-Type') != 'application/wasm') {
+                    console.warn("`WebAssembly.instantiateStreaming` failed because your server does not serve wasm with `application/wasm` MIME type. Falling back to `WebAssembly.instantiate` which is slower. Original error:\n", e);
+
+                } else {
+                    throw e;
+                }
+            }
+        }
+
+        const bytes = await module.arrayBuffer();
+        return await WebAssembly.instantiate(bytes, imports);
+
+    } else {
+        const instance = await WebAssembly.instantiate(module, imports);
+
+        if (instance instanceof WebAssembly.Instance) {
+            return { instance, module };
+
+        } else {
+            return instance;
+        }
+    }
+}
+
+function __wbg_get_imports() {
+    const imports = {};
+    imports.wbg = {};
+    imports.wbg.__wbindgen_error_new = function(arg0, arg1) {
+        const ret = new Error(getStringFromWasm0(arg0, arg1));
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbindgen_is_undefined = function(arg0) {
+        const ret = getObject(arg0) === undefined;
+        return ret;
+    };
+    imports.wbg.__wbindgen_object_drop_ref = function(arg0) {
+        takeObject(arg0);
+    };
+    imports.wbg.__wbg_log_ddd375a8c18eb496 = function(arg0, arg1) {
+        console.log(getStringFromWasm0(arg0, arg1));
+    };
+    imports.wbg.__wbindgen_is_bigint = function(arg0) {
+        const ret = typeof(getObject(arg0)) === 'bigint';
+        return ret;
+    };
+    imports.wbg.__wbindgen_bigint_from_u64 = function(arg0) {
+        const ret = BigInt.asUintN(64, arg0);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbindgen_jsval_eq = function(arg0, arg1) {
+        const ret = getObject(arg0) === getObject(arg1);
+        return ret;
+    };
+    imports.wbg.__wbindgen_is_object = function(arg0) {
+        const val = getObject(arg0);
+        const ret = typeof(val) === 'object' && val !== null;
+        return ret;
+    };
+    imports.wbg.__wbindgen_in = function(arg0, arg1) {
+        const ret = getObject(arg0) in getObject(arg1);
+        return ret;
+    };
+    imports.wbg.__wbindgen_object_clone_ref = function(arg0) {
+        const ret = getObject(arg0);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_new_abda76e883ba8a5f = function() {
+        const ret = new Error();
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_stack_658279fe44541cf6 = function(arg0, arg1) {
+        const ret = getObject(arg1).stack;
+        const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        getInt32Memory0()[arg0 / 4 + 1] = len1;
+        getInt32Memory0()[arg0 / 4 + 0] = ptr1;
+    };
+    imports.wbg.__wbg_error_f851667af71bcfc6 = function(arg0, arg1) {
+        let deferred0_0;
+        let deferred0_1;
+        try {
+            deferred0_0 = arg0;
+            deferred0_1 = arg1;
+            console.error(getStringFromWasm0(arg0, arg1));
+        } finally {
+            wasm.__wbindgen_free(deferred0_0, deferred0_1, 1);
+        }
+    };
+    imports.wbg.__wbindgen_string_new = function(arg0, arg1) {
+        const ret = getStringFromWasm0(arg0, arg1);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbindgen_jsval_loose_eq = function(arg0, arg1) {
+        const ret = getObject(arg0) == getObject(arg1);
+        return ret;
+    };
+    imports.wbg.__wbindgen_boolean_get = function(arg0) {
+        const v = getObject(arg0);
+        const ret = typeof(v) === 'boolean' ? (v ? 1 : 0) : 2;
+        return ret;
+    };
+    imports.wbg.__wbindgen_number_get = function(arg0, arg1) {
+        const obj = getObject(arg1);
+        const ret = typeof(obj) === 'number' ? obj : undefined;
+        getFloat64Memory0()[arg0 / 8 + 1] = isLikeNone(ret) ? 0 : ret;
+        getInt32Memory0()[arg0 / 4 + 0] = !isLikeNone(ret);
+    };
+    imports.wbg.__wbindgen_string_get = function(arg0, arg1) {
+        const obj = getObject(arg1);
+        const ret = typeof(obj) === 'string' ? obj : undefined;
+        var ptr1 = isLikeNone(ret) ? 0 : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        var len1 = WASM_VECTOR_LEN;
+        getInt32Memory0()[arg0 / 4 + 1] = len1;
+        getInt32Memory0()[arg0 / 4 + 0] = ptr1;
+    };
+    imports.wbg.__wbg_getwithrefkey_15c62c2b8546208d = function(arg0, arg1) {
+        const ret = getObject(arg0)[getObject(arg1)];
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_randomFillSync_b70ccbdf4926a99d = function() { return handleError(function (arg0, arg1) {
+        getObject(arg0).randomFillSync(takeObject(arg1));
+    }, arguments) };
+    imports.wbg.__wbg_getRandomValues_7e42b4fb8779dc6d = function() { return handleError(function (arg0, arg1) {
+        getObject(arg0).getRandomValues(getObject(arg1));
+    }, arguments) };
+    imports.wbg.__wbg_crypto_d05b68a3572bb8ca = function(arg0) {
+        const ret = getObject(arg0).crypto;
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_process_b02b3570280d0366 = function(arg0) {
+        const ret = getObject(arg0).process;
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_versions_c1cb42213cedf0f5 = function(arg0) {
+        const ret = getObject(arg0).versions;
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_node_43b1089f407e4ec2 = function(arg0) {
+        const ret = getObject(arg0).node;
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbindgen_is_string = function(arg0) {
+        const ret = typeof(getObject(arg0)) === 'string';
+        return ret;
+    };
+    imports.wbg.__wbg_msCrypto_10fc94afee92bd76 = function(arg0) {
+        const ret = getObject(arg0).msCrypto;
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_require_9a7e0f667ead4995 = function() { return handleError(function () {
+        const ret = module.require;
+        return addHeapObject(ret);
+    }, arguments) };
+    imports.wbg.__wbindgen_is_function = function(arg0) {
+        const ret = typeof(getObject(arg0)) === 'function';
+        return ret;
+    };
+    imports.wbg.__wbg_get_c43534c00f382c8a = function(arg0, arg1) {
+        const ret = getObject(arg0)[arg1 >>> 0];
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_length_d99b680fd68bf71b = function(arg0) {
+        const ret = getObject(arg0).length;
+        return ret;
+    };
+    imports.wbg.__wbg_new_34c624469fb1d4fd = function() {
+        const ret = new Array();
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_newnoargs_5859b6d41c6fe9f7 = function(arg0, arg1) {
+        const ret = new Function(getStringFromWasm0(arg0, arg1));
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_call_a79f1973a4f07d5e = function() { return handleError(function (arg0, arg1) {
+        const ret = getObject(arg0).call(getObject(arg1));
+        return addHeapObject(ret);
+    }, arguments) };
+    imports.wbg.__wbg_self_086b5302bcafb962 = function() { return handleError(function () {
+        const ret = self.self;
+        return addHeapObject(ret);
+    }, arguments) };
+    imports.wbg.__wbg_window_132fa5d7546f1de5 = function() { return handleError(function () {
+        const ret = window.window;
+        return addHeapObject(ret);
+    }, arguments) };
+    imports.wbg.__wbg_globalThis_e5f801a37ad7d07b = function() { return handleError(function () {
+        const ret = globalThis.globalThis;
+        return addHeapObject(ret);
+    }, arguments) };
+    imports.wbg.__wbg_global_f9a61fce4af6b7c1 = function() { return handleError(function () {
+        const ret = global.global;
+        return addHeapObject(ret);
+    }, arguments) };
+    imports.wbg.__wbg_set_379b27f1d5f1bf9c = function(arg0, arg1, arg2) {
+        getObject(arg0)[arg1 >>> 0] = takeObject(arg2);
+    };
+    imports.wbg.__wbg_instanceof_ArrayBuffer_f4521cec1b99ee35 = function(arg0) {
+        let result;
+        try {
+            result = getObject(arg0) instanceof ArrayBuffer;
+        } catch (_) {
+            result = false;
+        }
+        const ret = result;
+        return ret;
+    };
+    imports.wbg.__wbg_call_f6a2bc58c19c53c6 = function() { return handleError(function (arg0, arg1, arg2) {
+        const ret = getObject(arg0).call(getObject(arg1), getObject(arg2));
+        return addHeapObject(ret);
+    }, arguments) };
+    imports.wbg.__wbg_isSafeInteger_d8c89788832a17bf = function(arg0) {
+        const ret = Number.isSafeInteger(getObject(arg0));
+        return ret;
+    };
+    imports.wbg.__wbg_buffer_5d1b598a01b41a42 = function(arg0) {
+        const ret = getObject(arg0).buffer;
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_newwithbyteoffsetandlength_d695c7957788f922 = function(arg0, arg1, arg2) {
+        const ret = new Uint8Array(getObject(arg0), arg1 >>> 0, arg2 >>> 0);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_new_ace717933ad7117f = function(arg0) {
+        const ret = new Uint8Array(getObject(arg0));
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_set_74906aa30864df5a = function(arg0, arg1, arg2) {
+        getObject(arg0).set(getObject(arg1), arg2 >>> 0);
+    };
+    imports.wbg.__wbg_length_f0764416ba5bb237 = function(arg0) {
+        const ret = getObject(arg0).length;
+        return ret;
+    };
+    imports.wbg.__wbg_instanceof_Uint8Array_4f5cffed7df34b2f = function(arg0) {
+        let result;
+        try {
+            result = getObject(arg0) instanceof Uint8Array;
+        } catch (_) {
+            result = false;
+        }
+        const ret = result;
+        return ret;
+    };
+    imports.wbg.__wbg_newwithlength_728575f3bba9959b = function(arg0) {
+        const ret = new Uint8Array(arg0 >>> 0);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_subarray_7f7a652672800851 = function(arg0, arg1, arg2) {
+        const ret = getObject(arg0).subarray(arg1 >>> 0, arg2 >>> 0);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_parse_06816e879d29d4df = function() { return handleError(function (arg0, arg1) {
+        const ret = JSON.parse(getStringFromWasm0(arg0, arg1));
+        return addHeapObject(ret);
+    }, arguments) };
+    imports.wbg.__wbg_stringify_daa6661e90c04140 = function() { return handleError(function (arg0) {
+        const ret = JSON.stringify(getObject(arg0));
+        return addHeapObject(ret);
+    }, arguments) };
+    imports.wbg.__wbindgen_bigint_get_as_i64 = function(arg0, arg1) {
+        const v = getObject(arg1);
+        const ret = typeof(v) === 'bigint' ? v : undefined;
+        getBigInt64Memory0()[arg0 / 8 + 1] = isLikeNone(ret) ? BigInt(0) : ret;
+        getInt32Memory0()[arg0 / 4 + 0] = !isLikeNone(ret);
+    };
+    imports.wbg.__wbindgen_debug_string = function(arg0, arg1) {
+        const ret = debugString(getObject(arg1));
+        const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        getInt32Memory0()[arg0 / 4 + 1] = len1;
+        getInt32Memory0()[arg0 / 4 + 0] = ptr1;
+    };
+    imports.wbg.__wbindgen_throw = function(arg0, arg1) {
+        throw new Error(getStringFromWasm0(arg0, arg1));
+    };
+    imports.wbg.__wbindgen_module = function() {
+        const ret = __wbg_init.__wbindgen_wasm_module;
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbindgen_memory = function() {
+        const ret = wasm.memory;
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_startWorkers_b0a40e119b9c4945 = function(arg0, arg1, arg2) {
+        const ret = startWorkers(takeObject(arg0), takeObject(arg1), wbg_rayon_PoolBuilder.__wrap(arg2));
+        return addHeapObject(ret);
+    };
+
+    return imports;
+}
+
+function __wbg_init_memory(imports, maybe_memory) {
+    imports.wbg.memory = maybe_memory || new WebAssembly.Memory({initial:51,maximum:65536,shared:true});
+}
+
+function __wbg_finalize_init(instance, module) {
+    wasm = instance.exports;
+    __wbg_init.__wbindgen_wasm_module = module;
+    cachedBigInt64Memory0 = null;
+    cachedFloat64Memory0 = null;
+    cachedInt32Memory0 = null;
+    cachedUint32Memory0 = null;
+    cachedUint8Memory0 = null;
+
+    wasm.__wbindgen_start();
+    return wasm;
+}
+
+function initSync(module, maybe_memory) {
+    if (wasm !== undefined) return wasm;
+
+    const imports = __wbg_get_imports();
+
+    __wbg_init_memory(imports, maybe_memory);
+
+    if (!(module instanceof WebAssembly.Module)) {
+        module = new WebAssembly.Module(module);
+    }
+
+    const instance = new WebAssembly.Instance(module, imports);
+
+    return __wbg_finalize_init(instance, module);
+}
+
+async function __wbg_init(input, maybe_memory) {
+    if (wasm !== undefined) return wasm;
+
+    if (typeof input === 'undefined') {
+        input = new URL('halo2_wasm_bg.wasm', import.meta.url);
+    }
+    const imports = __wbg_get_imports();
+
+    if (typeof input === 'string' || (typeof Request === 'function' && input instanceof Request) || (typeof URL === 'function' && input instanceof URL)) {
+        input = fetch(input);
+    }
+
+    __wbg_init_memory(imports, maybe_memory);
+
+    const { instance, module } = await __wbg_load(await input, imports);
+
+    return __wbg_finalize_init(instance, module);
+}
+
+export { initSync }
+export default __wbg_init;

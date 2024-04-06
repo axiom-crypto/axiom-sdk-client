@@ -1,0 +1,7 @@
+{
+  "node": "18.19.0",
+  "packageManager": "pnpm",
+  "packageManagerVersion": "6.32.10",
+  "rushJsonFolder": "/home/ubuntu/axiom-sdk-client",
+  "storePath": "/home/ubuntu/axiom-sdk-client/common/temp/pnpm-store"
+}

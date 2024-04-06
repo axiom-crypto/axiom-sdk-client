@@ -1,0 +1,45 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getEventSchema = exports.getFunctionSelector = exports.getFunctionSignature = void 0;
+const ethers_1 = require("ethers");
+function getFunctionSignature(functionString) {
+    const functionName = functionString.split("(")[0].trim();
+    if (functionName === "") {
+        throw new Error(`Invalid function string: ${functionString}`);
+    }
+    const functionParams = functionString.split("(")[1].split(")")[0].trim();
+    if (functionParams === "") {
+        return `${functionName}()`;
+    }
+    const functionParamArray = functionParams.split(",").map((param) => {
+        const splitParams = param.trim().split(" ");
+        let type = splitParams[0].trim();
+        if (type.startsWith("index")) {
+            type = splitParams[1].trim();
+        }
+        if (type === "uint") {
+            type = "uint256";
+        }
+        else if (type === "int") {
+            type = "int256";
+        }
+        return type;
+    });
+    return `${functionName}(${functionParamArray.join(",")})`;
+}
+exports.getFunctionSignature = getFunctionSignature;
+function getFunctionSelector(functionNameOrSig, params) {
+    if (params === undefined) {
+        return ethers_1.ethers.id(getFunctionSignature(functionNameOrSig)).slice(0, 10);
+    }
+    return ethers_1.ethers.FunctionFragment.getSelector(functionNameOrSig, params);
+}
+exports.getFunctionSelector = getFunctionSelector;
+function getEventSchema(functionNameOrSig, params) {
+    if (params === undefined) {
+        return ethers_1.ethers.id(getFunctionSignature(functionNameOrSig));
+    }
+    const concatFunction = `${functionNameOrSig}(${params.join(",")})`;
+    return ethers_1.ethers.id(concatFunction);
+}
+exports.getEventSchema = getEventSchema;

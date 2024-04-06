@@ -1,0 +1,916 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.generateDtsBundle = void 0;
+const ts = require("typescript");
+const compile_dts_1 = require("./compile-dts");
+const types_usage_evaluator_1 = require("./types-usage-evaluator");
+const typescript_1 = require("./helpers/typescript");
+const module_info_1 = require("./module-info");
+const generate_output_1 = require("./generate-output");
+const logger_1 = require("./logger");
+const collisions_resolver_1 = require("./collisions-resolver");
+function generateDtsBundle(entries, options = {}) {
+    (0, logger_1.normalLog)('Compiling input files...');
+    const { program, rootFilesRemapping } = (0, compile_dts_1.compileDts)(entries.map((entry) => entry.filePath), options.preferredConfigPath, options.followSymlinks);
+    const typeChecker = program.getTypeChecker();
+    const typeRoots = ts.getEffectiveTypeRoots(program.getCompilerOptions(), {});
+    const sourceFiles = program.getSourceFiles().filter((file) => {
+        return !program.isSourceFileDefaultLibrary(file);
+    });
+    (0, logger_1.verboseLog)(`Input source files:\n  ${sourceFiles.map((file) => file.fileName).join('\n  ')}`);
+    const typesUsageEvaluator = new types_usage_evaluator_1.TypesUsageEvaluator(sourceFiles, typeChecker);
+    return entries.map((entryConfig) => {
+        (0, logger_1.normalLog)(`Processing ${entryConfig.filePath}`);
+        const newRootFilePath = rootFilesRemapping.get(entryConfig.filePath);
+        if (newRootFilePath === undefined) {
+            throw new Error(`Cannot remap root source file ${entryConfig.filePath}`);
+        }
+        const rootSourceFile = (0, typescript_1.getRootSourceFile)(program, newRootFilePath);
+        const rootSourceFileSymbol = typeChecker.getSymbolAtLocation(rootSourceFile);
+        if (rootSourceFileSymbol === undefined) {
+            throw new Error(`Symbol for root source file ${newRootFilePath} not found`);
+        }
+        const librariesOptions = entryConfig.libraries || {};
+        const criteria = {
+            allowedTypesLibraries: librariesOptions.allowedTypesLibraries,
+            importedLibraries: librariesOptions.importedLibraries,
+            inlinedLibraries: librariesOptions.inlinedLibraries || [],
+            typeRoots,
+        };
+        const rootFileExports = (0, typescript_1.getExportsForSourceFile)(typeChecker, rootSourceFileSymbol);
+        const rootFileExportSymbols = rootFileExports.map((exp) => exp.symbol);
+        const collectionResult = {
+            typesReferences: new Set(),
+            imports: new Map(),
+            statements: [],
+            renamedExports: new Map(),
+            wrappedNamespaces: new Map(),
+        };
+        const outputOptions = entryConfig.output || {};
+        const inlineDeclareGlobals = Boolean(outputOptions.inlineDeclareGlobals);
+        const collisionsResolver = new collisions_resolver_1.CollisionsResolver(typeChecker);
+        function updateResultForAnyModule(statements, currentModule) {
+            // contains a set of modules that were visited already
+            // can be used to prevent infinite recursion in updating results in re-exports
+            const visitedModules = new Set();
+            function updateResultForExternalExport(exportAssignment) {
+                // if we have `export =` or `export * from` somewhere so we can decide that every declaration of exported symbol in this way
+                // is "part of the exported module" and we need to update result according every member of each declaration
+                // but treat they as current module (we do not need to update module info)
+                for (const declaration of (0, typescript_1.getDeclarationsForExportedValues)(exportAssignment, typeChecker)) {
+                    if (ts.isVariableDeclaration(declaration)) {
+                        // variables will be processed separately anyway so no need to process them again here
+                        continue;
+                    }
+                    let exportedDeclarations = [];
+                    if (ts.isExportDeclaration(exportAssignment) && ts.isSourceFile(declaration)) {
+                        const referencedModule = (0, module_info_1.getReferencedModuleInfo)(exportAssignment, criteria, typeChecker);
+                        if (referencedModule !== null) {
+                            if (visitedModules.has(referencedModule.fileName)) {
+                                continue;
+                            }
+                            visitedModules.add(referencedModule.fileName);
+                        }
+                        exportedDeclarations = declaration.statements;
+                    }
+                    else if (ts.isModuleDeclaration(declaration)) {
+                        if (declaration.body !== undefined && ts.isModuleBlock(declaration.body)) {
+                            const referencedModule = (0, module_info_1.getReferencedModuleInfo)(declaration, criteria, typeChecker);
+                            if (referencedModule !== null) {
+                                if (visitedModules.has(referencedModule.fileName)) {
+                                    continue;
+                                }
+                                visitedModules.add(referencedModule.fileName);
+                            }
+                            exportedDeclarations = declaration.body.statements;
+                        }
+                    }
+                    else {
+                        exportedDeclarations = [declaration];
+                    }
+                    updateResultImpl(exportedDeclarations);
+                }
+            }
+            // eslint-disable-next-line complexity
+            function updateResultImpl(statementsToProcess) {
+                for (const statement of statementsToProcess) {
+                    // we should skip import statements
+                    if (statement.kind === ts.SyntaxKind.ImportDeclaration || statement.kind === ts.SyntaxKind.ImportEqualsDeclaration) {
+                        continue;
+                    }
+                    if ((0, typescript_1.isDeclareModule)(statement)) {
+                        updateResultForModuleDeclaration(statement, currentModule);
+                        // if a statement is `declare module "module" {}` then don't process it below
+                        // as it is handled already in `updateResultForModuleDeclaration`
+                        // but if it is `declare module Module {}` then it can be used in types and imports
+                        // so in this case it needs to be checked for "usages" below
+                        if (ts.isStringLiteral(statement.name)) {
+                            continue;
+                        }
+                    }
+                    if (currentModule.type === 3 /* ModuleType.ShouldBeUsedForModulesOnly */) {
+                        continue;
+                    }
+                    if ((0, typescript_1.isDeclareGlobalStatement)(statement) && inlineDeclareGlobals && currentModule.type === 0 /* ModuleType.ShouldBeInlined */) {
+                        collectionResult.statements.push(statement);
+                        continue;
+                    }
+                    if (ts.isExportDeclaration(statement)) {
+                        if (currentModule.type === 0 /* ModuleType.ShouldBeInlined */) {
+                            continue;
+                        }
+                        // `export * from`
+                        if (statement.exportClause === undefined) {
+                            updateResultForExternalExport(statement);
+                            continue;
+                        }
+                        // `export { val }`
+                        if (ts.isNamedExports(statement.exportClause) && currentModule.type === 1 /* ModuleType.ShouldBeImported */) {
+                            updateImportsForStatement(statement);
+                            continue;
+                        }
+                    }
+                    if (ts.isExportAssignment(statement) && statement.isExportEquals && currentModule.type !== 0 /* ModuleType.ShouldBeInlined */) {
+                        updateResultForExternalExport(statement);
+                        continue;
+                    }
+                    if (!isNodeUsed(statement)) {
+                        continue;
+                    }
+                    switch (currentModule.type) {
+                        case 2 /* ModuleType.ShouldBeReferencedAsTypes */:
+                            addTypesReference(currentModule.typesLibraryName);
+                            break;
+                        case 1 /* ModuleType.ShouldBeImported */:
+                            updateImportsForStatement(statement);
+                            break;
+                        case 0 /* ModuleType.ShouldBeInlined */:
+                            if (ts.isVariableStatement(statement)) {
+                                for (const variableDeclaration of statement.declarationList.declarations) {
+                                    if (ts.isIdentifier(variableDeclaration.name)) {
+                                        collisionsResolver.addTopLevelIdentifier(variableDeclaration.name);
+                                    }
+                                    else {
+                                        // it seems that the compiler doesn't produce anything else (e.g. binding elements) in declaration files
+                                        // but it is still possible to write such code manually
+                                        // this feels like quite rare case so no support for now
+                                        (0, logger_1.warnLog)(`Unhandled variable identifier type detected (${ts.SyntaxKind[variableDeclaration.name.kind]}). Please report this issue to https://github.com/timocov/dts-bundle-generator`);
+                                    }
+                                }
+                            }
+                            else if ((0, typescript_1.isNodeNamedDeclaration)(statement)) {
+                                const statementName = (0, typescript_1.getNodeName)(statement);
+                                if (statementName !== undefined) {
+                                    collisionsResolver.addTopLevelIdentifier(statementName);
+                                }
+                            }
+                            collectionResult.statements.push(statement);
+                            break;
+                    }
+                }
+            }
+            updateResultImpl(statements);
+        }
+        function isReferencedModuleImportable(statement) {
+            return (0, module_info_1.getReferencedModuleInfo)(statement, criteria, typeChecker)?.type === 1 /* ModuleType.ShouldBeImported */;
+        }
+        function handleExportDeclarationFromRootModule(exportDeclaration) {
+            function handleExportStarStatement(exportStarStatement, visitedSymbols = new Set()) {
+                if (exportStarStatement.moduleSpecifier === undefined || exportStarStatement.exportClause !== undefined) {
+                    throw new Error(`Invalid export-star declaration statement provided, ${exportStarStatement.getText()}`);
+                }
+                const importModuleSpecifier = (0, typescript_1.getImportModuleName)(exportStarStatement);
+                if (importModuleSpecifier === null) {
+                    return;
+                }
+                const referencedModuleInfo = (0, module_info_1.getReferencedModuleInfo)(exportStarStatement, criteria, typeChecker);
+                if (referencedModuleInfo === null) {
+                    return;
+                }
+                switch (referencedModuleInfo.type) {
+                    case 0 /* ModuleType.ShouldBeInlined */: {
+                        // `export * from './inlined-module'`
+                        const referencedModuleSymbol = (0, typescript_1.getNodeOwnSymbol)(exportStarStatement.moduleSpecifier, typeChecker);
+                        const referencedSourceFileExportStarSymbol = referencedModuleSymbol.exports?.get(ts.InternalSymbolName.ExportStar);
+                        if (referencedSourceFileExportStarSymbol !== undefined) {
+                            if (visitedSymbols.has(referencedSourceFileExportStarSymbol)) {
+                                return;
+                            }
+                            visitedSymbols.add(referencedSourceFileExportStarSymbol);
+                            // we need to go recursive for all `export * from` statements and add all that are from imported modules
+                            for (const exportDecl of (0, typescript_1.getSymbolExportStarDeclarations)(referencedSourceFileExportStarSymbol)) {
+                                handleExportStarStatement(exportDecl, visitedSymbols);
+                            }
+                        }
+                        break;
+                    }
+                    case 1 /* ModuleType.ShouldBeImported */: {
+                        // `export * from 'importable-package'`
+                        collectionResult.statements.push(exportStarStatement);
+                        break;
+                    }
+                }
+            }
+            /**
+             * This function returns an export-star object that exports given {@link nodeSymbol} symbol.
+             * If an exporting export declaration object is not from an importable module then `null` is returned.
+             * Also if the symbol is exported explicitly (i.e. via `export { Name }` or specifying `export` keyword next to the node) then `null` is returned as well.
+             */
+            function findExportingExportStarExportFromImportableModule(referencedModuleSymbol, nodeSymbol) {
+                function findResultRecursively(referencedModuleSym, exportedNodeSym, visitedSymbols) {
+                    // prevent infinite recursion
+                    if (visitedSymbols.has(referencedModuleSym)) {
+                        return null;
+                    }
+                    visitedSymbols.add(referencedModuleSym);
+                    // `export * from` exports always have less priority over explicit exports so it should go last
+                    const exportStarExport = referencedModuleSym.exports?.get(ts.InternalSymbolName.ExportStar);
+                    if (exportStarExport === undefined) {
+                        return null;
+                    }
+                    for (const exportStarDeclaration of (0, typescript_1.getDeclarationsForSymbol)(exportStarExport).filter(ts.isExportDeclaration)) {
+                        if (exportStarDeclaration.moduleSpecifier === undefined) {
+                            // this seems impossible, but to make the compiler/types happy
+                            continue;
+                        }
+                        const exportStarModuleSymbol = (0, typescript_1.getNodeOwnSymbol)(exportStarDeclaration.moduleSpecifier, typeChecker);
+                        if (exportStarModuleSymbol.exports === undefined) {
+                            continue;
+                        }
+                        if (isReferencedModuleImportable(exportStarDeclaration)) {
+                            // for "importable" modules we don't need to go deeper or even check "explicit" exports
+                            // as it doesn't matter how its done internally and we care about "public" interface only
+                            // so we can just check whether it exports a symbol or not (irregardless of how it is exported exactly internally)
+                            const referencedModuleExports = typeChecker.getExportsOfModule(exportStarModuleSymbol);
+                            const exportedNodeSymbol = referencedModuleExports.find((exp) => (0, typescript_1.getActualSymbol)(exp, typeChecker) === nodeSymbol);
+                            if (exportedNodeSymbol !== undefined) {
+                                return { exportStarDeclaration, exportedNodeSymbol };
+                            }
+                            continue;
+                        }
+                        const result = findResultRecursively(exportStarModuleSymbol, exportedNodeSym, visitedSymbols);
+                        if (result !== null) {
+                            return result;
+                        }
+                    }
+                    return null;
+                }
+                if (referencedModuleSymbol.exports === undefined) {
+                    throw new Error(`No exports found for "${referencedModuleSymbol.getName()}" symbol`);
+                }
+                const hasExplicitExportOfSymbol = Array.from(referencedModuleSymbol.exports.values()).some((exp) => {
+                    if (exp.escapedName === ts.InternalSymbolName.ExportStar) {
+                        return false;
+                    }
+                    return (0, typescript_1.getActualSymbol)(exp, typeChecker) === nodeSymbol;
+                });
+                if (hasExplicitExportOfSymbol) {
+                    // symbol is exported explicitly ¯\_(ツ)_/¯
+                    return null;
+                }
+                return findResultRecursively(referencedModuleSymbol, nodeSymbol, new Set());
+            }
+            // `export * from 'module'`
+            if (exportDeclaration.exportClause === undefined) {
+                handleExportStarStatement(exportDeclaration);
+                return;
+            }
+            if (exportDeclaration.exportClause !== undefined && ts.isNamedExports(exportDeclaration.exportClause)) {
+                // `export { val, val2 }`
+                if (exportDeclaration.moduleSpecifier === undefined) {
+                    for (const exportElement of exportDeclaration.exportClause.elements) {
+                        const exportElementSymbol = (0, typescript_1.getImportExportReferencedSymbol)(exportElement, typeChecker);
+                        const namespaceImportFromImportableModule = (0, typescript_1.getDeclarationsForSymbol)(exportElementSymbol).find((importDecl) => {
+                            return ts.isNamespaceImport(importDecl) && isReferencedModuleImportable(importDecl.parent.parent);
+                        });
+                        if (namespaceImportFromImportableModule !== undefined) {
+                            const importModuleSpecifier = (0, typescript_1.getImportModuleName)(namespaceImportFromImportableModule.parent.parent);
+                            if (importModuleSpecifier === null) {
+                                throw new Error(`Cannot get import module name from '${namespaceImportFromImportableModule.parent.parent.getText()}'`);
+                            }
+                            addNsImport(getImportItem(importModuleSpecifier), namespaceImportFromImportableModule.name);
+                        }
+                    }
+                    return;
+                }
+                // `export { val, val2 } from 'module'`
+                if (exportDeclaration.moduleSpecifier !== undefined) {
+                    const referencedModuleSymbol = (0, typescript_1.getNodeOwnSymbol)(exportDeclaration.moduleSpecifier, typeChecker);
+                    // in this case we want to find all elements that we re-exported via `export * from` exports as they aren't handled elsewhere
+                    for (const exportElement of exportDeclaration.exportClause.elements) {
+                        const exportedNodeSymbol = (0, typescript_1.getActualSymbol)((0, typescript_1.getImportExportReferencedSymbol)(exportElement, typeChecker), typeChecker);
+                        const exportingExportStarResult = findExportingExportStarExportFromImportableModule(referencedModuleSymbol, exportedNodeSymbol);
+                        if (exportingExportStarResult === null) {
+                            continue;
+                        }
+                        const importModuleSpecifier = (0, typescript_1.getImportModuleName)(exportingExportStarResult.exportStarDeclaration);
+                        if (importModuleSpecifier === null) {
+                            throw new Error(`Cannot get import module name from '${exportingExportStarResult.exportStarDeclaration.getText()}'`);
+                        }
+                        // technically we could use named imports and then add re-exports
+                        // but this solution affects names scope (re-exports don't affect it)
+                        // and also it is slightly complicated to find a name declaration (identifier) that needs to be imported
+                        // so it feels better to go this way, but happy to change in the future if there would be any issues
+                        addReExport(getImportItem(importModuleSpecifier), exportingExportStarResult.exportedNodeSymbol.getName(), exportElement.name.text);
+                    }
+                    return;
+                }
+            }
+        }
+        function updateResultForRootModule(statements, currentModule) {
+            updateResultForAnyModule(statements, currentModule);
+            // add skipped by `updateResult` exports
+            for (const statement of statements) {
+                if (ts.isExportDeclaration(statement)) {
+                    handleExportDeclarationFromRootModule(statement);
+                    continue;
+                }
+                if (ts.isExportAssignment(statement)) {
+                    // `"export ="` or `export default 123` or `export default "str"`
+                    if (statement.isExportEquals || !ts.isIdentifier(statement.expression)) {
+                        collectionResult.statements.push(statement);
+                    }
+                    continue;
+                }
+            }
+        }
+        function updateResultForModuleDeclaration(moduleDecl, currentModule) {
+            if (moduleDecl.body === undefined || !ts.isModuleBlock(moduleDecl.body)) {
+                return;
+            }
+            const referencedModuleInfo = (0, module_info_1.getReferencedModuleInfo)(moduleDecl, criteria, typeChecker);
+            if (referencedModuleInfo === null) {
+                return;
+            }
+            // if we have declaration of external module inside internal one
+            if (!currentModule.isExternal && referencedModuleInfo.isExternal) {
+                // if it's allowed - we need to just add it to result without any processing
+                if (outputOptions.inlineDeclareExternals) {
+                    collectionResult.statements.push(moduleDecl);
+                }
+                return;
+            }
+            updateResultForAnyModule(moduleDecl.body.statements, referencedModuleInfo);
+        }
+        function addTypesReference(library) {
+            if (!collectionResult.typesReferences.has(library)) {
+                (0, logger_1.normalLog)(`Library "${library}" will be added via reference directive`);
+                collectionResult.typesReferences.add(library);
+            }
+        }
+        function updateImportsForStatement(statement) {
+            const statementsToImport = ts.isVariableStatement(statement)
+                ? statement.declarationList.declarations
+                : ts.isExportDeclaration(statement) && statement.exportClause !== undefined
+                    ? ts.isNamespaceExport(statement.exportClause)
+                        ? [statement.exportClause]
+                        : statement.exportClause.elements
+                    : [statement];
+            for (const statementToImport of statementsToImport) {
+                if (shouldNodeBeImported(statementToImport)) {
+                    addImport(statementToImport);
+                    // if we're going to add import of any statement in the bundle
+                    // we should check whether the library of that statement
+                    // could be referenced via triple-slash reference-types directive
+                    // because the project which will use bundled declaration file
+                    // can have `types: []` in the tsconfig and it'll fail
+                    // this is especially related to the types packages
+                    // which declares different modules in their declarations
+                    // e.g. @types/node has declaration for "packages" events, fs, path and so on
+                    const sourceFile = statementToImport.getSourceFile();
+                    const moduleInfo = (0, module_info_1.getFileModuleInfo)(sourceFile.fileName, criteria);
+                    if (moduleInfo.type === 2 /* ModuleType.ShouldBeReferencedAsTypes */) {
+                        addTypesReference(moduleInfo.typesLibraryName);
+                    }
+                }
+            }
+        }
+        function getDeclarationUsagesSourceFiles(declaration) {
+            return new Set(getExportedSymbolsUsingStatement(declaration)
+                .map((symbol) => (0, typescript_1.getDeclarationsForSymbol)(symbol))
+                .reduce((acc, val) => acc.concat(val), [])
+                .map(typescript_1.getClosestModuleLikeNode));
+        }
+        function getImportItem(importModuleSpecifier) {
+            let importItem = collectionResult.imports.get(importModuleSpecifier);
+            if (importItem === undefined) {
+                importItem = {
+                    defaultImports: new Set(),
+                    namedImports: new Map(),
+                    nsImport: null,
+                    requireImports: new Set(),
+                    reExports: new Map(),
+                };
+                collectionResult.imports.set(importModuleSpecifier, importItem);
+            }
+            return importItem;
+        }
+        function addRequireImport(importItem, preferredLocalName) {
+            importItem.requireImports.add(collisionsResolver.addTopLevelIdentifier(preferredLocalName));
+        }
+        function addNamedImport(importItem, preferredLocalName, importedIdentifier) {
+            const newLocalName = collisionsResolver.addTopLevelIdentifier(preferredLocalName);
+            const importedName = importedIdentifier.text;
+            importItem.namedImports.set(newLocalName, importedName);
+        }
+        function addReExport(importItem, moduleExportedName, reExportedName) {
+            // re-exports don't affect local names scope so we don't need to register them in collisions resolver
+            importItem.reExports.set(reExportedName, moduleExportedName);
+        }
+        function addNsImport(importItem, preferredLocalName) {
+            if (importItem.nsImport === null) {
+                importItem.nsImport = collisionsResolver.addTopLevelIdentifier(preferredLocalName);
+            }
+        }
+        function addDefaultImport(importItem, preferredLocalName) {
+            importItem.defaultImports.add(collisionsResolver.addTopLevelIdentifier(preferredLocalName));
+        }
+        function addImport(statement) {
+            if (!ts.isSourceFile(statement) && statement.name === undefined) {
+                throw new Error(`Import/usage unnamed declaration: ${statement.getText()}`);
+            }
+            getDeclarationUsagesSourceFiles(statement).forEach((sourceFile) => {
+                if ((0, module_info_1.getModuleLikeModuleInfo)(sourceFile, criteria, typeChecker).type !== 0 /* ModuleType.ShouldBeInlined */) {
+                    // we should ignore source files that aren't inlined
+                    return;
+                }
+                const sourceFileStatements = ts.isSourceFile(sourceFile)
+                    ? sourceFile.statements
+                    : sourceFile.body !== undefined && ts.isModuleBlock(sourceFile.body)
+                        ? sourceFile.body.statements
+                        : [];
+                // eslint-disable-next-line complexity
+                sourceFileStatements.forEach((st) => {
+                    if (!ts.isImportEqualsDeclaration(st) && !ts.isImportDeclaration(st) && !ts.isExportDeclaration(st)) {
+                        return;
+                    }
+                    const importModuleSpecifier = (0, typescript_1.getImportModuleName)(st);
+                    if (importModuleSpecifier === null) {
+                        return;
+                    }
+                    const referencedModuleInfo = (0, module_info_1.getReferencedModuleInfo)(st, criteria, typeChecker);
+                    // if a referenced module should be inlined we can just ignore it
+                    if (referencedModuleInfo === null || referencedModuleInfo.type !== 1 /* ModuleType.ShouldBeImported */) {
+                        return;
+                    }
+                    const importItem = getImportItem(importModuleSpecifier);
+                    if (ts.isImportEqualsDeclaration(st)) {
+                        if (areDeclarationSame(statement, st)) {
+                            addRequireImport(importItem, st.name);
+                        }
+                        return;
+                    }
+                    if (ts.isExportDeclaration(st) && st.exportClause !== undefined) {
+                        if (ts.isNamedExports(st.exportClause)) {
+                            // export { El1, El2 as ExportedName } from 'module';
+                            st.exportClause.elements
+                                .filter(areDeclarationSame.bind(null, statement))
+                                .forEach((specifier) => {
+                                addNamedImport(importItem, specifier.name, specifier.propertyName || specifier.name);
+                            });
+                        }
+                        else {
+                            // export * as name from 'module';
+                            if (isNodeUsed(st.exportClause)) {
+                                addNsImport(importItem, st.exportClause.name);
+                            }
+                        }
+                    }
+                    else if (ts.isImportDeclaration(st) && st.importClause !== undefined) {
+                        if (st.importClause.name !== undefined && areDeclarationSame(statement, st.importClause)) {
+                            // import name from 'module';
+                            addDefaultImport(importItem, st.importClause.name);
+                        }
+                        if (st.importClause.namedBindings !== undefined) {
+                            if (ts.isNamedImports(st.importClause.namedBindings)) {
+                                // import { El1, El2 as ImportedName } from 'module';
+                                st.importClause.namedBindings.elements
+                                    .filter(areDeclarationSame.bind(null, statement))
+                                    .forEach((specifier) => {
+                                    addNamedImport(importItem, specifier.name, specifier.propertyName || specifier.name);
+                                });
+                            }
+                            else {
+                                // import * as name from 'module';
+                                if (isNodeUsed(st.importClause)) {
+                                    addNsImport(importItem, st.importClause.namedBindings.name);
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+        }
+        function getGlobalSymbolsUsingSymbol(symbol) {
+            return Array.from(typesUsageEvaluator.getSymbolsUsingSymbol(symbol) ?? []).filter((usedInSymbol) => {
+                if (usedInSymbol.escapedName !== ts.InternalSymbolName.Global) {
+                    return false;
+                }
+                return (0, typescript_1.getDeclarationsForSymbol)(usedInSymbol).some((decl) => {
+                    const closestModuleLike = (0, typescript_1.getClosestSourceFileLikeNode)(decl);
+                    const moduleInfo = (0, module_info_1.getModuleLikeModuleInfo)(closestModuleLike, criteria, typeChecker);
+                    return moduleInfo.type === 0 /* ModuleType.ShouldBeInlined */;
+                });
+            });
+        }
+        function isSymbolUsedByGlobalSymbols(symbol, visitedSymbols = new Set()) {
+            if (visitedSymbols.has(symbol)) {
+                return false;
+            }
+            visitedSymbols.add(symbol);
+            return Array.from(typesUsageEvaluator.getSymbolsUsingSymbol(symbol) ?? []).some((usedInSymbol) => {
+                if (usedInSymbol.escapedName !== ts.InternalSymbolName.Global) {
+                    return isSymbolUsedByGlobalSymbols(usedInSymbol, visitedSymbols);
+                }
+                const usedByThisSymbol = (0, typescript_1.getDeclarationsForSymbol)(usedInSymbol).some((decl) => {
+                    const closestModuleLike = (0, typescript_1.getClosestSourceFileLikeNode)(decl);
+                    const moduleInfo = (0, module_info_1.getModuleLikeModuleInfo)(closestModuleLike, criteria, typeChecker);
+                    return moduleInfo.type === 0 /* ModuleType.ShouldBeInlined */;
+                });
+                if (usedByThisSymbol) {
+                    return true;
+                }
+                return isSymbolUsedByGlobalSymbols(usedInSymbol, visitedSymbols);
+            });
+        }
+        function isNodeUsed(node) {
+            if ((0, typescript_1.isNodeNamedDeclaration)(node) || ts.isSourceFile(node)) {
+                const nodeSymbol = (0, typescript_1.getNodeSymbol)(node, typeChecker);
+                if (nodeSymbol === null) {
+                    return false;
+                }
+                const nodeUsedByDirectExports = rootFileExportSymbols.some((rootExport) => typesUsageEvaluator.isSymbolUsedBySymbol(nodeSymbol, rootExport));
+                if (nodeUsedByDirectExports) {
+                    return true;
+                }
+                return inlineDeclareGlobals && isSymbolUsedByGlobalSymbols(nodeSymbol);
+            }
+            else if (ts.isVariableStatement(node)) {
+                return node.declarationList.declarations.some((declaration) => {
+                    return isNodeUsed(declaration);
+                });
+            }
+            else if (ts.isExportDeclaration(node) && node.exportClause !== undefined && ts.isNamespaceExport(node.exportClause)) {
+                return isNodeUsed(node.exportClause);
+            }
+            else if (ts.isImportClause(node) && node.namedBindings !== undefined) {
+                return isNodeUsed(node.namedBindings);
+            }
+            return false;
+        }
+        function shouldNodeBeImported(node) {
+            const nodeSymbol = (0, typescript_1.getNodeSymbol)(node, typeChecker);
+            if (nodeSymbol === null) {
+                return false;
+            }
+            return shouldSymbolBeImported(nodeSymbol);
+        }
+        function shouldSymbolBeImported(nodeSymbol) {
+            const isSymbolDeclaredInDefaultLibrary = (0, typescript_1.getDeclarationsForSymbol)(nodeSymbol).some((declaration) => program.isSourceFileDefaultLibrary(declaration.getSourceFile()));
+            if (isSymbolDeclaredInDefaultLibrary) {
+                // we shouldn't import a node declared in the default library (such dom, es2015)
+                // yeah, actually we should check that node is declared only in the default lib
+                // but it seems we can check that at least one declaration is from default lib
+                // to treat the node as un-importable
+                // because we can't re-export declared somewhere else node with declaration merging
+                // also, if some lib file will not be added to the project
+                // for example like it is described in the react declaration file (e.g. React Native)
+                // then here we still have a bug with "importing global declaration from a package"
+                // (see https://github.com/timocov/dts-bundle-generator/issues/71)
+                // but I don't think it is a big problem for now
+                // and it's possible that it will be fixed in https://github.com/timocov/dts-bundle-generator/issues/59
+                return false;
+            }
+            const symbolsDeclarations = (0, typescript_1.getDeclarationsForSymbol)(nodeSymbol);
+            // if all declarations of the symbol are in modules that should be inlined then this symbol must be inlined, not imported
+            const shouldSymbolBeInlined = symbolsDeclarations.every((decl) => (0, module_info_1.getModuleLikeModuleInfo)((0, typescript_1.getClosestSourceFileLikeNode)(decl), criteria, typeChecker).type === 0 /* ModuleType.ShouldBeInlined */);
+            if (shouldSymbolBeInlined) {
+                return false;
+            }
+            return getExportedSymbolsUsingSymbol(nodeSymbol).length !== 0;
+        }
+        function getExportedSymbolsUsingStatement(node) {
+            const nodeSymbol = (0, typescript_1.getNodeSymbol)(node, typeChecker);
+            if (nodeSymbol === null) {
+                return [];
+            }
+            return getExportedSymbolsUsingSymbol(nodeSymbol);
+        }
+        function getExportedSymbolsUsingSymbol(nodeSymbol) {
+            const symbolsUsingNode = typesUsageEvaluator.getSymbolsUsingSymbol(nodeSymbol);
+            if (symbolsUsingNode === null) {
+                throw new Error(`Something went wrong - getSymbolsUsingSymbol returned null but expected to be a set of symbols (symbol=${nodeSymbol.name})`);
+            }
+            return [
+                ...(rootFileExportSymbols.includes(nodeSymbol) ? [nodeSymbol] : []),
+                // symbols which are used in types directly
+                ...Array.from(symbolsUsingNode).filter((symbol) => {
+                    const symbolsDeclarations = (0, typescript_1.getDeclarationsForSymbol)(symbol);
+                    if (symbolsDeclarations.length === 0 || symbolsDeclarations.every((decl) => {
+                        // we need to make sure that at least 1 declaration is inlined
+                        return (0, module_info_1.getModuleLikeModuleInfo)((0, typescript_1.getClosestSourceFileLikeNode)(decl), criteria, typeChecker).type !== 0 /* ModuleType.ShouldBeInlined */;
+                    })) {
+                        return false;
+                    }
+                    return rootFileExportSymbols.some((rootSymbol) => typesUsageEvaluator.isSymbolUsedBySymbol(symbol, rootSymbol));
+                }),
+                // symbols which are used in global types i.e. in `declare global`s
+                ...(inlineDeclareGlobals ? getGlobalSymbolsUsingSymbol(nodeSymbol) : []),
+            ];
+        }
+        function areDeclarationSame(left, right) {
+            const leftSymbols = (0, typescript_1.splitTransientSymbol)((0, typescript_1.getNodeSymbol)(left, typeChecker), typeChecker);
+            const rightSymbols = (0, typescript_1.splitTransientSymbol)((0, typescript_1.getNodeSymbol)(right, typeChecker), typeChecker);
+            for (const leftSymbol of leftSymbols) {
+                if (rightSymbols.has(leftSymbol)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        function createNamespaceForExports(exports, namespaceSymbol) {
+            function addSymbolToNamespaceExports(namespaceExports, symbol) {
+                const symbolKnownNames = collisionsResolver.namesForSymbol(symbol);
+                if (symbolKnownNames.size === 0) {
+                    throw new Error(`Cannot get local names for symbol '${symbol.getName()}' while generating namespaced export`);
+                }
+                namespaceExports.set(symbol.getName(), Array.from(symbolKnownNames)[0]);
+            }
+            function handleNamespacedImportOrExport(namespacedImportOrExport, namespaceExports, symbol) {
+                if (namespacedImportOrExport.moduleSpecifier === undefined) {
+                    return;
+                }
+                if (isReferencedModuleImportable(namespacedImportOrExport)) {
+                    // in case of an external export statement we should copy it as is
+                    // here we assume that a namespace import will be added in other places
+                    // so here we can just add re-export
+                    addSymbolToNamespaceExports(namespaceExports, symbol);
+                    return;
+                }
+                const referencedSourceFileSymbol = (0, typescript_1.getNodeOwnSymbol)(namespacedImportOrExport.moduleSpecifier, typeChecker);
+                if (referencedSourceFileSymbol.exports === undefined) {
+                    return;
+                }
+                if (ts.isImportDeclaration(namespacedImportOrExport) && referencedSourceFileSymbol.exports.has(ts.InternalSymbolName.ExportEquals)) {
+                    // in case of handling `import * as Ns` statements with `export =` export in a module we need to ignore it
+                    // as that import will be renamed later
+                    return;
+                }
+                const localNamespaceName = createNamespaceForExports(referencedSourceFileSymbol.exports, symbol);
+                if (localNamespaceName !== null) {
+                    namespaceExports.set(symbol.getName(), localNamespaceName);
+                }
+            }
+            function processExportSymbol(namespaceExports, symbol) {
+                if (symbol.escapedName === ts.InternalSymbolName.ExportStar) {
+                    // this means that an export contains `export * from 'module'` statement
+                    for (const exportStarDeclaration of (0, typescript_1.getSymbolExportStarDeclarations)(symbol)) {
+                        if (exportStarDeclaration.moduleSpecifier === undefined) {
+                            throw new Error(`Export star declaration does not have a module specifier '${exportStarDeclaration.getText()}'`);
+                        }
+                        if (isReferencedModuleImportable(exportStarDeclaration)) {
+                            // in case of re-exporting from other modules directly we should import everything and re-export manually
+                            // but it is not supported yet so lets just fail for now
+                            throw new Error(`Having a re-export from an importable module as a part of namespaced export is not supported yet.`);
+                        }
+                        const referencedSourceFileSymbol = (0, typescript_1.getNodeOwnSymbol)(exportStarDeclaration.moduleSpecifier, typeChecker);
+                        referencedSourceFileSymbol.exports?.forEach(processExportSymbol.bind(null, namespaceExports));
+                    }
+                    return;
+                }
+                symbol.declarations?.forEach((decl) => {
+                    if (ts.isNamespaceExport(decl) && decl.parent.moduleSpecifier !== undefined) {
+                        handleNamespacedImportOrExport(decl.parent, namespaceExports, symbol);
+                        return;
+                    }
+                    if (ts.isExportSpecifier(decl)) {
+                        const exportElementSymbol = (0, typescript_1.getImportExportReferencedSymbol)(decl, typeChecker);
+                        const namespaceImport = (0, typescript_1.getDeclarationsForSymbol)(exportElementSymbol).find(ts.isNamespaceImport);
+                        if (namespaceImport !== undefined) {
+                            handleNamespacedImportOrExport(namespaceImport.parent.parent, namespaceExports, symbol);
+                        }
+                        return;
+                    }
+                });
+                addSymbolToNamespaceExports(namespaceExports, symbol);
+            }
+            function getIdentifierOfNamespaceImportFromInlinedModule(nsSymbol) {
+                // handling namespaced re-exports/imports
+                // e.g. `export * as NS from './local-module';` or `import * as NS from './local-module'; export { NS }`
+                for (const decl of (0, typescript_1.getDeclarationsForSymbol)(nsSymbol)) {
+                    if (!ts.isNamespaceExport(decl) && !ts.isExportSpecifier(decl)) {
+                        continue;
+                    }
+                    // if it is namespace export then it should be from a inlined module (e.g. `export * as NS from './local-module';`)
+                    if (ts.isNamespaceExport(decl) && !isReferencedModuleImportable(decl.parent)) {
+                        return decl.name;
+                    }
+                    if (ts.isExportSpecifier(decl)) {
+                        // if it is export specifier then it should exporting a local symbol i.e. without a module specifier (e.g. `export { NS };` or `export { NS as NewNsName };`)
+                        if (decl.parent.parent.moduleSpecifier !== undefined) {
+                            // this means that namespace symbol is created somewhere else in the import/export chain
+                            if (isReferencedModuleImportable(decl.parent.parent)) {
+                                continue;
+                            }
+                            // in case of a chain of imports/exports we need to keep searching recursively
+                            if (getIdentifierOfNamespaceImportFromInlinedModule((0, typescript_1.getImportExportReferencedSymbol)(decl, typeChecker))) {
+                                return decl.name;
+                            }
+                        }
+                        // but also that local symbol should be a namespace imported from inlined module
+                        // i.e. `import * as NS from './local-module'`
+                        const result = (0, typescript_1.getDeclarationsForSymbol)((0, typescript_1.getImportExportReferencedSymbol)(decl, typeChecker)).some((importDecl) => {
+                            if (ts.isNamespaceImport(importDecl)) {
+                                return !isReferencedModuleImportable(importDecl.parent.parent);
+                            }
+                            if (ts.isImportSpecifier(importDecl)) {
+                                // this means that namespace symbol is created somewhere else in the import/export chain
+                                return getIdentifierOfNamespaceImportFromInlinedModule((0, typescript_1.getImportExportReferencedSymbol)(importDecl, typeChecker));
+                            }
+                            return false;
+                        });
+                        if (result) {
+                            return decl.name;
+                        }
+                    }
+                }
+                return null;
+            }
+            const namespaceNameIdentifier = getIdentifierOfNamespaceImportFromInlinedModule(namespaceSymbol);
+            if (namespaceNameIdentifier === null) {
+                return null;
+            }
+            const namespaceExports = new Map();
+            exports.forEach(processExportSymbol.bind(null, namespaceExports));
+            if (namespaceExports.size !== 0) {
+                const namespaceLocalName = collisionsResolver.addTopLevelIdentifier(namespaceNameIdentifier);
+                collectionResult.wrappedNamespaces.set(namespaceLocalName, namespaceExports);
+                return namespaceLocalName;
+            }
+            return null;
+        }
+        function syncExports() {
+            for (const exp of rootFileExports) {
+                if (exp.type === 0 /* ExportType.CommonJS */) {
+                    // commonjs will be handled separately where we handle root source files
+                    // as the only way of adding it is to add an explicit export statement in the root source file
+                    continue;
+                }
+                // if resolved symbol is a "synthetic" symbol already (i.e. not namespace module)
+                // then we should create a namespace for its exports
+                // otherwise most likely it will be inlined as is anyway so we don't need to do anything
+                const namespaceLocalName = exp.symbol.flags & ts.SymbolFlags.ValueModule && exp.symbol.exports !== undefined
+                    ? createNamespaceForExports(exp.symbol.exports, exp.originalSymbol)
+                    : null;
+                if (namespaceLocalName !== null) {
+                    collectionResult.renamedExports.set(exp.exportedName, namespaceLocalName);
+                }
+                const symbolKnownNames = collisionsResolver.namesForSymbol(exp.symbol);
+                if (symbolKnownNames.size === 0) {
+                    // that's fine if a symbol doesn't exists in collisions resolver because it operates on top-level symbols only
+                    // in some cases a symbol can be exported but not added to the top-level scope
+                    // for instance in case of re-export from a library `export { Foo } from 'bar'`
+                    // in this case we'll add this re-export differently
+                    continue;
+                }
+                if (symbolKnownNames.has(exp.exportedName)) {
+                    // an exported symbol is already known with its "exported" name so nothing to do at this point
+                    // but if it is re-exported from imported library then we assume it was previously imported so we should re-export it anyway
+                    if (shouldSymbolBeImported(exp.symbol)) {
+                        collectionResult.renamedExports.set(exp.exportedName, exp.exportedName);
+                    }
+                    continue;
+                }
+                // in case if this symbol isn't known yet we need to add it via renamed export
+                // we assume that all known names are equal so we can use any (first)
+                // usually all "local" names should have only one known name
+                // but having multiple names is possible with imports - you can import the same node with different names
+                // and we want to preserve the source input as much as we can that's why we re-use them
+                collectionResult.renamedExports.set(exp.exportedName, Array.from(symbolKnownNames)[0]);
+            }
+        }
+        for (const sourceFile of sourceFiles) {
+            (0, logger_1.verboseLog)(`\n\n======= Preparing file: ${sourceFile.fileName} =======`);
+            const updateFn = sourceFile === rootSourceFile ? updateResultForRootModule : updateResultForAnyModule;
+            const currentModule = (0, module_info_1.getFileModuleInfo)(sourceFile.fileName, criteria);
+            updateFn(sourceFile.statements, currentModule);
+            // handle `import * as module` usage if it's used as whole module
+            if (currentModule.type === 1 /* ModuleType.ShouldBeImported */ && isNodeUsed(sourceFile)) {
+                updateImportsForStatement(sourceFile);
+            }
+        }
+        if (entryConfig.failOnClass) {
+            const classes = collectionResult.statements.filter(ts.isClassDeclaration);
+            if (classes.length !== 0) {
+                const classesNames = classes.map((c) => c.name === undefined ? 'anonymous class' : c.name.text);
+                throw new Error(`${classes.length} class statement(s) are found in generated dts: ${classesNames.join(', ')}`);
+            }
+        }
+        syncExports();
+        // by default this option should be enabled
+        const exportReferencedTypes = outputOptions.exportReferencedTypes !== false;
+        function isExportedWithLocalName(namedDeclaration, exportedName) {
+            const nodeName = (0, typescript_1.getNodeName)(namedDeclaration);
+            if (nodeName === undefined) {
+                throw new Error(`Cannot find node name ${namedDeclaration.getText()}`);
+            }
+            return collisionsResolver.resolveReferencedIdentifier(nodeName) === exportedName;
+        }
+        const renamedAndNotExplicitlyExportedTypes = [];
+        const output = (0, generate_output_1.generateOutput)({
+            ...collectionResult,
+            resolveIdentifierName: (identifier) => {
+                if (ts.isIdentifier(identifier)) {
+                    return collisionsResolver.resolveReferencedIdentifier(identifier);
+                }
+                else {
+                    return collisionsResolver.resolveReferencedQualifiedName(identifier);
+                }
+            },
+            // eslint-disable-next-line complexity
+            getStatementSettings: (statement) => {
+                if ((0, typescript_1.isAmbientModule)(statement) || ts.isExportDeclaration(statement)) {
+                    return { shouldHaveExportKeyword: false, shouldHaveJSDoc: true };
+                }
+                const statementExports = (0, typescript_1.getExportsForStatement)(rootFileExports, typeChecker, statement);
+                // If true, then no direct export was found. That means that node might have
+                // an export keyword (like interface, type, etc) otherwise, if there are
+                // only re-exports with renaming (like export { foo as bar }) we don't need
+                // to put export keyword for this statement because we'll re-export it in the way
+                const isExplicitlyExportedWithOriginalName = statementExports.find((exp) => {
+                    if (ts.isVariableStatement(statement)) {
+                        for (const variableDeclaration of statement.declarationList.declarations) {
+                            if (ts.isIdentifier(variableDeclaration.name)) {
+                                const resolvedName = collisionsResolver.resolveReferencedIdentifier(variableDeclaration.name);
+                                if (exp.exportedName === resolvedName) {
+                                    return true;
+                                }
+                                continue;
+                            }
+                            // it seems that the compiler doesn't produce anything else (e.g. binding elements) in declaration files
+                            // but it is still possible to write such code manually
+                            // this feels like quite rare case so no support for now
+                            (0, logger_1.warnLog)(`Unhandled variable identifier type detected (${ts.SyntaxKind[variableDeclaration.name.kind]}). Please report this issue to https://github.com/timocov/dts-bundle-generator`);
+                        }
+                        return false;
+                    }
+                    return (0, typescript_1.isNodeNamedDeclaration)(statement) && isExportedWithLocalName(statement, exp.exportedName);
+                }) !== undefined;
+                // "direct export" means export from the root source file
+                // e.g. classes/functions/etc must be exported from the root source file to have an "export" keyword
+                // by default interfaces/types are exported even if they aren't directly exported (e.g. when they are referenced by other types)
+                // but if `exportReferencedTypes` option is disabled we have to check direct export for them either
+                const onlyExplicitlyExportedShouldBeExported = !exportReferencedTypes
+                    || ts.isClassDeclaration(statement)
+                    || (ts.isEnumDeclaration(statement) && !(0, typescript_1.hasNodeModifier)(statement, ts.SyntaxKind.ConstKeyword))
+                    || ts.isFunctionDeclaration(statement)
+                    || ts.isVariableStatement(statement)
+                    || ts.isModuleDeclaration(statement);
+                if (onlyExplicitlyExportedShouldBeExported) {
+                    // "valuable" statements must be re-exported from root source file
+                    // to having export keyword in declaration file
+                    return { shouldHaveExportKeyword: isExplicitlyExportedWithOriginalName, shouldHaveJSDoc: statementExports.length !== 0 };
+                }
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                if ((0, typescript_1.isNodeNamedDeclaration)(statement) && !isExportedWithLocalName(statement, (0, typescript_1.getNodeName)(statement).getText())) {
+                    // if a type node was renamed because of name collisions it shouldn't be exported with its new name
+                    renamedAndNotExplicitlyExportedTypes.push(statement);
+                    return { shouldHaveExportKeyword: false, shouldHaveJSDoc: statementExports.length !== 0 };
+                }
+                // at this point a statement of a type (interface, const enum, etc) will be exported 100% (it's just a matter of a name)
+                // so it must have jsdoc comment
+                return { shouldHaveExportKeyword: isExplicitlyExportedWithOriginalName || statementExports.length === 0, shouldHaveJSDoc: true };
+            },
+            needStripConstFromConstEnum: (constEnum) => {
+                if (!program.getCompilerOptions().preserveConstEnums || !outputOptions.respectPreserveConstEnum) {
+                    return false;
+                }
+                const enumSymbol = (0, typescript_1.getNodeSymbol)(constEnum, typeChecker);
+                if (enumSymbol === null) {
+                    return false;
+                }
+                return rootFileExportSymbols.includes(enumSymbol);
+            },
+            needStripImportFromImportTypeNode: (node) => {
+                if (node.qualifier === undefined) {
+                    return false;
+                }
+                if (!ts.isLiteralTypeNode(node.argument) || !ts.isStringLiteral(node.argument.literal)) {
+                    return false;
+                }
+                return (0, module_info_1.getReferencedModuleInfo)(node, criteria, typeChecker)?.type === 0 /* ModuleType.ShouldBeInlined */;
+            },
+        }, {
+            sortStatements: outputOptions.sortNodes,
+            umdModuleName: outputOptions.umdModuleName,
+            noBanner: outputOptions.noBanner,
+        });
+        if (renamedAndNotExplicitlyExportedTypes.length !== 0) {
+            (0, logger_1.warnLog)(`The following type nodes were renamed because of the name collisions and will not be exported from the generated bundle:\n- ${
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            renamedAndNotExplicitlyExportedTypes.map(node => `${(0, typescript_1.getNodeName)(node).getText()} (from ${node.getSourceFile().fileName})`).join('\n- ')}${'\n'}This might lead to unpredictable and unexpected output, and possible breaking changes to your API.${'\n'}Consider either (re-)exporting them explicitly from the entry point, or disable --export-referenced-types option ('output.exportReferencedTypes' in the config).`);
+        }
+        return output;
+    });
+}
+exports.generateDtsBundle = generateDtsBundle;

@@ -1,0 +1,17 @@
+Error calculating the state of the repo. (inner error: Error: git hash-object exited with status 128: fatal: Unable to hash common/temp/pnpm-local
+). Continuing without diffing files.
+
+This workspace does not appear to be tracked by Git. Rush will proceed without
+incremental execution, caching, and change detection.
+
+Invoking: rm -rf ./dist && tsc && node scripts/postbuild.js 
+
+src/AxiomCircuitProvider.tsx(16,8): error TS2307: Cannot find module '@axiom-crypto/client' or its corresponding type declarations.
+src/AxiomCircuitProvider.tsx(73,31): error TS2339: Property 'setup' does not exist on type 'Remote<AxiomCircuit>'.
+src/AxiomCircuitProvider.tsx(74,32): error TS2339: Property 'loadSaved' does not exist on type 'Remote<AxiomCircuit>'.
+src/AxiomCircuitProvider.tsx(82,32): error TS2339: Property 'run' does not exist on type 'Remote<AxiomCircuit>'.
+src/AxiomCircuitProvider.tsx(83,44): error TS2339: Property 'getSendQueryArgs' does not exist on type 'Remote<AxiomCircuit>'.
+src/worker.ts(1,48): error TS2307: Cannot find module '@axiom-crypto/client/web' or its corresponding type declarations.
+src/worker.ts(3,40): error TS2307: Cannot find module '../../circuit/dist/types' or its corresponding type declarations.
+src/worker.ts(14,30): error TS2580: Cannot find name 'Buffer'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/worker.ts(17,37): error TS2580: Cannot find name 'require'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.

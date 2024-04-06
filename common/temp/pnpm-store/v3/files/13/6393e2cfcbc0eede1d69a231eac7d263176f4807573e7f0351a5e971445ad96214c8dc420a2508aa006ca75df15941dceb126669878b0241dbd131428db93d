@@ -1,0 +1,103 @@
+import { AxiomV2Callback, AxiomV2ComputeQuery, AxiomV2DataQuery } from "@axiom-crypto/tools";
+import { InternalConfig } from "../../core/internalConfig";
+import { BuiltQueryV2, AxiomV2QueryOptions, UnbuiltSubquery, DataSubqueryCount } from "../types";
+export declare class QueryBuilderV2 {
+    protected readonly config: InternalConfig;
+    private builtQuery?;
+    private builtDataQuery?;
+    private dataQuery?;
+    private computeQuery?;
+    private callback?;
+    private options;
+    private dataSubqueryCount;
+    constructor(config: InternalConfig, dataQuery?: UnbuiltSubquery[], computeQuery?: AxiomV2ComputeQuery, callback?: AxiomV2Callback, options?: AxiomV2QueryOptions);
+    /**
+     * Gets the current set of unbuilt data subqueries
+     * @returns Array of unbuilt data subqueries
+     */
+    getDataQuery(): UnbuiltSubquery[] | undefined;
+    /**
+     * Gets the current compute query
+     * @returns The current compute query
+     */
+    getComputeQuery(): AxiomV2ComputeQuery | undefined;
+    /**
+     * Gets the callback information
+     * @returns The current callback information
+     */
+    getCallback(): AxiomV2Callback | undefined;
+    /**
+     * Gets the current Query options
+     * @returns The current Query options
+     */
+    getOptions(): AxiomV2QueryOptions;
+    /**
+     * Gets the current count of each type of data subquery
+     * @returns Subquery counts
+     */
+    getDataSubqueryCount(): DataSubqueryCount;
+    /**
+     * Gets the built Query. Built Query resets if any data is changed.
+     * @returns The built Query; undefined if Query has not been built yet
+     */
+    getBuiltQuery(): BuiltQueryV2 | undefined;
+    /**
+     * Gets the hash of the querySchema of the computeQuery
+     * @returns Query schema hash
+     */
+    getQuerySchema(): string;
+    /**
+     * Gets the hash of the data query
+     * @returns Data query hash
+     */
+    getDataQueryHash(): string;
+    getQueryHash(): string;
+    setDataQuery(dataQuery: UnbuiltSubquery[]): void;
+    setComputeQuery(computeQuery: AxiomV2ComputeQuery): void;
+    setCallback(callback: AxiomV2Callback): void;
+    setOptions(options: AxiomV2QueryOptions): AxiomV2QueryOptions;
+    /**
+     * Append a `UnbuiltSubquery[]` object to the current dataQuery
+     * @param dataQuery A `UnbuiltSubquery[]` object to append
+     */
+    append(dataSubqueries: UnbuiltSubquery[], skipValidate?: boolean): void;
+    /**
+     * Appends a single subquery to the current dataQuery
+     * @param dataSubquery The data of the subquery to append
+     * @param type (optional) The type of subquery to append. If not provided, the type will be
+     *             inferred from the keys of the subquery.
+     */
+    appendDataSubquery(dataSubquery: UnbuiltSubquery): void;
+    /**
+     * Appends a built DataQuery. This is used when receiving a DataQuery from a ComputeQuery.
+     * Setting this will take precedence over setting any UnbuiltSubqueries via `append()`.
+     */
+    setBuiltDataQuery(dataQuery: AxiomV2DataQuery, skipValidate?: boolean): void;
+    /**
+     * Queries the required subquery data and builds the entire Query object into the format
+     * that is required by the backend/ZK circuit
+     * @param validate (optional) Runs validation on the Query before attempting to build it
+     * @returns A built Query object
+     */
+    build(validate?: boolean): Promise<BuiltQueryV2>;
+    /**
+     * @returns {boolean} Whether the query is valid or not
+     */
+    validate(): Promise<boolean>;
+    /**
+     * Gets a queryId for a built Query (requires `privateKey` to be set in AxiomSdkCoreConfig)
+     * @returns uint256 queryId
+     */
+    getQueryId(caller?: string): Promise<string>;
+    private unsetBuiltQuery;
+    private calculateUserSalt;
+    private getDefaultResultLen;
+    private handleComputeQueryRequest;
+    private handleCallback;
+    private validateDataSubqueries;
+    private validateComputeQuery;
+    private validateCallback;
+    private resetSubqueryCount;
+    private updateSubqueryCount;
+}
+//# sourceMappingURL=queryBuilderV2.d.ts.map

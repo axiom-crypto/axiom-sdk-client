@@ -1,0 +1,165 @@
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.BaseCircuitScaffold = void 0;
+var BaseCircuitScaffold = /** @class */ (function () {
+    function BaseCircuitScaffold() {
+        this.proof = null;
+    }
+    BaseCircuitScaffold.prototype.timeStart = function (name) {
+        if (this.shouldTime)
+            console.time(name);
+    };
+    BaseCircuitScaffold.prototype.timeEnd = function (name) {
+        if (this.shouldTime)
+            console.timeEnd(name);
+    };
+    BaseCircuitScaffold.prototype.setContext = function (context) {
+        this.context = context;
+    };
+    BaseCircuitScaffold.prototype.newCircuitFromConfig = function (config) {
+        this.config = config;
+        this.halo2wasm.config(config);
+    };
+    BaseCircuitScaffold.prototype.loadParams = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var kzgParams;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.context.getKzgParams(this.config.k)];
+                    case 1:
+                        kzgParams = _a.sent();
+                        this.halo2wasm.loadParams(kzgParams);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    BaseCircuitScaffold.prototype.loadParamsAndVk = function (vk) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.loadParams()];
+                    case 1:
+                        _a.sent();
+                        this.halo2wasm.loadVk(vk);
+                        this.loadedVk = true;
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    BaseCircuitScaffold.prototype.mock = function () {
+        this.timeStart("Mock proving");
+        this.halo2wasm.mock();
+        this.timeEnd("Mock proving");
+    };
+    BaseCircuitScaffold.prototype.keygen = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.loadParams()];
+                    case 1:
+                        _a.sent();
+                        this.timeStart("VK generation");
+                        this.halo2wasm.genVk();
+                        this.timeEnd("VK generation");
+                        this.timeStart("PK generation");
+                        this.halo2wasm.genPk();
+                        this.timeEnd("PK generation");
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    BaseCircuitScaffold.prototype.prove = function () {
+        if (this.loadedVk) {
+            this.timeStart("PK generation");
+            this.halo2wasm.genPk();
+            this.timeEnd("PK generation");
+        }
+        this.timeStart("SNARK proof generation");
+        var proof = this.halo2wasm.prove();
+        this.timeEnd("SNARK proof generation");
+        this.proof = proof;
+        return proof;
+    };
+    BaseCircuitScaffold.prototype.verify = function (proof) {
+        this.timeStart("Verify SNARK proof");
+        this.halo2wasm.verify(proof);
+        this.timeEnd("Verify SNARK proof");
+    };
+    BaseCircuitScaffold.prototype.getInstances = function () {
+        return this.halo2wasm.getInstanceValues(0);
+    };
+    BaseCircuitScaffold.prototype.getCircuitStats = function () {
+        return this.halo2wasm.getCircuitStats();
+    };
+    BaseCircuitScaffold.prototype.getHalo2Vk = function () {
+        var vk = this.halo2wasm.getVk();
+        return new Uint8Array(vk);
+    };
+    BaseCircuitScaffold.prototype.exportHalo2Vk = function () {
+        var vk_arr = this.halo2wasm.getVk();
+        var vk = "0x" + Buffer.from(vk_arr).toString('hex');
+        var blob = new Blob([vk], { type: "text/plain" });
+        return blob;
+    };
+    BaseCircuitScaffold.prototype.getPartialVk = function () {
+        return this.halo2wasm.getPartialVk();
+    };
+    BaseCircuitScaffold.prototype.exportPartialVk = function () {
+        var vk = this.halo2wasm.getPartialVk();
+        var hexVk = "0x" + Buffer.from(vk).toString("hex");
+        var blob = new Blob([hexVk], { type: "text/plain" });
+        return blob;
+    };
+    BaseCircuitScaffold.prototype.getProof = function () {
+        if (!this.proof)
+            throw new Error("No proof to export");
+        return this.proof;
+    };
+    BaseCircuitScaffold.prototype.exportProof = function () {
+        var proof = this.getProof();
+        var proofHex = "0x" + Buffer.from(proof).toString('hex');
+        var blob = new Blob([proofHex], { type: "text/plain" });
+        return blob;
+    };
+    return BaseCircuitScaffold;
+}());
+exports.BaseCircuitScaffold = BaseCircuitScaffold;

@@ -1,0 +1,79 @@
+import { AxiomV2Callback, AxiomV2ComputeQuery, DataSubqueryCount } from "./types";
+export declare enum SubqueryConfig {
+    Default = 0,
+    AllLarge = 1,
+    AllMax = 2
+}
+export declare enum TxSizeCategory {
+    Default = 0,
+    Large = 1,
+    Max = 2
+}
+export declare enum ReceiptSizeCategory {
+    Default = 0,
+    Medium = 1,
+    Large = 2,
+    Max = 3
+}
+export declare const ConstantsV2: Readonly<{
+    DefaultMaxFeePerGasWei: "25000000000";
+    DefaultCallbackGasLimit: 100000;
+    DefaultOverrideAxiomQueryFee: "0";
+    FallbackProofVerificationGas: 420000n;
+    FallbackAxiomQueryFeeWei: 3000000000000000n;
+    QueryInitiatedOnchainSchema: "0xb72b05c090ac4ae9ec18b7e708d597093716f98567026726f6f5d9f172316178";
+    QueryInitiatedWithIpfsDataSchema: "0xf3a2958f23705cbc6bbc0922c0af3c82b76d93e8acc5c17ef86736cf4563fb85";
+    UserMaxTotalSubqueries: 128;
+    MaxSameSubqueryType: 128;
+    SubqueryConfigs: {
+        0: {
+            MaxTxSubqueries: number;
+            MaxReceiptSubqueries: number;
+        };
+        1: {
+            MaxTxSubqueries: number;
+            MaxReceiptSubqueries: number;
+        };
+        2: {
+            MaxTxSubqueries: number;
+            MaxReceiptSubqueries: number;
+        };
+    };
+    TxSizeCategory: {
+        Default: {
+            MaxDataLen: number;
+            MaxAccessListRlpLen: number;
+        };
+        Large: {
+            MaxDataLen: number;
+            MaxAccessListRlpLen: number;
+        };
+        Max: {
+            MaxDataLen: number;
+            MaxAccessListRlpLen: number;
+        };
+    };
+    ReceiptSizeCategory: {
+        Default: {
+            MaxLogDataLen: number;
+            MaxNumLogs: number;
+        };
+        Medium: {
+            MaxLogDataLen: number;
+            MaxNumLogs: number;
+        };
+        Large: {
+            MaxLogDataLen: number;
+            MaxNumLogs: number;
+        };
+        Max: {
+            MaxLogDataLen: number;
+            MaxNumLogs: number;
+        };
+    };
+    EmptyComputeQueryObject: AxiomV2ComputeQuery;
+    EmptyCallbackObject: AxiomV2Callback;
+    EmptyDataSubqueryCount: DataSubqueryCount;
+    Bytes32Max: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+}>;
+//# sourceMappingURL=constants.d.ts.map

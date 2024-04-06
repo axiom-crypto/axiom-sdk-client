@@ -1,0 +1,320 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.encodeBeaconValidatorSubquery = exports.encodeSolidityNestedMappingSubquery = exports.encodeReceiptSubquery = exports.encodeTxSubquery = exports.encodeStorageSubquery = exports.encodeAccountSubquery = exports.encodeHeaderSubquery = exports.encodeSubquery = exports.encodeFeeData = exports.getCallbackHash = exports.encodeCallback = exports.encodeComputeQuery = exports.encodeQuerySchema = exports.encodeDataSubquery = exports.encodeDataQuery = exports.getSubqueryHash = exports.getDataQueryHashFromSubqueries = exports.getDataQueryHash = exports.getQuerySchemaHash = exports.getResultHash = exports.encodeResult = exports.getQueryId = exports.getQueryHashV2 = exports.encodeFullQueryV2 = exports.encodeQueryV2 = void 0;
+const ethers_1 = require("ethers");
+const types_1 = require("./types");
+const constants_1 = require("./constants");
+const bytes_1 = require("../../utils/bytes");
+const byteLength_1 = require("../../utils/byteLength");
+const constants_2 = require("../../constants");
+/**
+ * Encodes a v2 Query as a hex string
+ * @param sourceChainId
+ * @param caller
+ * @param dataQueryHash
+ * @param computeQuery
+ * @param callback
+ * @param feeData
+ * @param userSalt
+ * @param refundee
+ * @returns data encoded as hex string of bytes
+ */
+function encodeQueryV2(sourceChainId, caller, dataQueryHash, computeQuery, callback, feeData, userSalt, refundee) {
+    (0, byteLength_1.validateSize)(sourceChainId, "uint64");
+    (0, bytes_1.validateAddress)(caller);
+    (0, bytes_1.validateBytes32)(dataQueryHash);
+    (0, bytes_1.validateBytes32)(userSalt);
+    (0, bytes_1.validateAddress)(refundee);
+    const encodedPart0 = ethers_1.ethers.solidityPacked(["uint8", "uint64", "address", "bytes32"], [constants_1.ConstantsV2.VERSION, sourceChainId, caller, dataQueryHash]);
+    const encodedComputeQuery = encodeComputeQuery(computeQuery.k, computeQuery.resultLen ?? constants_2.AxiomV2CircuitConstant.UserMaxOutputs, computeQuery.vkey, computeQuery.computeProof);
+    const encodedCallback = encodeCallback(callback.target, callback.extraData);
+    const encodedFeeData = encodeFeeData(feeData.maxFeePerGas, feeData.callbackGasLimit, feeData.overrideAxiomQueryFee);
+    return ethers_1.ethers.concat([
+        encodedPart0,
+        encodedComputeQuery,
+        encodedCallback,
+        encodedFeeData,
+        userSalt,
+        refundee,
+    ]);
+}
+exports.encodeQueryV2 = encodeQueryV2;
+/**
+ * Encodes the full AxiomV2Query that can be fully decoded later
+ *
+ */
+function encodeFullQueryV2(sourceChainId, caller, dataQuery, computeQuery, callback, feeData, userSalt, refundee) {
+    (0, byteLength_1.validateSize)(sourceChainId, "uint64");
+    (0, bytes_1.validateAddress)(caller);
+    (0, bytes_1.validateBytes32)(userSalt);
+    (0, bytes_1.validateAddress)(refundee);
+    const encodedPart0 = ethers_1.ethers.solidityPacked(["uint8", "uint64", "address"], [constants_1.ConstantsV2.VERSION, sourceChainId, caller]);
+    const encodedDataQuery = encodeDataQuery(dataQuery.sourceChainId, dataQuery.subqueries);
+    const encodedComputeQuery = encodeComputeQuery(computeQuery.k, computeQuery.resultLen ?? constants_2.AxiomV2CircuitConstant.UserMaxOutputs, computeQuery.vkey, computeQuery.computeProof);
+    const encodedCallback = encodeCallback(callback.target, callback.extraData);
+    const encodedFeeData = encodeFeeData(feeData.maxFeePerGas, feeData.callbackGasLimit, feeData.overrideAxiomQueryFee);
+    return ethers_1.ethers.concat([
+        encodedPart0,
+        encodedDataQuery,
+        encodedComputeQuery,
+        encodedCallback,
+        encodedFeeData,
+        userSalt,
+        refundee,
+    ]);
+}
+exports.encodeFullQueryV2 = encodeFullQueryV2;
+/**
+ * Computes the query hash for a v2 query:
+ *   queryHash = keccak(version . sourceChainId . dataQueryHash . computeQuery)
+ * @param sourceChainId
+ * @param dataQueryHash
+ * @param computeQuery
+ * @returns query hash as hex string of bytes
+ */
+function getQueryHashV2(sourceChainId, dataQueryHash, computeQuery) {
+    (0, byteLength_1.validateSize)(sourceChainId, "uint64");
+    (0, bytes_1.validateBytes32)(dataQueryHash);
+    const encoded = ethers_1.ethers.solidityPacked(["uint8", "uint64", "bytes32"], [constants_1.ConstantsV2.VERSION, sourceChainId, dataQueryHash]);
+    const encodedComputeQuery = encodeComputeQuery(computeQuery.k, computeQuery.resultLen ?? 0, computeQuery.vkey, computeQuery.computeProof);
+    const concatenated = ethers_1.ethers.concat([encoded, encodedComputeQuery]);
+    return ethers_1.ethers.keccak256(concatenated);
+}
+exports.getQueryHashV2 = getQueryHashV2;
+/**
+ * Calculates the queryId:
+ *   queryId = keccak(targetChainId . caller . userSalt . queryHash . callbackHash . refundee)
+ */
+function getQueryId(targetChainId, caller, userSalt, queryHash, callbackHash, refundee) {
+    (0, byteLength_1.validateSize)(targetChainId, "uint64");
+    (0, bytes_1.validateAddress)(caller);
+    (0, bytes_1.validateBytes32)(userSalt);
+    (0, bytes_1.validateBytes32)(queryHash);
+    (0, bytes_1.validateBytes32)(callbackHash);
+    (0, bytes_1.validateAddress)(refundee);
+    const encoded = ethers_1.ethers.solidityPacked(["uint64", "address", "bytes32", "bytes32", "bytes32", "address"], [targetChainId, caller, userSalt, queryHash, callbackHash, refundee]);
+    return ethers_1.ethers.keccak256(encoded);
+}
+exports.getQueryId = getQueryId;
+function encodeResult(sourceChainId, dataResultsRoot, dataResultsPoseidonRoot, computeResultsHash) {
+    (0, byteLength_1.validateSize)(sourceChainId, "uint64");
+    (0, bytes_1.validateBytes32)(dataResultsRoot);
+    (0, bytes_1.validateBytes32)(dataResultsPoseidonRoot);
+    (0, bytes_1.validateBytes32)(computeResultsHash);
+    const encoded = ethers_1.ethers.solidityPacked(["uint64", "bytes32", "bytes32", "bytes32"], [sourceChainId, dataResultsRoot, dataResultsPoseidonRoot, computeResultsHash]);
+    return encoded;
+}
+exports.encodeResult = encodeResult;
+function getResultHash(result) {
+    const encoded = encodeResult(result.sourceChainId, result.dataResultsRoot, result.dataResultsPoseidonRoot, result.computeResultsHash);
+    return ethers_1.ethers.keccak256(encoded);
+}
+exports.getResultHash = getResultHash;
+function getQuerySchemaHash(k, resultLen, vkey) {
+    if (k === 0) {
+        return (0, bytes_1.bytes32)(0);
+    }
+    const encodedQuerySchema = encodeQuerySchema(k, resultLen, vkey);
+    return ethers_1.ethers.keccak256(encodedQuerySchema);
+}
+exports.getQuerySchemaHash = getQuerySchemaHash;
+function getDataQueryHash(sourceChainId, subqueryHashes) {
+    (0, byteLength_1.validateSize)(sourceChainId, "uint64");
+    const encodedSourceChainId = ethers_1.ethers.solidityPacked(["uint64"], [sourceChainId]);
+    const encodedSubqueryHashes = ethers_1.ethers.concat(subqueryHashes);
+    return ethers_1.ethers.keccak256(ethers_1.ethers.concat([encodedSourceChainId, encodedSubqueryHashes]));
+}
+exports.getDataQueryHash = getDataQueryHash;
+function getDataQueryHashFromSubqueries(sourceChainId, dataSubqueries) {
+    return getDataQueryHash(sourceChainId, dataSubqueries.map((subquery) => getSubqueryHash(subquery.type, encodeDataSubquery(subquery))));
+}
+exports.getDataQueryHashFromSubqueries = getDataQueryHashFromSubqueries;
+function getSubqueryHash(type, subqueryData) {
+    const encoded = encodeSubquery(type, subqueryData);
+    return ethers_1.ethers.keccak256(encoded);
+}
+exports.getSubqueryHash = getSubqueryHash;
+/**
+ * Encodes a full DataQuery
+ * @param sourceChainId (uint64) chainId of the source chain
+ * @param dataSubqueries (DataSubquery[]) an array of DataSubqueries to be encoded
+ * @returns hex string of encoded query data
+ */
+function encodeDataQuery(sourceChainId, dataSubqueries) {
+    (0, byteLength_1.validateSize)(sourceChainId, "uint64");
+    let encodedSubqueries = "0x";
+    for (const subquery of dataSubqueries) {
+        let encodedSubquery = encodeDataSubquery(subquery);
+        encodedSubqueries = ethers_1.ethers.concat([
+            encodedSubqueries,
+            encodeSubquery(subquery.type, encodedSubquery),
+        ]);
+    }
+    const encodedSourceChainId = ethers_1.ethers.solidityPacked(["uint64", "uint16"], [sourceChainId, dataSubqueries.length]);
+    return ethers_1.ethers.concat([encodedSourceChainId, encodedSubqueries]);
+}
+exports.encodeDataQuery = encodeDataQuery;
+function encodeDataSubquery(subquery) {
+    let encodedSubquery;
+    switch (subquery.type) {
+        case types_1.DataSubqueryType.Header:
+            const headerSubquery = subquery.subqueryData;
+            encodedSubquery = encodeHeaderSubquery(headerSubquery.blockNumber, headerSubquery.fieldIdx);
+            break;
+        case types_1.DataSubqueryType.Account:
+            const accountSubquery = subquery.subqueryData;
+            encodedSubquery = encodeAccountSubquery(accountSubquery.blockNumber, accountSubquery.addr, accountSubquery.fieldIdx);
+            break;
+        case types_1.DataSubqueryType.Storage:
+            const storageSubquery = subquery.subqueryData;
+            encodedSubquery = encodeStorageSubquery(storageSubquery.blockNumber, storageSubquery.addr, storageSubquery.slot);
+            break;
+        case types_1.DataSubqueryType.Transaction:
+            const txSubquery = subquery.subqueryData;
+            encodedSubquery = encodeTxSubquery(txSubquery.blockNumber, txSubquery.txIdx, txSubquery.fieldOrCalldataIdx);
+            break;
+        case types_1.DataSubqueryType.Receipt:
+            const receiptSubquery = subquery.subqueryData;
+            encodedSubquery = encodeReceiptSubquery(receiptSubquery.blockNumber, receiptSubquery.txIdx, receiptSubquery.fieldOrLogIdx, receiptSubquery.topicOrDataOrAddressIdx, receiptSubquery.eventSchema);
+            break;
+        case types_1.DataSubqueryType.SolidityNestedMapping:
+            const solidityNestedMappingSubquery = subquery.subqueryData;
+            encodedSubquery = encodeSolidityNestedMappingSubquery(solidityNestedMappingSubquery.blockNumber, solidityNestedMappingSubquery.addr, solidityNestedMappingSubquery.mappingSlot, solidityNestedMappingSubquery.mappingDepth, solidityNestedMappingSubquery.keys);
+            break;
+        case types_1.DataSubqueryType.BeaconValidator:
+            // WIP
+            const beaconValidatorSubquery = subquery.subqueryData;
+            encodedSubquery = encodeBeaconValidatorSubquery();
+            break;
+        default:
+            throw new Error("Invalid subquery type");
+    }
+    return encodedSubquery;
+}
+exports.encodeDataSubquery = encodeDataSubquery;
+function encodeQuerySchema(k, resultLen, vkey) {
+    (0, byteLength_1.validateSize)(k, "uint8");
+    (0, byteLength_1.validateSize)(resultLen, "uint16");
+    // If k is 0, then the querySchema is empty
+    if (k === 0) {
+        return ethers_1.ethers.solidityPacked(["uint8", "uint16"], [0, resultLen]);
+    }
+    const encodedComputeQueryParams = ethers_1.ethers.solidityPacked(["uint8", "uint16", "uint8"], [k, resultLen, vkey.length]);
+    // Ensure all elements of vkey array are 32 bytes long
+    vkey.forEach((element) => {
+        if ((0, bytes_1.getNumBytes)(element) !== 32) {
+            throw new Error("Invalid vkey");
+        }
+    });
+    const encodedVKey = encodeBytes32Array(vkey, vkey.length);
+    return ethers_1.ethers.concat([encodedComputeQueryParams, encodedVKey]);
+}
+exports.encodeQuerySchema = encodeQuerySchema;
+function encodeComputeQuery(k, resultLen, vkey, computeProof) {
+    (0, byteLength_1.validateSize)(k, "uint8");
+    (0, byteLength_1.validateSize)(resultLen, "uint16");
+    // If k is 0, then the compute query is empty
+    if (k === 0) {
+        return ethers_1.ethers.solidityPacked(["uint8", "uint16"], [0, resultLen]);
+    }
+    const encodedQuerySchema = encodeQuerySchema(k, resultLen, vkey);
+    const encodedComputeProof = encodeVarLenBytes(computeProof, "uint32");
+    return ethers_1.ethers.concat([encodedQuerySchema, encodedComputeProof]);
+}
+exports.encodeComputeQuery = encodeComputeQuery;
+function encodeCallback(target, extraData) {
+    (0, bytes_1.validateAddress)(target);
+    const encodedTarget = ethers_1.ethers.solidityPacked(["address"], [target]);
+    const encodedExtraData = encodeVarLenBytes(extraData, "uint16");
+    return ethers_1.ethers.concat([encodedTarget, encodedExtraData]);
+}
+exports.encodeCallback = encodeCallback;
+function getCallbackHash(target, extraData) {
+    const encodedCallback = ethers_1.ethers.solidityPacked(["address", "bytes"], [target, extraData]);
+    return ethers_1.ethers.keccak256(encodedCallback);
+}
+exports.getCallbackHash = getCallbackHash;
+function encodeFeeData(maxFeePerGas, callbackGasLimit, overrideAxiomQueryFee) {
+    (0, byteLength_1.validateSize)(maxFeePerGas, "uint64");
+    (0, byteLength_1.validateSize)(callbackGasLimit, "uint32");
+    (0, byteLength_1.validateSize)(overrideAxiomQueryFee, "uint256");
+    return ethers_1.ethers.solidityPacked(["uint64", "uint32", "uint256"], [maxFeePerGas, callbackGasLimit, overrideAxiomQueryFee]);
+}
+exports.encodeFeeData = encodeFeeData;
+function encodeVarLenBytes(data, numType) {
+    const numBytes = (0, bytes_1.getNumBytes)(data);
+    return ethers_1.ethers.solidityPacked([numType, "bytes"], [numBytes, data]);
+}
+/**
+ * Encodes an array into a concatenated array of `length` bytes32 items
+ * @param data Array of data
+ * @param length Desired length of 32-byte array items
+ * @returns Hex string of encoded data
+ */
+function encodeBytes32Array(data, length) {
+    if (data.length > length) {
+        throw new Error(`Invalid data length: ${data.length} (must be <= ${length})`);
+    }
+    const paddedData = data.map((d) => ethers_1.ethers.toBeHex(d, 32));
+    const gap = length - data.length;
+    for (let i = 0; i < gap; i++) {
+        paddedData.push(ethers_1.ethers.ZeroHash);
+    }
+    return ethers_1.ethers.concat(paddedData);
+}
+function encodeSubquery(type, encodedData) {
+    const encodedType = ethers_1.ethers.solidityPacked(["uint16"], [type]);
+    return ethers_1.ethers.concat([encodedType, encodedData]);
+}
+exports.encodeSubquery = encodeSubquery;
+function encodeHeaderSubquery(blockNumber, fieldIdx) {
+    (0, byteLength_1.validateSize)(blockNumber, "uint32");
+    (0, byteLength_1.validateSize)(fieldIdx, "uint32");
+    return ethers_1.ethers.solidityPacked(["uint32", "uint32"], [blockNumber, fieldIdx]);
+}
+exports.encodeHeaderSubquery = encodeHeaderSubquery;
+function encodeAccountSubquery(blockNumber, addr, fieldIdx) {
+    (0, byteLength_1.validateSize)(blockNumber, "uint32");
+    (0, bytes_1.validateAddress)(addr);
+    (0, byteLength_1.validateSize)(fieldIdx, "uint32");
+    return ethers_1.ethers.solidityPacked(["uint32", "address", "uint32"], [blockNumber, addr, fieldIdx]);
+}
+exports.encodeAccountSubquery = encodeAccountSubquery;
+function encodeStorageSubquery(blockNumber, addr, slot) {
+    (0, byteLength_1.validateSize)(blockNumber, "uint32");
+    (0, bytes_1.validateAddress)(addr);
+    (0, byteLength_1.validateSize)(slot, "uint256");
+    return ethers_1.ethers.solidityPacked(["uint32", "address", "uint256"], [blockNumber, addr, slot]);
+}
+exports.encodeStorageSubquery = encodeStorageSubquery;
+function encodeTxSubquery(blockNumber, txIdx, fieldOrCalldataIdx) {
+    (0, byteLength_1.validateSize)(blockNumber, "uint32");
+    (0, byteLength_1.validateSize)(txIdx, "uint16");
+    (0, byteLength_1.validateSize)(fieldOrCalldataIdx, "uint32");
+    return ethers_1.ethers.solidityPacked(["uint32", "uint16", "uint32"], [blockNumber, txIdx, fieldOrCalldataIdx]);
+}
+exports.encodeTxSubquery = encodeTxSubquery;
+function encodeReceiptSubquery(blockNumber, txIdx, fieldOrLogIdx, topicOrDataOrAddressIdx, eventSchema) {
+    (0, byteLength_1.validateSize)(blockNumber, "uint32");
+    (0, byteLength_1.validateSize)(txIdx, "uint16");
+    (0, byteLength_1.validateSize)(fieldOrLogIdx, "uint32");
+    (0, byteLength_1.validateSize)(topicOrDataOrAddressIdx, "uint32");
+    (0, bytes_1.validateBytes32)(eventSchema);
+    return ethers_1.ethers.solidityPacked(["uint32", "uint16", "uint32", "uint32", "bytes32"], [blockNumber, txIdx, fieldOrLogIdx, topicOrDataOrAddressIdx, eventSchema]);
+}
+exports.encodeReceiptSubquery = encodeReceiptSubquery;
+function encodeSolidityNestedMappingSubquery(blockNumber, addr, mappingSlot, mappingDepth, keys) {
+    (0, byteLength_1.validateSize)(blockNumber, "uint32");
+    (0, bytes_1.validateAddress)(addr);
+    (0, byteLength_1.validateSize)(mappingSlot, "uint256");
+    (0, byteLength_1.validateSize)(mappingDepth, "uint8");
+    keys.forEach((key) => (0, bytes_1.validateBytes32)(key));
+    const keysConcat = ethers_1.ethers.concat((0, bytes_1.resizeArray)(keys, Number(mappingDepth), ethers_1.ethers.ZeroHash));
+    return ethers_1.ethers.solidityPacked(["uint32", "address", "uint256", "uint8", "bytes"], [blockNumber, addr, mappingSlot, mappingDepth, keysConcat]);
+}
+exports.encodeSolidityNestedMappingSubquery = encodeSolidityNestedMappingSubquery;
+function encodeBeaconValidatorSubquery() {
+    // WIP
+    return "";
+}
+exports.encodeBeaconValidatorSubquery = encodeBeaconValidatorSubquery;

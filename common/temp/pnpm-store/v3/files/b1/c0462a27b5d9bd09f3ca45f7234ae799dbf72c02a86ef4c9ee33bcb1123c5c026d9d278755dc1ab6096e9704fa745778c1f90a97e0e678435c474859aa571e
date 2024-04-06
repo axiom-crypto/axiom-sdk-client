@@ -1,0 +1,1 @@
+export declare const getKzgParams: (k: number) => Promise<Uint8Array>;

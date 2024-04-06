@@ -1,0 +1,90 @@
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Halo2CircuitRunner = exports.setCircuit = exports.autoConfigCircuit = void 0;
+const utils_1 = require("../shared/utils");
+const parseInputs = (inputs) => {
+    let parsedInputs = JSON.parse(inputs);
+    return parsedInputs;
+};
+const BLINDING_FACTOR = 20;
+const autoConfigCircuit = (config) => {
+    let circuit = globalThis.circuit.halo2wasm;
+    const stats = circuit.getCircuitStats();
+    for (let i = 6; i < 20; i++) {
+        if (stats.advice <= (2 ** i - BLINDING_FACTOR) * config.numAdvice && stats.lookup <= 2 ** i - BLINDING_FACTOR && stats.instance <= (2 ** i - BLINDING_FACTOR) * config.numInstance) {
+            config.k = i + 1;
+            config.numLookupBits = i;
+            break;
+        }
+    }
+    circuit.config(config);
+};
+exports.autoConfigCircuit = autoConfigCircuit;
+const setCircuit = (halo2wasm, halo2lib, silent) => {
+    globalThis.circuit = { halo2wasm, halo2lib, silent: silent ?? false };
+};
+exports.setCircuit = setCircuit;
+function Halo2CircuitRunner(halo2wasm, halo2lib, config, silent) {
+    config = { ...config };
+    globalThis.circuit = { halo2wasm, halo2lib, silent: silent ?? false };
+    let circuit = globalThis.circuit.halo2wasm;
+    let halo2LibWasm = globalThis.circuit.halo2lib;
+    const clear = () => {
+        circuit.clear();
+        halo2LibWasm.config();
+    };
+    async function runFromString(code, inputs) {
+        clear();
+        const halo2Lib = await Promise.resolve().then(() => __importStar(require("../halo2lib/functions")));
+        const halo2LibFns = Object.keys(halo2Lib).filter(key => !(typeof key === 'string' && key.charAt(0) === '_'));
+        const functionInputs = (0, utils_1.getInputFunctionSignature)(inputs);
+        const parsedInputs = parseInputs(inputs);
+        const fn = eval(`let {${halo2LibFns.join(", ")}} = halo2Lib; (async function({${functionInputs}}) { ${code} })`);
+        await fn(parsedInputs);
+        circuit.assignInstances();
+        (0, exports.autoConfigCircuit)(config);
+        clear();
+        {
+            const fn = eval(`let {${halo2LibFns.join(", ")}} = halo2Lib; (async function({${functionInputs}}) { ${code} })`);
+            await fn(parsedInputs);
+        }
+        return {
+            config
+        };
+    }
+    async function run(f, inputs) {
+        clear();
+        let stringifiedInputs = JSON.stringify(inputs);
+        let parsedInputs = parseInputs(stringifiedInputs);
+        await f(parsedInputs);
+        circuit.assignInstances();
+    }
+    return Object.freeze({
+        runFromString,
+        run
+    });
+}
+exports.Halo2CircuitRunner = Halo2CircuitRunner;

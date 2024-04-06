@@ -38,7 +38,7 @@ export const circuit = async (inputs: CircuitInputs) => {
     const rc = await getReceipt(add(inputs.blockNumber, constant(i)), 0).status();
     const mapping = await getSolidityMapping(add(inputs.blockNumber, constant(i)), inputs.addr, 0).key(0);
     const r0 = add(header.toCircuitValue(), account.toCircuitValue());
-    const r1 = add(r0, storage.toCircuitValue());
+    const r1 = add(r0, storage.lo());
     const r2 = mul(tx.toCircuitValue(), mapping.toCircuitValue());
     const s = mul(rc.toCircuitValue(), r1);
     addToCallback(r2);

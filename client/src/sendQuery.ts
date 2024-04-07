@@ -85,7 +85,7 @@ export const buildSendQuery = async (input: {
       functionName: "sendQuery",
       value: payment,
       args: [
-        sourceChainId,
+        chainId,
         dataQueryHash,
         computeQuery,
         callback,
@@ -99,10 +99,10 @@ export const buildSendQuery = async (input: {
     };
   } else {
     const encodedQuery = encodeFullQueryV2(
-      sourceChainId,
+      chainId,
       refundee,
       {
-        sourceChainId,
+        sourceChainId: chainId,
         subqueries: input.dataQuery,
       },
       computeQuery,

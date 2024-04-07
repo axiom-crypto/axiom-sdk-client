@@ -1,7 +1,0 @@
-/**
- * Decodes a queryString into a Query object. You can typecast the result to the appropriate Query
- * type (i.e. QueryV1, QueryV2).
- * @param query The query as bytes in hex string format
- * @returns A Query object conforming to the decoded Query version
- */
-export declare function decodeQuery(query: string): any;

@@ -1,7 +1,0 @@
-import { InternalConfig } from "./internalConfig";
-export declare abstract class Query {
-    protected readonly config: InternalConfig;
-    constructor(config: InternalConfig);
-    new(...a: any): any;
-}
-//# sourceMappingURL=query.d.ts.map

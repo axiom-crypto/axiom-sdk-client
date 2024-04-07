@@ -1,8 +1,0 @@
-import { ethers } from "ethers";
-import { HeaderSubquery, AccountSubquery, StorageSubquery, TxSubquery, ReceiptSubquery, SolidityNestedMappingSubquery } from "../codec";
-export declare function getHeaderFieldValue(provider: ethers.JsonRpcProvider, { blockNumber, fieldIdx }: HeaderSubquery, logger?: any): Promise<string | null>;
-export declare function getAccountFieldValue(provider: ethers.JsonRpcProvider, { blockNumber, addr, fieldIdx }: AccountSubquery, logger?: any): Promise<string | null>;
-export declare function getStorageFieldValue(provider: ethers.JsonRpcProvider, { blockNumber, addr, slot }: StorageSubquery, logger?: any): Promise<string | null>;
-export declare function getTxFieldValue(provider: ethers.JsonRpcProvider, { blockNumber, txIdx, fieldOrCalldataIdx }: TxSubquery, logger?: any, tx?: any): Promise<string | null>;
-export declare function getReceiptFieldValue(provider: ethers.JsonRpcProvider, { blockNumber, txIdx, fieldOrLogIdx, topicOrDataOrAddressIdx, eventSchema }: ReceiptSubquery, logger?: any, receipt?: any): Promise<string | null>;
-export declare function getSolidityNestedMappingValue(provider: ethers.JsonRpcProvider, { blockNumber, addr, mappingSlot, mappingDepth, keys }: SolidityNestedMappingSubquery, logger?: any): Promise<string | null>;

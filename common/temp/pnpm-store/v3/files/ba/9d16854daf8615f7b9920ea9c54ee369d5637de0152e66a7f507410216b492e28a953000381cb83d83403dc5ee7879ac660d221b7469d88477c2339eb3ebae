@@ -1,2 +1,0 @@
-export declare function fetchAndConvertToUint8Array(url: string): Promise<Uint8Array>;
-export declare const convertBase64ToUint8Arr: (b64str: string) => Uint8Array;

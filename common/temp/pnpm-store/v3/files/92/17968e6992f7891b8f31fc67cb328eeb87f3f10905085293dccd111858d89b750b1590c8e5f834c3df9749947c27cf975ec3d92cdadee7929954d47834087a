@@ -1,3 +1,0 @@
-export declare const ConstantsV2: Readonly<{
-    VERSION: 2;
-}>;

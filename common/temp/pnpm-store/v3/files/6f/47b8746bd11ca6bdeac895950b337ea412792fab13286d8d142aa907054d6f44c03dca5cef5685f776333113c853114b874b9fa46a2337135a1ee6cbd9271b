@@ -1,2 +1,0 @@
-export declare function calculateCalldataGas(hexString: string): number;
-//# sourceMappingURL=gasCalc.d.ts.map

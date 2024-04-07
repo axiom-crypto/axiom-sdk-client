@@ -1,4 +1,0 @@
-import { ethers } from "ethers";
-export declare function encodeQueryV1(length: number, encodedQueries: string[]): string;
-export declare function encodeQueryRowV1(length: number, blockNumber: number, address: string, slot: ethers.BigNumberish, value: ethers.BigNumberish): string;
-export declare function encodeRowHash(blockNumber: number, address?: string, slot?: ethers.BigNumberish): string;

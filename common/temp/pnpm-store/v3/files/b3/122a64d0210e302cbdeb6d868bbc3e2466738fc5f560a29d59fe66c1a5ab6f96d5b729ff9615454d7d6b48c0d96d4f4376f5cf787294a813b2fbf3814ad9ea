@@ -1,7 +1,0 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.BaseCircuitScaffold = exports.convertRawInput = void 0;
-var utils_1 = require("./utils");
-Object.defineProperty(exports, "convertRawInput", { enumerable: true, get: function () { return utils_1.convertRawInput; } });
-var scaffold_1 = require("@axiom-crypto/halo2-wasm/shared/scaffold");
-Object.defineProperty(exports, "BaseCircuitScaffold", { enumerable: true, get: function () { return scaffold_1.BaseCircuitScaffold; } });

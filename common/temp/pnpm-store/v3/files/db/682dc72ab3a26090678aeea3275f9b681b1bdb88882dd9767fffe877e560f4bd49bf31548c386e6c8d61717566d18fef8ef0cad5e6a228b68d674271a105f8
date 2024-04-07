@@ -1,9 +1,0 @@
-export interface CircuitConfig {
-    k: number;
-    numAdvice: number;
-    numLookupAdvice: number;
-    numInstance: number;
-    numLookupBits: number;
-    numVirtualInstance: number;
-}
-export declare const DEFAULT_CIRCUIT_CONFIG: CircuitConfig;

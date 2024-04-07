@@ -1,3 +1,0 @@
-export declare function getFunctionSignature(functionString: string): string;
-export declare function getFunctionSelector(functionNameOrSig: string, params?: string[]): string;
-export declare function getEventSchema(functionNameOrSig: string, params?: string[]): string;

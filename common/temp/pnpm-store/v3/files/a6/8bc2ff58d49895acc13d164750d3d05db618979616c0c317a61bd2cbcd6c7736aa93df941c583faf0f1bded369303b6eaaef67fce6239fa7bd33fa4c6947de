@@ -1,4 +1,0 @@
-import { DataSubqueryType } from "@axiom-crypto/tools";
-export declare function getUnbuiltSubqueryTypeFromKeys(keys: string[]): DataSubqueryType;
-export declare function getBuiltSubqueryTypeFromKeys(keys: string[]): DataSubqueryType;
-//# sourceMappingURL=utils.d.ts.map

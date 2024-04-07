@@ -1,4 +1,0 @@
-export declare function formatDataRlp(values: any, obj: any): any;
-export declare function objectToRlp(obj: any): string;
-export declare function rlpEncodeBlockHeader(header: any): string | null;
-export declare function rlpEncodeTransaction(tx: any): string | null;

@@ -1,8 +1,0 @@
-export declare const ByteLengths: Readonly<{
-    [key: string]: number;
-}>;
-export declare const MaxSizes: Readonly<{
-    [key: string]: BigInt;
-}>;
-export declare function getByteLength(type: string): number;
-export declare function validateSize(value: number | string | BigInt, type: string): void;

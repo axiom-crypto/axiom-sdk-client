@@ -1,2 +1,0 @@
-import { QueryV1 } from "./types";
-export declare function decodeQueryV1(query: string): QueryV1;

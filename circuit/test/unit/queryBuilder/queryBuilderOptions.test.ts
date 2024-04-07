@@ -13,7 +13,7 @@ describe("QueryBuilderV2 Options", () => {
     version: "v2",
   };
   const wallet = new ethers.Wallet(
-    process.env.PRIVATE_KEY_ANVIL_DEFAULT as string,
+    process.env.PRIVATE_KEY_ANVIL as string,
     new ethers.JsonRpcProvider(process.env.PROVIDER_URI_MAINNET as string),
   );
   const blockNumber = 18300000;

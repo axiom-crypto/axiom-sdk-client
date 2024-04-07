@@ -71,7 +71,7 @@ export function argsObjToArr(
 }
 
 export async function getMaxFeePerGas(axiom: AxiomV2QueryBuilder, overrides?: AxiomV2ClientOverrides): Promise<string> {
-  const chainId = axiom.config.chainId.toString();
+  const chainId = axiom.config.sourceChainId.toString();
   const axiomQueryAddress = overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
 
   const providerFeeData = await axiom.config.provider.getFeeData();

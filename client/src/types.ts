@@ -92,7 +92,7 @@ export {
   AxiomV2DataQuery,
   AxiomV2QueryOptions,
   AxiomV2FeeData,
-} from "@axiom-crypto/core";
+} from "@axiom-crypto/circuit";
 
 export enum AbiType {
   Query,

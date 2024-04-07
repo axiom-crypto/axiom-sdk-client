@@ -7,20 +7,12 @@ import {
   AxiomV2QueryBuilderConfig,
 } from "@axiom-crypto/circuit";
 import { createPublicClient, encodeFunctionData, http } from "viem";
-<<<<<<< HEAD
 import { getMaxFeePerGas } from "./axiom/utils";
 import { AbiType, AxiomV2ClientOptions, AxiomV2SendQueryArgs } from "./types";
 import { encodeFullQueryV2 } from "@axiom-crypto/core/packages/tools";
 import { calculateFeeDataExtended, calculatePayment } from "./lib/paymentCalc";
 import { viemChain } from "./lib/viem";
 import { getAxiomV2Abi, getAxiomV2QueryAddress } from "./lib";
-=======
-import { convertChainIdToViemChain, getMaxFeePerGas } from "./axiom/utils";
-import { AbiType, AxiomV2ClientOptions, AxiomV2SendQueryArgs } from "./types";
-import { encodeFullQueryV2 } from "@axiom-crypto/core/packages/tools";
-import { getAxiomV2Abi, getAxiomV2QueryAddress } from "./lib";
-import { calculatePayment } from "./lib/paymentCalc";
->>>>>>> 323f2cb (Fix built query input)
 
 export const buildSendQuery = async (input: {
   axiom: AxiomV2QueryBuilder;
@@ -30,11 +22,7 @@ export const buildSendQuery = async (input: {
   caller: string;
   options: AxiomV2ClientOptions;
 }): Promise<AxiomV2SendQueryArgs> => {
-<<<<<<< HEAD
   const validate = input.options?.overrides?.validateBuild ?? true;
-=======
-  const validate = input.options.validate ?? true;
->>>>>>> 323f2cb (Fix built query input)
   if (input.options.refundee === undefined) {
     throw new Error("Refundee is required");
   }
@@ -42,7 +30,6 @@ export const buildSendQuery = async (input: {
     input.options.maxFeePerGas = await getMaxFeePerGas(input.axiom, input.options?.overrides);
   }
 
-<<<<<<< HEAD
   const chainId = input.axiom.config.chainId.toString();
   const axiomQueryAddress = input.options?.overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
   const abi = getAxiomV2Abi(AbiType.Query);
@@ -55,12 +42,6 @@ export const buildSendQuery = async (input: {
   const feeDataExtended = await calculateFeeDataExtended(chainId, publicClient, input.options);
   const payment = await calculatePayment(chainId, publicClient, feeDataExtended);
 
-=======
-  const publicClient = createPublicClient({
-    chain: convertChainIdToViemChain(input.axiom.config.chainId.toString()),
-    transport: http(input.axiom.config.providerUri),
-  });
-
   const config: AxiomV2QueryBuilderConfig = {
     provider: input.axiom.config.providerUri,
     privateKey: input.options.privateKey,
@@ -69,39 +50,24 @@ export const buildSendQuery = async (input: {
     version: input.axiom.config.version,
     mock: input.axiom.config.mock,
   };
->>>>>>> 323f2cb (Fix built query input)
   const queryOptions: AxiomV2QueryOptions = {
     ...feeDataExtended,
     refundee: input.options.refundee,
   };
-<<<<<<< HEAD
-
-  input.axiom = new AxiomV2QueryBuilder(
-    undefined,
-=======
   input.axiom = new AxiomV2QueryBuilder(
     config,
     undefined,  // we set this as a setBuiltDataQuery below
->>>>>>> 323f2cb (Fix built query input)
     input.computeQuery,
     input.callback,
     queryOptions,
   );
-<<<<<<< HEAD
 
   if (input.dataQuery.length > 0) {
     input.axiom.setBuiltDataQuery({
-      subqueries: input.dataQuery,
       sourceChainId: chainId,
+      subqueries: input.dataQuery,
     }, true);
   }
-=======
-  input.axiom.setBuiltDataQuery({
-    sourceChainId: input.axiom.config.chainId.toString(),
-    subqueries: input.dataQuery,
-  });
-  
->>>>>>> 323f2cb (Fix built query input)
   const {
     queryHash,
     dataQueryHash,
@@ -113,12 +79,6 @@ export const buildSendQuery = async (input: {
     dataQuery,
   } = await input.axiom.build(validate);
   const id = await input.axiom.getQueryId(input.caller);
-<<<<<<< HEAD
-=======
-  const abi = getAxiomV2Abi(AbiType.Query);
-  const axiomQueryAddress = input.options.queryAddress ?? getAxiomV2QueryAddress(input.axiom.config.chainId.toString());
-  const payment = await calculatePayment(axiomQueryAddress, publicClient, input.options);
->>>>>>> 323f2cb (Fix built query input)
 
   let sendQueryArgs: any;
   if (!input.options.ipfsClient) {

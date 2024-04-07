@@ -20,7 +20,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   protected halo2Lib!: Halo2LibWasm;
   protected provider: string;
   protected dataQuery: DataSubquery[];
-  protected axiom: AxiomV2QueryBuilder;
+  protected queryBuilder: AxiomV2QueryBuilder;
   protected computeQuery: AxiomV2ComputeQuery | undefined;
   protected chainId: string;
   protected f: (inputs: T) => Promise<void>;
@@ -52,9 +52,9 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     }
     
     this.dataQuery = [];
-    this.axiom = new AxiomV2QueryBuilder({
+    this.queryBuilder = new AxiomV2QueryBuilder({
       provider: inputs.provider,
-      chainId: inputs.chainId,
+      sourceChainId: inputs.chainId,
       mock: inputs.mock,
       version: "v2",
     });
@@ -150,9 +150,9 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     await this.populateCircuit(inputs);
 
     let skipValidate = this.capacity !== DEFAULT_CAPACITY;
+    
     // Validate max circuit subquery size
-    // const queryBuilder = (this.axiom.query as QueryV2).new();
-    this.axiom.setBuiltDataQuery({
+    this.queryBuilder.setBuiltDataQuery({
       sourceChainId: this.chainId,
       subqueries: this.dataQuery,
     }, skipValidate);
@@ -221,14 +221,11 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     let skipValidate = this.capacity !== DEFAULT_CAPACITY;
 
     // Validate data subqueries
-    // const queryBuilder = (this.axiom.query as QueryV2).new();
-    // const unbuiltSubqueries = await convertBuiltSubqueries(this.provider, this.dataQuery);
-    // queryBuilder.append(unbuiltSubqueries, skipValidate);
-    this.axiom.setBuiltDataQuery({
+    this.queryBuilder.setBuiltDataQuery({
       sourceChainId: this.chainId,
       subqueries: this.dataQuery,
     }, skipValidate);
-    if (!skipValidate && !this.axiom.validate()) {
+    if (!skipValidate && !this.queryBuilder.validate()) {
       throw new Error("Subquery validation failed")
     }
 
@@ -327,9 +324,9 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   }
 
   setMock(mock: boolean) {
-    this.axiom = new AxiomV2QueryBuilder({
+    this.queryBuilder = new AxiomV2QueryBuilder({
       provider: this.provider,
-      chainId: this.chainId,
+      sourceChainId: this.chainId,
       mock,
       version: "v2",
     });

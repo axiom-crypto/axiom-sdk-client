@@ -8,8 +8,8 @@ import { ConstantsV2 } from "../../../src/queryBuilder/constants";
 describe("QueryBuilderV2 Options", () => {
   const config: AxiomV2QueryBuilderConfig = {
     provider: process.env.PROVIDER_URI_MAINNET as string,
-    privateKey: process.env.PRIVATE_KEY_ANVIL_DEFAULT as string,
-    chainId: 1,
+    caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    sourceChainId: 1,
     version: "v2",
   };
   const wallet = new ethers.Wallet(
@@ -31,7 +31,7 @@ describe("QueryBuilderV2 Options", () => {
     expect(builtQuery.feeData.maxFeePerGas).toEqual("1000000000000");
     expect(builtQuery.feeData.callbackGasLimit).toEqual(ConstantsV2.DefaultCallbackGasLimit);
     expect(builtQuery.feeData.overrideAxiomQueryFee).toEqual("0");
-    expect(builtQuery.refundee).toEqual(await wallet.getAddress());
+    expect(builtQuery.refundee).toEqual((await wallet.getAddress()).toLowerCase());
   });
 
   test("set callbackGasLimit", async () => {
@@ -47,22 +47,19 @@ describe("QueryBuilderV2 Options", () => {
     expect(builtQuery.feeData.maxFeePerGas).toEqual(ConstantsV2.DefaultMaxFeePerGasWei);
     expect(builtQuery.feeData.callbackGasLimit).toEqual(10000);
     expect(builtQuery.feeData.overrideAxiomQueryFee).toEqual("0");
-    expect(builtQuery.refundee).toEqual(await wallet.getAddress());
+    expect(builtQuery.refundee).toEqual((await wallet.getAddress()).toLowerCase());
   });
 
   test("set refundee", async () => {
-    const axiom = new AxiomV2QueryBuilder(config);
+    const axiom = new AxiomV2QueryBuilder({...config, refundee: "0xe76a90E3069c9d86e666DcC687e76fcecf4429cF"});
     axiom.appendDataSubquery({
       blockNumber,
       fieldIdx: HeaderField.Timestamp,
-    });
-    axiom.setOptions({
-      refundee: "0xe76a90E3069c9d86e666DcC687e76fcecf4429cF",
     });
     const builtQuery = await axiom.build();
     expect(builtQuery.feeData.maxFeePerGas).toEqual(ConstantsV2.DefaultMaxFeePerGasWei);
     expect(builtQuery.feeData.callbackGasLimit).toEqual(ConstantsV2.DefaultCallbackGasLimit);
     expect(builtQuery.feeData.overrideAxiomQueryFee).toEqual("0");
-    expect(builtQuery.refundee).toEqual("0xe76a90E3069c9d86e666DcC687e76fcecf4429cF");
+    expect(builtQuery.refundee).toEqual("0xe76a90e3069c9d86e666dcc687e76fcecf4429cf");
   });
 });

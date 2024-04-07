@@ -133,7 +133,7 @@ describe("QueryV2", () => {
   const computeProof = ethers.concat(computeProofRaw);
 
   const config: AxiomV2QueryBuilderConfig = {
-    privateKey: process.env.PRIVATE_KEY_ANVIL_DEFAULT as string,
+    caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     provider: process.env.PROVIDER_URI_MAINNET as string,
     version: "v2",
   };
@@ -241,12 +241,11 @@ describe("QueryV2", () => {
   });
 
   test("Set various options", async () => {
-    const axiom = new AxiomV2QueryBuilder(config);
+    const axiom = new AxiomV2QueryBuilder({...config, refundee: ethers.ZeroAddress});
 
     const options: AxiomV2QueryOptions = {
       maxFeePerGas: "100000000",
       callbackGasLimit: 50000,
-      refundee: ethers.ZeroAddress,
     };
     axiom.setOptions(options);
 

@@ -77,7 +77,7 @@ export async function getMaxFeePerGas(axiom: AxiomV2QueryBuilder, overrides?: Ax
   const providerFeeData = await axiom.config.provider.getFeeData();
   const providerMaxFeePerGas = providerFeeData.maxFeePerGas ?? 0n;
   const publicClient = createPublicClient({
-    chain: viemChain(axiom.config.chainId.toString(), axiom.config.providerUri),
+    chain: viemChain(axiom.config.sourceChainId.toString(), axiom.config.providerUri),
     transport: http(axiom.config.providerUri),
   });
 

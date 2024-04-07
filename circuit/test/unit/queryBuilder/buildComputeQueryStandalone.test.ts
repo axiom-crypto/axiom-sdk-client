@@ -8,8 +8,8 @@ import { AxiomV2QueryBuilder, AxiomV2QueryBuilderConfig, AxiomV2Callback, AxiomV
 describe("Build ComputeQuery Standalone", () => {
   const config: AxiomV2QueryBuilderConfig = {
     provider: process.env.PROVIDER_URI_SEPOLIA as string,
-    privateKey: process.env.PRIVATE_KEY as string,
-    chainId: 1,
+    caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    sourceChainId: 1,
     version: "v2",
   };
   const axiom = new AxiomV2QueryBuilder(config);

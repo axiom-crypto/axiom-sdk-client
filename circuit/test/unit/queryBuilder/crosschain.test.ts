@@ -18,6 +18,7 @@ describe("Crosschain", () => {
   test("Build a query with a different target chain", async () => {
     const config: AxiomV2QueryBuilderConfig = {
       provider: process.env.PROVIDER_URI_SEPOLIA as string,
+      caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
       targetChainId: 5,
       version: "v2",
     };

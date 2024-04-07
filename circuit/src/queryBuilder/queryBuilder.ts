@@ -4,7 +4,6 @@ import {
   AxiomV2ComputeQuery,
   DataSubqueryType,
   bytes32,
-  encodeQueryV2,
   getQuerySchemaHash,
   getQueryHashV2,
   getDataQueryHashFromSubqueries,
@@ -13,10 +12,7 @@ import {
   getCallbackHash,
   AxiomV2DataQuery,
   encodeDataQuery,
-  encodeComputeQuery,
-  encodeCallback,
   AxiomV2FeeData,
-  encodeFeeData,
   Subquery,
   HeaderSubquery,
   AccountSubquery,
@@ -47,7 +43,7 @@ import { getSubqueryTypeFromKeys } from "./utils";
 import { formatDataQuery, formatDataSubqueries, encodeBuilderDataQuery } from "./dataSubquery/format";
 import { deepCopyObject } from "../utils";
 import { ConfigLimitManager } from "./dataSubquery/configLimitManager";
-import { handleChainId, handleProvider, parseChainId, parseMock, parseProvider, parseVersion } from "./configure";
+import { handleChainId, handleProvider, parseAddress, parseChainId, parseMock, parseProvider, parseVersion } from "./configure";
 
 export class AxiomV2QueryBuilder {
   readonly config: InternalConfig;
@@ -89,27 +85,32 @@ export class AxiomV2QueryBuilder {
     const providerUri = parseProvider(config.provider);
 
     config = handleChainId(config);
-    const chainId = parseChainId(config.chainId);
+    const sourceChainId = parseChainId(config.sourceChainId);
     const targetChainId = parseChainId(config.targetChainId);
 
-    const mock = parseMock(config.mock, chainId);
+    const mock = parseMock(config.mock, sourceChainId);
     const version = parseVersion(config.version);
 
     const provider = new ethers.JsonRpcProvider(providerUri);
 
-    let signer;
-    if (config.privateKey !== undefined && config.privateKey !== "") {
-      signer = new ethers.Wallet(config.privateKey, provider);
+    let caller = "";
+    if (config.caller !== undefined) {
+      caller = parseAddress(config.caller);
+    }
+    let refundee = caller;
+    if (config.refundee !== undefined) {
+      refundee = parseAddress(config.refundee);
     }
 
     return {
       providerUri,
       provider,
-      chainId,
+      sourceChainId,
       targetChainId,
       mock,
       version,
-      signer,
+      caller,
+      refundee,
     };
   }
 
@@ -183,7 +184,7 @@ export class AxiomV2QueryBuilder {
         "Query must first be built with `.build()` before getting data query hash. If Query is modified after building, you will need to run `.build()` again.",
       );
     }
-    return getDataQueryHashFromSubqueries(this.config.chainId.toString(), this.builtQuery.dataQueryStruct.subqueries);
+    return getDataQueryHashFromSubqueries(this.config.sourceChainId.toString(), this.builtQuery.dataQueryStruct.subqueries);
   }
 
   getQueryHash(): string {
@@ -193,7 +194,7 @@ export class AxiomV2QueryBuilder {
       );
     }
     const computeQuery = this.computeQuery ?? deepCopyObject(ConstantsV2.EmptyComputeQueryObject);
-    return getQueryHashV2(this.config.chainId.toString(), this.getDataQueryHash(), computeQuery);
+    return getQueryHashV2(this.config.sourceChainId.toString(), this.getDataQueryHash(), computeQuery);
   }
 
   setDataQuery(dataQuery: Subquery[]) {
@@ -219,7 +220,6 @@ export class AxiomV2QueryBuilder {
       maxFeePerGas: options?.maxFeePerGas ?? ConstantsV2.DefaultMaxFeePerGasWei,
       callbackGasLimit: options?.callbackGasLimit ?? ConstantsV2.DefaultCallbackGasLimit,
       overrideAxiomQueryFee: options?.overrideAxiomQueryFee ?? ConstantsV2.DefaultOverrideAxiomQueryFee,
-      refundee: options?.refundee,
     };
     return this.options;
   }
@@ -277,6 +277,10 @@ export class AxiomV2QueryBuilder {
    * @returns A built Query object
    */
   async build(validate?: boolean): Promise<BuiltQueryV2> {
+    if (this.config.refundee === "" && this.config.caller === "") {
+      throw new Error("`caller` or `refundee` in config required to build the Query");
+    }
+
     if (validate === true) {
       const valid = await this.validate();
       if (!valid) {
@@ -304,9 +308,9 @@ export class AxiomV2QueryBuilder {
       const builtDataSubqueries = await formatDataSubqueries(this.dataQuery ?? []);
 
       // Encode & build data query
-      dataQuery = encodeBuilderDataQuery(this.config.chainId, builtDataSubqueries);
-      dataQueryHash = getDataQueryHashFromSubqueries(this.config.chainId.toString(), builtDataSubqueries);
-      dataQueryStruct = formatDataQuery(this.config.chainId, builtDataSubqueries);
+      dataQuery = encodeBuilderDataQuery(this.config.sourceChainId, builtDataSubqueries);
+      dataQueryHash = getDataQueryHashFromSubqueries(this.config.sourceChainId.toString(), builtDataSubqueries);
+      dataQueryStruct = formatDataQuery(this.config.sourceChainId, builtDataSubqueries);
     } else {
       dataQuery = encodeDataQuery(this.builtDataQuery.sourceChainId, this.builtDataQuery.subqueries);
       dataQueryHash = getDataQueryHashFromSubqueries(this.builtDataQuery.sourceChainId, this.builtDataQuery.subqueries);
@@ -335,7 +339,7 @@ export class AxiomV2QueryBuilder {
     );
 
     // Get the hash of the full Query
-    const queryHash = getQueryHashV2(this.config.chainId.toString(), dataQueryHash, computeQuery);
+    const queryHash = getQueryHashV2(this.config.sourceChainId.toString(), dataQueryHash, computeQuery);
 
     // Handle callback
     const callback = {
@@ -351,14 +355,16 @@ export class AxiomV2QueryBuilder {
     };
 
     // Get the refundee address
-    const caller = await this.config.signer?.getAddress();
-    const refundee = this.options?.refundee ?? caller ?? "";
+    let refundee = this.config.refundee;
+    if (this.config.refundee === "") {
+      refundee = this.config.caller;
+    }
 
     // Calculate a salt
     const userSalt = this.calculateUserSalt();
 
     this.builtQuery = {
-      sourceChainId: this.config.chainId.toString(),
+      sourceChainId: this.config.sourceChainId.toString(),
       targetChainId: this.config.targetChainId.toString(),
       queryHash,
       dataQuery,
@@ -392,7 +398,7 @@ export class AxiomV2QueryBuilder {
   }
 
   /**
-   * Gets a queryId for a built Query (requires `privateKey` to be set in AxiomV2QueryBuilderConfig)
+   * Gets a queryId for a built Query
    * @returns uint256 queryId
    */
   async getQueryId(caller?: string): Promise<string> {
@@ -402,17 +408,10 @@ export class AxiomV2QueryBuilder {
 
     // Get required queryId params
     if (caller === undefined) {
-      if (this.config.signer === undefined) {
-        throw new Error("Unable to get signer; ensure you have set `privateKey` in AxiomV2QueryBuilderConfig");
-      }
-      const callerAddr = await this.config.signer?.getAddress();
-      if (callerAddr === "") {
-        throw new Error("Unable to get signer address; ensure you have set `privateKey` in AxiomV2QueryBuilderConfig");
-      }
-      caller = callerAddr;
+      caller = this.config.caller;
     }
     const targetChainId = this.builtQuery.targetChainId;
-    const refundee = this.options?.refundee ?? caller;
+    const refundee = this.config.refundee;
     const salt = this.builtQuery.userSalt;
     const queryHash = this.builtQuery.queryHash;
     const callbackHash = getCallbackHash(this.builtQuery.callback.target, this.builtQuery.callback.extraData);

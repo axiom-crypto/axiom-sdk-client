@@ -27,7 +27,7 @@ export class Axiom<T> {
   constructor(config: AxiomV2ClientConfig<T>) {
     this.config = config;
     this.compiledCircuit = config.compiledCircuit;
-    this.capacity = config.capacity ?? DEFAULT_CAPACITY;
+    this.capacity = config.capacity ?? config.compiledCircuit.capacity ?? DEFAULT_CAPACITY;
     this.callback = {
       target: config.callback.target,
       extraData: config.callback.extraData ?? "0x",
@@ -43,7 +43,7 @@ export class Axiom<T> {
       provider: this.config.provider,
       inputSchema: config.compiledCircuit.inputSchema,
       chainId: this.config.chainId,
-      capacity: this.capacity ?? this.compiledCircuit.capacity ?? DEFAULT_CAPACITY,
+      capacity: this.capacity,
     });
 
     const publicClient = createPublicClient({
@@ -68,7 +68,7 @@ export class Axiom<T> {
   async init() {
     await this.axiomCircuit.loadSaved({
       config: this.compiledCircuit.config,
-      capacity: this.capacity ?? this.compiledCircuit.capacity ?? DEFAULT_CAPACITY,
+      capacity: this.capacity,
       vk: this.compiledCircuit.vk,
     });
   }
@@ -164,7 +164,7 @@ export class Axiom<T> {
     const clientOptions: AxiomV2ClientOptions = {
       ...this.options,
       callbackGasLimit: this.options?.callbackGasLimit ?? Number(getChainDefaults(this.config.chainId).callbackGasLimit),
-      refundee: this.options?.refundee ?? this.walletClient?.account?.address,
+      refundee: this.options?.refundee,
       overrides: this.options?.overrides,
     };
     

@@ -23,8 +23,8 @@ export const buildSendQuery = async (input: {
   options: AxiomV2ClientOptions;
 }): Promise<AxiomV2SendQueryArgs> => {
   const validate = input.options?.overrides?.validateBuild ?? true;
-  if (input.options.refundee === undefined) {
-    throw new Error("Refundee is required");
+  if (input.caller === "") {
+    throw new Error("`caller` is required");
   }
   let options = { ...input.options };
   if (options.maxFeePerGas == undefined) {

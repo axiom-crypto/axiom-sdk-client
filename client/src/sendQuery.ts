@@ -44,11 +44,11 @@ export const buildSendQuery = async (input: {
 
   const config: AxiomV2QueryBuilderConfig = {
     provider: input.axiom.config.providerUri,
-    privateKey: input.options.privateKey,
-    chainId: input.axiom.config.chainId.toString(),
+    sourceChainId: input.axiom.config.sourceChainId.toString(),
     targetChainId: input.axiom.config.targetChainId.toString(),
     version: input.axiom.config.version,
     mock: input.axiom.config.mock,
+    refundee: input.options.refundee ?? input.caller,
   };
   const queryOptions: AxiomV2QueryOptions = {
     ...feeDataExtended,

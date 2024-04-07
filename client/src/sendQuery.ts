@@ -58,13 +58,13 @@ export const buildSendQuery = async (input: {
     input.callback,
     feeDataExtended,
   );
-
   if (input.dataQuery.length > 0) {
     queryBuilder.setBuiltDataQuery({
       sourceChainId: chainId,
       subqueries: input.dataQuery,
     }, true);
   }
+  
   const {
     queryHash,
     dataQueryHash,
@@ -85,7 +85,7 @@ export const buildSendQuery = async (input: {
       functionName: "sendQuery",
       value: payment,
       args: [
-        chainId,
+        sourceChainId,
         dataQueryHash,
         computeQuery,
         callback,
@@ -99,10 +99,10 @@ export const buildSendQuery = async (input: {
     };
   } else {
     const encodedQuery = encodeFullQueryV2(
-      chainId,
+      sourceChainId,
       refundee,
       {
-        sourceChainId: chainId,
+        sourceChainId,
         subqueries: input.dataQuery,
       },
       computeQuery,

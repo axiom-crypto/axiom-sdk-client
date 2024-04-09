@@ -13,15 +13,17 @@ import {
 
 export interface CircuitInputs {
   blockNumber: CircuitValue;
+  txIdx: CircuitValue;
 }
 
 export const defaultInputs = {
-  blockNumber: 4000000, //$ account.eoa[5].blockNumber
+  blockNumber: 4000000, //$ rc.events[3].blockNumber
+  txIdx: 0, //$ rc.events[3].txIdx
 };
 
 export const circuit = async (inputs: CircuitInputs) => {
   for (let i = 0; i < 8; i++) {
-    let tx = getReceipt(inputs.blockNumber.number() + i, i);
+    let tx = getReceipt(inputs.blockNumber.number(), inputs.txIdx);
     addToCallback(await tx.cumulativeGas());
   }
 

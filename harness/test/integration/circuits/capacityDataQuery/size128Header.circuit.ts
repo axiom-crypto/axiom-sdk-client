@@ -1,6 +1,7 @@
 import {
   add,
   addToCallback,
+  CircuitValue,
   constant,
   getAccount,
   getHeader,
@@ -11,15 +12,18 @@ import {
   mul,
 } from "@axiom-crypto/client";
 
-export interface CircuitInputs {}
+export interface CircuitInputs {
+  blockNumber: CircuitValue;
+}
 
-export const defaultInputs = {};
+export const defaultInputs = {
+  blockNumber: 5000000, //$ account.eoa[1].blockNumber
+}
 
 export const circuit = async (inputs: CircuitInputs) => {
-  const blockNumber = 5000000;
   for (let i = 0; i < 128; i++) {
     add(1,1);
-    const header = await getHeader(blockNumber + i).receiptsRoot();
+    const header = await getHeader(inputs.blockNumber.number() + i).receiptsRoot();
     addToCallback(header);
   }
 }

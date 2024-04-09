@@ -46,12 +46,6 @@ export async function generateCircuitArtifacts(chainId: string, circuitPath: str
     inputs = (await import(inputsPath)).default;
   }
 
-  try {
-    const a = (await import(circuitPathResolved)).circuit;
-  } catch (e) {
-    console.log(e)
-  }
-
   return {
     circuit: (await import(circuitPathResolved)).circuit,
     compiledCircuit: await import(compiledPath),

@@ -23,13 +23,13 @@ export interface CircuitInputs {
 }
 
 export const defaultInputs = {
-  blockNumber: 4000000, //$ account.eoa[7].blockNumber
-  contractBlock0: 4000000, //$ storage.nonzero[7].blockNumber
-  contractBlock1: 4000000, //$ storage.nonzero[8].blockNumber
-  contractBlock2: 4000000, //$ storage.nonzero[9].blockNumber
-  contract0: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701", //$ storage.nonzero[7].address
-  contract1: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701", //$ storage.nonzero[8].address
-  contract2: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701", //$ storage.nonzero[9].address
+  blockNumber: 4000000, //$ account.eoa[5].blockNumber
+  contractBlock0: 4000000, //$ storage.nonzero[5].blockNumber
+  contractBlock1: 4000000, //$ storage.nonzero[6].blockNumber
+  contractBlock2: 4000000, //$ storage.nonzero[7].blockNumber
+  contract0: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701", //$ storage.nonzero[5].address
+  contract1: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701", //$ storage.nonzero[6].address
+  contract2: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701", //$ storage.nonzero[7].address
 };
 
 export const circuit = async (inputs: CircuitInputs) => {

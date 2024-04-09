@@ -25,7 +25,7 @@ export const defaultInputs = {
 };
 
 export const circuit =async (inputs: CircuitInputs) => {
-  const tx = getReceipt(inputs.blockNumber, inputs.txIdx);
-  const blockNum = await tx.blockNumber();
+  const rc = getReceipt(inputs.blockNumber, inputs.txIdx);
+  const blockNum = (await rc.blockNumber()).lo();
   addToCallback(blockNum);
 }

@@ -1,10 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 
-// const CHAIN_ID = "11155111";
-// const INPUT_DIR = "./client/test/integration";
-// const CHAINDATA_PATH = `./client/test/chainData/${CHAIN_ID}.json`;
-
 export function generateInputs(file: string, outputPath: string, chainData: any) {
   // Read the entire file content
   const fileContent = fs.readFileSync(file, 'utf8');

@@ -1,7 +1,8 @@
-import { ethers, JsonRpcProvider } from "ethers";
-import dotenv from "dotenv";
-import { getFullBlock, getRawReceipt, getNumBytes, objectToRlp, bytes32 } from "@axiom-crypto/tools";
 import fs from 'fs';
+import path from 'path';
+import dotenv from "dotenv";
+import { ethers, JsonRpcProvider } from "ethers";
+import { getFullBlock, getRawReceipt, getNumBytes, objectToRlp, bytes32 } from "@axiom-crypto/tools";
 import { AddressId, RcId, StorageId, TxId } from "../types";
 import { BLOCK_INTERVAL, BLOCK_SAMPLES, data, matchIgnoreAddrs } from "./defaults";
 dotenv.config();
@@ -30,6 +31,10 @@ export const search = async (
   let includeBlocks: number[] = [];
   if (options.include !== undefined) {
     includeBlocks = options.include.split(",").map(Number);
+  }
+  let outputPath = path.join(path.dirname(options.circuit), '../output');
+  if (options.output !== undefined) {
+    outputPath = options.output;
   }
 
   let ignoreAddrs: string[] = [...matchIgnoreAddrs];
@@ -88,11 +93,10 @@ export const search = async (
   }
 
   // Write output file
-  const outfile = `testdata chain${chainId} blocks${data.blockRange.start}-${data.blockRange.end}.json`;
-  fs.writeFileSync(`./scripts/test/out/${outfile}`, JSON.stringify(data, null, 2));
+  const outfile = `${chainId} ${data.blockRange.start}-${data.blockRange.end}.json`;
+  fs.mkdirSync(outputPath, { recursive: true });
+  fs.writeFileSync(path.join(outputPath, outfile), JSON.stringify(data, null, 2));
 }
-
-
 
 function pushArrayUpto<T>(arr: T[], itm: T, size: number = 32) {
   if (arr.length === size) {

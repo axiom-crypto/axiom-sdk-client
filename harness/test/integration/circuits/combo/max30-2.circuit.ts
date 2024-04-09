@@ -15,17 +15,21 @@ export interface CircuitInputs {
   blockNumber: CircuitValue;
   contractBlock: CircuitValue;
   contract: CircuitValue;
+  rcBlockNumber: CircuitValue;
+  rcTxIdx: CircuitValue;
 }
 
 export const defaultInputs = {
-  blockNumber: 4000000, //$ account.eoa[5].blockNumber
-  contractBlock: 4000000, //$ storage.nonzero[5].blockNumber
-  contract: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701", //$ storage.nonzero[5].address
+  blockNumber: 4000000, //$ account.eoa[4].blockNumber
+  contractBlock: 4000000, //$ storage.nonzero[4].blockNumber
+  contract: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701", //$ storage.nonzero[4].address
+  rcBlockNumber: 4000000, //$ rc.events[0].blockNumber
+  rcTxIdx: 10, //$ rc.events[0].txIndex
 };
 
 export const circuit = async (inputs: CircuitInputs) => {
   for (let i = 0; i < 8; i++) {
-    let tx = getReceipt(inputs.blockNumber.number() - 50 + i, i);
+    let tx = getReceipt(inputs.rcBlockNumber, inputs.rcTxIdx);
     addToCallback(await tx.cumulativeGas());
   }
 

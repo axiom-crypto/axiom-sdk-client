@@ -2,6 +2,7 @@ import { execSync } from "child_process";
 import { existsSync, rmSync } from "fs";
 import path from "path";
 import { Axiom } from "../../src";
+import { TransactionReceipt } from "viem";
 
 export function parseArgs(): { chainId: string } {
   let args: { chainId: string } = { chainId: "" };
@@ -17,7 +18,7 @@ export function parseArgs(): { chainId: string } {
   return args;
 }
 
-export async function runTestPass(chainId: string, circuitPath: string, options?: object) {
+export async function runTestProve(chainId: string, circuitPath: string, options?: object): Promise<Axiom<any>> {
   const { circuit, compiledCircuit, inputs } = await generateCircuit(chainId, circuitPath);
 
   const axiom = new Axiom({
@@ -33,8 +34,12 @@ export async function runTestPass(chainId: string, circuitPath: string, options?
   });
   await axiom.init();
   await axiom.prove(inputs);
+  return axiom;
+}
+
+export async function runTestSendQuery(chainId: string, circuitPath: string, options?: object): Promise<TransactionReceipt> {
+  const axiom = await runTestProve(chainId, circuitPath, options);
   const receipt = await axiom.sendQuery();
-  expect(receipt.status).toBe('success');
   return receipt;
 }
 

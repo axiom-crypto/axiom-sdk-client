@@ -4,7 +4,7 @@ import { listDir, makeFileMap } from "../utils";
 import { harness } from "../../src/harness";
 
 describe("Sepolia unit tests", () => {
-  if (process.env.PROVIDER_URI_SEPOLIA === undefined) {
+  if (process.env[`PROVIDER_URI_${CHAIN_ID}`] === undefined) {
     throw new Error("`PROVIDER_URI_SEPOLIA` environment variable must be defined");
   }
 
@@ -33,7 +33,7 @@ describe("Sepolia unit tests", () => {
             outputs: outputBasePathType,
             function: "circuit",
             chainId: "11155111",
-            provider: process.env.PROVIDER_URI_SEPOLIA,
+            provider: process.env[`PROVIDER_URI_${CHAIN_ID}`],
           }
         );
 

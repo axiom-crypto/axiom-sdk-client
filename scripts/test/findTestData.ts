@@ -9,23 +9,21 @@ dotenv.config();
 const END_BLOCK = 0;
 
 // Number of blocks to sample
-const BLOCK_SAMPLES = 32;
+const BLOCK_SAMPLES = 128;
 
 // Interval between blocks to sample
 const BLOCK_INTERVAL = 64;
 
 // Block numbers to include in the search (useful if certain events happened at specific blocks)
 const INCLUDE_BLOCKS: number[] = [
-  // 8285121,
+  8285121,
 ];
 
 const provider = new ethers.JsonRpcProvider(process.env.PROVIDER_URI);
 
-const IGNORE_ADDRS = [
-  "0xdeaddeaddeaddeaddeaddeaddeaddeaddead0001",
-  "0x4200000000000000000000000000000000000007",
-  "0x4200000000000000000000000000000000000015",
-  "0x420000000000000000000000000000000000000f",
+const IGNORE_ADDRS_MATCH = [
+  "0xdeaddeaddeaddeaddeaddeaddeaddeaddead",
+  "0000000000000000000000000000000",
 ]
 
 let data = {
@@ -58,6 +56,7 @@ let data = {
     },
   },
   rc: {
+    events: [] as RcId[],
     category: {
       "default": [] as TxId[], // 800b, 20 logs
       "medium": [] as TxId[], // 1024b, 80 logs
@@ -65,7 +64,6 @@ let data = {
       "max": [] as TxId[], // 1024b, 400 logs
       "oversize": [] as TxId[],
     },
-    events: [] as RcId[],
   },
 }
 
@@ -76,33 +74,42 @@ function pushArrayUpto<T>(arr: T[], itm: T, size: number = 32) {
   arr.push(itm);
 }
 
-async function parseAccount(tx: any): Promise<string[]> {
+async function parseAccount(tx: any, idx: number): Promise<string[]> {
   const accounts = [tx.from, tx.to];
   let contracts: string[] = [];
   for await (const account of accounts) {
-    if (!account || IGNORE_ADDRS.includes(account)) {
+    if (!account) {
       continue;
+    }
+    // Check if account matches any part of the addresses in IGNORE_ADDRS_MATCH
+    const shouldIgnore = IGNORE_ADDRS_MATCH.some(ignoreAddr => account.includes(ignoreAddr));
+    if (shouldIgnore) {
+      continue; // Skip this account if it matches any ignore address pattern
     }
     const code = await provider.getCode(account);
     if (code === '0x') {
-      pushArrayUpto(data.account.eoa, {
-        blockNumber: Number(tx.blockNumber),
-        address: account
-      });
+      if (Number(tx.transactionIndex) === idx) {
+        pushArrayUpto(data.account.eoa, {
+          blockNumber: Number(tx.blockNumber),
+          address: account
+        });
+      }
     } else {
-      pushArrayUpto(data.account.contract, {
-        blockNumber: Number(tx.blockNumber),
-        address: account
-      });
+      if (Number(tx.transactionIndex) === idx) {
+        pushArrayUpto(data.account.contract, {
+          blockNumber: Number(tx.blockNumber),
+          address: account
+        });
+      }
       contracts.push(account);
     }
   }
   return contracts;
 }
 
-async function parseStorage(contracts: string[], blockNumber: string) {
+async function parseStorage(contracts: string[], blockNumber: string): Promise<boolean> {
   if (contracts.length === 0) {
-    return;
+    return false;
   }
   for await (const contract of contracts) {
     // Random slot from 0 to 10
@@ -114,8 +121,10 @@ async function parseStorage(contracts: string[], blockNumber: string) {
         address: contract,
         slot: randomSlot,
       });
+      return true;
     }
   }
+  return false;
 }
 
 async function parseTx(tx: any) {
@@ -135,19 +144,18 @@ async function parseTx(tx: any) {
   // }
   const accessListRlp = objectToRlp(tx.accessList ?? {});
   const aclNumBytesRlp = getNumBytes(accessListRlp);
-  if (numBytesTxData < 8192 && aclNumBytesRlp < 800) {
+  if (numBytesTxData <= 8192 && aclNumBytesRlp <= 800) {
     pushArrayUpto(data.tx.category.default, txId);
-  } else if (numBytesTxData < 32768 && aclNumBytesRlp < 1024) {
+  } else if (numBytesTxData <= 32768 && aclNumBytesRlp <= 1024) {
     pushArrayUpto(data.tx.category.large, txId);
-  } else if (numBytesTxData < 333000 && aclNumBytesRlp < 131072) {
+  } else if (numBytesTxData <= 333000 && aclNumBytesRlp <= 131072) {
     pushArrayUpto(data.tx.category.max, txId);
   } else {
     pushArrayUpto(data.tx.category.oversize, txId);
   }
-  
 }
 
-async function parseReceipt(tx: any) {
+async function parseReceipt(tx: any, eventIncl: boolean) {
   const receipt = await getRawReceipt(provider, tx.hash);
   const numLogs = receipt.logs.length;
   if (receipt.logs.length === 0) {
@@ -157,7 +165,7 @@ async function parseReceipt(tx: any) {
   let maxLogDataSize = 0;
   for (let i = 0; i < numLogs; i++) {
     const log = receipt.logs[i];
-    if (!(log.data === '0x' || log.topics.length < 2)) {
+    if (!eventIncl && !(log.data === '0x' || log.topics.length < 2)) {
       const rcId: RcId = {
         hash: tx.hash,
         blockNumber: Number(tx.blockNumber),
@@ -166,7 +174,7 @@ async function parseReceipt(tx: any) {
         eventSchema: log.topics[0],
       };
       pushArrayUpto(data.rc.events, rcId);
-    }
+    } 
     const logData = log.data;
     const logDataSize = getNumBytes(logData);
     if (logDataSize > maxLogDataSize) {
@@ -179,13 +187,13 @@ async function parseReceipt(tx: any) {
     blockNumber: Number(tx.blockNumber),
     txIdx: Number(tx.transactionIndex),
   };
-  if (numLogs < 20 && maxLogDataSize < 800) {
+  if (numLogs <= 20 && maxLogDataSize <= 800) {
     pushArrayUpto(data.rc.category.default, txId);
-  } else if (numLogs < 80 && maxLogDataSize < 1024) {
+  } else if (numLogs <= 80 && maxLogDataSize <= 1024) {
     pushArrayUpto(data.rc.category.medium, txId);
-  } else if (numLogs < 80 && maxLogDataSize < 2048) {
+  } else if (numLogs <= 80 && maxLogDataSize <= 2048) {
     pushArrayUpto(data.rc.category.large, txId);
-  } else if (numLogs < 400 && maxLogDataSize < 1024){
+  } else if (numLogs <= 400 && maxLogDataSize <= 1024){
     pushArrayUpto(data.rc.category.max, txId);
   } else {
     pushArrayUpto(data.rc.category.oversize, txId);
@@ -199,6 +207,7 @@ async function main() {
   if (currentBlock === 0){ 
     currentBlock = await provider.getBlockNumber();
   }
+  data.blockRange.start = currentBlock;
   data.blockRange.end = currentBlock;
 
   let blocksToProcess: number[] = [...INCLUDE_BLOCKS];
@@ -218,12 +227,28 @@ async function main() {
     if (!block || block.transactions.length === 0) {
       continue;
     }
+    // Pick random transaction index from block of account to include
+    const idx = Math.floor(Math.random() * block.transactions.length);
+
+    // Include one per block
+    let storageIncl = false;
+    let eventIncl = false;
+    const numEvents = data.rc.events.length;
+
     for (let j = 0; j < block.transactions.length; j++) {
       const tx = block.transactions[j]; // Full transaction from FullBlock
-      const contracts = await parseAccount(tx);
-      await parseStorage(contracts, tx.blockNumber);
+      
+      const contracts = await parseAccount(tx, idx);
+      if (!storageIncl) {
+        storageIncl = await parseStorage(contracts, tx.blockNumber);
+      }
       await parseTx(tx);
-      await parseReceipt(tx); 
+
+      // Include one event per block
+      if (data.rc.events.length > numEvents) {
+        eventIncl = true;
+      }
+      await parseReceipt(tx, eventIncl);
     }
 
     console.log(JSON.stringify(data, null, 2));

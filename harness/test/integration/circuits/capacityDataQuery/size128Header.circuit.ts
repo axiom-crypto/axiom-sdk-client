@@ -23,7 +23,7 @@ export const defaultInputs = {
 export const circuit = async (inputs: CircuitInputs) => {
   for (let i = 0; i < 128; i++) {
     add(1,1);
-    const header = await getHeader(inputs.blockNumber.number() + i).receiptsRoot();
+    const header = await getHeader(add(inputs.blockNumber, i)).receiptsRoot();
     addToCallback(header);
   }
 }

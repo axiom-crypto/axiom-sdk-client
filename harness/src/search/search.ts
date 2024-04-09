@@ -32,7 +32,7 @@ export const search = async (
   if (options.include !== undefined) {
     includeBlocks = options.include.split(",").map(Number);
   }
-  let outputPath = path.join(path.dirname(options.circuit), '../output');
+  let outputPath = '../output';
   if (options.output !== undefined) {
     outputPath = options.output;
   }

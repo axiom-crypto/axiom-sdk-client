@@ -19,7 +19,7 @@ harnessCli
   .option("-b, --block [block]", "Start at block number and work backwards (default: latest)", Number)
   .option("-in, --include [include]", "Comma-separated block numbers to include in the search (useful if certain events happened at specific blocks)")
   .option("-ig, --ignore [ignore]", "Comma-separated string slices of addresses to ignore")
-  .option("-o, --output [output]", "Output file path (default: ./out)", "out")
+  .option("-o, --output [output]", "Output file path (default: ./output)", "./output")
   .action(search);
 
 harnessCli
@@ -28,7 +28,7 @@ harnessCli
   .requiredOption("-c, --circuit [path]", "js circuit path")
   .requiredOption("-p, --provider [provider]", "Node provider for the chain")
   .requiredOption("-d, --data [path]", "Chain data json file path (output of `search` command)")
-  .option("-o, --outputs [outputs]", "Folder for outputs (default: ./out)", "out")
+  .option("-o, --output [output]", "Folder for outputs (default: ../output)", "../output")
   .option("-f, --function [function]", "Function name (default: circuit)", "circuit")
   .option("--send", "Send query after proving")
   .action(run);

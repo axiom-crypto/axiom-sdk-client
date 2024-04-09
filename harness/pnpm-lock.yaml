@@ -15,8 +15,8 @@ dependencies:
     specifier: ^11.1.0
     version: 11.1.0
   ethers:
-    specifier: ^6.7.0
-    version: 6.7.0
+    specifier: ^6.11.1
+    version: 6.11.1
   viem:
     specifier: ^1.19.9
     version: 1.21.4(typescript@5.4.4)
@@ -56,8 +56,8 @@ packages:
     resolution: {integrity: sha512-nA9XHtlAkYfJxY7bce8DcN7eKxWWCWkU+1GR9d+U6MbNpfwQp8TI7vqOsBsMcHoT4mBu2kypKoSKnghEzOOq5Q==}
     dev: false
 
-  /@adraffy/ens-normalize@1.9.2:
-    resolution: {integrity: sha512-0h+FrQDqe2Wn+IIGFkTCd4aAwTJ+7834Ek1COohCyV26AXhwQ7WQaz+4F/nLOeVl/3BtWHOHLPsq46V8YB46Eg==}
+  /@adraffy/ens-normalize@1.10.1:
+    resolution: {integrity: sha512-96Z2IP3mYmF1Xg2cDm8f1gWGf/HUVedQ3FMifV4kG/PQ4yEP51xDtRAEfhVNt5f/uzpNkZHwWQuUcu6D6K+Ekw==}
     dev: false
 
   /@ampproject/remapping@2.3.0:
@@ -73,7 +73,7 @@ packages:
     dependencies:
       axios: 1.6.8
       bs58: 5.0.0
-      ethers: 6.7.0
+      ethers: 6.11.1
       form-data: 4.0.0
     transitivePeerDependencies:
       - bufferutil
@@ -884,17 +884,9 @@ packages:
       '@noble/hashes': 1.3.2
     dev: false
 
-  /@noble/hashes@1.1.2:
-    resolution: {integrity: sha512-KYRCASVTv6aeUi1tsF8/vpyR7zpfs3FUzy2Jqm+MU+LmUKhQ0y2FpfwqkCcxSg2ua4GALJd8k2R76WxwZGbQpA==}
-    dev: false
-
   /@noble/hashes@1.3.2:
     resolution: {integrity: sha512-MVC8EAQp7MvEcm30KWENFjgR+Mkmf+D189XJTkFIlwohU5hcBbn1ZkKq7KVTi2Hme3PMGF390DaL52beVrIihQ==}
     engines: {node: '>= 16'}
-    dev: false
-
-  /@noble/secp256k1@1.7.1:
-    resolution: {integrity: sha512-hOUk6AyBFmqVrv7k5WAw/LpszxVbj9gGN4JRkIX52fdFAj1UA61KXmZDvqVEm+pOyec3+fIeZB02LYa/pWOArw==}
     dev: false
 
   /@scure/base@1.1.6:
@@ -1475,13 +1467,13 @@ packages:
     hasBin: true
     dev: true
 
-  /ethers@6.7.0:
-    resolution: {integrity: sha512-pxt5hK82RNwcTX2gOZP81t6qVPVspnkpeivwEgQuK9XUvbNtghBnT8GNIb/gPh+WnVSfi8cXC9XlfT8sqc6D6w==}
+  /ethers@6.11.1:
+    resolution: {integrity: sha512-mxTAE6wqJQAbp5QAe/+o+rXOID7Nw91OZXvgpjDa1r4fAbq2Nu314oEZSbjoRLacuCzs7kUC3clEvkCQowffGg==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@adraffy/ens-normalize': 1.9.2
-      '@noble/hashes': 1.1.2
-      '@noble/secp256k1': 1.7.1
+      '@adraffy/ens-normalize': 1.10.1
+      '@noble/curves': 1.2.0
+      '@noble/hashes': 1.3.2
       '@types/node': 18.15.13
       aes-js: 4.0.0-beta.5
       tslib: 2.4.0

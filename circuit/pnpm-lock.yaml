@@ -21,7 +21,7 @@ dependencies:
     specifier: ^11.1.0
     version: 11.1.0
   ethers:
-    specifier: ^6.8.1
+    specifier: ^6.11.1
     version: 6.11.1
   viem:
     specifier: ^1.19.9

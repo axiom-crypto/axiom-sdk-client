@@ -1,12 +1,13 @@
 
 import { Axiom } from "../../src";
-import { generateCircuit, getTarget, parseArgs, runTestPass } from "./circuitTest";
+import { generateCircuit, getTarget, parseArgs, runTestSendQuery } from "./circuitTest";
 
 const CHAIN_ID = process.env.CHAIN_ID as string;
 
 describe("Build ComputeQuery with DataQuery", () => {
   test("simple computeQuery with dataQuery", async () => {
-    await runTestPass(CHAIN_ID, "computeQuery/simple");
+    const receipt = await runTestSendQuery(CHAIN_ID, "computeQuery/simple");
+    expect(receipt.status).toBe('success');
   }, 90000);
 
   test("simple computeQuery with dataQuery and address override", async () => {
@@ -41,11 +42,12 @@ describe("Build ComputeQuery with DataQuery", () => {
   }, 90000);
 
   test("simple computeQuery with non-default capacity", async () => {
-    await runTestPass(CHAIN_ID, "computeQuery/simpleWithCapacity", {
+    const receipt = await runTestSendQuery(CHAIN_ID, "computeQuery/simpleWithCapacity", {
       capacity: {
         maxOutputs: 256,
         maxSubqueries: 256,
       },
     });
+    expect(receipt.status).toBe('success');
   }, 90000);
 });

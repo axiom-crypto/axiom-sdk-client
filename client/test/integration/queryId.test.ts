@@ -1,6 +1,6 @@
 import { Axiom } from "../../src";
 import { bytes32 } from "@axiom-crypto/core";
-import { generateCircuit, getTarget, parseArgs, runTestPass } from "./circuitTest";
+import { generateCircuit, getTarget, parseArgs, runTestSendQuery } from "./circuitTest";
 
 const CHAIN_ID = process.env.CHAIN_ID as string;
 

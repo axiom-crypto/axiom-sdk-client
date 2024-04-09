@@ -9,7 +9,7 @@ export const run = async (
     circuit: string;
     provider: string;
     data: string;
-    outputs?: string;
+    output?: string;
     function?: string;
     send?: boolean;
     options?: any;
@@ -20,8 +20,8 @@ export const run = async (
   const chainId = (await provider.getNetwork()).chainId.toString();
 
   let outputPath = path.join(path.dirname(options.circuit), '../output');
-  if (options.outputs) {
-    outputPath = options.outputs;
+  if (options.output) {
+    outputPath = options.output;
   }
   // Geneate the input values for this circuit file
   generateInputs(options.circuit, outputPath, data);

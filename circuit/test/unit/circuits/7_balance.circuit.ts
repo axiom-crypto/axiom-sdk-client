@@ -5,7 +5,7 @@ import {
   addToCallback,
   add,
   or,
-} from "../../../src";
+} from "../../../dist";
 
 export const inputs = {
   address: "0x897dDbe14c9C7736EbfDC58461355697FbF70048",

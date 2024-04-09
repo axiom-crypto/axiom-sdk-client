@@ -17,25 +17,22 @@ describe("Send Sepolia queries on-chain", () => {
   }
 
   const circuitPaths = findCircuitFiles("./test/integration/circuits");
-  console.log(circuitPaths);
 
   beforeAll(async () => {
     rmSync("./test/integration/circuits/output", { recursive: true, force: true });
   })
 
-  test("Run tests", async () => {
-    for await (const circuitPath of circuitPaths) {
-      const folder = path.basename(path.dirname(circuitPath));
-      const filename = path.basename(circuitPath);
-      // test(`Test ${folder}/${filename}`, async () => {
-        const receipt = await run({
-          circuit: circuitPath,
-          provider: process.env[`PROVIDER_URI_${CHAIN_ID}`] as string,
-          data: `./test/integration/chainData/${CHAIN_ID}.json`,
-          send: true,
-        })
-        expect(receipt.status).toEqual("success");
-      // }, 180000);
-    }
-  }, 180000);
+  for (const circuitPath of circuitPaths) {
+    const folder = path.basename(path.dirname(circuitPath));
+    const filename = path.basename(circuitPath);
+    test(`Test ${folder}/${filename}`, async () => {
+      const receipt = await run({
+        circuit: circuitPath,
+        provider: process.env[`PROVIDER_URI_${CHAIN_ID}`] as string,
+        data: `./test/integration/chainData/${CHAIN_ID}.json`,
+        send: true,
+      })
+      expect(receipt.status).toEqual("success");
+    }, 180000);
+  }
 });

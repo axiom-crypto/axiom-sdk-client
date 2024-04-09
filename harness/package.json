@@ -8,7 +8,9 @@
     "build": "rm -rf dist && node scripts/preBuild.js && tsc && node scripts/postBuild.js",
     "test": "jest",
     "test:sepolia": "CHAIN_ID=11155111 jest test/integration/start.test.ts",
-    "test:base_sepolia": "CHAIN_ID=84532 jest test/integration/start.test.ts"
+    "test:base_sepolia": "CHAIN_ID=84532 jest test/integration/start.test.ts",
+    "chaindata": "./test/search_chaindata.sh",
+    "deploy:inputs": "./solidity_sized_tx_contract/script/start.sh"
   },
   "bin": {
     "harness": "./cli/index.js"
@@ -27,7 +29,7 @@
   "dependencies": {
     "@axiom-crypto/tools": "2.1.0",
     "commander": "^11.1.0",
-    "ethers": "^6.8.1",
+    "ethers": "6.7.0",
     "viem": "^1.19.9"
   },
   "devDependencies": {

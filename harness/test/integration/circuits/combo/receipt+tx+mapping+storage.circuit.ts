@@ -18,9 +18,9 @@ export interface CircuitInputs {
 }
 
 export const defaultInputs = {
-  blockNumber: 4000000, //$ account.eoa[5].blockNumber
-  contract0: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701", //$ storage.nonzero[5].address
-  contract1: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701", //$ storage.nonzero[6].address
+  blockNumber: 4000000, //$ account.eoa[8].blockNumber
+  contract0: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701", //$ storage.nonzero[8].address
+  contract1: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701", //$ storage.nonzero[9].address
 };
 
 export const circuit = async (inputs: CircuitInputs) => {

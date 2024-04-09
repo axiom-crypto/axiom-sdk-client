@@ -12,6 +12,7 @@ export const run = async (
     outputs?: string;
     function?: string;
     send?: boolean;
+    options?: any;
   }
 ): Promise<any> => {
   const data = JSON.parse(fs.readFileSync(options.data, 'utf8'));
@@ -34,8 +35,8 @@ export const run = async (
 
   // Prove or prove+send the query
   if (!options.send) {
-    return await runTestProve(chainId, circuit, compiledCircuit, inputs);
+    return await runTestProve(chainId, circuit, compiledCircuit, inputs, options.options);
   } else {
-    return await runTestSendQuery(chainId, circuit, compiledCircuit, inputs);
+    return await runTestSendQuery(chainId, circuit, compiledCircuit, inputs, options.options);
   }
 };

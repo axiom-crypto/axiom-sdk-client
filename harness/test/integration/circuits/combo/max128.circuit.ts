@@ -20,6 +20,10 @@ export interface CircuitInputs {
   contract0: CircuitValue;
   contract1: CircuitValue;
   contract2: CircuitValue;
+  txBlockNumber: CircuitValue;
+  txTxIdx: CircuitValue;
+  rcBlockNumber: CircuitValue;
+  rcTxIdx: CircuitValue;
 }
 
 export const defaultInputs = {
@@ -30,25 +34,29 @@ export const defaultInputs = {
   contract0: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701", //$ storage.nonzero[5].address
   contract1: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701", //$ storage.nonzero[6].address
   contract2: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701", //$ storage.nonzero[7].address
+  txBlockNumber: 4000000, //$ tx.type["2"][0].blockNumber
+  txTxIdx: 0, //$ tx.type["2"][0].txIdx
+  rcBlockNumber: 4000000, //$ rc.events[0].blockNumber
+  rcTxIdx: 0, //$ rc.events[0].txIdx
 };
 
 export const circuit = async (inputs: CircuitInputs) => {
   for (let i = 0; i < 32; i++) {
-    let tx = getReceipt(inputs.blockNumber.number() - 50 + i, 0);
-    addToCallback(await tx.status());
+    let rc = getReceipt(inputs.rcBlockNumber, inputs.rcTxIdx);
+    addToCallback(await rc.status());
   }
 
   for (let i = 0; i < 16; i++) {
-    let tx = getTx(inputs.blockNumber.number() + i, 10 + i);
+    let tx = getTx(inputs.txBlockNumber, inputs.txTxIdx);
     addToCallback(await tx.r());
   }
   for (let i = 0; i < 16; i++) {
-    let tx = getTx(inputs.blockNumber.number() - 1000000, i);
+    let tx = getTx(inputs.txBlockNumber, inputs.txTxIdx);
     addToCallback((await tx.type()).toCircuitValue());
   }
 
   for (let i = 0; i < 16; i++) {
-    let mapping = getSolidityMapping(inputs.blockNumber.number() - 730000 + i, inputs.contract0, 1);
+    let mapping = getSolidityMapping(add(inputs.blockNumber, i), inputs.contract0, 0);
     addToCallback(await mapping.key(2));
   }
 
@@ -58,7 +66,7 @@ export const circuit = async (inputs: CircuitInputs) => {
   }
 
   for (let i = 0; i < 8; i++) {
-    const acct = getAccount(inputs.blockNumber.number() - 400000 + i, inputs.contract2);
+    const acct = getAccount(add(inputs.blockNumber, i), inputs.contract2);
     addToCallback((await acct.nonce()).toCircuitValue());
   }
 

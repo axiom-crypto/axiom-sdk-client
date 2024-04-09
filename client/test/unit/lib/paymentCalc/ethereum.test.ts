@@ -1,9 +1,9 @@
 import { Axiom } from "../../../../src";
 import { createPublicClient, http } from "viem";
 import { viemChain } from "../../../../src/lib/viem";
-import { circuit } from "../../../integration/circuits/quickstart/average.circuit";
+import { circuit } from "../../../circuits/quickstart/average.circuit";
 import compiledCircuit from "../../circuits/average.compiled.json";
-import inputs from "../../../integration/circuits/quickstart/11155111/average.inputs.json";
+import inputs from "../../../circuits/quickstart/11155111/average.inputs.json";
 
 describe("PaymentCalc: Ethereum", () => {
   const CHAIN_ID = "11155111";

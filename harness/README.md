@@ -24,7 +24,7 @@ We have a Solidity contract that can be deployed to generate transaction and rec
 pnpm deploy:inputs
 ```
 
-Record the block number that the transactions occrred on. You can then edit the command in `test/search_chaindata.sh` to use the above deployed block number for `--include <blockNumber>` to add those specific transactions/receipts to the chain data search.
+Record the block number that the transactions occrred in. You can then edit the command in `test/search_chaindata.sh` to use the above deployed block number for `--include <blockNumber>` to add those specific transactions/receipts to the chain data search.
 
 ## Setting test inputs
 

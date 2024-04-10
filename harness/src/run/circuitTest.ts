@@ -33,8 +33,6 @@ export async function generateCircuitArtifacts(chainId: string, circuitPath: str
   let externalDefaults = false;
   if (existsSync(defaultInputsPath)) {
     externalDefaults = true;
-    const defaultInputs = (await import(defaultInputsPath)).default;
-    console.log("External defaultInputs", defaultInputs);
   }
 
   if (existsSync(compiledPath)) {
@@ -43,10 +41,15 @@ export async function generateCircuitArtifacts(chainId: string, circuitPath: str
 
   execSync(`npx axiom circuit compile ${circuitPathResolved} -o ${compiledPath} ${externalDefaults ? "-d " + defaultInputsPath : ""} -p ${provider}`, { stdio: 'inherit' });
 
+  if (externalDefaults) {
+    const defaultInputs = (await import(defaultInputsPath)).default;
+    console.log("External defaultInputs:", defaultInputsPath, defaultInputs);
+  }
+
   let inputs = {};
   if (existsSync(inputsPath)) {
     inputs = (await import(inputsPath)).default;
-    console.log("Inputs", inputs);
+    console.log("Inputs:", inputsPath, inputs);
   }
 
   return {

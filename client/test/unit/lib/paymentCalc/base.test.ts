@@ -2,7 +2,7 @@ import { Axiom, getOpStackL1BlockAttributesAbi, getOpStackL1BlockAttributesAddre
 import { createPublicClient, http } from "viem";
 import { viemChain } from "../../../../src/lib/viem";
 import { circuit } from "../../../circuits/quickstart/average.circuit";
-import compiledCircuit from "../../circuits/average.compiled.json";
+import compiledCircuit from "../../../circuits/quickstart/average.compiled.json";
 import inputs from "../../../circuits/quickstart/11155111/average.inputs.json";
 import { ClientConstants } from "../../../../src/constants";
 import { getChainDefaults } from "../../../../src/lib/chain";

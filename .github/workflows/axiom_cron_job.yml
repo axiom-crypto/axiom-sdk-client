@@ -1,0 +1,34 @@
+name: Axiom Client Creation and Test
+
+on:
+  schedule:
+    # Runs at the start of every hour
+    - cron: '0 * * * *'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18.x'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Determine option based on hour
+        id: option
+        run: |
+          HOUR=$(date +'%-H')
+          OPTION=$((HOUR % 2 == 0 ? "nextjs" : "script"))
+          echo "OPTION=$OPTION" >> $GITHUB_ENV
+
+      - name: Create Axiom Client
+        run: npx create-axiom-client --option ${{ env.OPTION }}
+
+      - name: Run Forge Test
+        run: forge test

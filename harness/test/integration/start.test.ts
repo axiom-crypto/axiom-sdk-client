@@ -17,7 +17,7 @@ const SPECIAL_TESTS = [
 ]
 
 // NOTE: A valid data file in the `test/chainData` directory must be provided
-describe("Send Sepolia queries on-chain", () => {
+describe("Integration tests", () => {
   if (process.env[`PROVIDER_URI_${CHAIN_ID}`] === undefined) {
     throw new Error(`PROVIDER_URI_${CHAIN_ID} environment variable must be defined`);
   }

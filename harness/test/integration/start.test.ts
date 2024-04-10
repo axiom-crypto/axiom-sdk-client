@@ -16,7 +16,7 @@ const SPECIAL_TESTS = [
   "eip4844receipt.circuit.ts",
 ]
 
-// NOTE: Requires unit tests to be run first since the unit tests build the circuit parameter json files
+// NOTE: A valid data file in the `test/chainData` directory must be provided
 describe("Send Sepolia queries on-chain", () => {
   if (process.env[`PROVIDER_URI_${CHAIN_ID}`] === undefined) {
     throw new Error(`PROVIDER_URI_${CHAIN_ID} environment variable must be defined`);

@@ -2,7 +2,7 @@
 
 ## Running tests
 
-Setting the CHAIN_ID envrionment variable is required to run the test:
+Setting the CHAIN_ID environment variable is required to run the test:
 
 ```bash
 CHAIN_ID=11155111 pnpm jest test/integration

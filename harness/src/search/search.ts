@@ -7,11 +7,6 @@ import { AddressId, RcId, StorageId, TxId } from "../types";
 import { BLOCK_INTERVAL, BLOCK_SAMPLES, data, matchIgnoreAddrs } from "./defaults";
 dotenv.config();
 
-// // Block numbers to include in the search (useful if certain events happened at specific blocks)
-// const INCLUDE_BLOCKS: number[] = [
-//   8285121,
-// ];
-
 export const search = async (
   options: {
     provider: string;
@@ -32,7 +27,7 @@ export const search = async (
   if (options.include !== undefined) {
     includeBlocks = options.include.split(",").map(Number);
   }
-  let outputPath = '../output';
+  let outputPath = './output';
   if (options.output !== undefined) {
     outputPath = options.output;
   }
@@ -98,13 +93,27 @@ export const search = async (
   fs.writeFileSync(path.join(outputPath, outfile), JSON.stringify(data, null, 2));
 }
 
+/**
+ * Pushes to an array up to a certain size (no-op if array is already at size)
+ * @param arr Array to push to
+ * @param itm Object to add to array
+ * @param size Max size of the target array
+ */
 function pushArrayUpto<T>(arr: T[], itm: T, size: number = 32) {
-  if (arr.length === size) {
+  if (arr.length >= size) {
     return;
   }
   arr.push(itm);
 }
 
+/**
+ * Parses the to and from fields of from the transaction object into EOAs or contracts
+ * @param provider ethers JsonRpcProvider
+ * @param tx Raw transaction object from the node
+ * @param idx Index
+ * @param ignoreAddrs Ignore any addresses that match these patterns
+ * @returns Returns any addresses that are contracts
+ */
 async function parseAccount(provider: JsonRpcProvider, tx: any, idx: number, ignoreAddrs: string[]): Promise<string[]> {
   const accounts = [tx.from, tx.to];
   let contracts: string[] = [];
@@ -112,7 +121,7 @@ async function parseAccount(provider: JsonRpcProvider, tx: any, idx: number, ign
     if (!account) {
       continue;
     }
-    // Check if account matches any part of the addresses in IGNORE_ADDRS_MATCH
+    // Check if account matches any part of the addresses in ignoreAddrs
     const shouldIgnore = ignoreAddrs.some(ignoreAddr => account.includes(ignoreAddr));
     if (shouldIgnore) {
       continue; // Skip this account if it matches any ignore address pattern
@@ -138,6 +147,14 @@ async function parseAccount(provider: JsonRpcProvider, tx: any, idx: number, ign
   return contracts;
 }
 
+/**
+ * Parses the storage of a contract. We choose a random slot to check if it is non-zero because a lot of accounts will come in during the 
+ * search and we want adequate distribution of storage values across the search range.
+ * @param provider ethers JsonRpcProvider
+ * @param contracts List of contracts to check storage for
+ * @param blockNumber Blocknumber to check storage at
+ * @returns True if we found a storage slot that is nonzero, false otherwise
+ */
 async function parseStorage(provider: JsonRpcProvider, contracts: string[], blockNumber: string): Promise<boolean> {
   if (contracts.length === 0) {
     return false;
@@ -158,6 +175,10 @@ async function parseStorage(provider: JsonRpcProvider, contracts: string[], bloc
   return false;
 }
 
+/**
+ * Parse a transaction and determine its type and size category
+ * @param tx 
+ */
 async function parseTx(tx: any) {
   const type = Number(tx.type).toString() as keyof typeof data.tx.type;
   const txId: TxId = {
@@ -175,6 +196,8 @@ async function parseTx(tx: any) {
   // }
   const accessListRlp = objectToRlp(tx.accessList ?? {});
   const aclNumBytesRlp = getNumBytes(accessListRlp);
+
+  // TODO: Use QueryBuilder module to determine category
   if (numBytesTxData <= 8192 && aclNumBytesRlp <= 800) {
     pushArrayUpto(data.tx.category.default, txId);
   } else if (numBytesTxData <= 32768 && aclNumBytesRlp <= 1024) {
@@ -186,6 +209,12 @@ async function parseTx(tx: any) {
   }
 }
 
+/**
+ * Parse a receipt and determine its category and include an event
+ * @param provider 
+ * @param tx 
+ * @param eventIncl Ignore if an event is already included in this block
+ */
 async function parseReceipt(provider: JsonRpcProvider, tx: any, eventIncl: boolean) {
   const receipt = await getRawReceipt(provider, tx.hash);
   const numLogs = receipt.logs.length;
@@ -218,6 +247,8 @@ async function parseReceipt(provider: JsonRpcProvider, tx: any, eventIncl: boole
     blockNumber: Number(tx.blockNumber),
     txIdx: Number(tx.transactionIndex),
   };
+
+  // TODO: Use QueryBuilder module to determine category
   if (numLogs <= 20 && maxLogDataSize <= 800) {
     pushArrayUpto(data.rc.category.default, txId);
   } else if (numLogs <= 80 && maxLogDataSize <= 1024) {

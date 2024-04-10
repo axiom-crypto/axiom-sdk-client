@@ -1,15 +1,19 @@
 import { AxiomCircuit } from "../js";
 import {
+  AxiomV2Callback,
   AxiomV2ClientConfig,
   AxiomV2ClientOptions,
   AxiomV2CompiledCircuit,
   AxiomV2SendQueryArgs,
 } from "../types";
-import { AxiomV2CircuitCapacity, UserInput, DEFAULT_CAPACITY } from "@axiom-crypto/circuit";
+import {
+  AxiomV2CircuitCapacity,
+  UserInput,
+  DEFAULT_CAPACITY,
+} from "@axiom-crypto/circuit";
 import { validateChainId } from "./utils";
 import { PublicClient, TransactionReceipt, WalletClient, createPublicClient, createWalletClient, http } from "viem";
 import { privateKeyToAccount } from 'viem/accounts'
-import { AxiomV2Callback } from "@axiom-crypto/core";
 import { viemChain } from "../lib";
 import { getChainDefaults } from "../lib/chain";
 

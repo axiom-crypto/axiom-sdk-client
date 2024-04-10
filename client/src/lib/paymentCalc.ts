@@ -1,4 +1,4 @@
-import { ClientConstants } from "../constants";
+import { ClientConstants } from "./constants";
 import { AbiType, AxiomV2ClientOverrides, AxiomV2ClientOptions, AxiomV2FeeDataExtended } from "../types";
 import { PublicClient } from "viem";
 import { getAxiomV2QueryAddress, getOpStackGasPriceOracleAddress } from "./address";

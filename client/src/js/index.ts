@@ -1,7 +1,6 @@
+import { AxiomV2Callback, AxiomV2CircuitCapacity } from "@axiom-crypto/circuit";
 import { AxiomBaseCircuit } from "@axiom-crypto/circuit/js/";
-import { AxiomV2Callback } from "@axiom-crypto/core";
 import { buildSendQuery } from "../sendQuery";
-import { AxiomV2CircuitCapacity } from "@axiom-crypto/circuit/types";
 import { AxiomV2ClientOptions, AxiomV2SendQueryArgs } from "../types";
 
 export class AxiomCircuit<T> extends AxiomBaseCircuit<T> {
@@ -29,6 +28,7 @@ export class AxiomCircuit<T> extends AxiomBaseCircuit<T> {
       extraData: input.callbackExtraData,
     };
     return await buildSendQuery({
+      // TODO: figure out how to handle the queryBuilder split here...
       queryBuilder: this.queryBuilder,
       dataQuery: this.dataQuery,
       computeQuery: this.computeQuery,

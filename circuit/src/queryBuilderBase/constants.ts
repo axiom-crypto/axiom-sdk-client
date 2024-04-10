@@ -32,10 +32,6 @@ export const ConstantsV2 = Object.freeze({
   FallbackProofVerificationGas: 420000n,
   FallbackAxiomQueryFeeWei: 3000000000000000n,
 
-  // Schema hashes
-  QueryInitiatedOnchainSchema: "0xb72b05c090ac4ae9ec18b7e708d597093716f98567026726f6f5d9f172316178",
-  QueryInitiatedWithIpfsDataSchema: "0xf3a2958f23705cbc6bbc0922c0af3c82b76d93e8acc5c17ef86736cf4563fb85",
-
   // Subquery limits
   UserMaxTotalSubqueries: 128,
   MaxSameSubqueryType: 128,

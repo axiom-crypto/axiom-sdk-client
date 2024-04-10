@@ -1,8 +1,7 @@
-import { AxiomBaseCircuit } from "@axiom-crypto/circuit/web/";
-import { AxiomV2Callback } from "@axiom-crypto/core";
+import { AxiomV2Callback, AxiomV2CircuitCapacity } from "@axiom-crypto/circuit";
+import { AxiomBaseCircuit } from "@axiom-crypto/circuit/js/";
 import { buildSendQuery } from "../sendQuery";
 import { AxiomV2ClientOptions, AxiomV2SendQueryArgs } from "../types";
-import { AxiomV2CircuitCapacity } from "@axiom-crypto/circuit/types";
 
 export class AxiomCircuit<T> extends AxiomBaseCircuit<T> {
   constructor(inputs: {

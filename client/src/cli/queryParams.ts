@@ -1,8 +1,8 @@
 import path from 'path';
-import { AxiomV2QueryBuilder } from "@axiom-crypto/circuit";
 import { getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
 import { buildSendQuery } from "../sendQuery";
 import { argsArrToObj } from '../axiom/utils';
+import { AxiomV2QueryBuilderClient } from 'src/queryBuilderClient';
 
 export const queryParams = async (
   callbackTarget: string,
@@ -34,7 +34,7 @@ export const queryParams = async (
   console.log(`Reading proven circuit JSON from: ${provenFile}`)
   const provenJson = readJsonFromFile(provenFile);
   const provider = getProvider(options.provider);
-  const queryBuilder = new AxiomV2QueryBuilder({
+  const queryBuilder = new AxiomV2QueryBuilderClient({
     provider,
     sourceChainId: options.sourceChainId,
     version: "v2",

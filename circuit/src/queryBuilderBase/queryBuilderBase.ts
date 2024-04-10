@@ -8,8 +8,6 @@ import {
   getQueryHashV2,
   getDataQueryHashFromSubqueries,
   AxiomV2CircuitConstant,
-  getQueryId,
-  getCallbackHash,
   AxiomV2DataQuery,
   encodeDataQuery,
   AxiomV2FeeData,
@@ -25,9 +23,9 @@ import {
 import {
   AxiomV2QueryOptions,
   DataSubqueryCount,
-  InternalConfig,
   AxiomV2QueryBuilderBaseConfig,
   BuiltQueryV2Base,
+  QueryBuilderBaseInternalConfig,
 } from "./types";
 import { ConstantsV2 } from "./constants";
 import {
@@ -46,12 +44,12 @@ import { ConfigLimitManager } from "./dataSubquery/configLimitManager";
 import { handleChainId, handleProvider, parseAddress, parseChainId, parseMock, parseProvider, parseVersion } from "./configure";
 
 export class AxiomV2QueryBuilderBase {
-  readonly config: InternalConfig;
-  private builtQueryBase?: BuiltQueryV2Base;
-  private builtDataQuery?: AxiomV2DataQuery;
-  private dataQuery?: Subquery[];
-  private computeQuery?: AxiomV2ComputeQuery;
-  private dataSubqueryCount: DataSubqueryCount;
+  readonly config: QueryBuilderBaseInternalConfig;
+  protected builtQueryBase?: BuiltQueryV2Base;
+  protected builtDataQuery?: AxiomV2DataQuery;
+  protected dataQuery?: Subquery[];
+  protected computeQuery?: AxiomV2ComputeQuery;
+  protected dataSubqueryCount: DataSubqueryCount;
 
   constructor(
     config: AxiomV2QueryBuilderBaseConfig,
@@ -68,7 +66,7 @@ export class AxiomV2QueryBuilderBase {
     }
   }
 
-  protected configure(config: AxiomV2QueryBuilderBaseConfig): InternalConfig {
+  protected configure(config: AxiomV2QueryBuilderBaseConfig): QueryBuilderBaseInternalConfig {
     config = handleProvider(config);
     const providerUri = parseProvider(config.provider);
 
@@ -81,15 +79,6 @@ export class AxiomV2QueryBuilderBase {
 
     const provider = new ethers.JsonRpcProvider(providerUri);
 
-    let caller = "";
-    if (config.caller !== undefined) {
-      caller = parseAddress(config.caller);
-    }
-    let refundee = caller;
-    if (config.refundee !== undefined) {
-      refundee = parseAddress(config.refundee);
-    }
-
     return {
       providerUri,
       provider,
@@ -97,8 +86,6 @@ export class AxiomV2QueryBuilderBase {
       targetChainId,
       mock,
       version,
-      caller,
-      refundee,
     };
   }
 
@@ -234,11 +221,7 @@ export class AxiomV2QueryBuilderBase {
    * @param validate (optional) Runs validation on the Query before attempting to build it
    * @returns A built Query object
    */
-  async build(validate?: boolean): Promise<BuiltQueryV2Base> {
-    if (this.config.refundee === "" && this.config.caller === "") {
-      throw new Error("`caller` or `refundee` in config required to build the Query");
-    }
-
+  async buildBase(validate?: boolean): Promise<BuiltQueryV2Base> {
     if (validate === true) {
       const valid = await this.validate();
       if (!valid) {
@@ -335,13 +318,13 @@ export class AxiomV2QueryBuilderBase {
     return Math.min(this.dataQuery?.length ?? 0, AxiomV2CircuitConstant.UserMaxOutputs);
   }
 
-  private handleComputeQueryRequest(computeQuery: AxiomV2ComputeQuery) {
+  protected handleComputeQueryRequest(computeQuery: AxiomV2ComputeQuery) {
     computeQuery.resultLen = computeQuery.resultLen ?? this.getDefaultResultLen();
     computeQuery.vkey = computeQuery.vkey.map((x: string) => bytes32(x));
     return computeQuery;
   }
 
-  private async validateDataSubqueries(): Promise<boolean> {
+  protected async validateDataSubqueries(): Promise<boolean> {
     if (this.dataQuery === undefined || this.dataQuery.length === 0) {
       return true;
     }
@@ -386,7 +369,7 @@ export class AxiomV2QueryBuilderBase {
     return validQuery;
   }
 
-  private async validateComputeQuery(): Promise<boolean> {
+  protected async validateComputeQuery(): Promise<boolean> {
     if (this.computeQuery === undefined) {
       return true;
     }
@@ -417,11 +400,11 @@ export class AxiomV2QueryBuilderBase {
   }
 
 
-  private resetSubqueryCount() {
+  protected resetSubqueryCount() {
     this.dataSubqueryCount = deepCopyObject(ConstantsV2.EmptyDataSubqueryCount);
   }
 
-  private updateSubqueryCount(type: DataSubqueryType, skipValidate?: boolean) {
+  protected updateSubqueryCount(type: DataSubqueryType, skipValidate?: boolean) {
     this.dataSubqueryCount.total++;
     if (skipValidate) return;
     if (this.dataSubqueryCount.total > ConstantsV2.UserMaxTotalSubqueries) {

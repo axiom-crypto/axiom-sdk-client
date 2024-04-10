@@ -1,4 +1,4 @@
-import { BaseDefaults, MainnetDefaults } from "../constants";
+import { BaseDefaults, MainnetDefaults } from "./constants";
 import { ChainDefaults } from "../types";
 
 export function isMainnetChain(chainId: string) {

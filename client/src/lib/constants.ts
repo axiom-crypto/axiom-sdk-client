@@ -1,4 +1,4 @@
-import { ChainDefaults } from "./types";
+import { ChainDefaults } from "../types";
 
 export const ClientConstants = Object.freeze({
   AXIOM_PROOF_CALLDATA_LEN: 2875, // bytes

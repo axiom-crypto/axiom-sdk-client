@@ -3,21 +3,28 @@ import {
   AxiomV2ComputeQuery,
   AxiomV2DataQuery,
   AxiomV2QueryBuilderBase,
-  BuiltQueryV2,
+  AxiomV2QueryOptions,
 } from "@axiom-crypto/circuit";
-import { AxiomV2FeeData } from "@axiom-crypto/tools";
+import { 
+  parseAddress,
+} from "@axiom-crypto/circuit/queryBuilderBase/configure";
+import { AxiomV2FeeData, getCallbackHash, getQueryId, Subquery } from "@axiom-crypto/tools";
+import { ClientConstants } from "src/lib/constants";
 import { AxiomV2ClientOptions } from "src/types";
 import { zeroAddress } from "viem";
+import { 
+  AxiomV2QueryBuilderClientConfig,
+  QueryBuilderClientInternalConfig,
+  BuiltQueryV2,
+} from "./types";
+import { getChainDefaults } from "src/lib/chain";
+import { ethers } from "ethers";
 
-export class AxiomV2QueryBuilderClient {
-  readonly config: InternalConfig;
-  private queryBuilderBase: AxiomV2QueryBuilderBase;
-  private builtQuery?: BuiltQueryV2;
-  private builtDataQuery?: AxiomV2DataQuery;
-  private dataQuery?: Subquery[];
-  private computeQuery?: AxiomV2ComputeQuery;
-  private callback?: AxiomV2Callback;
-  private options: AxiomV2QueryOptions;
+export class AxiomV2QueryBuilderClient extends AxiomV2QueryBuilderBase {
+  readonly config: QueryBuilderClientInternalConfig;
+  protected builtQuery?: BuiltQueryV2;
+  protected callback?: AxiomV2Callback;
+  protected options: AxiomV2QueryOptions;
 
   constructor(
     config: AxiomV2QueryBuilderClientConfig,
@@ -26,16 +33,50 @@ export class AxiomV2QueryBuilderClient {
     callback?: AxiomV2Callback,
     options?: AxiomV2ClientOptions,
   ) {
-
+    super(config, dataQuery, computeQuery);
+    this.config = this.configure(config);
     if (callback !== undefined) {
       this.callback = this.handleCallback(callback);
     }
-    this.queryBuilderBase = new AxiomV2QueryBuilderBase(config, dataQuery, computeQuery);
+    this.options = this.setOptions(options ?? {});
   }
 
-  async build(): Promise<BuiltQueryV2> {
-    this.builtQuery = await this.queryBuilderBase.build());
+  protected configure(config: AxiomV2QueryBuilderClientConfig): QueryBuilderClientInternalConfig {
+    const baseConfig = super.configure(config);
+    let caller = "";
+    if (config.caller !== undefined) {
+      caller = parseAddress(config.caller);
+    }
+    let refundee = caller;
+    if (config.refundee !== undefined) {
+      refundee = parseAddress(config.refundee);
+    }
 
+    return {
+      providerUri: baseConfig.providerUri,
+      provider: baseConfig.provider,
+      sourceChainId: baseConfig.sourceChainId,
+      targetChainId: baseConfig.targetChainId,
+      version: baseConfig.version,
+      mock: baseConfig.mock,
+      caller,
+      refundee,
+    };
+  }
+
+  async build(validate?: boolean): Promise<BuiltQueryV2> {
+    if (this.config.refundee === "" && this.config.caller === "") {
+      throw new Error("`caller` or `refundee` in config required to build the Query");
+    }
+
+    if (validate === true) {
+      const valid = await this.validate();
+      if (!valid) {
+        throw new Error("Query validation failed");
+      }
+    }
+
+    const builtQueryBase = await super.build(validate);
 
     // Handle callback
     const callback = {
@@ -60,14 +101,14 @@ export class AxiomV2QueryBuilderClient {
     const userSalt = this.calculateUserSalt();
 
     this.builtQuery = {
-      sourceChainId: this.config.sourceChainId.toString(),
-      targetChainId: this.config.targetChainId.toString(),
-      queryHash,
-      dataQuery,
-      dataQueryHash,
-      dataQueryStruct,
-      computeQuery,
-      querySchema,
+      sourceChainId: builtQueryBase.sourceChainId.toString(),
+      targetChainId: builtQueryBase.targetChainId.toString(),
+      queryHash: builtQueryBase.queryHash,
+      dataQuery: builtQueryBase.dataQuery,
+      dataQueryHash: builtQueryBase.dataQueryHash,
+      dataQueryStruct: builtQueryBase.dataQueryStruct,
+      computeQuery: builtQueryBase.computeQuery,
+      querySchema: builtQueryBase.querySchema,
       callback,
       feeData,
       userSalt,
@@ -102,24 +143,17 @@ export class AxiomV2QueryBuilderClient {
 
   setOptions(options: AxiomV2QueryOptions): AxiomV2QueryOptions {
     this.unsetBuiltQuery();
+    const defaults = getChainDefaults(this.config.sourceChainId.toString());
     this.options = {
-      maxFeePerGas: options?.maxFeePerGas ?? ConstantsV2.DefaultMaxFeePerGasWei,
-      callbackGasLimit: options?.callbackGasLimit ?? ConstantsV2.DefaultCallbackGasLimit,
-      overrideAxiomQueryFee: options?.overrideAxiomQueryFee ?? ConstantsV2.DefaultOverrideAxiomQueryFee,
+      maxFeePerGas: options?.maxFeePerGas ?? defaults.maxFeePerGasWei.toString(),
+      callbackGasLimit: options?.callbackGasLimit ?? Number(defaults.callbackGasLimit),
+      overrideAxiomQueryFee: options?.overrideAxiomQueryFee ?? defaults.axiomQueryFeeWei.toString(),
     };
     return this.options;
   }
 
-  /**
-   * Appends a built DataQuery. This is used when receiving a DataQuery from a ComputeQuery.
-   * Setting this will take precedence over setting any UnbuiltSubqueries via `append()`.
-   */
-  setBuiltDataQuery(dataQuery: AxiomV2DataQuery, skipValidate?: boolean): void {
-    this.queryBuilderBase.setBuiltDataQuery(dataQuery, skipValidate);
-  }
-
   async validate(): Promise<boolean> {
-    const baseValid = this.queryBuilderBase.validate();
+    const baseValid = await super.validate();
 
     // Check if callback is valid
     const callback = await this.validateCallback();
@@ -127,8 +161,7 @@ export class AxiomV2QueryBuilderClient {
     return baseValid && callback;
   }
 
-
-  private unsetBuiltQuery() {
+  protected unsetBuiltQuery() {
     // Reset built query if any data is changed
     this.builtQuery = undefined;
   }
@@ -138,7 +171,7 @@ export class AxiomV2QueryBuilderClient {
    * @returns uint256 queryId
    */
   async getQueryId(caller?: string): Promise<string> {
-    if (this.builtQueryBase === undefined) {
+    if (this.builtQuery === undefined) {
       throw new Error("Must query with `build()` first before getting queryId");
     }
 
@@ -146,29 +179,29 @@ export class AxiomV2QueryBuilderClient {
     if (caller === undefined) {
       caller = this.config.caller;
     }
-    const targetChainId = this.builtQueryBase.targetChainId;
+    const targetChainId = this.builtQuery.targetChainId;
     const refundee = this.config.refundee;
-    const salt = this.builtQueryBase.userSalt;
-    const queryHash = this.builtQueryBase.queryHash;
-    const callbackHash = getCallbackHash(this.builtQueryBase.callback.target, this.builtQueryBase.callback.extraData);
+    const salt = this.builtQuery.userSalt;
+    const queryHash = this.builtQuery.queryHash;
+    const callbackHash = getCallbackHash(this.builtQuery.callback.target, this.builtQuery.callback.extraData);
 
     // Calculate the queryId
     const queryId = getQueryId(targetChainId, caller, salt, queryHash, callbackHash, refundee);
     return BigInt(queryId).toString();
   }
 
-  private calculateUserSalt(): string {
+  protected calculateUserSalt(): string {
     return ethers.hexlify(ethers.randomBytes(32));
   }
 
-  private handleCallback(callback: AxiomV2Callback): AxiomV2Callback {
+  protected handleCallback(callback: AxiomV2Callback): AxiomV2Callback {
     callback.target = callback.target.toLowerCase();
     callback.extraData = callback.extraData.toLowerCase();
     return callback;
   }
 
 
-  private async validateCallback(): Promise<boolean> {
+  protected async validateCallback(): Promise<boolean> {
     if (this.callback === undefined) {
       return true;
     }

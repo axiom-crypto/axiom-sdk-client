@@ -4,7 +4,7 @@ import { viemChain } from "../../../../src/lib/viem";
 import { circuit } from "../../../integration/circuits/quickstart/average.circuit";
 import compiledCircuit from "../../circuits/average.compiled.json";
 import inputs from "../../../integration/circuits/quickstart/average.inputs.json";
-import { ClientConstants } from "../../../../src/constants";
+import { ClientConstants } from "../../../../src/lib/constants";
 import { getChainDefaults } from "../../../../src/lib/chain";
 
 describe("PaymentCalc: Base", () => {

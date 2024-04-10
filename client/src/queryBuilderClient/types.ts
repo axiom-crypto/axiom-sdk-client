@@ -1,5 +1,24 @@
 import { AxiomV2Callback, AxiomV2ComputeQuery, AxiomV2DataQuery, AxiomV2FeeData } from "@axiom-crypto/tools";
-import { BuiltQueryV2Base } from "@axiom-crypto/circuit";
+import { 
+  AxiomV2QueryBuilderBaseConfig, 
+  BuiltQueryV2Base,
+  QueryBuilderBaseInternalConfig,
+} from "@axiom-crypto/circuit";
+
+export interface AxiomV2QueryBuilderClientConfig extends AxiomV2QueryBuilderBaseConfig {
+  provider: string;
+  caller?: string;
+  refundee?: string;
+  sourceChainId?: number | string | BigInt;
+  targetChainId?: number | string | BigInt;
+  version?: string;
+  mock?: boolean;
+}
+
+export interface QueryBuilderClientInternalConfig extends QueryBuilderBaseInternalConfig {
+  caller: string;
+  refundee: string;
+}
 
 export interface BuiltQueryV2 extends BuiltQueryV2Base {
   querySchema: string;

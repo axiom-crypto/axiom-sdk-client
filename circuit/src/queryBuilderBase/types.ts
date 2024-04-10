@@ -40,15 +40,13 @@ export interface AxiomV2QueryBuilderBaseConfig {
   mock?: boolean;
 }
 
-export interface InternalConfig {
+export interface QueryBuilderBaseInternalConfig {
   providerUri: string;
   sourceChainId: BigInt;
   targetChainId: BigInt;
   mock: boolean;
   provider: ethers.JsonRpcProvider;
   version: string;
-  caller: string;
-  refundee: string;
 }
 
 export interface AxiomV2QueryOptions {

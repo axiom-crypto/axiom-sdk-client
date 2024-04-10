@@ -1,7 +1,7 @@
 import { bytes32 } from "@axiom-crypto/tools";
 import { 
-  AxiomV2QueryBuilder,
-  AxiomV2QueryBuilderConfig,
+  AxiomV2QueryBuilderBase,
+  AxiomV2QueryBuilderBaseConfig,
   AxiomV2Callback,
   HeaderField,
 } from "../../../src";
@@ -16,13 +16,13 @@ describe("Crosschain", () => {
   };
 
   test("Build a query with a different target chain", async () => {
-    const config: AxiomV2QueryBuilderConfig = {
+    const config: AxiomV2QueryBuilderBaseConfig = {
       provider: process.env.PROVIDER_URI_SEPOLIA as string,
       caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
       targetChainId: 5,
       version: "v2",
     };
-    const axiom = new AxiomV2QueryBuilder(config);
+    const axiom = new AxiomV2QueryBuilderBase(config);
     const blockNumber = 18200000;
     const dataQueryReq = [
       {

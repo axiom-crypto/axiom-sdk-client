@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { AxiomV2QueryBuilder, AxiomV2QueryBuilderConfig, AxiomV2Callback, AxiomV2ComputeQuery, HeaderField } from "../../../src";
+import { AxiomV2QueryBuilderBase, AxiomV2QueryBuilderBaseConfig, AxiomV2Callback, AxiomV2ComputeQuery, HeaderField } from "../../../src";
 
 // Test coverage areas:
 // - DataQuery
@@ -7,13 +7,13 @@ import { AxiomV2QueryBuilder, AxiomV2QueryBuilderConfig, AxiomV2Callback, AxiomV
 // - No Callback
 
 describe("Build a Query with no Callback", () => {
-  const config: AxiomV2QueryBuilderConfig = {
+  const config: AxiomV2QueryBuilderBaseConfig = {
     provider: process.env.PROVIDER_URI_SEPOLIA as string,
     caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     sourceChainId: 1,
     version: "v2",
   };
-  const axiom = new AxiomV2QueryBuilder(config);
+  const axiom = new AxiomV2QueryBuilderBase(config);
 
   test("simple computeQuery with no Callback", async () => {
     /** Code

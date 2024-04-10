@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import {
-  AxiomV2QueryBuilder,
-  AxiomV2QueryBuilderConfig,
+  AxiomV2QueryBuilderBase,
+  AxiomV2QueryBuilderBaseConfig,
   AccountField,
   AccountSubquery,
   AxiomV2ComputeQuery,
@@ -49,7 +49,7 @@ describe("Build Query w/ ComputeQuery, DataQuery, Callback, and Options set (cor
   };
 
   test("should initialize with private key; build QueryV2 with dataQuery, computeQuery, and callback", async () => {
-    const config: AxiomV2QueryBuilderConfig = {
+    const config: AxiomV2QueryBuilderBaseConfig = {
       caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
       provider: process.env.PROVIDER_URI_SEPOLIA as string,
       version: "v2",
@@ -91,7 +91,7 @@ describe("Build Query w/ ComputeQuery, DataQuery, Callback, and Options set (cor
       maxFeePerGas: BigInt(100000000).toString(),
     };
 
-    const axiom = new AxiomV2QueryBuilder(config, dataQueryReq, computeQueryReq, callbackQuery, options);
+    const axiom = new AxiomV2QueryBuilderBase(config, dataQueryReq, computeQueryReq, callbackQuery, options);
     const unbiltDq = axiom.getDataQuery();
     expect((unbiltDq?.[2] as AccountSubquery).addr).toEqual(WETH_WHALE);
     await axiom.build();
@@ -121,7 +121,7 @@ describe("Build Query w/ ComputeQuery, DataQuery, Callback, and Options set (cor
   });
 
   test("should initialize without private key; build QueryV2 with dataQuery, computeQuery, and callback", async () => {
-    const config: AxiomV2QueryBuilderConfig = {
+    const config: AxiomV2QueryBuilderBaseConfig = {
       provider: process.env.PROVIDER_URI_SEPOLIA as string,
       caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
       version: "v2",
@@ -163,7 +163,7 @@ describe("Build Query w/ ComputeQuery, DataQuery, Callback, and Options set (cor
       maxFeePerGas: BigInt(100000000).toString(),
     };
 
-    const axiom = new AxiomV2QueryBuilder(config, dataQueryReq, computeQueryReq, callbackQuery, options);
+    const axiom = new AxiomV2QueryBuilderBase(config, dataQueryReq, computeQueryReq, callbackQuery, options);
     const unbiltDq = axiom.getDataQuery();
     expect((unbiltDq?.[2] as AccountSubquery).addr).toEqual(WETH_WHALE);
     await axiom.build();

@@ -20,8 +20,8 @@ import {
   getEventSchema,
 } from "@axiom-crypto/tools";
 import {
-  AxiomV2QueryBuilder,
-  AxiomV2QueryBuilderConfig,
+  AxiomV2QueryBuilderBase,
+  AxiomV2QueryBuilderBaseConfig,
   AxiomV2Callback,
   AxiomV2QueryOptions,
 } from "../../../src";
@@ -132,12 +132,12 @@ describe("QueryV2", () => {
   ];
   const computeProof = ethers.concat(computeProofRaw);
 
-  const config: AxiomV2QueryBuilderConfig = {
+  const config: AxiomV2QueryBuilderBaseConfig = {
     caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     provider: process.env.PROVIDER_URI_MAINNET as string,
     version: "v2",
   };
-  // const axiom = new AxiomV2QueryBuilder(config);
+  // const axiom = new AxiomV2QueryBuilderBase(config);
 
   test("should validate a QueryV2", async () => {
     const dataQuery = [
@@ -184,13 +184,13 @@ describe("QueryV2", () => {
       extraData: bytes32(ethers.solidityPacked(["address"], [WETH_WHALE])),
     };
     const options = {};
-    const axiom = new AxiomV2QueryBuilder(config, dataQuery, computeQueryReq, callbackQuery, options);
+    const axiom = new AxiomV2QueryBuilderBase(config, dataQuery, computeQueryReq, callbackQuery, options);
     const isValid = await axiom.validate();
     expect(isValid).toEqual(true);
   }, 20000);
 
   test("Compute callback resultLen based on number of subqueries", async () => {
-    const axiom = new AxiomV2QueryBuilder(config);
+    const axiom = new AxiomV2QueryBuilderBase(config);
 
     const callback: AxiomV2Callback = {
       target: WETH_ADDR,
@@ -212,7 +212,7 @@ describe("QueryV2", () => {
   });
 
   test("Use specified callback resultLen if there is a computeQuery", async () => {
-    const axiom = new AxiomV2QueryBuilder(config);
+    const axiom = new AxiomV2QueryBuilderBase(config);
 
     const callback: AxiomV2Callback = {
       target: WETH_ADDR,
@@ -241,7 +241,7 @@ describe("QueryV2", () => {
   });
 
   test("Set various options", async () => {
-    const axiom = new AxiomV2QueryBuilder({...config, refundee: ethers.ZeroAddress});
+    const axiom = new AxiomV2QueryBuilderBase({...config, refundee: ethers.ZeroAddress});
 
     const options: AxiomV2QueryOptions = {
       maxFeePerGas: "100000000",
@@ -279,7 +279,7 @@ describe("QueryV2", () => {
   });
 
   test("Append a Header subquery", async () => {
-    const axiom = new AxiomV2QueryBuilder(config);
+    const axiom = new AxiomV2QueryBuilderBase(config);
     axiom.appendDataSubquery({
       blockNumber: 17000000,
       fieldIdx: HeaderField.GasLimit,
@@ -292,7 +292,7 @@ describe("QueryV2", () => {
   });
 
   test("Append an Account subquery", async () => {
-    const axiom = new AxiomV2QueryBuilder(config);
+    const axiom = new AxiomV2QueryBuilderBase(config);
     axiom.appendDataSubquery({
       blockNumber: 17000000,
       addr: WETH_WHALE,
@@ -307,7 +307,7 @@ describe("QueryV2", () => {
   });
 
   test("Append a Storage subquery", async () => {
-    const axiom = new AxiomV2QueryBuilder(config);
+    const axiom = new AxiomV2QueryBuilderBase(config);
     const slot = getSlotForMapping("3", "address", WETH_WHALE);
     axiom.appendDataSubquery({
       blockNumber: 18000000,
@@ -324,7 +324,7 @@ describe("QueryV2", () => {
   });
 
   test("Append a Tx subquery", async () => {
-    const axiom = new AxiomV2QueryBuilder(config);
+    const axiom = new AxiomV2QueryBuilderBase(config);
     const txHash = "0x8d2e6cbd7cf1f88ee174600f31b79382e0028e239bb1af8301ba6fc782758bc6";
     const { blockNumber, txIdx } = (await getBlockNumberAndTxIdx(provider, txHash)) as {
       blockNumber: number;
@@ -345,7 +345,7 @@ describe("QueryV2", () => {
   });
 
   test("Append a Receipt subquery", async () => {
-    const axiom = new AxiomV2QueryBuilder(config);
+    const axiom = new AxiomV2QueryBuilderBase(config);
     const eventSchema = getEventSchema("Transfer", ["address", "address", "uint256"]);
 
     const txHash = "0x8d2e6cbd7cf1f88ee174600f31b79382e0028e239bb1af8301ba6fc782758bc6";
@@ -377,7 +377,7 @@ describe("QueryV2", () => {
   });
 
   test("Append a Solidity Nested Mapping subquery", async () => {
-    const axiom = new AxiomV2QueryBuilder(config);
+    const axiom = new AxiomV2QueryBuilderBase(config);
     axiom.appendDataSubquery({
       blockNumber: 17000000,
       addr: UNI_V3_FACTORY_ADDR,
@@ -437,7 +437,7 @@ describe("QueryV2", () => {
     const options: AxiomV2QueryOptions = {
       maxFeePerGas: BigInt(100000000).toString(),
     };
-    const axiom = new AxiomV2QueryBuilder(config, dataQueryReq, computeQueryReq, callbackQuery, options);
+    const axiom = new AxiomV2QueryBuilderBase(config, dataQueryReq, computeQueryReq, callbackQuery, options);
 
     const unbiltDq = axiom.getDataQuery();
     expect((unbiltDq?.[2] as AccountSubquery).addr).toEqual(WETH_WHALE);
@@ -448,7 +448,7 @@ describe("QueryV2", () => {
       throw new Error("builtDq is undefined");
     }
 
-    const axiom2 = new AxiomV2QueryBuilder(config);
+    const axiom2 = new AxiomV2QueryBuilderBase(config);
     axiom2.setBuiltDataQuery(builtDq);
     axiom2.setComputeQuery(computeQueryReq);
     axiom2.setCallback(callbackQuery);
@@ -480,7 +480,7 @@ describe("QueryV2", () => {
     const options: AxiomV2QueryOptions = {
       maxFeePerGas: BigInt(100000000).toString(),
     };
-    const axiom = new AxiomV2QueryBuilder(config, undefined, computeQueryReq, callbackQuery, options);
+    const axiom = new AxiomV2QueryBuilderBase(config, undefined, computeQueryReq, callbackQuery, options);
     axiom.setBuiltDataQuery({
       sourceChainId: "11155111",
       subqueries: [],

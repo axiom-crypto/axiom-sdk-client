@@ -23,11 +23,11 @@ import {
   BeaconValidatorSubquery,
 } from "@axiom-crypto/tools";
 import {
-  BuiltQueryV2,
   AxiomV2QueryOptions,
   DataSubqueryCount,
   InternalConfig,
-  AxiomV2QueryBuilderConfig,
+  AxiomV2QueryBuilderBaseConfig,
+  BuiltQueryV2Base,
 } from "./types";
 import { ConstantsV2 } from "./constants";
 import {
@@ -45,42 +45,30 @@ import { deepCopyObject } from "../utils";
 import { ConfigLimitManager } from "./dataSubquery/configLimitManager";
 import { handleChainId, handleProvider, parseAddress, parseChainId, parseMock, parseProvider, parseVersion } from "./configure";
 
-export class AxiomV2QueryBuilder {
+export class AxiomV2QueryBuilderBase {
   readonly config: InternalConfig;
-  private builtQuery?: BuiltQueryV2;
+  private builtQueryBase?: BuiltQueryV2Base;
   private builtDataQuery?: AxiomV2DataQuery;
   private dataQuery?: Subquery[];
   private computeQuery?: AxiomV2ComputeQuery;
-  private callback?: AxiomV2Callback;
-  private options: AxiomV2QueryOptions;
   private dataSubqueryCount: DataSubqueryCount;
 
   constructor(
-    config: AxiomV2QueryBuilderConfig,
+    config: AxiomV2QueryBuilderBaseConfig,
     dataQuery?: Subquery[],
     computeQuery?: AxiomV2ComputeQuery,
-    callback?: AxiomV2Callback,
-    options?: AxiomV2QueryOptions,
   ) {
     this.config = this.configure(config);
-
-    this.options = this.setOptions(options ?? {});
     this.dataSubqueryCount = deepCopyObject(ConstantsV2.EmptyDataSubqueryCount);
-
     if (dataQuery !== undefined) {
       this.append(dataQuery);
     }
-
     if (computeQuery !== undefined) {
       this.computeQuery = this.handleComputeQueryRequest(computeQuery);
     }
-
-    if (callback !== undefined) {
-      this.callback = this.handleCallback(callback);
-    }
   }
 
-  protected configure(config: AxiomV2QueryBuilderConfig): InternalConfig {
+  protected configure(config: AxiomV2QueryBuilderBaseConfig): InternalConfig {
     config = handleProvider(config);
     const providerUri = parseProvider(config.provider);
 
@@ -130,21 +118,6 @@ export class AxiomV2QueryBuilder {
     return this.computeQuery;
   }
 
-  /**
-   * Gets the callback information
-   * @returns The current callback information
-   */
-  getCallback(): AxiomV2Callback | undefined {
-    return this.callback;
-  }
-
-  /**
-   * Gets the current Query options
-   * @returns The current Query options
-   */
-  getOptions(): AxiomV2QueryOptions {
-    return this.options;
-  }
 
   /**
    * Gets the current count of each type of data subquery
@@ -158,8 +131,8 @@ export class AxiomV2QueryBuilder {
    * Gets the built Query. Built Query resets if any data is changed.
    * @returns The built Query; undefined if Query has not been built yet
    */
-  getBuiltQuery(): BuiltQueryV2 | undefined {
-    return this.builtQuery;
+  getBuiltQueryBase(): BuiltQueryV2Base | undefined {
+    return this.builtQueryBase;
   }
 
   /**
@@ -179,16 +152,16 @@ export class AxiomV2QueryBuilder {
    * @returns Data query hash
    */
   getDataQueryHash(): string {
-    if (this.builtQuery === undefined) {
+    if (this.builtQueryBase === undefined) {
       throw new Error(
         "Query must first be built with `.build()` before getting data query hash. If Query is modified after building, you will need to run `.build()` again.",
       );
     }
-    return getDataQueryHashFromSubqueries(this.config.sourceChainId.toString(), this.builtQuery.dataQueryStruct.subqueries);
+    return getDataQueryHashFromSubqueries(this.config.sourceChainId.toString(), this.builtQueryBase.dataQueryStruct.subqueries);
   }
 
   getQueryHash(): string {
-    if (this.builtQuery === undefined) {
+    if (this.builtQueryBase === undefined) {
       throw new Error(
         "Query must first be built with `.build()` before getting query hash. If Query is modified after building, you will need to run `.build()` again.",
       );
@@ -198,30 +171,15 @@ export class AxiomV2QueryBuilder {
   }
 
   setDataQuery(dataQuery: Subquery[]) {
-    this.unsetBuiltQuery();
+    this.unsetBuiltQueryBase();
     this.dataQuery = undefined;
     this.resetSubqueryCount();
     this.append(dataQuery);
   }
 
   setComputeQuery(computeQuery: AxiomV2ComputeQuery) {
-    this.unsetBuiltQuery();
+    this.unsetBuiltQueryBase();
     this.computeQuery = this.handleComputeQueryRequest(computeQuery);
-  }
-
-  setCallback(callback: AxiomV2Callback) {
-    this.unsetBuiltQuery();
-    this.callback = this.handleCallback(callback);
-  }
-
-  setOptions(options: AxiomV2QueryOptions): AxiomV2QueryOptions {
-    this.unsetBuiltQuery();
-    this.options = {
-      maxFeePerGas: options?.maxFeePerGas ?? ConstantsV2.DefaultMaxFeePerGasWei,
-      callbackGasLimit: options?.callbackGasLimit ?? ConstantsV2.DefaultCallbackGasLimit,
-      overrideAxiomQueryFee: options?.overrideAxiomQueryFee ?? ConstantsV2.DefaultOverrideAxiomQueryFee,
-    };
-    return this.options;
   }
 
   /**
@@ -229,7 +187,7 @@ export class AxiomV2QueryBuilder {
    * @param dataQuery A `Subquery[]` object to append
    */
   append(dataSubqueries: Subquery[], skipValidate?: boolean): void {
-    this.unsetBuiltQuery();
+    this.unsetBuiltQueryBase();
 
     if (this.dataQuery === undefined) {
       this.dataQuery = [] as Subquery[];
@@ -276,7 +234,7 @@ export class AxiomV2QueryBuilder {
    * @param validate (optional) Runs validation on the Query before attempting to build it
    * @returns A built Query object
    */
-  async build(validate?: boolean): Promise<BuiltQueryV2> {
+  async build(validate?: boolean): Promise<BuiltQueryV2Base> {
     if (this.config.refundee === "" && this.config.caller === "") {
       throw new Error("`caller` or `refundee` in config required to build the Query");
     }
@@ -341,29 +299,7 @@ export class AxiomV2QueryBuilder {
     // Get the hash of the full Query
     const queryHash = getQueryHashV2(this.config.sourceChainId.toString(), dataQueryHash, computeQuery);
 
-    // Handle callback
-    const callback = {
-      target: this.callback?.target ?? ethers.ZeroAddress,
-      extraData: this.callback?.extraData ?? ethers.ZeroHash,
-    };
-
-    // FeeData
-    const feeData: AxiomV2FeeData = {
-      maxFeePerGas: this.options.maxFeePerGas!,
-      callbackGasLimit: this.options.callbackGasLimit!,
-      overrideAxiomQueryFee: this.options.overrideAxiomQueryFee!,
-    };
-
-    // Get the refundee address
-    let refundee = this.config.refundee;
-    if (this.config.refundee === "") {
-      refundee = this.config.caller;
-    }
-
-    // Calculate a salt
-    const userSalt = this.calculateUserSalt();
-
-    this.builtQuery = {
+    this.builtQueryBase = {
       sourceChainId: this.config.sourceChainId.toString(),
       targetChainId: this.config.targetChainId.toString(),
       queryHash,
@@ -372,13 +308,9 @@ export class AxiomV2QueryBuilder {
       dataQueryStruct,
       computeQuery,
       querySchema,
-      callback,
-      feeData,
-      userSalt,
-      refundee,
     };
 
-    return this.builtQuery;
+    return this.builtQueryBase;
   }
 
   /**
@@ -391,43 +323,12 @@ export class AxiomV2QueryBuilder {
     // Check if compute query is valid
     const compute = await this.validateComputeQuery();
 
-    // Check if callback is valid
-    const callback = await this.validateCallback();
-
-    return data && compute && callback;
+    return data && compute;
   }
 
-  /**
-   * Gets a queryId for a built Query
-   * @returns uint256 queryId
-   */
-  async getQueryId(caller?: string): Promise<string> {
-    if (this.builtQuery === undefined) {
-      throw new Error("Must query with `build()` first before getting queryId");
-    }
-
-    // Get required queryId params
-    if (caller === undefined) {
-      caller = this.config.caller;
-    }
-    const targetChainId = this.builtQuery.targetChainId;
-    const refundee = this.config.refundee;
-    const salt = this.builtQuery.userSalt;
-    const queryHash = this.builtQuery.queryHash;
-    const callbackHash = getCallbackHash(this.builtQuery.callback.target, this.builtQuery.callback.extraData);
-
-    // Calculate the queryId
-    const queryId = getQueryId(targetChainId, caller, salt, queryHash, callbackHash, refundee);
-    return BigInt(queryId).toString();
-  }
-
-  private unsetBuiltQuery() {
+  private unsetBuiltQueryBase() {
     // Reset built query if any data is changed
-    this.builtQuery = undefined;
-  }
-
-  private calculateUserSalt(): string {
-    return ethers.hexlify(ethers.randomBytes(32));
+    this.builtQueryBase = undefined;
   }
 
   private getDefaultResultLen(): number {
@@ -438,12 +339,6 @@ export class AxiomV2QueryBuilder {
     computeQuery.resultLen = computeQuery.resultLen ?? this.getDefaultResultLen();
     computeQuery.vkey = computeQuery.vkey.map((x: string) => bytes32(x));
     return computeQuery;
-  }
-
-  private handleCallback(callback: AxiomV2Callback): AxiomV2Callback {
-    callback.target = callback.target.toLowerCase();
-    callback.extraData = callback.extraData.toLowerCase();
-    return callback;
   }
 
   private async validateDataSubqueries(): Promise<boolean> {
@@ -521,37 +416,6 @@ export class AxiomV2QueryBuilder {
     return valid;
   }
 
-  private async validateCallback(): Promise<boolean> {
-    if (this.callback === undefined) {
-      return true;
-    }
-    let valid = true;
-
-    let target = this.callback.target;
-    if (target === undefined || target === "" || target === ethers.ZeroAddress) {
-      console.warn("Callback target is empty");
-      valid = false;
-    }
-
-    let extraData = this.callback.extraData;
-    if (extraData === undefined) {
-      console.warn("Callback extraData is undefined");
-      valid = false;
-    } else {
-      // Check if extra data is bytes32-aligned
-      if (extraData.startsWith("0x")) {
-        extraData = extraData.slice(2);
-      }
-      if (extraData.length % 64 !== 0) {
-        console.warn(
-          "Callback extraData is not bytes32-aligned; EVM will automatically right-append zeros to data that is not a multiple of 32 bytes, which is probably not what you want.",
-        );
-        valid = false;
-      }
-    }
-
-    return valid;
-  }
 
   private resetSubqueryCount() {
     this.dataSubqueryCount = deepCopyObject(ConstantsV2.EmptyDataSubqueryCount);

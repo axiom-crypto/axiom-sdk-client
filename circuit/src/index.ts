@@ -1,7 +1,7 @@
 export * from "./subquery";
 export * from "./circuitRunner";
 export * from "./encoder";
-export * from "./queryBuilder";
+export * from "./queryBuilderBase";
 export { 
   RawInput as UserInput,
   AxiomV2CircuitCapacity,

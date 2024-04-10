@@ -1,7 +1,7 @@
 import { bytes32 } from "@axiom-crypto/tools";
 import {
-  AxiomV2QueryBuilder,
-  AxiomV2QueryBuilderConfig,
+  AxiomV2QueryBuilderBase,
+  AxiomV2QueryBuilderBaseConfig,
   AxiomV2Callback,
   AxiomV2ComputeQuery,
   AxiomV2DataQuery,
@@ -14,13 +14,13 @@ import {
 // - Callback
 
 describe("Build ComputeQuery with DataQuery", () => {
-  const config: AxiomV2QueryBuilderConfig = {
+  const config: AxiomV2QueryBuilderBaseConfig = {
     provider: process.env.PROVIDER_URI_SEPOLIA as string,
     caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     sourceChainId: 1,
     version: "v2",
   };
-  const axiom = new AxiomV2QueryBuilder(config);
+  const axiom = new AxiomV2QueryBuilderBase(config);
 
   const callback: AxiomV2Callback = {
     target: "0x41a7a901ef58d383801272d2408276d96973550d",
@@ -163,7 +163,7 @@ describe("Build ComputeQuery with DataQuery", () => {
 
   test("build a query with no DataQuery or ComputeQuery", async () => {
     const testFn = async () => {
-      const axiom = new AxiomV2QueryBuilder(config);
+      const axiom = new AxiomV2QueryBuilderBase(config);
       axiom.setCallback(callback);
       await axiom.build();
     };

@@ -30,7 +30,7 @@ export {
   AxiomV2FieldConstant,
 } from "@axiom-crypto/tools";
 
-export interface AxiomV2QueryBuilderConfig {
+export interface AxiomV2QueryBuilderBaseConfig {
   provider: string;
   caller?: string;
   refundee?: string;
@@ -57,7 +57,7 @@ export interface AxiomV2QueryOptions {
   overrideAxiomQueryFee?: string;
 }
 
-export interface BuiltQueryV2 {
+export interface BuiltQueryV2Base {
   sourceChainId: string;
   targetChainId: string;
   queryHash: string;
@@ -66,10 +66,6 @@ export interface BuiltQueryV2 {
   dataQueryStruct: AxiomV2DataQuery;
   computeQuery: AxiomV2ComputeQuery;
   querySchema: string;
-  callback: AxiomV2Callback;
-  userSalt: string;
-  feeData: AxiomV2FeeData;
-  refundee: string;
 }
 
 export interface DataSubqueryCount {

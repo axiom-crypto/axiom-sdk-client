@@ -1,6 +1,6 @@
 {
   "name": "@axiom-crypto/react",
-  "version": "2.0.9-alpha.4",
+  "version": "2.0.9-alpha.7",
   "description": "React components for Axiom SDK",
   "author": "Intrinsic Technologies",
   "license": "MIT",
@@ -24,7 +24,7 @@
     "comlink": "^4.4.1"
   },
   "peerDependencies": {
-    "@axiom-crypto/client": "2.0.9-alpha.4",
+    "@axiom-crypto/client": "2.0.9-alpha.7",
     "@types/react": ">=18.1.0",
     "react": ">=18.1.0",
     "react-dom": ">=18.1.0"

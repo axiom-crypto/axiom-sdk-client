@@ -64,8 +64,12 @@ export async function runTestProve(
   circuit: (inputs: UserInput<any>) => Promise<void>,
   compiledCircuit: AxiomV2CompiledCircuit,
   inputs: UserInput<any>,
-  options?: object,
+  options?: any,
 ): Promise<Axiom<any>> {
+  let targetOverride = undefined;
+  if (options?.callback?.target !== undefined) {
+    targetOverride = options.callback.target;
+  }
   const axiom = new Axiom({
     circuit,
     compiledCircuit,
@@ -73,7 +77,7 @@ export async function runTestProve(
     provider: process.env[`PROVIDER_URI_${chainId}`] as string,
     privateKey: process.env[`PRIVATE_KEY_${chainId}`] as string,
     callback: {
-      target: getTarget(chainId),
+      target: getTarget(chainId, targetOverride),
     },
     ...options,
   });
@@ -99,6 +103,8 @@ export function getTarget(chainId: string, override?: string) {
     return override;
   }
   switch(chainId) {
+    case "1":
+      return "0x4D36100eA7BD6F685Fd44EB6BE5ccE7A92047581";
     case "11155111":
       return "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e";
     case "84532":

@@ -9,7 +9,7 @@ import { AxiomV2CircuitCapacity, UserInput, DEFAULT_CAPACITY } from "@axiom-cryp
 import { validateChainId } from "./utils";
 import { PublicClient, TransactionReceipt, WalletClient, createPublicClient, createWalletClient, http } from "viem";
 import { privateKeyToAccount } from 'viem/accounts'
-import { AxiomV2Callback } from "@axiom-crypto/core";
+import { AxiomV2Callback, DataSubquery } from "@axiom-crypto/core";
 import { viemChain } from "../lib";
 import { getChainDefaults } from "../lib/chain";
 
@@ -71,6 +71,10 @@ export class Axiom<T> {
       capacity: this.capacity ?? this.compiledCircuit.capacity ?? DEFAULT_CAPACITY,
       vk: this.compiledCircuit.vk,
     });
+  }
+
+  getDataQuery(): DataSubquery[] {
+    return this.axiomCircuit.getDataQuery();
   }
 
   getSendQueryArgs(): AxiomV2SendQueryArgs | undefined {

@@ -31,7 +31,7 @@ export {
 } from "@axiom-crypto/tools";
 
 export interface AxiomV2QueryBuilderBaseConfig {
-  provider: string;
+  providerUri: string;
   caller?: string;
   refundee?: string;
   sourceChainId?: number | string | BigInt;

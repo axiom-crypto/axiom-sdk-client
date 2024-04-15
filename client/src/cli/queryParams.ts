@@ -33,9 +33,9 @@ export const queryParams = async (
   }
   console.log(`Reading proven circuit JSON from: ${provenFile}`)
   const provenJson = readJsonFromFile(provenFile);
-  const provider = getProvider(options.provider);
-  const queryBuilder = new AxiomV2QueryBuilderClient({
-    provider,
+  const providerUri = getProvider(options.provider);
+  const queryBuilderClient = new AxiomV2QueryBuilderClient({
+    providerUri,
     sourceChainId: options.sourceChainId,
     version: "v2",
     mock: options.mock ?? false,
@@ -43,7 +43,7 @@ export const queryParams = async (
   });
   try {
     let build = await buildSendQuery({
-      queryBuilder,
+      queryBuilderClient,
       dataQuery: provenJson.dataQuery,
       computeQuery: provenJson.computeQuery,
       callback: {

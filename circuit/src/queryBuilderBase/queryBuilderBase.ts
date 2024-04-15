@@ -68,7 +68,7 @@ export class AxiomV2QueryBuilderBase {
 
   protected configure(config: AxiomV2QueryBuilderBaseConfig): QueryBuilderBaseInternalConfig {
     config = handleProvider(config);
-    const providerUri = parseProvider(config.provider);
+    const providerUri = parseProvider(config.providerUri);
 
     config = handleChainId(config);
     const sourceChainId = parseChainId(config.sourceChainId);

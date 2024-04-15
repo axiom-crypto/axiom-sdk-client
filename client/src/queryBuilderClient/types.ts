@@ -6,7 +6,7 @@ import {
 } from "@axiom-crypto/circuit";
 
 export interface AxiomV2QueryBuilderClientConfig extends AxiomV2QueryBuilderBaseConfig {
-  provider: string;
+  providerUri: string;
   caller?: string;
   refundee?: string;
   sourceChainId?: number | string | BigInt;

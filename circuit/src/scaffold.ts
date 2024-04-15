@@ -53,7 +53,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     
     this.dataQuery = [];
     this.queryBuilderBase = new AxiomV2QueryBuilderBase({
-      provider: inputs.provider,
+      providerUri: inputs.provider,
       sourceChainId: inputs.chainId,
       mock: inputs.mock,
       version: "v2",
@@ -325,7 +325,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
 
   setMock(mock: boolean) {
     this.queryBuilderBase = new AxiomV2QueryBuilderBase({
-      provider: this.provider,
+      providerUri: this.provider,
       sourceChainId: this.chainId,
       mock,
       version: "v2",

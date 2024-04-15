@@ -14,7 +14,7 @@ import { getAxiomV2Abi, getAxiomV2QueryAddress } from "./lib";
 import { AxiomV2QueryBuilderClient, AxiomV2QueryBuilderClientConfig } from "./queryBuilderClient";
 
 export const buildSendQuery = async (input: {
-  queryBuilder: AxiomV2QueryBuilderClient;
+  queryBuilderClient: AxiomV2QueryBuilderClient;
   dataQuery: DataSubquery[];
   computeQuery: AxiomV2ComputeQuery;
   callback: AxiomV2Callback;
@@ -27,27 +27,27 @@ export const buildSendQuery = async (input: {
   }
   let options = { ...input.options };
   if (options.maxFeePerGas == undefined) {
-    options.maxFeePerGas = await getMaxFeePerGas(input.queryBuilder, input.options?.overrides);
+    options.maxFeePerGas = await getMaxFeePerGas(input.queryBuilderClient, input.options?.overrides);
   }
 
-  const chainId = input.queryBuilder.config.sourceChainId.toString();
+  const chainId = input.queryBuilderClient.config.sourceChainId.toString();
   const axiomQueryAddress = options?.overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
   const abi = getAxiomV2Abi(AbiType.Query);
 
   const publicClient = createPublicClient({
-    chain: viemChain(chainId, input.queryBuilder.config.providerUri),
-    transport: http(input.queryBuilder.config.providerUri),
+    chain: viemChain(chainId, input.queryBuilderClient.config.providerUri),
+    transport: http(input.queryBuilderClient.config.providerUri),
   });
 
   const feeDataExtended = await calculateFeeDataExtended(chainId, publicClient, options);
   const payment = await calculatePayment(chainId, publicClient, feeDataExtended);
 
   const config: AxiomV2QueryBuilderClientConfig = {
-    provider: input.queryBuilder.config.providerUri,
-    sourceChainId: input.queryBuilder.config.sourceChainId.toString(),
-    targetChainId: input.queryBuilder.config.targetChainId.toString(),
-    version: input.queryBuilder.config.version,
-    mock: input.queryBuilder.config.mock,
+    providerUri: input.queryBuilderClient.config.providerUri,
+    sourceChainId: input.queryBuilderClient.config.sourceChainId.toString(),
+    targetChainId: input.queryBuilderClient.config.targetChainId.toString(),
+    version: input.queryBuilderClient.config.version,
+    mock: input.queryBuilderClient.config.mock,
     refundee: input.options.refundee ?? input.caller,
   };
   const queryBuilder = new AxiomV2QueryBuilderClient(

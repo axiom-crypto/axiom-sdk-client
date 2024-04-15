@@ -1,7 +1,6 @@
 import {
   AxiomV2Callback,
   AxiomV2ComputeQuery,
-  AxiomV2DataQuery,
   AxiomV2QueryBuilderBase,
   AxiomV2QueryOptions,
 } from "@axiom-crypto/circuit";
@@ -9,16 +8,15 @@ import {
   parseAddress,
 } from "@axiom-crypto/circuit/queryBuilderBase/configure";
 import { AxiomV2FeeData, getCallbackHash, getQueryId, Subquery } from "@axiom-crypto/tools";
-import { ClientConstants } from "src/lib/constants";
-import { AxiomV2ClientOptions } from "src/types";
-import { zeroAddress } from "viem";
+import { AxiomV2ClientOptions } from "../types";
+import { bytesToHex, zeroAddress } from "viem";
 import { 
   AxiomV2QueryBuilderClientConfig,
   QueryBuilderClientInternalConfig,
   BuiltQueryV2,
 } from "./types";
-import { getChainDefaults } from "src/lib/chain";
-import { ethers } from "ethers";
+import { getChainDefaults } from "../lib/chain";
+import { getRandomValues } from "crypto";
 
 export class AxiomV2QueryBuilderClient extends AxiomV2QueryBuilderBase {
   readonly config: QueryBuilderClientInternalConfig;
@@ -76,7 +74,7 @@ export class AxiomV2QueryBuilderClient extends AxiomV2QueryBuilderBase {
       }
     }
 
-    const builtQueryBase = await super.build(validate);
+    const builtQueryBase = await super.buildBase(validate);
 
     // Handle callback
     const callback = {
@@ -191,7 +189,8 @@ export class AxiomV2QueryBuilderClient extends AxiomV2QueryBuilderBase {
   }
 
   protected calculateUserSalt(): string {
-    return ethers.hexlify(ethers.randomBytes(32));
+    const randomBytes = getRandomValues(new Uint8Array(32))
+    return bytesToHex(randomBytes);
   }
 
   protected handleCallback(callback: AxiomV2Callback): AxiomV2Callback {

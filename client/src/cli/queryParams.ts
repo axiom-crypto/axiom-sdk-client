@@ -2,7 +2,7 @@ import path from 'path';
 import { getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
 import { buildSendQuery } from "../sendQuery";
 import { argsArrToObj } from '../axiom/utils';
-import { AxiomV2QueryBuilderClient } from 'src/queryBuilderClient';
+import { AxiomV2QueryBuilderClient } from '../queryBuilderClient';
 
 export const queryParams = async (
   callbackTarget: string,

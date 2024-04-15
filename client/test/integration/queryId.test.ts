@@ -1,5 +1,5 @@
 import { Axiom } from "../../src";
-import { bytes32 } from "@axiom-crypto/core";
+import { bytes32 } from "@axiom-crypto/circuit/pkg/tools";
 import { generateCircuit } from "./circuitTest";
 
 describe("QueryID Integration Tests", () => {

@@ -1,6 +1,5 @@
 import { Axiom } from "../../src";
-import { PinataIpfsClient } from "@axiom-crypto/core";
-import { ByteStringReader, decodeFullQueryV2 } from "@axiom-crypto/core/packages/tools";
+import { PinataIpfsClient, ByteStringReader, decodeFullQueryV2 } from "@axiom-crypto/circuit/pkg/tools";
 import { getQueryHashV2, getDataQueryHashFromSubqueries } from "@axiom-crypto/tools";
 import { generateCircuit } from "./circuitTest";
 

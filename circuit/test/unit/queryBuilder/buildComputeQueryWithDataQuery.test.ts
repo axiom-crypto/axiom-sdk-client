@@ -15,7 +15,7 @@ import {
 
 describe("Build ComputeQuery with DataQuery", () => {
   const config: AxiomV2QueryBuilderBaseConfig = {
-    provider: process.env.PROVIDER_URI_SEPOLIA as string,
+    providerUri: process.env.PROVIDER_URI_SEPOLIA as string,
     caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     sourceChainId: 1,
     version: "v2",
@@ -158,14 +158,14 @@ describe("Build ComputeQuery with DataQuery", () => {
     axiom.setBuiltDataQuery(dataQuery);
     axiom.setComputeQuery(computeQuery);
     axiom.setCallback(callback);
-    await axiom.build();
+    await axiom.buildBase();
   });
 
   test("build a query with no DataQuery or ComputeQuery", async () => {
     const testFn = async () => {
       const axiom = new AxiomV2QueryBuilderBase(config);
       axiom.setCallback(callback);
-      await axiom.build();
+      await axiom.buildBase();
     };
     await expect(testFn()).rejects.toThrow();
   });

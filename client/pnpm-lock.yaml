@@ -43,6 +43,9 @@ devDependencies:
   dts-bundle-generator:
     specifier: ^9.0.0
     version: 9.4.0
+  ethers:
+    specifier: ^6.11.1
+    version: 6.11.1
   jest:
     specifier: ^29.7.0
     version: 29.7.0(@types/node@18.15.13)

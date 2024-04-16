@@ -51,7 +51,7 @@ describe("Build Query w/ ComputeQuery, DataQuery, Callback, and Options set (cor
   test("should initialize with private key; build QueryV2 with dataQuery, computeQuery, and callback", async () => {
     const config: AxiomV2QueryBuilderBaseConfig = {
       caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
+      providerUri: process.env.PROVIDER_URI_SEPOLIA as string,
       version: "v2",
     };
 
@@ -83,19 +83,12 @@ describe("Build Query w/ ComputeQuery, DataQuery, Callback, and Options set (cor
       vkey: computeQuery.vkey,
       computeProof: computeQuery.computeProof,
     };
-    const callbackQuery = {
-      target: WETH_ADDR,
-      extraData: ethers.solidityPacked(["address"], [WETH_WHALE]),
-    };
-    const options: AxiomV2QueryOptions = {
-      maxFeePerGas: BigInt(100000000).toString(),
-    };
 
-    const axiom = new AxiomV2QueryBuilderBase(config, dataQueryReq, computeQueryReq, callbackQuery, options);
+    const axiom = new AxiomV2QueryBuilderBase(config, dataQueryReq, computeQueryReq);
     const unbiltDq = axiom.getDataQuery();
     expect((unbiltDq?.[2] as AccountSubquery).addr).toEqual(WETH_WHALE);
-    await axiom.build();
-    const builtQuery = axiom.getBuiltQuery();
+    await axiom.buildBase();
+    const builtQuery = axiom.getBuiltQueryBase();
     if (builtQuery === undefined) {
       throw new Error("builtQuery is undefined");
     }
@@ -114,15 +107,11 @@ describe("Build Query w/ ComputeQuery, DataQuery, Callback, and Options set (cor
       resizeArray(computeQueryReq.vkey, computeQueryReq.vkey.length, ethers.ZeroHash),
     );
     expect(builtQuery.computeQuery.computeProof).toEqual(computeQuery.computeProof);
-    expect(builtQuery.callback).toEqual({
-      target: WETH_ADDR.toLowerCase(),
-      extraData: "0x2e15d7aa0650de1009710fdd45c3468d75ae1392",
-    });
   });
 
   test("should initialize without private key; build QueryV2 with dataQuery, computeQuery, and callback", async () => {
     const config: AxiomV2QueryBuilderBaseConfig = {
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
+      providerUri: process.env.PROVIDER_URI_SEPOLIA as string,
       caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
       version: "v2",
     };
@@ -163,11 +152,11 @@ describe("Build Query w/ ComputeQuery, DataQuery, Callback, and Options set (cor
       maxFeePerGas: BigInt(100000000).toString(),
     };
 
-    const axiom = new AxiomV2QueryBuilderBase(config, dataQueryReq, computeQueryReq, callbackQuery, options);
+    const axiom = new AxiomV2QueryBuilderBase(config, dataQueryReq, computeQueryReq);
     const unbiltDq = axiom.getDataQuery();
     expect((unbiltDq?.[2] as AccountSubquery).addr).toEqual(WETH_WHALE);
-    await axiom.build();
-    const builtQuery = axiom.getBuiltQuery();
+    await axiom.buildBase();
+    const builtQuery = axiom.getBuiltQueryBase();
     if (builtQuery === undefined) {
       throw new Error("builtQuery is undefined");
     }
@@ -186,9 +175,5 @@ describe("Build Query w/ ComputeQuery, DataQuery, Callback, and Options set (cor
       resizeArray(computeQueryReq.vkey, computeQueryReq.vkey.length, ethers.ZeroHash),
     );
     expect(builtQuery.computeQuery.computeProof).toEqual(computeQuery.computeProof);
-    expect(builtQuery.callback).toEqual({
-      target: WETH_ADDR.toLowerCase(),
-      extraData: "0x2e15d7aa0650de1009710fdd45c3468d75ae1392",
-    });
   });
 });

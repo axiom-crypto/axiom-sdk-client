@@ -7,17 +7,12 @@ import { AxiomV2QueryBuilderBase, AxiomV2QueryBuilderBaseConfig, AxiomV2Callback
 
 describe("Build ComputeQuery Standalone", () => {
   const config: AxiomV2QueryBuilderBaseConfig = {
-    provider: process.env.PROVIDER_URI_SEPOLIA as string,
+    providerUri: process.env.PROVIDER_URI_SEPOLIA as string,
     caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     sourceChainId: 1,
     version: "v2",
   };
   const axiom = new AxiomV2QueryBuilderBase(config);
-
-  const callback: AxiomV2Callback = {
-    target: "0x41a7a901ef58d383801272d2408276d96973550d",
-    extraData: bytes32("0xbbd0d3671093a36d6e3b608a7e3b1fdc96da1116"),
-  };
 
   test("simple computeQuery w/ no data subqueries", async () => {
     /** Code
@@ -58,8 +53,7 @@ describe("Build ComputeQuery Standalone", () => {
     };
 
     axiom.setComputeQuery(computeQuery);
-    axiom.setCallback(callback);
-    const builtQuery = await axiom.build();
+    const builtQuery = await axiom.buildBase();
 
     expect(builtQuery.computeQuery).toEqual(computeQuery);
     expect(builtQuery.dataQueryStruct.subqueries).toEqual([]);
@@ -156,8 +150,7 @@ describe("Build ComputeQuery Standalone", () => {
     };
 
     axiom.setComputeQuery(computeQuery);
-    axiom.setCallback(callback);
-    const builtQuery = await axiom.build();
+    const builtQuery = await axiom.buildBase();
 
     expect(builtQuery.computeQuery).toEqual(computeQuery);
     expect(builtQuery.dataQueryStruct.subqueries).toEqual([]);

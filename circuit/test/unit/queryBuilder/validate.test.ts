@@ -15,13 +15,13 @@ describe("Query Validation Tests", () => {
   const sepoliaProvider = new ethers.JsonRpcProvider(process.env.PROVIDER_URI_SEPOLIA as string);
 
   const config: AxiomV2QueryBuilderBaseConfig = {
-    provider: process.env.PROVIDER_URI_MAINNET as string,
+    providerUri: process.env.PROVIDER_URI_MAINNET as string,
     caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     version: "v2",
     sourceChainId: 1,
   };
   const sepoliaConfig = {
-    provider: process.env.PROVIDER_URI_SEPOLIA as string,
+    providerUri: process.env.PROVIDER_URI_SEPOLIA as string,
     caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     version: "v2",
     sourceChainId: "11155111",
@@ -157,62 +157,6 @@ describe("Query Validation Tests", () => {
       await axiom.validate();
     };
     await expect(testFn()).rejects.toThrow();
-  });
-
-  test("Validate pass: empty Callback combinations", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
-    const subquery = {
-      blockNumber: 17000000,
-      addr: UNI_V3_FACTORY_ADDR,
-      mappingSlot: 5,
-      mappingDepth: 3,
-      keys: [WETH_ADDR, WSOL_ADDR, 10000]
-    };
-    axiom.appendDataSubquery(subquery);
-
-    axiom.setCallback({
-      target: UNI_V3_FACTORY_ADDR,
-      extraData: ethers.ZeroHash,
-    });
-    let isValid = await axiom.validate();
-    expect(isValid).toEqual(true);
-
-    axiom.setCallback({
-      target: UNI_V3_FACTORY_ADDR,
-      extraData: "",
-    });
-    isValid = await axiom.validate();
-    expect(isValid).toEqual(true);
-
-    axiom.setCallback({
-      target: UNI_V3_FACTORY_ADDR,
-      extraData: "0x",
-    });
-    isValid = await axiom.validate();
-    expect(isValid).toEqual(true);
-  });
-
-  test("Validate fail: invalid Callback combinations", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
-    axiom.setCallback({
-      target: "",
-      extraData: "",
-    });
-    let isValid = await axiom.validate();
-    expect(isValid).toEqual(false);
-
-    axiom.setCallback({
-      target: ethers.ZeroAddress,
-      extraData: "",
-    });
-    isValid = await axiom.validate();
-
-    axiom.setCallback({
-      target: UNI_V3_FACTORY_ADDR,
-      extraData: "0x1234",
-    });
-    isValid = await axiom.validate();
-    expect(isValid).toEqual(false);
   });
 
   test("Validate fail: type 3 tx subquery", async () => {

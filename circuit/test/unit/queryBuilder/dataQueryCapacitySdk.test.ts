@@ -22,7 +22,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
 
   const config: AxiomV2QueryBuilderBaseConfig = {
     caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-    provider: process.env.PROVIDER_URI_MAINNET as string,
+    providerUri: process.env.PROVIDER_URI_MAINNET as string,
     version: "v2",
   }
 

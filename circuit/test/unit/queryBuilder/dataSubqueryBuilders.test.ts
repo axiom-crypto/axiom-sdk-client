@@ -35,7 +35,7 @@ describe("Data Subquery Builders", () => {
   const blockNumber = 18000000;
 
   const config: AxiomV2QueryBuilderBaseConfig = {
-    provider: process.env.PROVIDER_URI_MAINNET as string,
+    providerUri: process.env.PROVIDER_URI_MAINNET as string,
     caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     sourceChainId: 1,
     version: "v2",
@@ -118,7 +118,7 @@ describe("Data Subquery Builders", () => {
     expect(subquery?.fieldOrCalldataIdx).toEqual(2);
 
     // Build the Query and validate the built subquery
-    const built = await axiom.build();
+    const built = await axiom.buildBase();
     const builtSubquery = built.dataQueryStruct.subqueries?.[0].subqueryData as TxSubquery;
     expect(builtSubquery?.blockNumber).toEqual(blockNumber);
     expect(builtSubquery?.txIdx).toEqual(txIdx);
@@ -150,7 +150,7 @@ describe("Data Subquery Builders", () => {
     expect(subquery?.eventSchema).toEqual("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef");
 
     // Build the Query and validate the built subquery
-    const built = await axiom.build();
+    const built = await axiom.buildBase();
     const builtSubquery = built.dataQueryStruct.subqueries?.[0].subqueryData as ReceiptSubquery;
     expect(builtSubquery?.blockNumber).toEqual(blockNumber);
     expect(builtSubquery?.txIdx).toEqual(txIdx);
@@ -184,7 +184,7 @@ describe("Data Subquery Builders", () => {
     expect(subquery?.eventSchema).toEqual(bytes32(0));
 
     // Build the Query and validate the built subquery
-    const built = await axiom.build();
+    const built = await axiom.buildBase();
     const builtSubquery = built.dataQueryStruct.subqueries?.[0].subqueryData as ReceiptSubquery;
     expect(builtSubquery?.blockNumber).toEqual(blockNumber);
     expect(builtSubquery?.txIdx).toEqual(txIdx);
@@ -214,7 +214,7 @@ describe("Data Subquery Builders", () => {
     expect(subquery?.fieldOrLogIdx).toEqual(AxiomV2FieldConstant.Receipt.LogsBloomIdxOffset + 2);
 
     // Build the Query and validate the built subquery
-    const built = await axiom.build();
+    const built = await axiom.buildBase();
     const builtSubquery = built.dataQueryStruct.subqueries?.[0].subqueryData as ReceiptSubquery;
     expect(builtSubquery?.blockNumber).toEqual(blockNumber);
     expect(builtSubquery?.txIdx).toEqual(txIdx);
@@ -242,7 +242,7 @@ describe("Data Subquery Builders", () => {
     expect(subquery?.keys).toEqual([WETH_ADDR, WETH_WHALE, 100000]);
 
     // Build the Query and validate the built subquery
-    const built = await axiom.build();
+    const built = await axiom.buildBase();
     const builtSubquery = built.dataQueryStruct.subqueries?.[0].subqueryData as SolidityNestedMappingSubquery;
     expect(builtSubquery?.blockNumber).toEqual(blockNumber);
     expect(builtSubquery?.addr).toEqual(WETH_ADDR);

@@ -22,7 +22,7 @@ describe("Build DataQuery Standalone", () => {
   const UNI_V3_FACTORY_ADDR = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
 
   const config: AxiomV2QueryBuilderBaseConfig = {
-    provider: process.env.PROVIDER_URI_SEPOLIA as string,
+    providerUri: process.env.PROVIDER_URI_SEPOLIA as string,
     caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     sourceChainId: "1",
     version: "v2",
@@ -47,9 +47,8 @@ describe("Build DataQuery Standalone", () => {
       },
     ];
     axiom.append(dataQueryReq);
-    axiom.setCallback(callback);
 
-    const builtQuery = await axiom.build();
+    const builtQuery = await axiom.buildBase();
     if (builtQuery === undefined) {
       throw new Error("builtQuery is undefined");
     }
@@ -92,9 +91,8 @@ describe("Build DataQuery Standalone", () => {
       },
     ];
     axiom.append(dataQueryReq);
-    axiom.setCallback(callback);
 
-    const builtQuery = await axiom.build();
+    const builtQuery = await axiom.buildBase();
     if (builtQuery === undefined) {
       throw new Error("builtQuery is undefined");
     }

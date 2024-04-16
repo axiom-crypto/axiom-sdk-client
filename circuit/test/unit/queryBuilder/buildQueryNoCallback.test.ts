@@ -8,7 +8,7 @@ import { AxiomV2QueryBuilderBase, AxiomV2QueryBuilderBaseConfig, AxiomV2Callback
 
 describe("Build a Query with no Callback", () => {
   const config: AxiomV2QueryBuilderBaseConfig = {
-    provider: process.env.PROVIDER_URI_SEPOLIA as string,
+    providerUri: process.env.PROVIDER_URI_SEPOLIA as string,
     caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     sourceChainId: 1,
     version: "v2",
@@ -54,13 +54,9 @@ describe("Build a Query with no Callback", () => {
     };
 
     axiom.setComputeQuery(computeQuery);
-    const builtQuery = await axiom.build();
+    const builtQuery = await axiom.buildBase();
 
     expect(builtQuery.computeQuery).toEqual(computeQuery);
     expect(builtQuery.dataQueryStruct.subqueries).toEqual([]);
-    expect(builtQuery.callback).toEqual({
-      target: ethers.ZeroAddress,
-      extraData: ethers.ZeroHash,
-    });
   });
 });

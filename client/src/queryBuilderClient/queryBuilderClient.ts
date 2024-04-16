@@ -113,7 +113,7 @@ export class AxiomV2QueryBuilderClient extends AxiomV2QueryBuilderBase {
       refundee,
     };
 
-    return this.builtQuery;
+    return this.builtQuery!;
   }
 
 
@@ -133,6 +133,13 @@ export class AxiomV2QueryBuilderClient extends AxiomV2QueryBuilderBase {
     return this.options;
   }
 
+  /**
+   * Gets the built Query if it exists
+   * @returns The built Query or undefined if it has not yet been built
+   */
+  getBuiltQuery(): BuiltQueryV2 | undefined {
+    return this.builtQuery;
+  }
 
   setCallback(callback: AxiomV2Callback) {
     this.unsetBuiltQuery();
@@ -145,7 +152,7 @@ export class AxiomV2QueryBuilderClient extends AxiomV2QueryBuilderBase {
     this.options = {
       maxFeePerGas: options?.maxFeePerGas ?? defaults.maxFeePerGasWei.toString(),
       callbackGasLimit: options?.callbackGasLimit ?? Number(defaults.callbackGasLimit),
-      overrideAxiomQueryFee: options?.overrideAxiomQueryFee ?? defaults.axiomQueryFeeWei.toString(),
+      overrideAxiomQueryFee: options?.overrideAxiomQueryFee ?? "0",
     };
     return this.options;
   }

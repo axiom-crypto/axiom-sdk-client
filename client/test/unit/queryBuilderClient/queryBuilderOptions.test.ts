@@ -1,13 +1,14 @@
 import { ethers } from "ethers";
-import { AxiomV2QueryBuilderBase, AxiomV2QueryBuilderBaseConfig, HeaderField } from "../../../src";
-import { ConstantsV2 } from "../../../src/queryBuilderBase/constants";
+import { AxiomV2QueryBuilderClient, AxiomV2QueryBuilderClientConfig } from "../../../src";
+import { HeaderField } from "@axiom-crypto/circuit";
+import { ConstantsV2 } from "../../../../circuit/src/queryBuilderBase/constants";
 
 // Test coverage areas:
 // - QueryBuilderV2 options
 
 describe("QueryBuilderV2 Options", () => {
-  const config: AxiomV2QueryBuilderBaseConfig = {
-    provider: process.env.PROVIDER_URI_MAINNET as string,
+  const config: AxiomV2QueryBuilderClientConfig = {
+    providerUri: process.env.PROVIDER_URI_MAINNET as string,
     caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     sourceChainId: 1,
     version: "v2",
@@ -19,7 +20,7 @@ describe("QueryBuilderV2 Options", () => {
   const blockNumber = 18300000;
 
   test("set maxFeePerGas", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new AxiomV2QueryBuilderClient(config);
     axiom.appendDataSubquery({
       blockNumber,
       fieldIdx: HeaderField.Timestamp,
@@ -31,11 +32,10 @@ describe("QueryBuilderV2 Options", () => {
     expect(builtQuery.feeData.maxFeePerGas).toEqual("1000000000000");
     expect(builtQuery.feeData.callbackGasLimit).toEqual(ConstantsV2.DefaultCallbackGasLimit);
     expect(builtQuery.feeData.overrideAxiomQueryFee).toEqual("0");
-    expect(builtQuery.refundee).toEqual((await wallet.getAddress()).toLowerCase());
   });
 
   test("set callbackGasLimit", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new AxiomV2QueryBuilderClient(config);
     axiom.appendDataSubquery({
       blockNumber,
       fieldIdx: HeaderField.Timestamp,
@@ -51,7 +51,7 @@ describe("QueryBuilderV2 Options", () => {
   });
 
   test("set refundee", async () => {
-    const axiom = new AxiomV2QueryBuilderBase({...config, refundee: "0xe76a90E3069c9d86e666DcC687e76fcecf4429cF"});
+    const axiom = new AxiomV2QueryBuilderClient({...config, refundee: "0xe76a90E3069c9d86e666DcC687e76fcecf4429cF"});
     axiom.appendDataSubquery({
       blockNumber,
       fieldIdx: HeaderField.Timestamp,

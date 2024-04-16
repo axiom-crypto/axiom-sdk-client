@@ -49,7 +49,7 @@ async function getBlockAndIdx(provider: JsonRpcProvider, arr: string[], name: st
 
 describe("Config Limit Manager", () => {
   const config: AxiomV2QueryBuilderBaseConfig = {
-    provider: process.env.PROVIDER_URI_SEPOLIA as string,
+    providerUri: process.env.PROVIDER_URI_SEPOLIA as string,
     caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     sourceChainId: "11155111",
     version: "v2",
@@ -468,7 +468,7 @@ describe("Config Limit Manager", () => {
     for (let i = 0; i < 128; i++) {
       appendTx(axiom, txCache, txHashesSmall[i]);
     }
-    const built = await axiom.build(true);
+    const built = await axiom.buildBase(true);
     expect(built.dataQueryStruct.subqueries.length).toEqual(128);
   }, 300000);
 
@@ -477,7 +477,7 @@ describe("Config Limit Manager", () => {
     for (let i = 0; i < 128; i++) {
       appendReceipt(axiom, txCache, txHashesSmall[i]);
     }
-    const built = await axiom.build(true);
+    const built = await axiom.buildBase(true);
     expect(built.dataQueryStruct.subqueries.length).toEqual(128);
   }, 300000);
 
@@ -487,7 +487,7 @@ describe("Config Limit Manager", () => {
       appendTx(axiom, txCache, txHashesSmall[i]);
       appendReceipt(axiom, txCache, txHashesSmall[i]);
     }
-    const built = await axiom.build(true);
+    const built = await axiom.buildBase(true);
     expect(built.dataQueryStruct.subqueries.length).toEqual(128);
   }, 300000);
 
@@ -510,7 +510,7 @@ describe("Config Limit Manager", () => {
     for (let i = 0; i < 15; i++) {
       appendTx(axiom, txCache, txHashesSmall[i]);
     }
-    const built = await axiom.build(true);
+    const built = await axiom.buildBase(true);
     expect(built.dataQueryStruct.subqueries.length).toEqual(16);
   }, 120000);
 
@@ -520,7 +520,7 @@ describe("Config Limit Manager", () => {
     for (let i = 0; i < 15; i++) {
       appendReceipt(axiom, txCache, txHashesSmall[i]);
     }
-    const built = await axiom.build(true);
+    const built = await axiom.buildBase(true);
     expect(built.dataQueryStruct.subqueries.length).toEqual(16);
   }, 120000);
 
@@ -532,7 +532,7 @@ describe("Config Limit Manager", () => {
     for (let i = 0; i < 16; i++) {
       appendReceipt(axiom, txCache, txHashesSmall[i]);
     }
-    const built = await axiom.build(true);
+    const built = await axiom.buildBase(true);
     expect(built.dataQueryStruct.subqueries.length).toEqual(17);
   }, 120000);
 
@@ -545,7 +545,7 @@ describe("Config Limit Manager", () => {
       for (let i = 0; i < 16; i++) {
         appendTx(axiom, txCache, txHashesSmall[i]);
       }
-      await axiom.build(true);
+      await axiom.buildBase(true);
     };
     await expect(testFn).rejects.toThrow();
   }, 120000);
@@ -559,7 +559,7 @@ describe("Config Limit Manager", () => {
       for (let i = 0; i < 16; i++) {
         appendReceipt(axiom, txCache, txHashesSmall[i]);
       }
-      await axiom.build(true);
+      await axiom.buildBase(true);
     };
     await expect(testFn).rejects.toThrow();
   }, 120000);
@@ -573,7 +573,7 @@ describe("Config Limit Manager", () => {
       for (let i = 0; i < 17; i++) {
         appendReceipt(axiom, txCache, txHashesSmall[i]);
       }
-      await axiom.build(true);
+      await axiom.buildBase(true);
     };
     await expect(testFn).rejects.toThrow();
   }, 120000);
@@ -584,7 +584,7 @@ describe("Config Limit Manager", () => {
     for (let i = 0; i < 3; i++) {
       appendTx(axiom, txCache, txHashesLarge[i]);
     }
-    const built = await axiom.build(true);
+    const built = await axiom.buildBase(true);
     expect(built.dataQueryStruct.subqueries.length).toEqual(4);
   }, 120000);
 
@@ -597,7 +597,7 @@ describe("Config Limit Manager", () => {
     for (let i = 0; i < 1; i++) {
       appendReceipt(axiom, txCache, rcHashesMax[i]);
     }
-    const built = await axiom.build(true);
+    const built = await axiom.buildBase(true);
     expect(built.dataQueryStruct.subqueries.length).toEqual(5);
   }, 120000);
 
@@ -608,7 +608,7 @@ describe("Config Limit Manager", () => {
       for (let i = 0; i < 4; i++) {
         appendTx(axiom, txCache, txHashesLarge[i]);
       }
-      await axiom.build(true);
+      await axiom.buildBase(true);
     };
     await expect(testFn).rejects.toThrow();
   }, 120000);
@@ -619,7 +619,7 @@ describe("Config Limit Manager", () => {
       for (let i = 0; i < 2; i++) {
         appendReceipt(axiom, txCache, rcHashesMax[i]);
       }
-      await axiom.build(true);
+      await axiom.buildBase(true);
     }
     await expect(testFn).rejects.toThrow();
   }, 120000);
@@ -631,7 +631,7 @@ describe("Config Limit Manager", () => {
         appendReceipt(axiom, txCache, rcHashesLarge[i]);
       }
       appendTx(axiom, txCache, txHashesMax[0]);
-      await axiom.build(true);
+      await axiom.buildBase(true);
     }
     await expect(testFn).rejects.toThrow();
   }, 120000);
@@ -640,7 +640,7 @@ describe("Config Limit Manager", () => {
     const axiom = new AxiomV2QueryBuilderBase(config);
     const testFn = async () => {
       appendReceipt(axiom, txCache, rcHashesOverMax[0]);
-      const built = await axiom.build(true);
+      const built = await axiom.buildBase(true);
     }
     await expect(testFn).rejects.toThrow();
   }, 120000);
@@ -649,7 +649,7 @@ describe("Config Limit Manager", () => {
     const axiom = new AxiomV2QueryBuilderBase(config);
     const testFn = async () => {
       appendReceipt(axiom, txCache, rcHashesOverMax[1]);
-      const built = await axiom.build(true);
+      const built = await axiom.buildBase(true);
     }
     await expect(testFn).rejects.toThrow();
   }, 120000);

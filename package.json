@@ -13,6 +13,7 @@
   "author": "Intrinsic Technologies",
   "license": "MIT",
   "devDependencies": {
+    "@types/jest": "^29.5.12",
     "tsx": "^4.7.1"
   }
 }

@@ -7,10 +7,6 @@ import { AxiomV2QueryBuilderBase, AxiomV2QueryBuilderBaseConfig } from "../../..
 // - Callback
 
 describe("Basic Initialization", () => {
-  const BLOCK_NUMBER = 15537394;
-  const WETH_ADDR = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
-  const WETH_WHALE = "0x2E15D7AA0650dE1009710FDd45C3468d75AE1392";
-
   test("should initialize without an API key", () => {
     const config: AxiomV2QueryBuilderBaseConfig = {
       providerUri: process.env.PROVIDER_URI_MAINNET as string,

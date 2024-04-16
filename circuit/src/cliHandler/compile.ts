@@ -13,6 +13,7 @@ export const compile = async (
         provider?: string,
         mock?: boolean,
         cache?: string,
+        force?: boolean,
         defaultInputs?: string,
     }
 ) => {
@@ -53,7 +54,9 @@ export const compile = async (
         outfile = options.outputs;
     }
 
-    if (existsSync(outfile)) {
+    if (options.force) {
+        console.log(`Forcing compilation for ${circuitPath}.`);
+    } else if (existsSync(outfile)) {
         const existingData = JSON.parse(readFileSync(outfile, 'utf8'));
         if (existingData.circuit === circuitString) {
             console.log(`Circuit ${circuitPath} already compiled to ${outfile}`);
@@ -62,7 +65,6 @@ export const compile = async (
     }
 
     const res = options.mock ? await circuit.mockCompile(circuitInputs) : await circuit.compile(circuitInputs);
-
     const build = {
         ...res,
         circuit: circuitString,
@@ -72,4 +74,4 @@ export const compile = async (
     if (options.cache) {
         saveJsonToFile(circuit.getResults(), options.cache);
     }
-}
+};

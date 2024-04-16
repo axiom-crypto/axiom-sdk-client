@@ -14,6 +14,7 @@ export const compile = async (
         mock?: boolean,
         cache?: string,
         force?: boolean,
+        defaultInputs?: string,
     }
 ) => {
     let circuitFunction = "circuit";
@@ -38,7 +39,11 @@ export const compile = async (
         capacity: f.config?.capacity,
         config: f.config?.config,
     })
-    const circuitInputs = f.defaultInputs;
+    let circuitInputs = f.defaultInputs;
+    if (options.defaultInputs !== undefined) {
+        console.log("Using default inputs from file:", options.defaultInputs);
+        circuitInputs = readJsonFromFile(options.defaultInputs);
+    }
     const circuitFn = `const ${f.importName} = AXIOM_CLIENT_IMPORT\n${f.circuit.toString()}`;
     const encoder = new TextEncoder();
     const circuitBuild = encoder.encode(circuitFn);

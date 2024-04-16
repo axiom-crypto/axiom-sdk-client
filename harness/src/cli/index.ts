@@ -28,7 +28,8 @@ harnessCli
   .requiredOption("-c, --circuit [path]", "js circuit path")
   .requiredOption("-p, --provider [provider]", "Node provider for the chain")
   .requiredOption("-d, --data [path]", "Chain data json file path (output of `search` command)")
-  .option("-o, --output [output]", "Folder for outputs (default: ../output)", "../output")
+  .option("-o, --output [path]", "Folder for outputs (default: ../output)", "../output")
+  .option("-o, --circuitInputsPath [path]", "Path to circuit inputs (default: [chainDataPath]/[chainId])")
   .option("-f, --function [function]", "Function name (default: circuit)", "circuit")
   .option("--send", "Send query after proving")
   .action(run);

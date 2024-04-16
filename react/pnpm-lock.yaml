@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@axiom-crypto/client':
-    specifier: 2.0.9-alpha.7
-    version: 2.0.9-alpha.7(typescript@5.3.3)
+    specifier: 2.0.9-alpha.9
+    version: 2.0.9-alpha.9(typescript@5.3.3)
   '@types/react':
     specifier: '>=18.1.0'
     version: 18.2.48
@@ -36,8 +36,8 @@ packages:
     resolution: {integrity: sha512-96Z2IP3mYmF1Xg2cDm8f1gWGf/HUVedQ3FMifV4kG/PQ4yEP51xDtRAEfhVNt5f/uzpNkZHwWQuUcu6D6K+Ekw==}
     dev: false
 
-  /@axiom-crypto/circuit@2.0.9-alpha.7(typescript@5.3.3):
-    resolution: {integrity: sha512-A9YwuDUSrm52gl5Nwk+BIvoduiT0Jp8a96EyEQSByeyHuP8QbCubcSOp5pH5yJ5VLDq4JLFm2TrGttp3aDukAA==}
+  /@axiom-crypto/circuit@2.0.9-alpha.9(typescript@5.3.3):
+    resolution: {integrity: sha512-2PA8oWuXEpBch7s6NSsfcD4YVaHTDqTfbWH8ZNHsLfc5oNXX76jTgi8TyM9CLgyiM+4hoeyUl65rjmIwfXWqSQ==}
     dependencies:
       '@axiom-crypto/core': 2.3.8
       '@axiom-crypto/halo2-lib-js': 0.3.4
@@ -45,7 +45,7 @@ packages:
       '@axiom-crypto/tools': 2.1.0
       commander: 11.1.0
       ethers: 6.11.1
-      viem: 2.9.16(typescript@5.3.3)
+      viem: 2.9.19(typescript@5.3.3)
     transitivePeerDependencies:
       - bufferutil
       - debug
@@ -54,16 +54,16 @@ packages:
       - zod
     dev: false
 
-  /@axiom-crypto/client@2.0.9-alpha.7(typescript@5.3.3):
-    resolution: {integrity: sha512-5hzTXD7cHYt3LKmsxpyNMzXAZ+2mEYxZfi1kQGdlSNHFdONioSfdCXBebY/CanZaG7lc7aCcfKcQEYdrzsVbrw==}
+  /@axiom-crypto/client@2.0.9-alpha.9(typescript@5.3.3):
+    resolution: {integrity: sha512-aWWsQ7ILrXis5jyPakp0DK7o6W0w8dAqflif0N2D6J8szuR/XsD/WNbfSn/MfhHSklasyL56ibOgO9PRtz9JrA==}
     hasBin: true
     dependencies:
-      '@axiom-crypto/circuit': 2.0.9-alpha.7(typescript@5.3.3)
+      '@axiom-crypto/circuit': 2.0.9-alpha.9(typescript@5.3.3)
       '@axiom-crypto/core': 2.3.8
       chalk: 4.1.2
       commander: 11.1.0
       prompts: 2.4.2
-      viem: 2.9.16(typescript@5.3.3)
+      viem: 2.9.19(typescript@5.3.3)
     transitivePeerDependencies:
       - bufferutil
       - debug
@@ -164,7 +164,7 @@ packages:
     resolution: {integrity: sha512-N1ZhksgwD3OBlwTv3R6KFEcPojl/W4ElJOeCZdi+vuI5QmTFwLq3OFf2zd2ROpKvxFdgZ6hUpb0dx9bVNEwYCA==}
     dependencies:
       '@noble/curves': 1.2.0
-      '@noble/hashes': 1.3.3
+      '@noble/hashes': 1.3.2
       '@scure/base': 1.1.6
     dev: false
 
@@ -179,7 +179,7 @@ packages:
   /@scure/bip39@1.2.1:
     resolution: {integrity: sha512-Z3/Fsz1yr904dduJD0NpiyRHhRYHdcnyh73FZWiV+/qhWi83wNJ3NWolYqCEN+ZWsUz2TWwajJggcRE9r1zUYg==}
     dependencies:
-      '@noble/hashes': 1.3.3
+      '@noble/hashes': 1.3.2
       '@scure/base': 1.1.6
     dev: false
 
@@ -537,8 +537,8 @@ packages:
     resolution: {integrity: sha512-E8VjFIQ/TyQgp+TZfS6l8yp/xWppSAHzidGiRrqe4bK4XP9pTRyKFgGJpO3SN7zdX4DeomTrwaseCHovfpFcqQ==}
     dev: false
 
-  /viem@2.9.16(typescript@5.3.3):
-    resolution: {integrity: sha512-FQRfN4G7uKEUs5DYvVrH/kZmTkwcSDpTBxnadpwG1EEP8nHm57WDpSaGN7PwSPVgJ6rMo5MENT5hgnqaNTlb2w==}
+  /viem@2.9.19(typescript@5.3.3):
+    resolution: {integrity: sha512-1txsVoTz9+XGQpuN62wcDXasNtalW52UR41KnzwWTwHtV2cDcGuVuS/j/hcuQdZ7pU8X8jtq2IrwwR4jjKpy9Q==}
     peerDependencies:
       typescript: '>=5.0.4'
     peerDependenciesMeta:

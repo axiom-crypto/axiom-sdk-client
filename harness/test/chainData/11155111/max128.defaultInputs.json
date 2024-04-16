@@ -1,0 +1,14 @@
+{
+    "blockNumber": 5672179,
+    "eoa": "0xd21d202855506b7ca75066928e98d693290032f5",
+    "contractBlock0": 5672115,
+    "contractBlock1": 5672051,
+    "contract0": "0x422ae3c25eb0eb2c5df2ce1f53123ca862b67659",
+    "contract1": "0xe877139db8095dd59fcbbfd65a02ae08592ac8ea",
+    "slot0": 8,
+    "slot1": 2,
+    "txBlockNumber": 5658516,
+    "txTxIdx": 3,
+    "rcBlockNumber": 5672435,
+    "rcTxIdx": 9
+}

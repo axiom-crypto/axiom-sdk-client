@@ -9,12 +9,14 @@ export const run = async (
     circuit: string;
     provider: string;
     data: string;
+    circuitInputsPath?: string;
     output?: string;
     function?: string;
     send?: boolean;
     options?: any;
   }
 ): Promise<any> => {
+  const chainDataPath = path.dirname(options.data);
   const data = JSON.parse(fs.readFileSync(options.data, 'utf8'));
   const provider = new JsonRpcProvider(options.provider);
   const chainId = (await provider.getNetwork()).chainId.toString();
@@ -23,15 +25,20 @@ export const run = async (
   if (options.output) {
     outputPath = options.output;
   }
+  let circuitInputsPath = path.join(chainDataPath, chainId);
+  if (options.circuitInputsPath) {
+    circuitInputsPath = options.circuitInputsPath;
+  }
+
   // Geneate the input values for this circuit file
-  generateInputs(options.circuit, outputPath, data);
+  generateInputs(options.circuit, circuitInputsPath, data);
   
   // Compile the circuit
   const { 
     circuit,
     compiledCircuit,
     inputs,
-  } = await generateCircuitArtifacts(chainId, options.circuit, outputPath);
+  } = await generateCircuitArtifacts(chainId, options.circuit, circuitInputsPath, outputPath);
 
   // Prove or prove+send the query
   if (!options.send) {

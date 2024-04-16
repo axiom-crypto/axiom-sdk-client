@@ -39,17 +39,12 @@ export function generateInputs(file: string, outputPath: string, chainData: any)
   }
   
   // Save inputs files
-  // const dir = path.dirname(file);
   const fileName = path.basename(file).split(".")[0];
-  const chainId = chainData.chainId;
-  const newDir = path.join(outputPath, chainId);
-  fs.mkdirSync(newDir, { recursive: true });
-  const inputsPath = path.join(newDir, `${fileName}.inputs.json`);
-  const defaultInputsPath = path.join(newDir, `${fileName}.defaultInputs.json`);
+  fs.mkdirSync(outputPath, { recursive: true });
+  const inputsPath = path.join(outputPath, `${fileName}.inputs.json`);
+  const defaultInputsPath = path.join(outputPath, `${fileName}.defaultInputs.json`);
   fs.writeFileSync(inputsPath, JSON.stringify(inputs, null, 4));
   fs.writeFileSync(defaultInputsPath, JSON.stringify(defaultInputs, null, 4));
-  // console.log(`Wrote inputs to ${inputsPath}`);
-  // console.log(`Wrote defaultInputs to ${defaultInputsPath}`);
 }
 
 export function findCircuitFiles(dir: string): string[] {

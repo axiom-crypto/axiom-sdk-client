@@ -1,7 +1,6 @@
 import { concat, zeroHash } from "viem";
-import { AxiomBaseCircuit } from "../../../src/js";
-import { circuit as seven_balance_circuit } from "../circuits/7_balance.circuit";
-import { circuit as seven_balance_override_circuit } from "../circuits/7_balance_override.circuit";
+import { AxiomBaseCircuit } from "../../src/js";
+import { circuit as seven_balance_circuit } from "./circuits/7_balance.circuit";
 
 describe("Scaffold", () => {
   test("Build computeQuery", async () => {
@@ -9,10 +8,6 @@ describe("Scaffold", () => {
     const testCircuit = new AxiomBaseCircuit({
       provider: process.env.PROVIDER_URI_SEPOLIA as string,
       f: seven_balance_circuit,
-      inputSchema: `{
-        "address": "CircuitValue",
-        "claimedBlockNumber": "CircuitValue"
-      }`,
       chainId: 5,
       mock: true,
     });

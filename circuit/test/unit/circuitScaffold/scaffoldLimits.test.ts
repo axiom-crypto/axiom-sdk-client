@@ -8,10 +8,6 @@ describe("Scaffold with limit overrides", () => {
         const testCircuit = new AxiomBaseCircuit({
             provider: process.env.PROVIDER_URI_SEPOLIA as string,
             f: seven_balance_override_circuit,
-            inputSchema: `{
-          "address": "CircuitValue",
-          "claimedBlockNumber": "CircuitValue"
-        }`,
             chainId: 5,
             mock: true,
             capacity: {

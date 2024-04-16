@@ -11,7 +11,8 @@ on:
 env:
   PRIVATE_KEY_ANVIL: ${{ secrets.PRIVATE_KEY_ANVIL }}
   PRIVATE_KEY_SEPOLIA: ${{ secrets.PRIVATE_KEY_SEPOLIA }}
-  PROVIDER_URI_MAINNET: ${{ secrets.PROVIDER_URI_MAINNET }}
+  PRIVATE_KEY_84532: ${{ secrets.PRIVATE_KEY_84532 }}
+  PRIVATE_KEY_11155111: ${{ secrets.PRIVATE_KEY_11155111 }}
   PROVIDER_URI_SEPOLIA: ${{ secrets.PROVIDER_URI_SEPOLIA }}
   PROVIDER_URI_GOERLI: ${{ secrets.PROVIDER_URI_GOERLI }}
   PROVIDER_URI_1: ${{ secrets.PROVIDER_URI_1 }}
@@ -49,8 +50,8 @@ jobs:
         working-directory: ./circuit
         run: pnpm test
     
-  client-tests:
-    name: Client Tests
+  client-unit-tests:
+    name: Client Unit Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -78,12 +79,8 @@ jobs:
         working-directory: ./client
         run: pnpm test test/unit
 
-      - name: Run Integration Tests (Client)
-        working-directory: ./client
-        run: pnpm test test/integration
-  
-  harness:
-    name: Harness Tests
+  harness-integration-tests-11155111:
+    name: "Harness: Client Integration Tests (11155111)"
     runs-on: ubuntu-latest
 
     steps:
@@ -101,16 +98,41 @@ jobs:
           node-version: "20.x"
           cache: "pnpm"
           registry-url: "https://registry.npmjs.org"
-          cache-dependency-path: harness/pnpm-lock.yaml
+          cache-dependency-path: client/pnpm-lock.yaml
 
       - name: Set all packages to local and build
         working-directory: ./
         run: pnpm local
 
-      - name: Run Integration Tests (Sepolia)
+      - name: Run Integration Tests (Client)
         working-directory: ./harness
-        run: |
-          ANVIL_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
-          export PRIVATE_KEY=$ANVIL_PRIVATE_KEY # just needs to be in the correct format, no tx is sent in unit tests
-          export PRIVATE_KEY_SEPOLIA=$ANVIL_PRIVATE_KEY
-          pnpm test test/unit/sepolia.test.ts
+        run: CHAIN_ID=11155111 pnpm test test/integration/start.test.ts
+  
+  harness-integration-tests-84532:
+    name: "Harness: Client Integration Tests (84532)"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: "Install Node.js"
+        uses: "actions/setup-node@v4"
+        with:
+          node-version: "20.x"
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
+          cache-dependency-path: client/pnpm-lock.yaml
+
+      - name: Set all packages to local and build
+        working-directory: ./
+        run: pnpm local
+
+      - name: Run Integration Tests (Client)
+        working-directory: ./harness
+        run: CHAIN_ID=84532 pnpm test test/integration/start.test.ts

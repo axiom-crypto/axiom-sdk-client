@@ -50,7 +50,6 @@ async function getBlockAndIdx(provider: JsonRpcProvider, arr: string[], name: st
 describe("Config Limit Manager", () => {
   const config: AxiomV2QueryBuilderBaseConfig = {
     providerUri: process.env.PROVIDER_URI_SEPOLIA as string,
-    caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     sourceChainId: "11155111",
     version: "v2",
   };

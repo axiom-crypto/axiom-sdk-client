@@ -32,8 +32,6 @@ export {
 
 export interface AxiomV2QueryBuilderBaseConfig {
   providerUri: string;
-  caller?: string;
-  refundee?: string;
   sourceChainId?: number | string | BigInt;
   targetChainId?: number | string | BigInt;
   version?: string;

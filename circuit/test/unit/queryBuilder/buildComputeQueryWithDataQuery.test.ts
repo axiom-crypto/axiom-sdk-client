@@ -16,16 +16,10 @@ import {
 describe("Build ComputeQuery with DataQuery", () => {
   const config: AxiomV2QueryBuilderBaseConfig = {
     providerUri: process.env.PROVIDER_URI_SEPOLIA as string,
-    caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     sourceChainId: 1,
     version: "v2",
   };
   const axiom = new AxiomV2QueryBuilderBase(config);
-
-  const callback: AxiomV2Callback = {
-    target: "0x41a7a901ef58d383801272d2408276d96973550d",
-    extraData: bytes32("0xbbd0d3671093a36d6e3b608a7e3b1fdc96da1116"),
-  };
 
   test("simple computeQuery with dataQuery", async () => {
     const computeQuery: AxiomV2ComputeQuery = {

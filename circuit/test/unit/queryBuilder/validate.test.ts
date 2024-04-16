@@ -16,13 +16,11 @@ describe("Query Validation Tests", () => {
 
   const config: AxiomV2QueryBuilderBaseConfig = {
     providerUri: process.env.PROVIDER_URI_MAINNET as string,
-    caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     version: "v2",
     sourceChainId: 1,
   };
   const sepoliaConfig = {
     providerUri: process.env.PROVIDER_URI_SEPOLIA as string,
-    caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     version: "v2",
     sourceChainId: "11155111",
   };

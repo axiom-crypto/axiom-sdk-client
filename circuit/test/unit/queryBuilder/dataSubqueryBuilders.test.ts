@@ -36,7 +36,6 @@ describe("Data Subquery Builders", () => {
 
   const config: AxiomV2QueryBuilderBaseConfig = {
     providerUri: process.env.PROVIDER_URI_MAINNET as string,
-    caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     sourceChainId: 1,
     version: "v2",
   };

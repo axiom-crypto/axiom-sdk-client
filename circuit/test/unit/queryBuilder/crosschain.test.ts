@@ -10,15 +10,9 @@ import {
 // - Crosschain
 
 describe("Crosschain", () => {
-  const callback: AxiomV2Callback = {
-    target: "0x41a7a901ef58d383801272d2408276d96973550d",
-    extraData: bytes32("0xbbd0d3671093a36d6e3b608a7e3b1fdc96da1116"),
-  };
-
   test("Build a query with a different target chain", async () => {
     const config: AxiomV2QueryBuilderBaseConfig = {
       providerUri: process.env.PROVIDER_URI_SEPOLIA as string,
-      caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
       targetChainId: 5,
       version: "v2",
     };

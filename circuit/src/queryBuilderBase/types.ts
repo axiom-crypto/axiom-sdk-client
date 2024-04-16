@@ -1,10 +1,8 @@
 import { ethers } from "ethers";
 
 import {
-  AxiomV2Callback,
   AxiomV2ComputeQuery,
   AxiomV2DataQuery,
-  AxiomV2FeeData,
 } from "@axiom-crypto/tools";
 
 export {

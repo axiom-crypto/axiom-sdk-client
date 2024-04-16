@@ -49,7 +49,6 @@ export const compile = async (
         outfile = options.outputs;
     }
 
-    // Modified the condition to check for the force option
     if (options.force) {
         console.log(`Forcing compilation for ${circuitPath}.`);
     } else if (existsSync(outfile)) {
@@ -67,7 +66,6 @@ export const compile = async (
     }
 
     saveJsonToFile(build, outfile);
-
     if (options.cache) {
         saveJsonToFile(circuit.getResults(), options.cache);
     }

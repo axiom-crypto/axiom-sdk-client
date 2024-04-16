@@ -2,6 +2,7 @@ import { Versions } from "./constants";
 import { AxiomV2QueryBuilderBaseConfig } from "./types";
 
 export function handleProvider(config: AxiomV2QueryBuilderBaseConfig): AxiomV2QueryBuilderBaseConfig {
+  console.log(config);
   if (config.providerUri === undefined || config.providerUri === "") {
     throw new Error("`providerUri` is required in AxiomV2QueryBuilderBaseConfig");
   }

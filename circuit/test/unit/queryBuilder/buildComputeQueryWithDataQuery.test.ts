@@ -157,14 +157,12 @@ describe("Build ComputeQuery with DataQuery", () => {
     };
     axiom.setBuiltDataQuery(dataQuery);
     axiom.setComputeQuery(computeQuery);
-    axiom.setCallback(callback);
     await axiom.buildBase();
   });
 
   test("build a query with no DataQuery or ComputeQuery", async () => {
     const testFn = async () => {
       const axiom = new AxiomV2QueryBuilderBase(config);
-      axiom.setCallback(callback);
       await axiom.buildBase();
     };
     await expect(testFn()).rejects.toThrow();

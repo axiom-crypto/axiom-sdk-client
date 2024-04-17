@@ -11,7 +11,7 @@ We have a script that reads blockchain data and puts it into a format that can b
 You may need to deploy and run a contract that will send multiple transactions of the correct size in order to get the correct transaction and receipt size categories. This is located in `/scripts/test/solidity_sized_tx_contract`. You can have it deploy the contract and create transactions with the correct transaction data by running the following from the root of the repository.
 
 ```bash
-pnpm deploy-test-inputs
+pnpm deploy:inputs
 ```
 
 You'll want to note which block number these transactions were sent in. Update the `INCLUDE_BLOCKS` constant in `findTestData.ts` to include the block number(s) from the transactions.
@@ -21,7 +21,7 @@ You'll want to note which block number these transactions were sent in. Update t
 We have a Solidity contract that can be deployed to generate transaction and receipt data of a particular size. Set `PROVIDER_URI` and `PRIVATE_KEY` to the provider and account private key of the chain that you would like to deploy on.
 
 ```bash
-pnpm deploy:inputs
+node dist/cli/index.js search --provider <PROVIDER_URI> --output <OUTPUT_DIR>
 ```
 
 Record the block number that the transactions occrred in. You can then edit the command in `test/search_chaindata.sh` to use the above deployed block number for `--include <blockNumber>` to add those specific transactions/receipts to the chain data search.

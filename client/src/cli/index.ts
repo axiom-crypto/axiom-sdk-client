@@ -33,6 +33,7 @@ circuit
   .option("-f, --function [function]", "function name in typescript circuit")
   .option("-c, --cache [cache]", "cache output file")
   .option("-d, --defaultInputs [defaultInputs]", "default inputs json file")
+  .option("--force", "force compilation even if output file exists")
   .action(compile);
 
 circuit

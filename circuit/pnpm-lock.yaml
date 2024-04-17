@@ -18,8 +18,8 @@ dependencies:
     specifier: ^11.1.0
     version: 11.1.0
   ethers:
-    specifier: ^6.11.1
-    version: 6.11.1
+    specifier: ^6.12.0
+    version: 6.12.0
   viem:
     specifier: ^2.8.18
     version: 2.8.18(typescript@5.3.3)
@@ -75,7 +75,7 @@ packages:
     resolution: {integrity: sha512-E/i7EqlcvjcfXZejL8HcpvFQIIMJxcMrVBXsdaDJGgEXVc6pEDJ07Hy3drLbhQ007ZJ8aultw3HSfD9gJRkh4w==}
     dependencies:
       '@axiom-crypto/halo2-wasm': 0.3.4
-      ethers: 6.11.1
+      ethers: 6.12.0
       prettier: 1.18.2
     transitivePeerDependencies:
       - bufferutil
@@ -91,7 +91,7 @@ packages:
     dependencies:
       axios: 1.6.7
       bs58: 5.0.0
-      ethers: 6.11.1
+      ethers: 6.12.0
       form-data: 4.0.0
     transitivePeerDependencies:
       - bufferutil
@@ -1484,8 +1484,8 @@ packages:
     hasBin: true
     dev: true
 
-  /ethers@6.11.1:
-    resolution: {integrity: sha512-mxTAE6wqJQAbp5QAe/+o+rXOID7Nw91OZXvgpjDa1r4fAbq2Nu314oEZSbjoRLacuCzs7kUC3clEvkCQowffGg==}
+  /ethers@6.12.0:
+    resolution: {integrity: sha512-zL5NlOTjML239gIvtVJuaSk0N9GQLi1Hom3ZWUszE5lDTQE/IVB62mrPkQ2W1bGcZwVGSLaetQbWNQSvI4rGDQ==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@adraffy/ens-normalize': 1.10.1

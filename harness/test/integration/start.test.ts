@@ -7,7 +7,7 @@ if (process.env.CHAIN_ID === undefined) {
 }
 const CHAIN_ID = process.env.CHAIN_ID;
 
-jest.setTimeout(180000);
+jest.setTimeout(240000);
 
 // Special tests need to be run with specific parameters
 const SPECIAL_TESTS = [

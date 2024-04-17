@@ -1,0 +1,11 @@
+{
+    "blockNumber": 5672435,
+    "address": "0x7e6d3ce1d282c11c3f7d75e4f73133ca66b7a95a",
+    "storBlockNumber": 5672435,
+    "storAddress": "0x01469dacfdda885d68ff0f8628f2629c14f95a20",
+    "storSlot": 2,
+    "txBlockNumber": 5658516,
+    "txTxIdx": 1,
+    "rcBlockNumber": 5672435,
+    "rcTxIdx": 9
+}

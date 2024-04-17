@@ -1,6 +1,6 @@
 {
   "name": "@axiom-crypto/harness",
-  "version": "2.0.9-alpha.7",
+  "version": "2.0.9-alpha.9",
   "author": "Intrinsic Technologies",
   "license": "MIT",
   "description": "Circuit harness for axiom-client",
@@ -29,8 +29,8 @@
   "dependencies": {
     "@axiom-crypto/tools": "2.1.0",
     "commander": "^11.1.0",
-    "ethers": "^6.11.1",
-    "viem": "^2.8.18"
+    "ethers": "^6.12.0",
+    "viem": "2.8.18"
   },
   "devDependencies": {
     "@types/jest": "^29.5.11",

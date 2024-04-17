@@ -18,7 +18,12 @@ export function parseArgs(): { chainId: string } {
   return args;
 }
 
-export async function generateCircuitArtifacts(chainId: string, circuitPath: string, outputPath: string) {
+export async function generateCircuitArtifacts(
+  chainId: string,
+  circuitPath: string,
+  circuitInputsPath: string,
+  outputPath: string,
+) {
   const provider = process.env[`PROVIDER_URI_${chainId}`] as string;
   const circuitPathResolved = path.resolve(circuitPath);
   const pathToFile = path.dirname(circuitPathResolved);
@@ -27,8 +32,8 @@ export async function generateCircuitArtifacts(chainId: string, circuitPath: str
   const folder = path.basename(path.dirname(circuitPathResolved));
   
   const compiledPath = path.resolve(`${outputPath}/${filebase}.compiled.json`);
-  const inputsPath = path.resolve(`${outputPath}/${chainId}/${filebase}.inputs.json`);
-  const defaultInputsPath = path.resolve(`${outputPath}/${chainId}/${filebase}.defaultInputs.json`);
+  const inputsPath = path.resolve(`${circuitInputsPath}/${filebase}.inputs.json`);
+  const defaultInputsPath = path.resolve(`${circuitInputsPath}/${filebase}.defaultInputs.json`);
   
   let externalDefaults = false;
   if (existsSync(defaultInputsPath)) {

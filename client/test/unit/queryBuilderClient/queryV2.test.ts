@@ -23,8 +23,7 @@ import {
   getEventSchema,
 } from "@axiom-crypto/circuit/pkg/tools";
 import { ethers } from "ethers";
-import { QueryBuilderClient, QueryBuilderClientConfig } from "../../../src";
-import { AxiomV2QueryOptions } from "../../../../circuit/src";
+import { QueryBuilderClient, QueryBuilderClientConfig, AxiomV2QueryOptions } from "../../../src";
 
 describe("QueryV2", () => {
   const BLOCK_NUMBER = 15537394;

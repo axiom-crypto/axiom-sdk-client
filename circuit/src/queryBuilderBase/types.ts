@@ -45,12 +45,6 @@ export interface QueryBuilderBaseInternalConfig {
   version: string;
 }
 
-export interface AxiomV2QueryOptions {
-  maxFeePerGas?: string;
-  callbackGasLimit?: number;
-  overrideAxiomQueryFee?: string;
-}
-
 export interface BuiltQueryV2Base {
   sourceChainId: string;
   targetChainId: string;

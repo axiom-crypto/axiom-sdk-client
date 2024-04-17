@@ -1,6 +1,5 @@
 import { ethers } from "ethers";
 import {
-  AxiomV2Callback,
   AxiomV2ComputeQuery,
   DataSubqueryType,
   bytes32,
@@ -9,8 +8,6 @@ import {
   getDataQueryHashFromSubqueries,
   AxiomV2CircuitConstant,
   AxiomV2DataQuery,
-  encodeDataQuery,
-  AxiomV2FeeData,
   Subquery,
   HeaderSubquery,
   AccountSubquery,
@@ -21,7 +18,6 @@ import {
   BeaconValidatorSubquery,
 } from "@axiom-crypto/tools";
 import {
-  AxiomV2QueryOptions,
   DataSubqueryCount,
   QueryBuilderBaseConfig,
   BuiltQueryV2Base,
@@ -41,14 +37,27 @@ import { getSubqueryTypeFromKeys } from "./utils";
 import { formatDataQuery, formatDataSubqueries, encodeBuilderDataQuery } from "./dataSubquery/format";
 import { deepCopyObject } from "../utils";
 import { ConfigLimitManager } from "./dataSubquery/configLimitManager";
-import { handleChainId, handleProvider, parseAddress, parseChainId, parseMock, parseProvider, parseVersion } from "./configure";
+import { handleChainId, handleProvider, parseChainId, parseMock, parseProvider, parseVersion } from "./configure";
 
+/**
+ * Base class for building Axiom queries. This is a base class is used to eventually build a dataQuery and computeQuery into a 
+ * format that can be sent onchain. However, it requires QueryBuilderClient to build the client-facing pieces of the query. Most 
+ * users will want to use QueryBuilderClient instead of this class.
+ */
 export class QueryBuilderBase {
+  // Configuration object
   readonly config: QueryBuilderBaseInternalConfig;
+
+  // Built Query base object; undefined if Query has not been built yet
   protected builtQueryBase?: BuiltQueryV2Base;
-  protected builtDataQuery?: AxiomV2DataQuery;
+
+  // The set of data subqueries 
   protected dataQuery?: Subquery[];
+
+  // The compute query
   protected computeQuery?: AxiomV2ComputeQuery;
+
+  // An object that handles the counts of all subquery types
   protected dataSubqueryCount: DataSubqueryCount;
 
   constructor(
@@ -169,6 +178,10 @@ export class QueryBuilderBase {
     this.computeQuery = this.handleComputeQueryRequest(computeQuery);
   }
 
+  setMock(mock: boolean) {
+    this.config.mock = mock;
+  }
+
   /**
    * Append a `Subquery[]` object to the current dataQuery
    * @param dataQuery A `Subquery[]` object to append
@@ -204,15 +217,15 @@ export class QueryBuilderBase {
   }
 
   /**
-   * Appends a built DataQuery. This is used when receiving a DataQuery from a ComputeQuery.
-   * Setting this will take precedence over setting any UnbuiltSubqueries via `append()`.
+   * Appends an already-built DataQuery. This is used when receiving an already-built DataQuery 
+   * from some other service. Setting this will override any currently appended subqueries.
    */
   setBuiltDataQuery(dataQuery: AxiomV2DataQuery, skipValidate?: boolean): void {
     this.resetSubqueryCount();
     for (const subquery of dataQuery.subqueries) {
       this.updateSubqueryCount(subquery.type, skipValidate);
     }
-    this.builtDataQuery = dataQuery;
+    this.dataQuery = dataQuery.subqueries.map((subquery) => subquery.subqueryData);
   }
 
   /**
@@ -231,7 +244,7 @@ export class QueryBuilderBase {
 
     // Check if Query can be built: needs at least a dataQuery or computeQuery
     let validDataQuery = true;
-    if (this.builtDataQuery === undefined && (this.dataQuery === undefined || this.dataQuery.length === 0)) {
+    if (this.dataQuery === undefined || this.dataQuery.length === 0) {
       validDataQuery = false;
     }
     let validComputeQuery = true;
@@ -243,21 +256,14 @@ export class QueryBuilderBase {
     }
 
     // Handle Data Query
-    let dataQuery, dataQueryHash, dataQueryStruct;
-    if (this.builtDataQuery === undefined) {
-      // Parse and get fetch appropriate data for all data subqueries
-      const builtDataSubqueries = await formatDataSubqueries(this.dataQuery ?? []);
+    // Parse and get fetch appropriate data for all data subqueries
+    const builtDataSubqueries = await formatDataSubqueries(this.dataQuery ?? []);
 
-      // Encode & build data query
-      dataQuery = encodeBuilderDataQuery(this.config.sourceChainId, builtDataSubqueries);
-      dataQueryHash = getDataQueryHashFromSubqueries(this.config.sourceChainId.toString(), builtDataSubqueries);
-      dataQueryStruct = formatDataQuery(this.config.sourceChainId, builtDataSubqueries);
-    } else {
-      dataQuery = encodeDataQuery(this.builtDataQuery.sourceChainId, this.builtDataQuery.subqueries);
-      dataQueryHash = getDataQueryHashFromSubqueries(this.builtDataQuery.sourceChainId, this.builtDataQuery.subqueries);
-      dataQueryStruct = deepCopyObject(this.builtDataQuery);
-    }
-
+    // Encode & build data query
+    const dataQuery = encodeBuilderDataQuery(this.config.sourceChainId, builtDataSubqueries);
+    const dataQueryHash = getDataQueryHashFromSubqueries(this.config.sourceChainId.toString(), builtDataSubqueries);
+    const dataQueryStruct = formatDataQuery(this.config.sourceChainId, builtDataSubqueries);
+    
     // Handle compute query
     let defaultResultLen = this.getDefaultResultLen();
     let computeQuery: AxiomV2ComputeQuery = {
@@ -398,7 +404,6 @@ export class QueryBuilderBase {
 
     return valid;
   }
-
 
   protected resetSubqueryCount() {
     this.dataSubqueryCount = deepCopyObject(ConstantsV2.EmptyDataSubqueryCount);

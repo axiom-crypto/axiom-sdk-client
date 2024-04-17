@@ -5,7 +5,6 @@ import {
   AccountField,
   AccountSubquery,
   AxiomV2ComputeQuery,
-  AxiomV2QueryOptions,
   ReceiptField,
 } from "../../../src";
 import { resizeArray } from "../../../src/utils";
@@ -141,13 +140,6 @@ describe("Build Query w/ ComputeQuery, DataQuery, Callback, and Options set (cor
       k: 14,
       vkey: computeQuery.vkey,
       computeProof: computeQuery.computeProof,
-    };
-    const callbackQuery = {
-      target: WETH_ADDR,
-      extraData: ethers.solidityPacked(["address"], [WETH_WHALE]),
-    };
-    const options: AxiomV2QueryOptions = {
-      maxFeePerGas: BigInt(100000000).toString(),
     };
 
     const axiom = new QueryBuilderBase(config, dataQueryReq, computeQueryReq);

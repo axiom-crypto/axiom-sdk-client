@@ -20,12 +20,12 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   protected halo2Lib!: Halo2LibWasm;
   protected provider: string;
   protected dataQuery: DataSubquery[];
-  protected queryBuilderBase: QueryBuilderBase;
   protected computeQuery: AxiomV2ComputeQuery | undefined;
   protected chainId: string;
   protected f: (inputs: T) => Promise<void>;
   protected results: { [key: string]: string };
   protected inputSchema?: string;
+  protected isMock?: boolean;
   protected capacity: AxiomV2CircuitCapacity;
 
   constructor(inputs: {
@@ -42,6 +42,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     super();
     this.resultLen = 0;
     this.provider = inputs.provider;
+    this.isMock = inputs.mock;
     this.config = inputs.config ?? DEFAULT_CIRCUIT_CONFIG;
     this.capacity = inputs.capacity ?? DEFAULT_CAPACITY;
     if (
@@ -52,12 +53,6 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     }
     
     this.dataQuery = [];
-    this.queryBuilderBase = new QueryBuilderBase({
-      providerUri: inputs.provider,
-      sourceChainId: inputs.chainId,
-      mock: inputs.mock,
-      version: "v2",
-    });
     this.chainId = inputs.chainId?.toString() ?? "undefined";
     this.shouldTime = inputs.shouldTime ?? false;
     this.loadedVk = false;
@@ -149,10 +144,16 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     this.results = results;
     await this.populateCircuit(inputs);
 
-    let skipValidate = this.capacity !== DEFAULT_CAPACITY;
+    const skipValidate = this.capacity !== DEFAULT_CAPACITY;
     
     // Validate max circuit subquery size
-    this.queryBuilderBase.setBuiltDataQuery({
+    const queryBuilderBase = new QueryBuilderBase({
+      providerUri: this.provider,
+      sourceChainId: this.chainId,
+      mock: this.isMock,
+      version: "v2",
+    });
+    queryBuilderBase.setBuiltDataQuery({
       sourceChainId: this.chainId,
       subqueries: this.dataQuery,
     }, skipValidate);
@@ -218,14 +219,20 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   async run(inputs: RawInput<T>) {
     await this.populateCircuit(inputs);
 
-    let skipValidate = this.capacity !== DEFAULT_CAPACITY;
+    const skipValidate = this.capacity !== DEFAULT_CAPACITY;
 
     // Validate data subqueries
-    this.queryBuilderBase.setBuiltDataQuery({
+    const queryBuilderBase = new QueryBuilderBase({
+      providerUri: this.provider,
+      sourceChainId: this.chainId,
+      mock: this.isMock,
+      version: "v2",
+    });
+    queryBuilderBase.setBuiltDataQuery({
       sourceChainId: this.chainId,
       subqueries: this.dataQuery,
     }, skipValidate);
-    if (!skipValidate && !this.queryBuilderBase.validate()) {
+    if (!skipValidate && !queryBuilderBase.validate()) {
       throw new Error("Subquery validation failed")
     }
 
@@ -324,11 +331,6 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   }
 
   setMock(mock: boolean) {
-    this.queryBuilderBase = new QueryBuilderBase({
-      providerUri: this.provider,
-      sourceChainId: this.chainId,
-      mock,
-      version: "v2",
-    });
+    this.isMock = mock;
   }
 }

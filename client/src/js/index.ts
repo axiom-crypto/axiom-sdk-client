@@ -1,8 +1,8 @@
 import { AxiomV2Callback, AxiomV2CircuitCapacity } from "@axiom-crypto/circuit";
 import { AxiomBaseCircuit } from "@axiom-crypto/circuit/js/";
 import { buildSendQuery } from "../sendQuery";
-import { AxiomV2ClientOptions, AxiomV2SendQueryArgs } from "../types";
-import { QueryBuilderClient } from "../queryBuilderClient";
+import { AxiomV2QueryOptions, AxiomV2SendQueryArgs } from "../types";
+import { QueryBuilderClient, QueryBuilderClientConfig } from "../queryBuilderClient";
 
 export class AxiomCircuit<T> extends AxiomBaseCircuit<T> {
   constructor(inputs: {
@@ -21,17 +21,23 @@ export class AxiomCircuit<T> extends AxiomBaseCircuit<T> {
     callbackTarget: string;
     callbackExtraData: string;
     callerAddress: string;
-    options: AxiomV2ClientOptions;
+    options: AxiomV2QueryOptions;
   }): Promise<AxiomV2SendQueryArgs> {
     if (!this.computeQuery) throw new Error("No compute query generated");
     const callback: AxiomV2Callback = {
       target: input.callbackTarget,
       extraData: input.callbackExtraData,
     };
+    const config: QueryBuilderClientConfig = {
+      sourceChainId: this.chainId,
+      providerUri: this.provider,
+      version: "v2",
+      mock: this.isMock ?? false,
+    };
     const queryBuilderClient = new QueryBuilderClient(
-      this.queryBuilderBase.config,
-      this.queryBuilderBase.getDataQuery(),
-      this.queryBuilderBase.getComputeQuery(),
+      config,
+      this.dataQuery.map((dq) => dq.subqueryData),
+      this.computeQuery,
       callback,
       input.options,
     );

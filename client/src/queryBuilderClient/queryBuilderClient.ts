@@ -2,13 +2,12 @@ import {
   AxiomV2Callback,
   AxiomV2ComputeQuery,
   QueryBuilderBase,
-  AxiomV2QueryOptions,
 } from "@axiom-crypto/circuit";
 import { 
   parseAddress,
 } from "@axiom-crypto/circuit/queryBuilderBase/configure";
 import { AxiomV2FeeData, getCallbackHash, getQueryId, Subquery } from "@axiom-crypto/tools";
-import { AxiomV2ClientOptions } from "../types";
+import { AxiomV2QueryOptions } from "../types";
 import { bytesToHex, zeroAddress } from "viem";
 import { 
   QueryBuilderClientConfig,
@@ -18,10 +17,20 @@ import {
 import { getChainDefaults } from "../lib/chain";
 import { getRandomValues } from "crypto";
 
+/**
+ * QueryBuilderClient builds queries that can be sent to the deployed AxiomV2Query contract on-chain.
+ */
 export class QueryBuilderClient extends QueryBuilderBase {
+  // Configuration object
   readonly config: QueryBuilderClientInternalConfig;
+
+  // Built query object; undefined until built
   protected builtQuery?: BuiltQueryV2;
+
+  // Information about the callback contract for the query
   protected callback?: AxiomV2Callback;
+
+  // Query options and overrides
   protected options: AxiomV2QueryOptions;
 
   constructor(
@@ -29,7 +38,7 @@ export class QueryBuilderClient extends QueryBuilderBase {
     dataQuery?: Subquery[],
     computeQuery?: AxiomV2ComputeQuery,
     callback?: AxiomV2Callback,
-    options?: AxiomV2ClientOptions,
+    options?: AxiomV2QueryOptions,
   ) {
     super(config, dataQuery, computeQuery);
     this.config = this.configure(config);
@@ -149,12 +158,13 @@ export class QueryBuilderClient extends QueryBuilderBase {
   setOptions(options: AxiomV2QueryOptions): AxiomV2QueryOptions {
     this.unsetBuiltQuery();
     const defaults = getChainDefaults(this.config.sourceChainId.toString());
-    this.options = {
+    const newOptions = {
+      ...options,
       maxFeePerGas: options?.maxFeePerGas ?? defaults.maxFeePerGasWei.toString(),
       callbackGasLimit: options?.callbackGasLimit ?? Number(defaults.callbackGasLimit),
       overrideAxiomQueryFee: options?.overrideAxiomQueryFee ?? "0",
     };
-    return this.options;
+    return newOptions;
   }
 
   async validate(): Promise<boolean> {

@@ -2,7 +2,7 @@ import { AxiomCircuit } from "../js";
 import {
   AxiomV2Callback,
   AxiomV2ClientConfig,
-  AxiomV2ClientOptions,
+  AxiomV2QueryOptions,
   AxiomV2CompiledCircuit,
   AxiomV2SendQueryArgs,
 } from "../types";
@@ -30,7 +30,7 @@ export class Axiom<T> {
   protected axiomCircuit: AxiomCircuit<T>;
   protected compiledCircuit: AxiomV2CompiledCircuit;
   protected callback: AxiomV2Callback;
-  protected options?: AxiomV2ClientOptions;
+  protected options?: AxiomV2QueryOptions;
   protected capacity?: AxiomV2CircuitCapacity;
   protected publicClient: PublicClient;
   protected walletClient?: WalletClient;
@@ -93,7 +93,7 @@ export class Axiom<T> {
     return this.sendQueryArgs;
   }
 
-  setOptions(options: AxiomV2ClientOptions) {
+  setOptions(options: AxiomV2QueryOptions) {
     this.options = {
       ...this.options,
       ...options,
@@ -177,7 +177,7 @@ export class Axiom<T> {
     if (this.walletClient === undefined) {
       throw new Error("Setting `privateKey` in the `Axiom` constructor is required to get sendQuery args");
     }
-    const clientOptions: AxiomV2ClientOptions = {
+    const clientOptions: AxiomV2QueryOptions = {
       ...this.options,
       callbackGasLimit: this.options?.callbackGasLimit ?? Number(getChainDefaults(this.config.chainId).callbackGasLimit),
       refundee: this.options?.refundee,

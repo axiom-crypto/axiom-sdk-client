@@ -1,12 +1,11 @@
 import {
   AxiomV2Callback,
   AxiomV2ComputeQuery,
-  AxiomV2QueryOptions,
   DataSubquery,
 } from "@axiom-crypto/circuit";
 import { createPublicClient, encodeFunctionData, http } from "viem";
 import { getMaxFeePerGas } from "./axiom/utils";
-import { AbiType, AxiomV2ClientOptions, AxiomV2SendQueryArgs } from "./types";
+import { AbiType, AxiomV2QueryOptions, AxiomV2SendQueryArgs } from "./types";
 import { encodeFullQueryV2 } from "@axiom-crypto/circuit/pkg/tools";
 import { calculateFeeDataExtended, calculatePayment } from "./lib/paymentCalc";
 import { viemChain } from "./lib/viem";
@@ -19,7 +18,7 @@ export const buildSendQuery = async (input: {
   computeQuery: AxiomV2ComputeQuery;
   callback: AxiomV2Callback;
   caller: string;
-  options: AxiomV2ClientOptions;
+  options: AxiomV2QueryOptions;
 }): Promise<AxiomV2SendQueryArgs> => {
   const validate = input.options?.overrides?.validateBuild ?? true;
   if (input.caller === "") {

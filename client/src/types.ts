@@ -3,7 +3,6 @@ import {
   AxiomV2CircuitCapacity,
   AxiomV2ComputeQuery,
   AxiomV2FeeData,
-  AxiomV2QueryOptions,
   CircuitConfig,
 } from "@axiom-crypto/circuit";
 import {
@@ -23,7 +22,7 @@ export interface AxiomV2ClientConfig<T> {
   callback: AxiomV2CallbackInput;
   privateKey?: string;
   capacity?: AxiomV2CircuitCapacity;
-  options?: AxiomV2ClientOptions;
+  options?: AxiomV2QueryOptions;
 }
 
 export interface AxiomV2CallbackInput {
@@ -40,7 +39,10 @@ export interface AxiomV2CompiledCircuit {
   capacity?: AxiomV2CircuitCapacity;
 }
 
-export interface AxiomV2ClientOptions extends AxiomV2QueryOptions {
+export interface AxiomV2QueryOptions {
+  maxFeePerGas?: string;
+  callbackGasLimit?: number;
+  overrideAxiomQueryFee?: string;
   refundee?: string;
   ipfsClient?: IpfsClient;
   overrides?: AxiomV2ClientOverrides;

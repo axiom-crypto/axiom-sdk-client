@@ -1,5 +1,5 @@
 import { ClientConstants } from "./constants";
-import { AbiType, AxiomV2ClientOverrides, AxiomV2ClientOptions, AxiomV2FeeDataExtended } from "../types";
+import { AbiType, AxiomV2ClientOverrides, AxiomV2QueryOptions, AxiomV2FeeDataExtended } from "../types";
 import { PublicClient } from "viem";
 import { getAxiomV2QueryAddress, getOpStackGasPriceOracleAddress } from "./address";
 import { getAxiomV2Abi, getOpStackGasPriceOracleAbi } from "./abi";
@@ -56,7 +56,7 @@ export async function calculatePayment(
 export async function calculateFeeDataExtended(
   chainId: string,
   publicClient: PublicClient,
-  options: AxiomV2ClientOptions,
+  options: AxiomV2QueryOptions,
 ): Promise<AxiomV2FeeDataExtended> {
   const axiomV2QueryAddr = options.overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
   const defaults = getChainDefaults(chainId);

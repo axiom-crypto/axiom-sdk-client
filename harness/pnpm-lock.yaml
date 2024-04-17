@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@axiom-crypto/client':
-    specifier: 2.0.9-alpha.7
-    version: 2.0.9-alpha.7(typescript@5.4.5)
+    specifier: 2.0.9-alpha.9
+    version: 2.0.9-alpha.9(typescript@5.4.5)
   '@axiom-crypto/tools':
     specifier: 2.1.0
     version: 2.1.0
@@ -68,8 +68,8 @@ packages:
       '@jridgewell/trace-mapping': 0.3.25
     dev: true
 
-  /@axiom-crypto/circuit@2.0.9-alpha.7(typescript@5.4.5):
-    resolution: {integrity: sha512-A9YwuDUSrm52gl5Nwk+BIvoduiT0Jp8a96EyEQSByeyHuP8QbCubcSOp5pH5yJ5VLDq4JLFm2TrGttp3aDukAA==}
+  /@axiom-crypto/circuit@2.0.9-alpha.9(typescript@5.4.5):
+    resolution: {integrity: sha512-2PA8oWuXEpBch7s6NSsfcD4YVaHTDqTfbWH8ZNHsLfc5oNXX76jTgi8TyM9CLgyiM+4hoeyUl65rjmIwfXWqSQ==}
     dependencies:
       '@axiom-crypto/core': 2.3.8
       '@axiom-crypto/halo2-lib-js': 0.3.4
@@ -86,11 +86,11 @@ packages:
       - zod
     dev: false
 
-  /@axiom-crypto/client@2.0.9-alpha.7(typescript@5.4.5):
-    resolution: {integrity: sha512-5hzTXD7cHYt3LKmsxpyNMzXAZ+2mEYxZfi1kQGdlSNHFdONioSfdCXBebY/CanZaG7lc7aCcfKcQEYdrzsVbrw==}
+  /@axiom-crypto/client@2.0.9-alpha.9(typescript@5.4.5):
+    resolution: {integrity: sha512-aWWsQ7ILrXis5jyPakp0DK7o6W0w8dAqflif0N2D6J8szuR/XsD/WNbfSn/MfhHSklasyL56ibOgO9PRtz9JrA==}
     hasBin: true
     dependencies:
-      '@axiom-crypto/circuit': 2.0.9-alpha.7(typescript@5.4.5)
+      '@axiom-crypto/circuit': 2.0.9-alpha.9(typescript@5.4.5)
       '@axiom-crypto/core': 2.3.8
       chalk: 4.1.2
       commander: 11.1.0

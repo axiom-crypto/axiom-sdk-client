@@ -1,0 +1,12 @@
+{
+    "address": "0x7e6d3ce1d282c11c3f7d75e4f73133ca66b7a95a",
+    "claimedBlockNumber": 5672435,
+    "block": 5672307,
+    "addr": "0x7777f1a58497aeaab0326e22e2017e0830d528d0",
+    "txBlockNumber": 5672435,
+    "txIdx": 9,
+    "logIdx": 0,
+    "eventSchema": "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925",
+    "slot": 2,
+    "mappingSlot": 3
+}

@@ -36,7 +36,7 @@ export function parseProvider(provider: string): string {
   }
 }
 
-export function parseChainId(chainId?: number | string | BigInt): BigInt {
+export function parseChainId(chainId?: number | string | bigint): bigint {
   if (chainId === undefined) {
     return BigInt(1);
   }
@@ -62,7 +62,7 @@ export function parseVersion(version?: string): string {
   );
 }
 
-export function parseMock(mock: boolean | undefined, chainId: BigInt): boolean {
+export function parseMock(mock: boolean | undefined, chainId: bigint): boolean {
   if (mock === undefined) {
     return false;
   }

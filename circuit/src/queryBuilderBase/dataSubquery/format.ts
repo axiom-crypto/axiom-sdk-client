@@ -33,11 +33,11 @@ export function formatDataSubqueries(
   return dataSubqueries;
 }
 
-export function encodeBuilderDataQuery(chainId: number | string | BigInt, allSubqueries: DataSubquery[]): string {
+export function encodeBuilderDataQuery(chainId: number | string | bigint, allSubqueries: DataSubquery[]): string {
   return encodeDataQuery(chainId, allSubqueries);
 }
 
-export function formatDataQuery(chainId: number | string | BigInt, allSubqueries: DataSubquery[]): AxiomV2DataQuery {
+export function formatDataQuery(chainId: number | string | bigint, allSubqueries: DataSubquery[]): AxiomV2DataQuery {
   const sourceChainId = chainId.toString();
   return {
     sourceChainId,

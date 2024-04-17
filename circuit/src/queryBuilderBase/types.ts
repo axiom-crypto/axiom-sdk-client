@@ -30,16 +30,16 @@ export {
 
 export interface QueryBuilderBaseConfig {
   providerUri: string;
-  sourceChainId?: number | string | BigInt;
-  targetChainId?: number | string | BigInt;
+  sourceChainId?: number | string | bigint;
+  targetChainId?: number | string | bigint;
   version?: string;
   mock?: boolean;
 }
 
 export interface QueryBuilderBaseInternalConfig {
   providerUri: string;
-  sourceChainId: BigInt;
-  targetChainId: BigInt;
+  sourceChainId: bigint;
+  targetChainId: bigint;
   mock: boolean;
   provider: ethers.JsonRpcProvider;
   version: string;

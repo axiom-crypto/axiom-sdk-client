@@ -21,7 +21,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   protected provider: string;
   protected dataQuery: DataSubquery[];
   protected computeQuery: AxiomV2ComputeQuery | undefined;
-  protected chainId: string;
+  protected chainId?: string;
   protected f: (inputs: T) => Promise<void>;
   protected results: { [key: string]: string };
   protected inputSchema?: string;
@@ -53,7 +53,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     }
     
     this.dataQuery = [];
-    this.chainId = inputs.chainId?.toString() ?? "undefined";
+    this.chainId = inputs.chainId?.toString();
     this.shouldTime = inputs.shouldTime ?? false;
     this.loadedVk = false;
     this.f = inputs.f;
@@ -154,7 +154,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       version: "v2",
     });
     queryBuilderBase.setBuiltDataQuery({
-      sourceChainId: this.chainId,
+      sourceChainId: queryBuilderBase.config.sourceChainId.toString(),
       subqueries: this.dataQuery,
     }, skipValidate);
 
@@ -229,7 +229,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       version: "v2",
     });
     queryBuilderBase.setBuiltDataQuery({
-      sourceChainId: this.chainId,
+      sourceChainId: queryBuilderBase.config.sourceChainId.toString(),
       subqueries: this.dataQuery,
     }, skipValidate);
     if (!skipValidate && !queryBuilderBase.validate()) {

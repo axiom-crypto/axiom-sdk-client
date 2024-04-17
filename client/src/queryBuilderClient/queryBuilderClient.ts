@@ -158,13 +158,13 @@ export class QueryBuilderClient extends QueryBuilderBase {
   setOptions(options: AxiomV2QueryOptions): AxiomV2QueryOptions {
     this.unsetBuiltQuery();
     const defaults = getChainDefaults(this.config.sourceChainId.toString());
-    const newOptions = {
+    this.options = {
       ...options,
       maxFeePerGas: options?.maxFeePerGas ?? defaults.maxFeePerGasWei.toString(),
       callbackGasLimit: options?.callbackGasLimit ?? Number(defaults.callbackGasLimit),
       overrideAxiomQueryFee: options?.overrideAxiomQueryFee ?? "0",
     };
-    return newOptions;
+    return this.options;
   }
 
   async validate(): Promise<boolean> {

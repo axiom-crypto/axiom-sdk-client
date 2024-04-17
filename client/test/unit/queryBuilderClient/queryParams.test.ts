@@ -18,7 +18,6 @@ describe("Query ID and Schema calculation", () => {
     sourceChainId: 1,
     version: "v2",
   };
-  const axiom = new QueryBuilderClient(config);
 
   const callback: AxiomV2Callback = {
     target: "0x41a7a901ef58d383801272d2408276d96973550d",
@@ -167,7 +166,7 @@ describe("Query ID and Schema calculation", () => {
     expect(querySchema).toEqual("0x412efc8f4184ff6cb59c65113d3e64ddfdc521b3dd083bd076aecec735fb6e98");
 
     const queryId = await axiom.getQueryId();
-    expect(queryId).toEqual("48044697032147397047484525564957309609572441090589780793445755160032499990078");
+    expect(queryId).toEqual("89525960724271132278334995917248842528153283060108231237459388983234366061533");
   });
 
   test("queryId should change with different caller", async () => {

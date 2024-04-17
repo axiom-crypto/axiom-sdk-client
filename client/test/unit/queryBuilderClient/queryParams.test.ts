@@ -3,8 +3,8 @@ import {
   AxiomV2Callback,
   AxiomV2ComputeQuery,
   AxiomV2DataQuery,
-  AxiomV2QueryBuilderClient,
-  AxiomV2QueryBuilderClientConfig,
+  QueryBuilderClient,
+  QueryBuilderClientConfig,
 } from "../../../src";
 
 // Test coverage areas:
@@ -12,13 +12,13 @@ import {
 // - QuerySchema
 
 describe("Query ID and Schema calculation", () => {
-  const config: AxiomV2QueryBuilderClientConfig = {
+  const config: QueryBuilderClientConfig = {
     providerUri: process.env.PROVIDER_URI_MAINNET as string,
     caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     sourceChainId: 1,
     version: "v2",
   };
-  const axiom = new AxiomV2QueryBuilderClient(config);
+  const axiom = new QueryBuilderClient(config);
 
   const callback: AxiomV2Callback = {
     target: "0x41a7a901ef58d383801272d2408276d96973550d",
@@ -153,7 +153,7 @@ describe("Query ID and Schema calculation", () => {
         },
       ],
     };
-    const axiom = new AxiomV2QueryBuilderClient(config);
+    const axiom = new QueryBuilderClient(config);
     axiom.setBuiltDataQuery(dataQuery);
     axiom.setComputeQuery(computeQuery);
     axiom.setCallback(callback);
@@ -182,7 +182,7 @@ describe("Query ID and Schema calculation", () => {
         fieldIdx: HeaderField.GasUsed,
       },
     ];
-    const axiom = new AxiomV2QueryBuilderClient(config);
+    const axiom = new QueryBuilderClient(config);
     axiom.append(dataQueryReq);
     axiom.setCallback(callback);
 

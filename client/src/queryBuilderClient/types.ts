@@ -1,11 +1,11 @@
 import { AxiomV2Callback, AxiomV2ComputeQuery, AxiomV2DataQuery, AxiomV2FeeData } from "@axiom-crypto/tools";
 import { 
-  AxiomV2QueryBuilderBaseConfig, 
+  QueryBuilderBaseConfig, 
   BuiltQueryV2Base,
   QueryBuilderBaseInternalConfig,
 } from "@axiom-crypto/circuit";
 
-export interface AxiomV2QueryBuilderClientConfig extends AxiomV2QueryBuilderBaseConfig {
+export interface QueryBuilderClientConfig extends QueryBuilderBaseConfig {
   caller?: string;
   refundee?: string;
 }

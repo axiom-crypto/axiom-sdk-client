@@ -28,7 +28,7 @@ export {
   AxiomV2FieldConstant,
 } from "@axiom-crypto/tools";
 
-export interface AxiomV2QueryBuilderBaseConfig {
+export interface QueryBuilderBaseConfig {
   providerUri: string;
   sourceChainId?: number | string | BigInt;
   targetChainId?: number | string | BigInt;

@@ -1,14 +1,14 @@
 import { Versions } from "./constants";
-import { AxiomV2QueryBuilderBaseConfig } from "./types";
+import { QueryBuilderBaseConfig } from "./types";
 
-export function handleProvider(config: AxiomV2QueryBuilderBaseConfig): AxiomV2QueryBuilderBaseConfig {
+export function handleProvider(config: QueryBuilderBaseConfig): QueryBuilderBaseConfig {
   if (config.providerUri === undefined || config.providerUri === "") {
-    throw new Error("`providerUri` is required in AxiomV2QueryBuilderBaseConfig");
+    throw new Error("`providerUri` is required in QueryBuilderBaseConfig");
   }
   return config;
 }
 
-export function handleChainId(config: AxiomV2QueryBuilderBaseConfig): AxiomV2QueryBuilderBaseConfig {
+export function handleChainId(config: QueryBuilderBaseConfig): QueryBuilderBaseConfig {
   if (config.sourceChainId === undefined) {
     config.sourceChainId = 1;
   }

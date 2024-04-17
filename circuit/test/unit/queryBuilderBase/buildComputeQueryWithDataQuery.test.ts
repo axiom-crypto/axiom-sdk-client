@@ -1,7 +1,7 @@
 import { bytes32 } from "@axiom-crypto/tools";
 import {
-  AxiomV2QueryBuilderBase,
-  AxiomV2QueryBuilderBaseConfig,
+  QueryBuilderBase,
+  QueryBuilderBaseConfig,
   AxiomV2Callback,
   AxiomV2ComputeQuery,
   AxiomV2DataQuery,
@@ -14,12 +14,12 @@ import {
 // - Callback
 
 describe("Build ComputeQuery with DataQuery", () => {
-  const config: AxiomV2QueryBuilderBaseConfig = {
+  const config: QueryBuilderBaseConfig = {
     providerUri: process.env.PROVIDER_URI_SEPOLIA as string,
     sourceChainId: 1,
     version: "v2",
   };
-  const axiom = new AxiomV2QueryBuilderBase(config);
+  const axiom = new QueryBuilderBase(config);
 
   test("simple computeQuery with dataQuery", async () => {
     const computeQuery: AxiomV2ComputeQuery = {
@@ -156,7 +156,7 @@ describe("Build ComputeQuery with DataQuery", () => {
 
   test("build a query with no DataQuery or ComputeQuery", async () => {
     const testFn = async () => {
-      const axiom = new AxiomV2QueryBuilderBase(config);
+      const axiom = new QueryBuilderBase(config);
       await axiom.buildBase();
     };
     await expect(testFn()).rejects.toThrow();

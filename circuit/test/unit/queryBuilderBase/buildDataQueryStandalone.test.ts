@@ -1,8 +1,8 @@
 import { ethers } from "ethers";
 import {
   AccountField,
-  AxiomV2QueryBuilderBase,
-  AxiomV2QueryBuilderBaseConfig,
+  QueryBuilderBase,
+  QueryBuilderBaseConfig,
   AxiomV2Callback,
   AxiomV2ComputeQuery,
   HeaderField,
@@ -21,12 +21,12 @@ describe("Build DataQuery Standalone", () => {
   const WSOL_ADDR = "0xd31a59c85ae9d8edefec411d448f90841571b89c";
   const UNI_V3_FACTORY_ADDR = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
 
-  const config: AxiomV2QueryBuilderBaseConfig = {
+  const config: QueryBuilderBaseConfig = {
     providerUri: process.env.PROVIDER_URI_SEPOLIA as string,
     sourceChainId: "1",
     version: "v2",
   };
-  const axiom = new AxiomV2QueryBuilderBase(config);
+  const axiom = new QueryBuilderBase(config);
 
   test("simple dataQuery", async () => {
     const blockNumber = 18200000;

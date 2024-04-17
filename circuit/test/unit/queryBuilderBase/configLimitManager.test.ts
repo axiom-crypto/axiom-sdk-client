@@ -1,13 +1,13 @@
 import { bytes32, getBlockNumberAndTxIdx } from "@axiom-crypto/tools";
 import {
-  AxiomV2QueryBuilderBase,
-  AxiomV2QueryBuilderBaseConfig,
+  QueryBuilderBase,
+  QueryBuilderBaseConfig,
   ReceiptField,
   TxField,
 } from "../../../src";
 import { JsonRpcProvider } from "ethers";
 
-function appendTx(axiom: AxiomV2QueryBuilderBase, txCache: {[key: string]: {blockNumber: number, txIdx: number}}, txHash: string) {
+function appendTx(axiom: QueryBuilderBase, txCache: {[key: string]: {blockNumber: number, txIdx: number}}, txHash: string) {
   const { blockNumber, txIdx } = txCache[txHash];
   if (blockNumber === undefined || txIdx === undefined) {
     throw new Error("Invalid block number or tx index");
@@ -20,7 +20,7 @@ function appendTx(axiom: AxiomV2QueryBuilderBase, txCache: {[key: string]: {bloc
   axiom.appendDataSubquery(subquery);
 }
 
-function appendReceipt(axiom: AxiomV2QueryBuilderBase, txCache: {[key: string]: {blockNumber: number, txIdx: number}}, txHash: string) {
+function appendReceipt(axiom: QueryBuilderBase, txCache: {[key: string]: {blockNumber: number, txIdx: number}}, txHash: string) {
   const { blockNumber, txIdx } = txCache[txHash];
   if (blockNumber === undefined || txIdx === undefined) {
     throw new Error("Invalid block number or tx index");
@@ -48,7 +48,7 @@ async function getBlockAndIdx(provider: JsonRpcProvider, arr: string[], name: st
 }
 
 describe("Config Limit Manager", () => {
-  const config: AxiomV2QueryBuilderBaseConfig = {
+  const config: QueryBuilderBaseConfig = {
     providerUri: process.env.PROVIDER_URI_SEPOLIA as string,
     sourceChainId: "11155111",
     version: "v2",
@@ -463,7 +463,7 @@ describe("Config Limit Manager", () => {
   // }, 9999999);
 
   test("default config: 128 tx", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     for (let i = 0; i < 128; i++) {
       appendTx(axiom, txCache, txHashesSmall[i]);
     }
@@ -472,7 +472,7 @@ describe("Config Limit Manager", () => {
   }, 300000);
 
   test("default config: 128 rc", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     for (let i = 0; i < 128; i++) {
       appendReceipt(axiom, txCache, txHashesSmall[i]);
     }
@@ -481,7 +481,7 @@ describe("Config Limit Manager", () => {
   }, 300000);
 
   test("default config: 64 tx, 64 rc", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     for (let i = 0; i < 64; i++) {
       appendTx(axiom, txCache, txHashesSmall[i]);
       appendReceipt(axiom, txCache, txHashesSmall[i]);
@@ -491,7 +491,7 @@ describe("Config Limit Manager", () => {
   }, 300000);
 
   test("default config (fail): 65 tx, 64 rc", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     const testFn = () => {
       for (let i = 0; i < 64; i++) {
         appendTx(axiom, txCache, txHashesSmall[i]);
@@ -503,7 +503,7 @@ describe("Config Limit Manager", () => {
   }, 300000);
 
   test("large config: 1 lg tx, 15 small tx", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
 
     appendTx(axiom, txCache, txHashesLarge[0]);
     for (let i = 0; i < 15; i++) {
@@ -514,7 +514,7 @@ describe("Config Limit Manager", () => {
   }, 120000);
 
   test("large config: 1 lg rc, 15 small rc", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     appendReceipt(axiom, txCache, rcHashesLarge[0]);
     for (let i = 0; i < 15; i++) {
       appendReceipt(axiom, txCache, txHashesSmall[i]);
@@ -524,7 +524,7 @@ describe("Config Limit Manager", () => {
   }, 120000);
 
   test("large config: 1 lg tx, 16 small rc", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     for (let i = 0; i < 1; i++) {
       appendTx(axiom, txCache, txHashesLarge[i]);
     }
@@ -536,7 +536,7 @@ describe("Config Limit Manager", () => {
   }, 120000);
 
   test("large config (fail): 17 tx", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     const testFn = async () => {
       for (let i = 0; i < 1; i++) {
         appendTx(axiom, txCache, txHashesLarge[i]);
@@ -550,7 +550,7 @@ describe("Config Limit Manager", () => {
   }, 120000);
 
   test("large config (fail): 4 lg rc, 16 small rc", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     const testFn = async () => {
       for (let i = 0; i < 4; i++) {
         appendReceipt(axiom, txCache, rcHashesLarge[i]);
@@ -564,7 +564,7 @@ describe("Config Limit Manager", () => {
   }, 120000);
 
   test("large config (fail): 1 lg tx, 17 small rc", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     const testFn = async () => {
       for (let i = 0; i < 1; i++) {
         appendTx(axiom, txCache, txHashesLarge[i]);
@@ -578,7 +578,7 @@ describe("Config Limit Manager", () => {
   }, 120000);
   
   test("max config: 1 max tx, 3 large tx", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     appendTx(axiom, txCache, txHashesMax[0]);
     for (let i = 0; i < 3; i++) {
       appendTx(axiom, txCache, txHashesLarge[i]);
@@ -588,7 +588,7 @@ describe("Config Limit Manager", () => {
   }, 120000);
 
   test("max config: 1 max tx, 3 large tx, 1 max rc", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     appendTx(axiom, txCache, txHashesMax[0]);
     for (let i = 0; i < 3; i++) {
       appendTx(axiom, txCache, txHashesLarge[i]);
@@ -601,7 +601,7 @@ describe("Config Limit Manager", () => {
   }, 120000);
 
   test("max config (fail): 1 max tx, 4 large tx", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     const testFn = async () => {
       appendTx(axiom, txCache, txHashesMax[0]);
       for (let i = 0; i < 4; i++) {
@@ -613,7 +613,7 @@ describe("Config Limit Manager", () => {
   }, 120000);
 
   test("max config (fail): 2 max rc", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     const testFn = async () => {
       for (let i = 0; i < 2; i++) {
         appendReceipt(axiom, txCache, rcHashesMax[i]);
@@ -624,7 +624,7 @@ describe("Config Limit Manager", () => {
   }, 120000);
 
   test("max config (fail): 4 large rc, 1 max tx", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     const testFn = async () => {
       for (let i = 0; i < 4; i++) {
         appendReceipt(axiom, txCache, rcHashesLarge[i]);
@@ -636,7 +636,7 @@ describe("Config Limit Manager", () => {
   }, 120000);
 
   test("max config (fail): oversize 1 max rc (max config log data len)", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     const testFn = async () => {
       appendReceipt(axiom, txCache, rcHashesOverMax[0]);
       const built = await axiom.buildBase(true);
@@ -645,7 +645,7 @@ describe("Config Limit Manager", () => {
   }, 120000);
 
   test("max config (fail): oversize 1 max rc (large config log data len)", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     const testFn = async () => {
       appendReceipt(axiom, txCache, rcHashesOverMax[1]);
       const built = await axiom.buildBase(true);

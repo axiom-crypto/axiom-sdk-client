@@ -1,7 +1,7 @@
 import {
   AxiomV2Callback,
   AxiomV2ComputeQuery,
-  AxiomV2QueryBuilderBase,
+  QueryBuilderBase,
   AxiomV2QueryOptions,
 } from "@axiom-crypto/circuit";
 import { 
@@ -11,21 +11,21 @@ import { AxiomV2FeeData, getCallbackHash, getQueryId, Subquery } from "@axiom-cr
 import { AxiomV2ClientOptions } from "../types";
 import { bytesToHex, zeroAddress } from "viem";
 import { 
-  AxiomV2QueryBuilderClientConfig,
+  QueryBuilderClientConfig,
   QueryBuilderClientInternalConfig,
   BuiltQueryV2,
 } from "./types";
 import { getChainDefaults } from "../lib/chain";
 import { getRandomValues } from "crypto";
 
-export class AxiomV2QueryBuilderClient extends AxiomV2QueryBuilderBase {
+export class QueryBuilderClient extends QueryBuilderBase {
   readonly config: QueryBuilderClientInternalConfig;
   protected builtQuery?: BuiltQueryV2;
   protected callback?: AxiomV2Callback;
   protected options: AxiomV2QueryOptions;
 
   constructor(
-    config: AxiomV2QueryBuilderClientConfig,
+    config: QueryBuilderClientConfig,
     dataQuery?: Subquery[],
     computeQuery?: AxiomV2ComputeQuery,
     callback?: AxiomV2Callback,
@@ -39,7 +39,7 @@ export class AxiomV2QueryBuilderClient extends AxiomV2QueryBuilderBase {
     this.options = this.setOptions(options ?? {});
   }
 
-  protected configure(config: AxiomV2QueryBuilderClientConfig): QueryBuilderClientInternalConfig {
+  protected configure(config: QueryBuilderClientConfig): QueryBuilderClientInternalConfig {
     const baseConfig = super.configure(config);
     let caller = "";
     if (config.caller !== undefined) {

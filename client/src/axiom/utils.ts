@@ -10,7 +10,7 @@ import { AbiType, AxiomV2ClientOverrides, AxiomV2SendQueryArgsParams, CircuitInp
 import { createPublicClient, http } from 'viem';
 import { getAxiomV2Abi, getAxiomV2QueryAddress, viemChain } from "../lib";
 import { getChainDefaults } from "../lib/chain";
-import { AxiomV2QueryBuilderClient } from "../queryBuilderClient";
+import { QueryBuilderClient } from "../queryBuilderClient";
 
 export function validateChainId(chainId: string) {
   switch (chainId) {
@@ -70,7 +70,7 @@ export function argsObjToArr(
   ]
 }
 
-export async function getMaxFeePerGas(axiom: AxiomV2QueryBuilderClient, overrides?: AxiomV2ClientOverrides): Promise<string> {
+export async function getMaxFeePerGas(axiom: QueryBuilderClient, overrides?: AxiomV2ClientOverrides): Promise<string> {
   const chainId = axiom.config.sourceChainId.toString();
   const axiomQueryAddress = overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
 

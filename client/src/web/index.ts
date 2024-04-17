@@ -2,7 +2,7 @@ import { AxiomV2Callback, AxiomV2CircuitCapacity } from "@axiom-crypto/circuit";
 import { AxiomBaseCircuit } from "@axiom-crypto/circuit/js/";
 import { buildSendQuery } from "../sendQuery";
 import { AxiomV2ClientOptions, AxiomV2SendQueryArgs } from "../types";
-import { AxiomV2QueryBuilderClient } from "../queryBuilderClient";
+import { QueryBuilderClient } from "../queryBuilderClient";
 
 export class AxiomCircuit<T> extends AxiomBaseCircuit<T> {
   constructor(inputs: {
@@ -28,7 +28,7 @@ export class AxiomCircuit<T> extends AxiomBaseCircuit<T> {
       target: input.callbackTarget,
       extraData: input.callbackExtraData,
     };
-    const queryBuilderClient = new AxiomV2QueryBuilderClient(
+    const queryBuilderClient = new QueryBuilderClient(
       this.queryBuilderBase.config,
       this.queryBuilderBase.getDataQuery(),
       this.queryBuilderBase.getComputeQuery(),

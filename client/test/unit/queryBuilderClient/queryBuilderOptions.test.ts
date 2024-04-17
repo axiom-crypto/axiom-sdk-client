@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { AxiomV2QueryBuilderClient, AxiomV2QueryBuilderClientConfig } from "../../../src";
+import { QueryBuilderClient, QueryBuilderClientConfig } from "../../../src";
 import { HeaderField } from "@axiom-crypto/circuit";
 import { ConstantsV2 } from "../../../../circuit/src/queryBuilderBase/constants";
 
@@ -7,7 +7,7 @@ import { ConstantsV2 } from "../../../../circuit/src/queryBuilderBase/constants"
 // - QueryBuilderV2 options
 
 describe("QueryBuilderV2 Options", () => {
-  const config: AxiomV2QueryBuilderClientConfig = {
+  const config: QueryBuilderClientConfig = {
     providerUri: process.env.PROVIDER_URI_MAINNET as string,
     caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     sourceChainId: 1,
@@ -20,7 +20,7 @@ describe("QueryBuilderV2 Options", () => {
   const blockNumber = 18300000;
 
   test("set maxFeePerGas", async () => {
-    const axiom = new AxiomV2QueryBuilderClient(config);
+    const axiom = new QueryBuilderClient(config);
     axiom.appendDataSubquery({
       blockNumber,
       fieldIdx: HeaderField.Timestamp,
@@ -35,7 +35,7 @@ describe("QueryBuilderV2 Options", () => {
   });
 
   test("set callbackGasLimit", async () => {
-    const axiom = new AxiomV2QueryBuilderClient(config);
+    const axiom = new QueryBuilderClient(config);
     axiom.appendDataSubquery({
       blockNumber,
       fieldIdx: HeaderField.Timestamp,
@@ -51,7 +51,7 @@ describe("QueryBuilderV2 Options", () => {
   });
 
   test("set refundee", async () => {
-    const axiom = new AxiomV2QueryBuilderClient({...config, refundee: "0xe76a90E3069c9d86e666DcC687e76fcecf4429cF"});
+    const axiom = new QueryBuilderClient({...config, refundee: "0xe76a90E3069c9d86e666DcC687e76fcecf4429cF"});
     axiom.appendDataSubquery({
       blockNumber,
       fieldIdx: HeaderField.Timestamp,

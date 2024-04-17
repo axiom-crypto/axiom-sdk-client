@@ -1,7 +1,7 @@
 import { getSlotForMapping, HeaderField, AccountField, TxField, getBlockNumberAndTxIdx, getFieldIdxTxCalldataIdx, getFieldIdxTxContractDataIdx, getEventSchema, getFieldIdxReceiptLogIdx } from "@axiom-crypto/tools";
 import {
-  AxiomV2QueryBuilderBase,
-  AxiomV2QueryBuilderBaseConfig,
+  QueryBuilderBase,
+  QueryBuilderBaseConfig,
 } from "../../../src";
 import { ethers } from "ethers";
 
@@ -14,7 +14,7 @@ describe("Query Validation Tests", () => {
   const provider = new ethers.JsonRpcProvider(process.env.PROVIDER_URI_MAINNET as string);
   const sepoliaProvider = new ethers.JsonRpcProvider(process.env.PROVIDER_URI_SEPOLIA as string);
 
-  const config: AxiomV2QueryBuilderBaseConfig = {
+  const config: QueryBuilderBaseConfig = {
     providerUri: process.env.PROVIDER_URI_MAINNET as string,
     version: "v2",
     sourceChainId: 1,
@@ -26,7 +26,7 @@ describe("Query Validation Tests", () => {
   };
 
   test("Validate pass: Header subquery", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     axiom.appendDataSubquery({
       blockNumber: 17000000,
       fieldIdx: HeaderField.GasUsed,
@@ -36,7 +36,7 @@ describe("Query Validation Tests", () => {
   });
 
   test("Validate pass: Account subquery", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     const subquery = {
       blockNumber: 18000000,
       addr: WETH_WHALE,
@@ -48,7 +48,7 @@ describe("Query Validation Tests", () => {
   });
 
   test("Validate pass: Storage subquery", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     const slot = getSlotForMapping("3", "address", WETH_WHALE);
     const subquery = {
       blockNumber: 18000000,
@@ -61,7 +61,7 @@ describe("Query Validation Tests", () => {
   });
 
   test("Validate pass: Tx subquery", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     const txHash = "0x8d2e6cbd7cf1f88ee174600f31b79382e0028e239bb1af8301ba6fc782758bc6";
     const { blockNumber, txIdx } = await getBlockNumberAndTxIdx(provider, txHash);
     if (blockNumber === null || txIdx === null) {
@@ -78,7 +78,7 @@ describe("Query Validation Tests", () => {
   });
 
   test("Validate pass: Tx subquery calldata", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     const txHash = "0x192bc136b4637e0c31dc80b7c4e8cd63328c7c411ba8574af1841ed2c4a6dd80";
     const { blockNumber, txIdx } = await getBlockNumberAndTxIdx(provider, txHash);
     if (blockNumber === null || txIdx === null) {
@@ -95,7 +95,7 @@ describe("Query Validation Tests", () => {
   });
 
   test("Validate pass: Larger Tx subquery contractData", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     const txHash = "0xc9ef13429be1a3f44c75af95c4e2ac2083a3469e2751a42a04fcdace94ff98a5";
     const { blockNumber, txIdx } = await getBlockNumberAndTxIdx(provider, txHash);
     if (blockNumber === null || txIdx === null) {
@@ -112,7 +112,7 @@ describe("Query Validation Tests", () => {
   });
 
   test("Validate pass: Receipt subquery", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     const txHash = "0x8d2e6cbd7cf1f88ee174600f31b79382e0028e239bb1af8301ba6fc782758bc6";
     const { blockNumber, txIdx } = await getBlockNumberAndTxIdx(provider, txHash);
     if (blockNumber === null || txIdx === null) {
@@ -131,7 +131,7 @@ describe("Query Validation Tests", () => {
   });
 
   test("Validate pass: Solidity nested mapping subquery", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     const subquery = {
       blockNumber: 17000000,
       addr: UNI_V3_FACTORY_ADDR,
@@ -145,7 +145,7 @@ describe("Query Validation Tests", () => {
   });
 
   test("Validate fail: Header subquery", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     const testFn = async () => {
       const subquery = {
         blockNumber: "0x480aa3cf46a1813d543e169314d56831aa002d932444723fee6b9e31d01f8c28",
@@ -158,7 +158,7 @@ describe("Query Validation Tests", () => {
   });
 
   test("Validate fail: type 3 tx subquery", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(sepoliaConfig);
+    const axiom = new QueryBuilderBase(sepoliaConfig);
     const sepoliaTransactions = [
       // type 3
       "0x8fd091f4b5b1b17431110afa99fbd9cabdabecb92a1315afa458fc3dcb91efde",

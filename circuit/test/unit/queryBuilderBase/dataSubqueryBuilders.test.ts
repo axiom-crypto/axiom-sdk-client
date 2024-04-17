@@ -14,8 +14,8 @@ import {
   getFieldIdxReceiptLogsBloomIdx,
 } from "@axiom-crypto/tools";
 import {
-  AxiomV2QueryBuilderBase,
-  AxiomV2QueryBuilderBaseConfig,
+  QueryBuilderBase,
+  QueryBuilderBaseConfig,
   HeaderSubquery,
   AccountSubquery,
   SolidityNestedMappingSubquery,
@@ -34,14 +34,14 @@ describe("Data Subquery Builders", () => {
   const provider = new ethers.JsonRpcProvider(process.env.PROVIDER_URI_MAINNET as string);
   const blockNumber = 18000000;
 
-  const config: AxiomV2QueryBuilderBaseConfig = {
+  const config: QueryBuilderBaseConfig = {
     providerUri: process.env.PROVIDER_URI_MAINNET as string,
     sourceChainId: 1,
     version: "v2",
   };
 
   test("Build and append a header subquery", () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     axiom.appendDataSubquery({
       blockNumber: blockNumber,
       fieldIdx: HeaderField.GasUsed,
@@ -54,7 +54,7 @@ describe("Data Subquery Builders", () => {
   });
 
   test("Build and append a header logsBloom subquery", () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     axiom.appendDataSubquery({
       blockNumber: blockNumber,
       fieldIdx: getFieldIdxHeaderLogsBloomIdx(2),
@@ -67,7 +67,7 @@ describe("Data Subquery Builders", () => {
   });
 
   test("Build and append an account subquery", () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     axiom.appendDataSubquery({
       blockNumber: blockNumber,
       addr: WETH_WHALE,
@@ -82,7 +82,7 @@ describe("Data Subquery Builders", () => {
   });
 
   test("Build and append a storage subquery", () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     axiom.appendDataSubquery({
       blockNumber: blockNumber,
       addr: WETH_ADDR,
@@ -97,7 +97,7 @@ describe("Data Subquery Builders", () => {
   });
 
   test("Build and append a tx subquery", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     const txHash = "0x8d2e6cbd7cf1f88ee174600f31b79382e0028e239bb1af8301ba6fc782758bc6";
     const { blockNumber, txIdx } = await getBlockNumberAndTxIdx(provider, txHash);
     if (blockNumber === null || txIdx === null) {
@@ -125,7 +125,7 @@ describe("Data Subquery Builders", () => {
   });
 
   test("Build and append a receipt subquery", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     const txHash = "0x8d2e6cbd7cf1f88ee174600f31b79382e0028e239bb1af8301ba6fc782758bc6";
     const { blockNumber, txIdx } = await getBlockNumberAndTxIdx(provider, txHash);
     if (blockNumber === null || txIdx === null) {
@@ -159,7 +159,7 @@ describe("Data Subquery Builders", () => {
   });
 
   test("Build and append a receipt log address subquery", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     const txHash = "0x8d2e6cbd7cf1f88ee174600f31b79382e0028e239bb1af8301ba6fc782758bc6";
     const { blockNumber, txIdx } = await getBlockNumberAndTxIdx(provider, txHash);
     if (blockNumber === null || txIdx === null) {
@@ -193,7 +193,7 @@ describe("Data Subquery Builders", () => {
   });
 
   test("Build and append a receipt logsBloom subquery", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
 
     const txHash = "0x8d2e6cbd7cf1f88ee174600f31b79382e0028e239bb1af8301ba6fc782758bc6";
     const { blockNumber, txIdx } = await getBlockNumberAndTxIdx(provider, txHash);
@@ -223,7 +223,7 @@ describe("Data Subquery Builders", () => {
   });
 
   test("Build and append a nested mapping subquery", async () => {
-    const axiom = new AxiomV2QueryBuilderBase(config);
+    const axiom = new QueryBuilderBase(config);
     axiom.appendDataSubquery({
       blockNumber: blockNumber,
       addr: WETH_ADDR,

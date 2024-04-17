@@ -2,7 +2,7 @@ import path from 'path';
 import { getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
 import { buildSendQuery } from "../sendQuery";
 import { argsArrToObj } from '../axiom/utils';
-import { AxiomV2QueryBuilderClient } from '../queryBuilderClient';
+import { QueryBuilderClient } from '../queryBuilderClient';
 
 export const queryParams = async (
   callbackTarget: string,
@@ -34,7 +34,7 @@ export const queryParams = async (
   console.log(`Reading proven circuit JSON from: ${provenFile}`)
   const provenJson = readJsonFromFile(provenFile);
   const providerUri = getProvider(options.provider);
-  const queryBuilderClient = new AxiomV2QueryBuilderClient({
+  const queryBuilderClient = new QueryBuilderClient({
     providerUri,
     sourceChainId: options.sourceChainId,
     version: "v2",

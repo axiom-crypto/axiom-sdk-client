@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import {
-  AxiomV2QueryBuilderBase,
-  AxiomV2QueryBuilderBaseConfig,
+  QueryBuilderBase,
+  QueryBuilderBaseConfig,
   AccountField,
   AccountSubquery,
   AxiomV2ComputeQuery,
@@ -49,7 +49,7 @@ describe("Build Query w/ ComputeQuery, DataQuery, Callback, and Options set (cor
   };
 
   test("should initialize with private key; build QueryV2 with dataQuery, computeQuery, and callback", async () => {
-    const config: AxiomV2QueryBuilderBaseConfig = {
+    const config: QueryBuilderBaseConfig = {
       providerUri: process.env.PROVIDER_URI_SEPOLIA as string,
       version: "v2",
     };
@@ -83,7 +83,7 @@ describe("Build Query w/ ComputeQuery, DataQuery, Callback, and Options set (cor
       computeProof: computeQuery.computeProof,
     };
 
-    const axiom = new AxiomV2QueryBuilderBase(config, dataQueryReq, computeQueryReq);
+    const axiom = new QueryBuilderBase(config, dataQueryReq, computeQueryReq);
     const unbiltDq = axiom.getDataQuery();
     expect((unbiltDq?.[2] as AccountSubquery).addr).toEqual(WETH_WHALE);
     await axiom.buildBase();
@@ -109,7 +109,7 @@ describe("Build Query w/ ComputeQuery, DataQuery, Callback, and Options set (cor
   });
 
   test("should initialize without private key; build QueryV2 with dataQuery, computeQuery, and callback", async () => {
-    const config: AxiomV2QueryBuilderBaseConfig = {
+    const config: QueryBuilderBaseConfig = {
       providerUri: process.env.PROVIDER_URI_SEPOLIA as string,
       version: "v2",
     };
@@ -150,7 +150,7 @@ describe("Build Query w/ ComputeQuery, DataQuery, Callback, and Options set (cor
       maxFeePerGas: BigInt(100000000).toString(),
     };
 
-    const axiom = new AxiomV2QueryBuilderBase(config, dataQueryReq, computeQueryReq);
+    const axiom = new QueryBuilderBase(config, dataQueryReq, computeQueryReq);
     const unbiltDq = axiom.getDataQuery();
     expect((unbiltDq?.[2] as AccountSubquery).addr).toEqual(WETH_WHALE);
     await axiom.buildBase();

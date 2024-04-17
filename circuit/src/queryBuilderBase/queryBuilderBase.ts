@@ -23,7 +23,7 @@ import {
 import {
   AxiomV2QueryOptions,
   DataSubqueryCount,
-  AxiomV2QueryBuilderBaseConfig,
+  QueryBuilderBaseConfig,
   BuiltQueryV2Base,
   QueryBuilderBaseInternalConfig,
 } from "./types";
@@ -43,7 +43,7 @@ import { deepCopyObject } from "../utils";
 import { ConfigLimitManager } from "./dataSubquery/configLimitManager";
 import { handleChainId, handleProvider, parseAddress, parseChainId, parseMock, parseProvider, parseVersion } from "./configure";
 
-export class AxiomV2QueryBuilderBase {
+export class QueryBuilderBase {
   readonly config: QueryBuilderBaseInternalConfig;
   protected builtQueryBase?: BuiltQueryV2Base;
   protected builtDataQuery?: AxiomV2DataQuery;
@@ -52,7 +52,7 @@ export class AxiomV2QueryBuilderBase {
   protected dataSubqueryCount: DataSubqueryCount;
 
   constructor(
-    config: AxiomV2QueryBuilderBaseConfig,
+    config: QueryBuilderBaseConfig,
     dataQuery?: Subquery[],
     computeQuery?: AxiomV2ComputeQuery,
   ) {
@@ -66,7 +66,7 @@ export class AxiomV2QueryBuilderBase {
     }
   }
 
-  protected configure(config: AxiomV2QueryBuilderBaseConfig): QueryBuilderBaseInternalConfig {
+  protected configure(config: QueryBuilderBaseConfig): QueryBuilderBaseInternalConfig {
     config = handleProvider(config);
     const providerUri = parseProvider(config.providerUri);
 

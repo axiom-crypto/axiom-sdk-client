@@ -11,10 +11,10 @@ import { encodeFullQueryV2 } from "@axiom-crypto/circuit/pkg/tools";
 import { calculateFeeDataExtended, calculatePayment } from "./lib/paymentCalc";
 import { viemChain } from "./lib/viem";
 import { getAxiomV2Abi, getAxiomV2QueryAddress } from "./lib";
-import { AxiomV2QueryBuilderClient, AxiomV2QueryBuilderClientConfig } from "./queryBuilderClient";
+import { QueryBuilderClient, QueryBuilderClientConfig } from "./queryBuilderClient";
 
 export const buildSendQuery = async (input: {
-  queryBuilderClient: AxiomV2QueryBuilderClient;
+  queryBuilderClient: QueryBuilderClient;
   dataQuery: DataSubquery[];
   computeQuery: AxiomV2ComputeQuery;
   callback: AxiomV2Callback;
@@ -42,7 +42,7 @@ export const buildSendQuery = async (input: {
   const feeDataExtended = await calculateFeeDataExtended(chainId, publicClient, options);
   const payment = await calculatePayment(chainId, publicClient, feeDataExtended);
 
-  const config: AxiomV2QueryBuilderClientConfig = {
+  const config: QueryBuilderClientConfig = {
     providerUri: input.queryBuilderClient.config.providerUri,
     sourceChainId: input.queryBuilderClient.config.sourceChainId.toString(),
     targetChainId: input.queryBuilderClient.config.targetChainId.toString(),
@@ -50,7 +50,7 @@ export const buildSendQuery = async (input: {
     mock: input.queryBuilderClient.config.mock,
     refundee: input.options.refundee ?? input.caller,
   };
-  const queryBuilder = new AxiomV2QueryBuilderClient(
+  const queryBuilder = new QueryBuilderClient(
     config,
     undefined,  // dataQuery; we set this as a setBuiltDataQuery below
     input.computeQuery,

@@ -1,17 +1,17 @@
 import { bytes32 } from "@axiom-crypto/tools";
-import { AxiomV2QueryBuilderBase, AxiomV2QueryBuilderBaseConfig, AxiomV2Callback, AxiomV2ComputeQuery } from "../../../src";
+import { QueryBuilderBase, QueryBuilderBaseConfig, AxiomV2Callback, AxiomV2ComputeQuery } from "../../../src";
 
 // Test coverage areas:
 // - ComputeQuery
 // - Callback
 
 describe("Build ComputeQuery Standalone", () => {
-  const config: AxiomV2QueryBuilderBaseConfig = {
+  const config: QueryBuilderBaseConfig = {
     providerUri: process.env.PROVIDER_URI_SEPOLIA as string,
     sourceChainId: 1,
     version: "v2",
   };
-  const axiom = new AxiomV2QueryBuilderBase(config);
+  const axiom = new QueryBuilderBase(config);
 
   test("simple computeQuery w/ no data subqueries", async () => {
     /** Code

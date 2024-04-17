@@ -26,6 +26,8 @@ npx harness search --provider <PROVIDER_URI> --include <BLOCKNUMBER(S)> --output
 node dist/cli/index.js search --provider <PROVIDER_URI> --include <BLOCKNUMBER(S)> --output <OUTPUT_DIR>
 ```
 
+Where `--include` is optional and blocknumbers is a comma-separated list (single: `--include 1530001` multiple: `--include 1530001,1530005,1530011`).
+
 ## Setting test inputs
 
 Test inputs can be set by adding a `//$` decorator followed by the chaindata object path to each input.

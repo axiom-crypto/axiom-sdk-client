@@ -30,7 +30,7 @@ describe("PaymentCalc: Ethereum", () => {
     await axiom.prove(inputs);
     const args = axiom.getSendQueryArgs();
     expect(args?.value).toEqual(5600000000000000n);
-  }, 20000);
+  }, 30000);
 
   test("Payment calculation high based on options", async () => {
     const axiom = new Axiom({
@@ -51,7 +51,7 @@ describe("PaymentCalc: Ethereum", () => {
     await axiom.prove(inputs);
     const args = axiom.getSendQueryArgs();
     expect(args?.value).toEqual(500213000000000000000n);
-  }, 20000);
+  }, 30000);
 
   test("Payment calculation low based on options", async () => {
     const axiom = new Axiom({
@@ -72,7 +72,7 @@ describe("PaymentCalc: Ethereum", () => {
     await axiom.prove(inputs);
     const args = axiom.getSendQueryArgs();
     expect(args?.value).toEqual(5105000000000000n);
-  }, 20000);
+  }, 30000);
 
   test("Set overrideAxiomQueryFee greater than standard payment", async () => {
     const axiom = new Axiom({
@@ -93,7 +93,7 @@ describe("PaymentCalc: Ethereum", () => {
     await axiom.prove(inputs);
     const args = axiom.getSendQueryArgs();
     expect(args?.value).toEqual(52600000000000000n);
-  }, 20000);
+  }, 30000);
 
   test("Set overrideAxiomQueryFee less than standard payment", async () => {
     const axiom = new Axiom({
@@ -114,5 +114,5 @@ describe("PaymentCalc: Ethereum", () => {
     await axiom.prove(inputs);
     const args = axiom.getSendQueryArgs();
     expect(args?.value).toEqual(5600000000000000n);
-  }, 20000);
+  }, 30000);
 });

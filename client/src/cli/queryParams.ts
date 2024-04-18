@@ -2,7 +2,6 @@ import path from 'path';
 import { getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
 import { buildSendQuery } from "../sendQuery";
 import { argsArrToObj } from '../axiom/utils';
-import { QueryBuilderClient } from '../queryBuilderClient';
 
 export const queryParams = async (
   callbackTarget: string,
@@ -34,27 +33,22 @@ export const queryParams = async (
   console.log(`Reading proven circuit JSON from: ${provenFile}`)
   const provenJson = readJsonFromFile(provenFile);
   const providerUri = getProvider(options.provider);
-  const queryBuilderClient = new QueryBuilderClient({
-    providerUri,
-    sourceChainId: options.sourceChainId,
-    version: "v2",
-    mock: options.mock ?? false,
-    refundee: options.refundAddress,
-  });
   try {
     let build = await buildSendQuery({
-      queryBuilderClient,
+      chainId: options.sourceChainId,
+      providerUri,
       dataQuery: provenJson.dataQuery,
       computeQuery: provenJson.computeQuery,
       callback: {
         target: callbackTarget,
         extraData: options.callbackExtraData ?? "0x",
       },
+      caller: options.caller ?? options.refundAddress,
+      mock: options.mock ?? false,
       options: {
         maxFeePerGas: options.maxFeePerGas,
         callbackGasLimit: options.callbackGasLimit,
       },
-      caller: options.caller ?? options.refundAddress,
     });
     build.value = build.value.toString() as any;
     const res = {

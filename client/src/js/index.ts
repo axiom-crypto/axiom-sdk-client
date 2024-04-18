@@ -2,7 +2,6 @@ import { AxiomV2Callback, AxiomV2CircuitCapacity } from "@axiom-crypto/circuit";
 import { AxiomBaseCircuit } from "@axiom-crypto/circuit/js/";
 import { buildSendQuery } from "../sendQuery";
 import { AxiomV2QueryOptions, AxiomV2SendQueryArgs } from "../types";
-import { QueryBuilderClient, QueryBuilderClientConfig } from "../queryBuilderClient";
 
 export class AxiomCircuit<T> extends AxiomBaseCircuit<T> {
   constructor(inputs: {
@@ -23,30 +22,20 @@ export class AxiomCircuit<T> extends AxiomBaseCircuit<T> {
     callerAddress: string;
     options: AxiomV2QueryOptions;
   }): Promise<AxiomV2SendQueryArgs> {
+    if (!this.chainId) throw new Error("No chain ID provided");
     if (!this.computeQuery) throw new Error("No compute query generated");
     const callback: AxiomV2Callback = {
       target: input.callbackTarget,
       extraData: input.callbackExtraData,
     };
-    const config: QueryBuilderClientConfig = {
-      sourceChainId: this.chainId,
-      providerUri: this.provider,
-      version: "v2",
-      mock: this.isMock ?? false,
-    };
-    const queryBuilderClient = new QueryBuilderClient(
-      config,
-      this.dataQuery.map((dq) => dq.subqueryData),
-      this.computeQuery,
-      callback,
-      input.options,
-    );
     return await buildSendQuery({
-      queryBuilderClient,
+      chainId: this.chainId,
+      providerUri: this.provider,
       dataQuery: this.dataQuery,
       computeQuery: this.computeQuery,
       callback,
       caller: input.callerAddress,
+      mock: this.isMock ?? false,
       options: input.options,
     });
   }

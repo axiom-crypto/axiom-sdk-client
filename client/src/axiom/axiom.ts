@@ -85,6 +85,10 @@ export class Axiom<T> {
     });
   }
 
+  getOptions(): AxiomV2QueryOptions | undefined {
+    return this.options;
+  }
+
   getDataQuery(): DataSubquery[] {
     return this.axiomCircuit.getDataQuery();
   }

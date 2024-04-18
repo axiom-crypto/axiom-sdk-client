@@ -70,16 +70,19 @@ export function argsObjToArr(
   ]
 }
 
-export async function getMaxFeePerGas(axiom: QueryBuilderClient, overrides?: AxiomV2ClientOverrides): Promise<string> {
-  const chainId = axiom.config.sourceChainId.toString();
+export async function getMaxFeePerGas(
+  chainId: string,
+  providerUri: string,
+  overrides?: AxiomV2ClientOverrides
+): Promise<string> {
   const axiomQueryAddress = overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
-
-  const providerFeeData = await axiom.config.provider.getFeeData();
-  const providerMaxFeePerGas = providerFeeData.maxFeePerGas ?? 0n;
+  
   const publicClient = createPublicClient({
-    chain: viemChain(axiom.config.sourceChainId.toString(), axiom.config.providerUri),
-    transport: http(axiom.config.providerUri),
+    chain: viemChain(chainId, providerUri),
+    transport: http(providerUri),
   });
+  const providerFeeData = await publicClient.estimateFeesPerGas();
+  const providerMaxFeePerGas = providerFeeData.maxFeePerGas ?? 0n;
 
   try {
     let contractMinMaxFeePerGas = await publicClient.readContract({

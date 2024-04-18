@@ -13,11 +13,13 @@ import { getAxiomV2Abi, getAxiomV2QueryAddress } from "./lib";
 import { QueryBuilderClient, QueryBuilderClientConfig } from "./queryBuilderClient";
 
 export const buildSendQuery = async (input: {
-  queryBuilderClient: QueryBuilderClient;
+  chainId: string;
+  providerUri: string;
   dataQuery: DataSubquery[];
   computeQuery: AxiomV2ComputeQuery;
   callback: AxiomV2Callback;
   caller: string;
+  mock: boolean;
   options: AxiomV2QueryOptions;
 }): Promise<AxiomV2SendQueryArgs> => {
   const validate = input.options?.overrides?.validateBuild ?? true;
@@ -26,38 +28,40 @@ export const buildSendQuery = async (input: {
   }
   let options = { ...input.options };
   if (options.maxFeePerGas == undefined) {
-    options.maxFeePerGas = await getMaxFeePerGas(input.queryBuilderClient, input.options?.overrides);
+    options.maxFeePerGas = await getMaxFeePerGas(input.chainId, input.providerUri, input.options?.overrides);
   }
 
-  const chainId = input.queryBuilderClient.config.sourceChainId.toString();
+  const chainId = input.chainId;
   const axiomQueryAddress = options?.overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
   const abi = getAxiomV2Abi(AbiType.Query);
 
   const publicClient = createPublicClient({
-    chain: viemChain(chainId, input.queryBuilderClient.config.providerUri),
-    transport: http(input.queryBuilderClient.config.providerUri),
+    chain: viemChain(chainId, input.providerUri),
+    transport: http(input.providerUri),
   });
 
   const feeDataExtended = await calculateFeeDataExtended(chainId, publicClient, options);
   const payment = await calculatePayment(chainId, publicClient, feeDataExtended);
 
   const config: QueryBuilderClientConfig = {
-    providerUri: input.queryBuilderClient.config.providerUri,
-    sourceChainId: input.queryBuilderClient.config.sourceChainId.toString(),
-    targetChainId: input.queryBuilderClient.config.targetChainId.toString(),
-    version: input.queryBuilderClient.config.version,
-    mock: input.queryBuilderClient.config.mock,
-    refundee: input.options.refundee ?? input.caller,
+    sourceChainId: chainId,
+    providerUri: input.providerUri,
+    caller: input.caller,
+    version: "v2",
+    mock: input.mock,
   };
-  const queryBuilder = new QueryBuilderClient(
+  const queryBuilderClient = new QueryBuilderClient(
     config,
-    undefined,  // dataQuery; we set this as a setBuiltDataQuery below
+    input.dataQuery.map((dq) => dq.subqueryData),
     input.computeQuery,
     input.callback,
-    feeDataExtended,
+    options,
   );
+  queryBuilderClient.setOptions(feeDataExtended);
+
+  // Feed the data query into the query builder 
   if (input.dataQuery.length > 0) {
-    queryBuilder.setBuiltDataQuery({
+    queryBuilderClient.setBuiltDataQuery({
       sourceChainId: chainId,
       subqueries: input.dataQuery,
     }, true);
@@ -72,8 +76,8 @@ export const buildSendQuery = async (input: {
     userSalt,
     refundee,
     dataQuery,
-  } = await queryBuilder.build(validate);
-  const id = await queryBuilder.getQueryId(input.caller);
+  } = await queryBuilderClient.build(validate);
+  const id = await queryBuilderClient.getQueryId(input.caller);
 
   let sendQueryArgs: any;
   if (!input.options.ipfsClient) {
@@ -93,7 +97,7 @@ export const buildSendQuery = async (input: {
         dataQuery,
       ],
       queryId: id,
-      mock: queryBuilder.config.mock,
+      mock: queryBuilderClient.config.mock,
     };
   } else {
     const encodedQuery = encodeFullQueryV2(
@@ -128,7 +132,7 @@ export const buildSendQuery = async (input: {
         refundee,
       ],
       queryId: id,
-      mock: queryBuilder.config.mock,
+      mock: queryBuilderClient.config.mock,
     };
   }
 

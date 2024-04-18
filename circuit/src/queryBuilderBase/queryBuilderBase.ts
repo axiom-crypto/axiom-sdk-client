@@ -169,7 +169,6 @@ export class QueryBuilderBase {
   setDataQuery(dataQuery: Subquery[]) {
     this.unsetBuiltQueryBase();
     this.dataQuery = undefined;
-    this.resetSubqueryCount();
     this.append(dataQuery);
   }
 
@@ -197,13 +196,11 @@ export class QueryBuilderBase {
       throw new Error(`Cannot add more than ${ConstantsV2.UserMaxTotalSubqueries} subqueries`);
     }
 
-    for (const subquery of dataSubqueries) {
-      const type = getSubqueryTypeFromKeys(Object.keys(subquery));
-      this.updateSubqueryCount(type, skipValidate);
-    }
-
     // Append new dataSubqueries to existing dataQuery
     this.dataQuery = [...(this.dataQuery ?? []), ...dataSubqueries];
+    if (!skipValidate) {
+      this.validateSubqueryCount();
+    }
   }
 
   /**
@@ -221,11 +218,10 @@ export class QueryBuilderBase {
    * from some other service. Setting this will override any currently appended subqueries.
    */
   setBuiltDataQuery(dataQuery: AxiomV2DataQuery, skipValidate?: boolean): void {
-    this.resetSubqueryCount();
-    for (const subquery of dataQuery.subqueries) {
-      this.updateSubqueryCount(subquery.type, skipValidate);
-    }
     this.dataQuery = dataQuery.subqueries.map((subquery) => subquery.subqueryData);
+    if (!skipValidate) {
+      this.validateSubqueryCount();
+    }
   }
 
   /**
@@ -405,61 +401,9 @@ export class QueryBuilderBase {
     return valid;
   }
 
-  protected resetSubqueryCount() {
-    this.dataSubqueryCount = deepCopyObject(ConstantsV2.EmptyDataSubqueryCount);
-  }
-
-  protected updateSubqueryCount(type: DataSubqueryType, skipValidate?: boolean) {
-    this.dataSubqueryCount.total++;
-    if (skipValidate) return;
-    if (this.dataSubqueryCount.total > ConstantsV2.UserMaxTotalSubqueries) {
-      throw new Error(`Cannot add more than ${ConstantsV2.UserMaxTotalSubqueries} subqueries`);
-    }
-    switch (type) {
-      case DataSubqueryType.Header:
-        this.dataSubqueryCount.header++;
-        if (this.dataSubqueryCount.header > ConstantsV2.MaxSameSubqueryType) {
-          throw new Error(`Cannot add more than ${ConstantsV2.MaxSameSubqueryType} Header subqueries`);
-        }
-        break;
-      case DataSubqueryType.Account:
-        this.dataSubqueryCount.account++;
-        if (this.dataSubqueryCount.account > ConstantsV2.MaxSameSubqueryType) {
-          throw new Error(
-            `Cannot add more than ${ConstantsV2.MaxSameSubqueryType} Account + Storage + Nested Mapping subqueries`,
-          );
-        }
-        break;
-      case DataSubqueryType.Storage:
-        this.dataSubqueryCount.storage++;
-        if (this.dataSubqueryCount.storage > ConstantsV2.MaxSameSubqueryType) {
-          throw new Error(
-            `Cannot add more than ${ConstantsV2.MaxSameSubqueryType} Account + Storage + Nested Mapping subqueries`,
-          );
-        }
-        break;
-      case DataSubqueryType.Transaction:
-        this.dataSubqueryCount.transaction++;
-        if (this.dataSubqueryCount.transaction > ConstantsV2.MaxSameSubqueryType) {
-          throw new Error(`Cannot add more than ${ConstantsV2.MaxSameSubqueryType} Transaction subqueries`);
-        }
-        break;
-      case DataSubqueryType.Receipt:
-        this.dataSubqueryCount.receipt++;
-        if (this.dataSubqueryCount.receipt > ConstantsV2.MaxSameSubqueryType) {
-          throw new Error(`Cannot add more than ${ConstantsV2.MaxSameSubqueryType} Receipt subqueries`);
-        }
-        break;
-      case DataSubqueryType.SolidityNestedMapping:
-        this.dataSubqueryCount.solidityNestedMapping++;
-        if (this.dataSubqueryCount.solidityNestedMapping > ConstantsV2.MaxSameSubqueryType) {
-          throw new Error(
-            `Cannot add more than ${ConstantsV2.MaxSameSubqueryType} Account + Storage + Nested Mapping subqueries`,
-          );
-        }
-        break;
-      default:
-        throw new Error(`Unknown subquery type: ${type}`);
+  protected validateSubqueryCount() {
+    if (this.dataQuery && this.dataQuery.length > ConstantsV2.UserMaxTotalSubqueries) {
+      throw new Error(`Number of subqueries (${this.dataQuery.length}) exceeds maximum of ${ConstantsV2.UserMaxTotalSubqueries} subqueries`);
     }
   }
 }

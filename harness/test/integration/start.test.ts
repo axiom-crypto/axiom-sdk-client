@@ -27,7 +27,7 @@ describe("Integration tests", () => {
 
   const circuitPaths = findCircuitFiles("./test/integration/circuits");
   let standardTests: string[] = [];
-  for (const circuitPath of ["test/integration/circuits/computeQuery/simple.circuit.ts"]) {
+  for (const circuitPath of circuitPaths) {
     const filename = path.basename(circuitPath);
     if (!SPECIAL_TESTS.includes(filename)) {
       standardTests.push(circuitPath);
@@ -55,46 +55,46 @@ describe("Integration tests", () => {
     });
   }
 
-  // test(`Size 129 header`, async () => {
-  //   const testFn = async () => {
-  //     await run({
-  //       circuit: "./test/integration/circuits/capacityDataQuery/size129Header.circuit.ts",
-  //       provider,
-  //       data,
-  //       send: true,
-  //     });
-  //   }
-  //   await expect(testFn()).rejects.toThrowError();
-  // });
+  test(`Size 129 header`, async () => {
+    const testFn = async () => {
+      await run({
+        circuit: "./test/integration/circuits/capacityDataQuery/size129Header.circuit.ts",
+        provider,
+        data,
+        send: true,
+      });
+    }
+    await expect(testFn()).rejects.toThrowError();
+  });
 
-  // test(`Custom capacity (256)`, async () => {
-  //   const receipt = await run({
-  //     circuit: "./test/integration/circuits/computeQuery/simpleWithCapacity.circuit.ts",
-  //     provider,
-  //     data,
-  //     send: true,
-  //     options: { 
-  //       capacity: {
-  //         maxOutputs: 256,
-  //         maxSubqueries: 256,
-  //       },
-  //     },
-  //   });
-  //   expect(receipt.status).toEqual("success");
-  // });
+  test(`Custom capacity (256)`, async () => {
+    const receipt = await run({
+      circuit: "./test/integration/circuits/computeQuery/simpleWithCapacity.circuit.ts",
+      provider,
+      data,
+      send: true,
+      options: { 
+        capacity: {
+          maxOutputs: 256,
+          maxSubqueries: 256,
+        },
+      },
+    });
+    expect(receipt.status).toEqual("success");
+  });
 
-  // test(`EIP4844`, async () => {
-  //   if (!(CHAIN_ID === "1" || CHAIN_ID === "11155111")) {
-  //     return;
-  //   }
-  //   const testFn = async () => {
-  //     await run({
-  //       circuit: "./test/integration/circuits/eip4844/eip4844receipt.circuit.ts",
-  //       provider,
-  //       data,
-  //       send: true,
-  //     });
-  //   }
-  //   await expect(testFn()).rejects.toThrowError();
-  // });
+  test(`EIP4844`, async () => {
+    if (!(CHAIN_ID === "1" || CHAIN_ID === "11155111")) {
+      return;
+    }
+    const testFn = async () => {
+      await run({
+        circuit: "./test/integration/circuits/eip4844/eip4844receipt.circuit.ts",
+        provider,
+        data,
+        send: true,
+      });
+    }
+    await expect(testFn()).rejects.toThrowError();
+  });
 });

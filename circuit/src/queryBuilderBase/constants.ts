@@ -34,7 +34,6 @@ export const ConstantsV2 = Object.freeze({
 
   // Subquery limits
   UserMaxTotalSubqueries: 128,
-  MaxSameSubqueryType: 128,
   SubqueryConfigs: {
     [SubqueryConfig.Default]: {
       MaxTxSubqueries: 128,

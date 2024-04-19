@@ -26,8 +26,8 @@ export const defaultInputs = {
   blockNumber: 4000000, //$ account.eoa[4].blockNumber
   contractBlock: 4000000, //$ storage.nonzero[4].blockNumber
   contract: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701", //$ storage.nonzero[4].address
-  txBlockNumber: 4000000, //$ tx.type["2"][2].blockNumber
-  txTxIdx: 0, //$ tx.type["2"][2].txIdx
+  txBlockNumber: 4000000, //$ tx.category.large[2].blockNumber
+  txTxIdx: 0, //$ tx.category.large[2].txIdx
   rcBlockNumber: 4000000, //$ rc.events[2].blockNumber
   rcTxIdx: 0, //$ rc.events[2].txIdx
 };

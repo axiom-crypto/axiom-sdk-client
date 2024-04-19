@@ -1,6 +1,6 @@
 import { concat, zeroHash } from "viem";
-import { AxiomBaseCircuit } from "../../src/js";
-import { circuit as seven_balance_override_circuit } from "./circuits/7_balance_override.circuit";
+import { AxiomBaseCircuit } from "../../../src/js";
+import { circuit as seven_balance_override_circuit } from "../circuits/7_balance_override.circuit";
 
 describe("Scaffold with limit overrides", () => {
     test("Build computeQuery with limit overrides", async () => {

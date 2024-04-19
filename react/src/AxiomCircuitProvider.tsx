@@ -11,12 +11,12 @@ import {
   AxiomV2CompiledCircuit,
   AxiomV2Callback,
   AxiomV2SendQueryArgs,
-  AxiomV2ClientOptions,
+  AxiomV2QueryOptions,
   DEFAULT_CAPACITY,
 } from "@axiom-crypto/client";
 
 type AxiomCircuitContextType<T> = {
-  setOptions: React.Dispatch<React.SetStateAction<AxiomV2ClientOptions | null>>,
+  setOptions: React.Dispatch<React.SetStateAction<AxiomV2QueryOptions | null>>,
   setParams: (inputs: T, callbackTarget: string, callbackExtraData: string, refundee: string) => void,
   areParamsSet: boolean,
   build: () => Promise<AxiomV2SendQueryArgs | null>,
@@ -46,7 +46,7 @@ function AxiomCircuitProvider({
   children: React.ReactNode,
 }) {
   const [inputs, setInputs] = useState<any | null>(null);
-  const [options, setOptions] = useState<AxiomV2ClientOptions | null>(null);
+  const [options, setOptions] = useState<AxiomV2QueryOptions | null>(null);
   const [callback, setCallback] = useState<AxiomV2Callback | null>(null);
   const [refundee, setRefundee] = useState<string | null>(null);
   const [builtQuery, setBuiltQuery] = useState<AxiomV2SendQueryArgs | null>(null);

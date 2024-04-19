@@ -27,8 +27,8 @@ export const defaultInputs = {
   storBlockNumber: 5000000, //$ storage.nonzero[4].blockNumber
   storAddress: "0x83c8c0b395850ba55c830451cfaca4f2a667a983", //$ storage.nonzero[4].address
   storSlot: 0, //$ storage.nonzero[4].slot
-  txBlockNumber: 4000000, //$ tx.type["2"][1].blockNumber
-  txTxIdx: 0, //$ tx.type["2"][1].txIdx
+  txBlockNumber: 4000000, //$ tx.category.default[1].blockNumber
+  txTxIdx: 0, //$ tx.category.default[1].txIdx
   rcBlockNumber: 4000000, //$ rc.events[1].blockNumber
   rcTxIdx: 0, //$ rc.events[1].txIdx
 };

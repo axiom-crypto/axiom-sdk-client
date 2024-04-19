@@ -1,8 +1,7 @@
+import { AxiomV2Callback, AxiomV2CircuitCapacity } from "@axiom-crypto/circuit";
 import { AxiomBaseCircuit } from "@axiom-crypto/circuit/js/";
-import { AxiomV2Callback } from "@axiom-crypto/core";
 import { buildSendQuery } from "../sendQuery";
-import { AxiomV2CircuitCapacity } from "@axiom-crypto/circuit/types";
-import { AxiomV2ClientOptions, AxiomV2SendQueryArgs } from "../types";
+import { AxiomV2QueryOptions, AxiomV2SendQueryArgs } from "../types";
 
 export class AxiomCircuit<T> extends AxiomBaseCircuit<T> {
   constructor(inputs: {
@@ -21,19 +20,22 @@ export class AxiomCircuit<T> extends AxiomBaseCircuit<T> {
     callbackTarget: string;
     callbackExtraData: string;
     callerAddress: string;
-    options: AxiomV2ClientOptions;
+    options: AxiomV2QueryOptions;
   }): Promise<AxiomV2SendQueryArgs> {
+    if (!this.chainId) throw new Error("No chain ID provided");
     if (!this.computeQuery) throw new Error("No compute query generated");
-    const axiomCallback: AxiomV2Callback = {
+    const callback: AxiomV2Callback = {
       target: input.callbackTarget,
       extraData: input.callbackExtraData,
     };
     return await buildSendQuery({
-      axiom: this.axiom,
+      chainId: this.chainId,
+      providerUri: this.provider,
       dataQuery: this.dataQuery,
       computeQuery: this.computeQuery,
-      callback: axiomCallback,
+      callback,
       caller: input.callerAddress,
+      mock: this.isMock ?? false,
       options: input.options,
     });
   }

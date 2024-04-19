@@ -13,6 +13,7 @@ env:
   PRIVATE_KEY_SEPOLIA: ${{ secrets.PRIVATE_KEY_SEPOLIA }}
   PRIVATE_KEY_84532: ${{ secrets.PRIVATE_KEY_84532 }}
   PRIVATE_KEY_11155111: ${{ secrets.PRIVATE_KEY_11155111 }}
+  PROVIDER_URI_MAINNET: ${{ secrets.PROVIDER_URI_MAINNET }}
   PROVIDER_URI_SEPOLIA: ${{ secrets.PROVIDER_URI_SEPOLIA }}
   PROVIDER_URI_GOERLI: ${{ secrets.PROVIDER_URI_GOERLI }}
   PROVIDER_URI_1: ${{ secrets.PROVIDER_URI_1 }}
@@ -21,8 +22,8 @@ env:
   PINATA_JWT: ${{ secrets.PINATA_JWT }}
 
 jobs:
-  circuit-js:
-    name: JS Circuit Tests
+  circuit:
+    name: Circuit & QueryBuilder Tests
     runs-on: ubuntu-latest
 
     steps:

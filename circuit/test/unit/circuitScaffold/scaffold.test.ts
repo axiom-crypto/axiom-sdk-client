@@ -1,6 +1,6 @@
 import { concat, zeroHash } from "viem";
-import { AxiomBaseCircuit } from "../../src/js";
-import { circuit as seven_balance_circuit } from "./circuits/7_balance.circuit";
+import { AxiomBaseCircuit } from "../../../src/js";
+import { circuit as seven_balance_circuit } from "../circuits/7_balance.circuit";
 
 describe("Scaffold", () => {
   test("Build computeQuery", async () => {

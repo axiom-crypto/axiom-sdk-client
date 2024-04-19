@@ -23,8 +23,8 @@ export interface CircuitInputs {
 export const defaultInputs = {
   blockNumber: 4000000, //$ account.eoa[7].blockNumber
   contract: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701", //$ storage.nonzero[7].address
-  txBlockNumber: 4000000, //$ tx.type["2"][4].blockNumber
-  txTxIdx: 0, //$ tx.type["2"][4].txIdx
+  txBlockNumber: 4000000, //$ tx.category.default[4].blockNumber
+  txTxIdx: 0, //$ tx.category.default[4].txIdx
   rcBlockNumber: 4000000, //$ rc.events[4].blockNumber
   rcTxIdx: 0, //$ rc.events[4].txIdx
 };

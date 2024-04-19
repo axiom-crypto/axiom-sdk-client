@@ -2,6 +2,7 @@ import { getSlotForMapping, HeaderField, AccountField, TxField, getBlockNumberAn
 import {
   QueryBuilderBase,
   QueryBuilderBaseConfig,
+  Subquery,
 } from "../../../src";
 import { ethers } from "ethers";
 
@@ -30,7 +31,7 @@ describe("Query Validation Tests", () => {
     axiom.appendDataSubquery({
       blockNumber: 17000000,
       fieldIdx: HeaderField.GasUsed,
-    });
+    } as Subquery);
     const isValid = await axiom.validate();
     expect(isValid).toEqual(true);
   });
@@ -148,9 +149,10 @@ describe("Query Validation Tests", () => {
     const axiom = new QueryBuilderBase(config);
     const testFn = async () => {
       const subquery = {
-        blockNumber: "0x480aa3cf46a1813d543e169314d56831aa002d932444723fee6b9e31d01f8c28",
+        blockNumber: 1234567,
+        addr: "0x480aa3cf46a1813d543e169314d56831aa002d932444723fee6b9e31d01f8c28",
         fieldIdx: HeaderField.Miner
-      };
+      } as Subquery;
       axiom.appendDataSubquery(subquery);
       await axiom.validate();
     };
@@ -177,7 +179,7 @@ describe("Query Validation Tests", () => {
         blockNumber,
         txIdx,
         fieldOrCalldataIdx: TxField.To
-      });
+      } as Subquery);
       const isValid = await axiom.validate();
       expect(isValid).toEqual(false);
     }

@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@axiom-crypto/halo2-lib-js": "^0.3.4",
-    "@axiom-crypto/tools": "2.1.0",
+    "@axiom-crypto/tools": "2.1.1",
     "@types/jest": "^29.5.11",
     "@types/node": "18.15.13",
     "@types/prompts": "^2.4.9",

@@ -1,4 +1,4 @@
-import { bytes32, HeaderField } from "@axiom-crypto/tools";
+import { bytes32, HeaderField, Subquery } from "@axiom-crypto/tools";
 import {
   AxiomV2Callback,
   AxiomV2ComputeQuery,
@@ -51,103 +51,103 @@ describe("Query ID and Schema calculation", () => {
       sourceChainId: "5",
       subqueries: [
         {
-          subqueryData: { blockNumber: 9900000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9900000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
         {
-          subqueryData: { blockNumber: 9899000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9899000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
         {
-          subqueryData: { blockNumber: 9898000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9898000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
         {
-          subqueryData: { blockNumber: 9897000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9897000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
         {
-          subqueryData: { blockNumber: 9896000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9896000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
         {
-          subqueryData: { blockNumber: 9895000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9895000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
         {
-          subqueryData: { blockNumber: 9894000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9894000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
         {
-          subqueryData: { blockNumber: 9893000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9893000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
         {
-          subqueryData: { blockNumber: 9892000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9892000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
         {
-          subqueryData: { blockNumber: 9891000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9891000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
         {
-          subqueryData: { blockNumber: 9890000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9890000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
         {
-          subqueryData: { blockNumber: 9889000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9889000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
         {
-          subqueryData: { blockNumber: 9888000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9888000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
         {
-          subqueryData: { blockNumber: 9887000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9887000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
         {
-          subqueryData: { blockNumber: 9886000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9886000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
         {
-          subqueryData: { blockNumber: 9885000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9885000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
         {
-          subqueryData: { blockNumber: 9884000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9884000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
         {
-          subqueryData: { blockNumber: 9883000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9883000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
         {
-          subqueryData: { blockNumber: 9882000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9882000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
         {
-          subqueryData: { blockNumber: 9881000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9881000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
         {
-          subqueryData: { blockNumber: 9880000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9880000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
         {
-          subqueryData: { blockNumber: 9879000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9879000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
         {
-          subqueryData: { blockNumber: 9878000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9878000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
         {
-          subqueryData: { blockNumber: 9877000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9877000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
         {
-          subqueryData: { blockNumber: 9876000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 },
+          subqueryData: { blockNumber: 9876000, addr: "0xb392448932f6ef430555631f765df0dfae34eff3", fieldIdx: 1 }  as Subquery,
           type: 2,
         },
       ],
@@ -175,11 +175,11 @@ describe("Query ID and Schema calculation", () => {
       {
         blockNumber: blockNumber,
         fieldIdx: HeaderField.GasUsed,
-      },
+      } as Subquery,
       {
         blockNumber: blockNumber + 1000,
         fieldIdx: HeaderField.GasUsed,
-      },
+      } as Subquery,
     ];
     const axiom = new QueryBuilderClient(config);
     axiom.append(dataQueryReq);

@@ -24,6 +24,7 @@ import {
 } from "@axiom-crypto/circuit/pkg/tools";
 import { ethers } from "ethers";
 import { QueryBuilderClient, QueryBuilderClientConfig, AxiomV2QueryOptions } from "../../../src";
+import { Subquery } from "@axiom-crypto/tools";
 
 describe("QueryV2", () => {
   const BLOCK_NUMBER = 15537394;
@@ -142,16 +143,16 @@ describe("QueryV2", () => {
       {
         blockNumber: BLOCK_NUMBER,
         fieldIdx: 0,
-      },
+      } as Subquery,
       {
         blockNumber: BLOCK_NUMBER + 1,
         fieldIdx: 1,
-      },
+      } as Subquery,
       {
         blockNumber: BLOCK_NUMBER,
         addr: WETH_WHALE,
         fieldIdx: AccountField.Nonce,
-      },
+      } as Subquery,
       {
         blockNumber: 17975259,
         txIdx: 34,
@@ -159,7 +160,7 @@ describe("QueryV2", () => {
         fieldOrLogIdx: ReceiptField.CumulativeGas,
         topicOrDataOrAddressIdx: 0,
         eventSchema: ethers.ZeroHash,
-      },
+      } as Subquery,
       {
         blockNumber: 17000000,
         addr: "0x1F98431c8aD98523631AE4a59f267346ea31F984",
@@ -170,7 +171,7 @@ describe("QueryV2", () => {
           bytes32("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"),
           bytes32(3000),
         ],
-      },
+      } as Subquery,
     ];
     const computeQueryReq: AxiomV2ComputeQuery = {
       k: 14,
@@ -199,11 +200,11 @@ describe("QueryV2", () => {
     axiom.appendDataSubquery({
       blockNumber: 17000000,
       fieldIdx: HeaderField.GasLimit,
-    });
+    } as Subquery);
     axiom.appendDataSubquery({
       blockNumber: 17000001,
       fieldIdx: HeaderField.GasLimit,
-    });
+    } as Subquery);
 
     const builtQuery = await axiom.build();
     expect(builtQuery.computeQuery.resultLen).toEqual(2);
@@ -228,11 +229,11 @@ describe("QueryV2", () => {
     axiom.appendDataSubquery({
       blockNumber: 17000000,
       fieldIdx: HeaderField.GasLimit,
-    });
+    } as Subquery);
     axiom.appendDataSubquery({
       blockNumber: 17000001,
       fieldIdx: HeaderField.GasLimit,
-    });
+    } as Subquery);
 
     const builtQuery = await axiom.build();
     expect(builtQuery.computeQuery.resultLen).toEqual(4);
@@ -263,11 +264,11 @@ describe("QueryV2", () => {
     axiom.appendDataSubquery({
       blockNumber: 17000000,
       fieldIdx: HeaderField.GasLimit,
-    });
+    } as Subquery);
     axiom.appendDataSubquery({
       blockNumber: 17000001,
       fieldIdx: HeaderField.GasLimit,
-    });
+    } as Subquery);
 
     const builtQuery = await axiom.build();
     expect(builtQuery.feeData.maxFeePerGas).toEqual(options.maxFeePerGas);
@@ -281,7 +282,7 @@ describe("QueryV2", () => {
     axiom.appendDataSubquery({
       blockNumber: 17000000,
       fieldIdx: HeaderField.GasLimit,
-    });
+    } as Subquery);
     await axiom.build();
     const builtQuery = axiom.getBuiltQuery();
     const builtDataQuery = builtQuery?.dataQueryStruct.subqueries;
@@ -295,7 +296,7 @@ describe("QueryV2", () => {
       blockNumber: 17000000,
       addr: WETH_WHALE,
       fieldIdx: AccountField.Nonce,    
-    });
+    } as Subquery);
     await axiom.build();
     const builtQuery = axiom.getBuiltQuery();
     const builtDataQuery = builtQuery?.dataQueryStruct.subqueries;
@@ -311,7 +312,7 @@ describe("QueryV2", () => {
       blockNumber: 18000000,
       addr: WETH_ADDR,
       slot,
-    });
+    } as Subquery);
 
     await axiom.build();
     const builtQuery = axiom.getBuiltQuery();
@@ -332,7 +333,7 @@ describe("QueryV2", () => {
       blockNumber,
       txIdx,
       fieldOrCalldataIdx: TxField.To,
-    });
+    } as Subquery);
 
     await axiom.build();
     const builtQuery = axiom.getBuiltQuery();
@@ -358,7 +359,7 @@ describe("QueryV2", () => {
       fieldOrLogIdx: getFieldIdxReceiptLogIdx(0),
       topicOrDataOrAddressIdx: getFieldIdxReceiptTopicIdx(1),
       eventSchema,
-    });
+    } as Subquery);
 
     await axiom.build();
     const builtQuery = axiom.getBuiltQuery();
@@ -382,7 +383,7 @@ describe("QueryV2", () => {
       mappingSlot: 5,
       mappingDepth: 3,
       keys: [WETH_ADDR, WSOL_ADDR, 10000],
-    });
+    } as Subquery);
     await axiom.build();
     const builtQuery = axiom.getBuiltQuery();
     const builtDataQuery = builtQuery?.dataQueryStruct.subqueries;
@@ -404,16 +405,16 @@ describe("QueryV2", () => {
       {
         blockNumber: BLOCK_NUMBER,
         fieldIdx: 0,
-      },
+      } as Subquery,
       {
         blockNumber: BLOCK_NUMBER + 1,
         fieldIdx: 1,
-      },
+      } as Subquery,
       {
         blockNumber: BLOCK_NUMBER,
         addr: WETH_WHALE,
         fieldIdx: AccountField.Nonce,
-      },
+      } as Subquery,
       {
         blockNumber: 17975259,
         txIdx: 34,
@@ -421,7 +422,7 @@ describe("QueryV2", () => {
         fieldOrLogIdx: ReceiptField.CumulativeGas,
         topicOrDataOrAddressIdx: 10,
         eventSchema: ethers.ZeroHash,
-      },
+      } as Subquery,
     ];
     const computeQueryReq: AxiomV2ComputeQuery = {
       k: 14,

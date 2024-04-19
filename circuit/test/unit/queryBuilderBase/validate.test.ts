@@ -150,7 +150,7 @@ describe("Query Validation Tests", () => {
     const testFn = async () => {
       const subquery = {
         blockNumber: 1234567,
-        addr: "0x480aa3cf46a1813d543e169314d56831aa002d932444723fee6b9e31d01f8c28",
+        addr: "0x2E15D7AA0650dE1009710FDd45C3468d75AE1392",
         fieldIdx: HeaderField.Miner
       } as Subquery;
       axiom.appendDataSubquery(subquery);

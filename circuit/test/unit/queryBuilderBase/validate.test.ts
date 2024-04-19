@@ -149,10 +149,10 @@ describe("Query Validation Tests", () => {
     const axiom = new QueryBuilderBase(config);
     const testFn = async () => {
       const subquery = {
-        blockNumber: 1234567,
-        addr: "0x2E15D7AA0650dE1009710FDd45C3468d75AE1392",
+        // Fail test case: blockNumber is an address
+        blockNumber: "0x2E15D7AA0650dE1009710FDd45C3468d75AE1392",
         fieldIdx: HeaderField.Miner
-      } as Subquery;
+      } as unknown as Subquery;
       axiom.appendDataSubquery(subquery);
       await axiom.validate();
     };

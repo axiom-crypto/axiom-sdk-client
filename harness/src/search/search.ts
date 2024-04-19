@@ -189,7 +189,6 @@ async function parseTx(tx: any) {
   if (!(type === "0" || type === "1" || type === "2" || type === "3")) {
     return;
   }
-  pushArrayUpto(data.tx.type[type], txId);
   const numBytesTxData = getNumBytes(tx.input);
   // if (tx.accessList !== undefined && tx.accessList !== null && tx.accessList.length !== 0) {
   //   return;
@@ -200,6 +199,7 @@ async function parseTx(tx: any) {
   // TODO: Use QueryBuilder module to determine category
   if (numBytesTxData <= 8192 && aclNumBytesRlp <= 800) {
     pushArrayUpto(data.tx.category.default, txId);
+    pushArrayUpto(data.tx.type[type], txId);
   } else if (numBytesTxData <= 32768 && aclNumBytesRlp <= 1024) {
     pushArrayUpto(data.tx.category.large, txId);
   } else if (numBytesTxData <= 333000 && aclNumBytesRlp <= 131072) {
@@ -225,7 +225,12 @@ async function parseReceipt(provider: JsonRpcProvider, tx: any, eventIncl: boole
   let maxLogDataSize = 0;
   for (let i = 0; i < numLogs; i++) {
     const log = receipt.logs[i];
-    if (!eventIncl && !(log.data === '0x' || log.topics.length < 2)) {
+    const logData = log.data;
+    const logDataSize = getNumBytes(logData);
+    if (logDataSize > maxLogDataSize) {
+      maxLogDataSize = logDataSize;
+    }
+    if (!eventIncl && !(log.data === '0x' || log.topics.length < 2) && logDataSize <= 800) {
       const rcId: RcId = {
         hash: tx.hash,
         blockNumber: Number(tx.blockNumber),
@@ -234,11 +239,6 @@ async function parseReceipt(provider: JsonRpcProvider, tx: any, eventIncl: boole
         eventSchema: log.topics[0],
       };
       pushArrayUpto(data.rc.events, rcId);
-    } 
-    const logData = log.data;
-    const logDataSize = getNumBytes(logData);
-    if (logDataSize > maxLogDataSize) {
-      maxLogDataSize = logDataSize;
     }
   }
 

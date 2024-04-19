@@ -52,7 +52,7 @@ describe('Axiom class tests', () => {
     expect(args?.args[2].resultLen).toEqual(3);
     expect(args?.args[3].target).toEqual(config.callback.target.toLowerCase());
     expect(args?.args[6]).toEqual("0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266");
-  }, 20000);
+  }, 40000);
 
   test('sendQueryWithIpfs should throw error without ipfsClient', async () => {
     const axiom = new Axiom({

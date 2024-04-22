@@ -113,7 +113,7 @@ export function getTarget(chainId: string, override?: string) {
     case "11155111":
       return "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e";
     case "8453":
-      return --- // Compile error until we get a deployed contract
+      return "0x89C6FbABf570dc53b64b5D52095A8d955dABAE16";
     case "84532":
       return "0x3b49DE82B86d677C072Dcc7ED47bcA9F20f0CF46";
     default:

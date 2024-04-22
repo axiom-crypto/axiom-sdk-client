@@ -31,7 +31,7 @@ const axiomV2QueryAddresses = {
     [mainnet.id.toString()]: "",
     [arbitrum.id.toString()]: "",
     [optimism.id.toString()]: "",
-    [base.id.toString()]: "",
+    [base.id.toString()]: "0xfe059442B0379D5f22Bec384A588766f98A36812",
     [scroll.id.toString()]: "",
   },
   [baseSepolia.id.toString()]: {

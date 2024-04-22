@@ -114,7 +114,7 @@ export const buildSendQuery = async (input: {
       refundee,
     );
     const pinRes = await input.options.ipfsClient.pin(encodedQuery);
-    if (pinRes.status - 200 > 99) {
+    if (pinRes.status > 299) {
       throw new Error(`Failed to write data to IPFS. Status: ${pinRes.status}`);
     }
     const ipfsHash = pinRes.value as string;

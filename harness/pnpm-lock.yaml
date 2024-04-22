@@ -9,8 +9,8 @@ dependencies:
     specifier: link:../client/dist
     version: link:../client/dist
   '@axiom-crypto/tools':
-    specifier: 2.1.0
-    version: 2.1.0
+    specifier: 2.1.1
+    version: 2.1.1
   commander:
     specifier: ^11.1.0
     version: 11.1.0
@@ -68,8 +68,8 @@ packages:
       '@jridgewell/trace-mapping': 0.3.20
     dev: true
 
-  /@axiom-crypto/tools@2.1.0:
-    resolution: {integrity: sha512-kuW4y+OcbHoYviCBNnpbkCYd4FRaewFMitq5N5CDOdt4CNHamlQ2HNxLU00t2yD3oFZyjmMRVU4aGLkFoyNSAg==}
+  /@axiom-crypto/tools@2.1.1:
+    resolution: {integrity: sha512-JqKz+S8wIOqoa42h5TMoPCNxatLEoJwOYabFUB1GWSkQ/Ep3ZPDP5ydk/ky3VeDG/KFidBa0/uvVQk5EEK/Rpw==}
     dependencies:
       axios: 1.6.8
       bs58: 5.0.0

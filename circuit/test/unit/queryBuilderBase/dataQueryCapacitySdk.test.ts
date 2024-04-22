@@ -6,6 +6,7 @@ import {
   HeaderField,
   ReceiptField,
   TxField,
+  Subquery,
 } from "../../../src";
 import { ConstantsV2 } from "../../../src/queryBuilderBase/constants";
 import { JsonRpcProvider } from "ethers";
@@ -71,7 +72,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
       axiom.appendDataSubquery({
         blockNumber: blockNumber + i,
         fieldIdx: HeaderField.Nonce,
-      });
+      } as Subquery);
     }
   });
 
@@ -83,7 +84,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
         axiom.appendDataSubquery({
           blockNumber: blockNumber + i,
           fieldIdx: HeaderField.Nonce,
-        });
+        } as Subquery);
       }
     };
     expect(testFn).toThrow();
@@ -97,7 +98,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
         blockNumber: blockNumber + i,
         addr: WETH_WHALE,
         fieldIdx: AccountField.Balance,
-      });
+      } as Subquery);
     }
   });
 
@@ -110,7 +111,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
           blockNumber: blockNumber + i,
           addr: WETH_WHALE,
           fieldIdx: AccountField.Balance,
-        });
+        } as Subquery);
       }
     };
     expect(testFn).toThrow();
@@ -124,7 +125,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
         blockNumber: blockNumber + i,
         addr: WETH_ADDR,
         slot: 0,
-      });
+      } as Subquery);
     }
   });
 
@@ -137,7 +138,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
           blockNumber: blockNumber + i,
           addr: WETH_ADDR,
           slot: 0,
-        });
+        } as Subquery);
       }
     };
     expect(testFn).toThrow();
@@ -153,7 +154,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
         mappingSlot: 5,
         mappingDepth: 3,
         keys: [WETH_ADDR, WSOL_ADDR, 10000],
-      });
+      } as Subquery);
     }
   });
 
@@ -168,7 +169,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
           mappingSlot: 5,
           mappingDepth: 3,
           keys: [WETH_ADDR, WSOL_ADDR, 10000],
-        });
+        } as Subquery);
       }
     };
     expect(testFn).toThrow();
@@ -182,12 +183,12 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
         blockNumber: blockNumber + i,
         addr: WETH_WHALE,
         fieldIdx: AccountField.Balance,
-      });
+      } as Subquery);
       axiom.appendDataSubquery({
         blockNumber: blockNumber + i,
         addr: WETH_ADDR,
         slot: 0,
-      });
+      } as Subquery);
       if (i === 42) {
         continue;
       }
@@ -197,7 +198,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
         mappingSlot: 5,
         mappingDepth: 3,
         keys: [WETH_ADDR, WSOL_ADDR, 10000],
-      });
+      } as Subquery);
     }
   });
 
@@ -210,19 +211,18 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
           blockNumber: blockNumber + i,
           addr: WETH_WHALE,
           field: AccountField.Balance,
-        });
+        } as Subquery);
         axiom.appendDataSubquery({
           blockNumber: blockNumber + i,
           addr: WETH_ADDR,
           slot: 0,
-        });
+        } as Subquery);
         axiom.appendDataSubquery({
           blockNumber: blockNumber + i,
           addr: UNI_V3_FACTORY_ADDR,
           mappingSlot: 5,
-          
           keys: [WETH_ADDR, WSOL_ADDR, 10000],
-        });
+        } as Subquery);
       }
     };
     expect(testFn).toThrow();
@@ -239,22 +239,22 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
         blockNumber,
         txIdx,
         fieldOrCalldataIdx: TxField.To,
-      });
+      } as Subquery);
       axiom.appendDataSubquery({
         blockNumber,
         txIdx,
         fieldOrCalldataIdx: TxField.ChainId,
-      });
+      } as Subquery);
       axiom.appendDataSubquery({
         blockNumber,
         txIdx,
         fieldOrCalldataIdx: TxField.GasPrice,
-      });
+      } as Subquery);
       axiom.appendDataSubquery({
         blockNumber,
         txIdx,
         fieldOrCalldataIdx: TxField.Nonce,
-      });
+      } as Subquery);
     }
   }, 60000);
 
@@ -269,22 +269,22 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
         blockNumber,
         txIdx,
         fieldOrCalldataIdx: TxField.To,
-      });
+      } as Subquery);
       axiom.appendDataSubquery({
         blockNumber,
         txIdx,
         fieldOrCalldataIdx: TxField.ChainId,
-      });
+      } as Subquery);
       axiom.appendDataSubquery({
         blockNumber,
         txIdx,
         fieldOrCalldataIdx: TxField.GasPrice,
-      });
+      } as Subquery);
       axiom.appendDataSubquery({
         blockNumber,
         txIdx,
         fieldOrCalldataIdx: TxField.Nonce,
-      });
+      } as Subquery);
     }
     const oneMore = async () => {
       const { blockNumber, txIdx } = await getBlockNumberAndTxIdx(provider, validMainnetTxHashes[0]);
@@ -295,7 +295,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
         blockNumber,
         txIdx,
         fieldOrCalldataIdx: TxField.To,
-      });
+      } as Subquery);
     };
     await expect(oneMore()).rejects.toThrow();
   }, 60000);
@@ -313,28 +313,28 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
         fieldOrLogIdx: ReceiptField.Status,
         topicOrDataOrAddressIdx: 0,
         eventSchema: bytes32(0),
-      });
+      } as Subquery);
       axiom.appendDataSubquery({
         blockNumber,
         txIdx,
         fieldOrLogIdx: ReceiptField.LogsBloom,
         topicOrDataOrAddressIdx: 0,
         eventSchema: bytes32(0),
-      });
+      } as Subquery);
       axiom.appendDataSubquery({
         blockNumber,
         txIdx,
         fieldOrLogIdx: ReceiptField.Logs,
         topicOrDataOrAddressIdx: 0,
         eventSchema: bytes32(0),
-      });
+      } as Subquery);
       axiom.appendDataSubquery({
         blockNumber,
         txIdx,
         fieldOrLogIdx: ReceiptField.CumulativeGas,
         topicOrDataOrAddressIdx: 0,
         eventSchema: bytes32(0),
-      });
+      } as Subquery);
     }
   }, 60000);
 
@@ -353,7 +353,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
           fieldOrLogIdx: ReceiptField.Status,
           topicOrDataOrAddressIdx: 0,
           eventSchema: bytes32(0),
-        });
+        } as Subquery);
       }
     };
     await expect(testFn()).rejects.toThrow();
@@ -370,24 +370,24 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
       axiom.appendDataSubquery({
         blockNumber: blockNumber + i,
         fieldIdx: HeaderField.Nonce,
-      });
+      } as Subquery);
       axiom.appendDataSubquery({
         blockNumber: blockNumber + i,
         addr: WETH_WHALE,
         fieldIdx: AccountField.Balance,
-      });
+      } as Subquery);
       axiom.appendDataSubquery({
         blockNumber,
         txIdx,
         fieldOrCalldataIdx: TxField.To,
-      });
+      } as Subquery);
       axiom.appendDataSubquery({
         blockNumber,
         txIdx,
         fieldOrLogIdx: ReceiptField.Status,
         topicOrDataOrAddressIdx: 0,
         eventSchema: bytes32(0),
-      });
+      } as Subquery);
     }
   }, 60000);
 });

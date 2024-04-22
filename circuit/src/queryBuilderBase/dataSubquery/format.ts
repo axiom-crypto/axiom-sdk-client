@@ -68,49 +68,64 @@ export function formatDataSubquery(
 }
 
 function formatDataSubqueryHeader(subquery: HeaderSubquery): DataSubquery {
+  if (subquery.blockNumber === undefined) {
+    throw new Error("Block number is required for Header subquery");
+  }
   return {
     type: DataSubqueryType.Header,
     subqueryData: {
       blockNumber: subquery.blockNumber,
       fieldIdx: subquery.fieldIdx,
-    },
+    } as HeaderSubquery,
   };
 }
 
 function formatDataSubqueryAccount(subquery: AccountSubquery): DataSubquery {
+  if (subquery.blockNumber === undefined) {
+    throw new Error("Block number is required for Account subquery");
+  }
   return {
     type: DataSubqueryType.Account,
     subqueryData: {
       blockNumber: subquery.blockNumber,
       addr: subquery.addr.toLowerCase(),
       fieldIdx: subquery.fieldIdx,
-    },
+    } as AccountSubquery,
   };
 }
 
 function formatDataSubqueryStorage(subquery: StorageSubquery): DataSubquery {
+  if (subquery.blockNumber === undefined) {
+    throw new Error("Block number is required for Storage subquery");
+  }
   return {
     type: DataSubqueryType.Storage,
     subqueryData: {
       blockNumber: subquery.blockNumber,
       addr: subquery.addr.toLowerCase(),
       slot: subquery.slot,
-    },
+    } as StorageSubquery,
   };
 }
 
 function formatDataSubqueryTx(subquery: TxSubquery): DataSubquery {
+  if (subquery.blockNumber === undefined) {
+    throw new Error("Block number is required for Tx subquery");
+  }
   return {
     type: DataSubqueryType.Transaction,
     subqueryData: {
       blockNumber: subquery.blockNumber,
       txIdx: subquery.txIdx,
       fieldOrCalldataIdx: subquery.fieldOrCalldataIdx,
-    },
+    } as TxSubquery,
   };
 }
 
 function formatDataSubqueryReceipt(subquery: ReceiptSubquery): DataSubquery {
+  if (subquery.blockNumber === undefined) {
+    throw new Error("Block number is required for Receipt subquery");
+  }
   return {
     type: DataSubqueryType.Receipt,
     subqueryData: {
@@ -119,13 +134,16 @@ function formatDataSubqueryReceipt(subquery: ReceiptSubquery): DataSubquery {
       fieldOrLogIdx: subquery.fieldOrLogIdx,
       topicOrDataOrAddressIdx: subquery.topicOrDataOrAddressIdx,
       eventSchema: subquery.eventSchema.toLowerCase(),
-    },
+    } as ReceiptSubquery,
   };
 }
 
 function formatDataSubquerySolidityNestedMapping(
   subquery: SolidityNestedMappingSubquery,
 ): DataSubquery {
+  if (subquery.blockNumber === undefined) {
+    throw new Error("Block number is required for SolidityNestedMapping subquery");
+  }
   return {
     type: DataSubqueryType.SolidityNestedMapping,
     subqueryData: {
@@ -134,6 +152,6 @@ function formatDataSubquerySolidityNestedMapping(
       mappingSlot: subquery.mappingSlot,
       mappingDepth: subquery.mappingDepth,
       keys: subquery.keys.map((key) => bytes32(String(key).toLowerCase())),
-    },
+    } as SolidityNestedMappingSubquery,
   };
 }

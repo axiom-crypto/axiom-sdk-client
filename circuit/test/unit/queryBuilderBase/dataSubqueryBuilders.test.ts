@@ -20,6 +20,7 @@ import {
   AccountSubquery,
   SolidityNestedMappingSubquery,
   StorageSubquery,
+  Subquery,
 } from "../../../src";
 import { ethers } from "ethers";
 
@@ -45,7 +46,7 @@ describe("Data Subquery Builders", () => {
     axiom.appendDataSubquery({
       blockNumber: blockNumber,
       fieldIdx: HeaderField.GasUsed,
-    });
+    } as Subquery);
     const dataQuery = axiom.getDataQuery();
 
     const subquery = dataQuery?.[0] as HeaderSubquery;
@@ -58,7 +59,7 @@ describe("Data Subquery Builders", () => {
     axiom.appendDataSubquery({
       blockNumber: blockNumber,
       fieldIdx: getFieldIdxHeaderLogsBloomIdx(2),
-    });
+    } as Subquery);
     const dataQuery = axiom.getDataQuery();
 
     const subquery = dataQuery?.[0] as HeaderSubquery;
@@ -72,7 +73,7 @@ describe("Data Subquery Builders", () => {
       blockNumber: blockNumber,
       addr: WETH_WHALE,
       fieldIdx: AccountField.Balance,
-    });
+    } as Subquery);
     const dataQuery = axiom.getDataQuery();
 
     const subquery = dataQuery?.[0] as AccountSubquery;
@@ -87,7 +88,7 @@ describe("Data Subquery Builders", () => {
       blockNumber: blockNumber,
       addr: WETH_ADDR,
       slot: 1,
-    });
+    } as Subquery);
     const dataQuery = axiom.getDataQuery();
 
     const subquery = dataQuery?.[0] as StorageSubquery;
@@ -107,7 +108,7 @@ describe("Data Subquery Builders", () => {
       blockNumber: blockNumber,
       txIdx: txIdx,
       fieldOrCalldataIdx: TxField.MaxPriorityFeePerGas,
-    });
+    } as Subquery);
     const dataQuery = axiom.getDataQuery();
 
     // Check the unbuilt subquery
@@ -137,7 +138,7 @@ describe("Data Subquery Builders", () => {
       fieldOrLogIdx: getFieldIdxReceiptLogIdx(0),
       topicOrDataOrAddressIdx: 1,
       eventSchema: getEventSchema("Transfer (address from, address to, uint256 value)"),
-    });
+    } as Subquery);
     const dataQuery = axiom.getDataQuery();
 
     // Check the unbuilt subquery
@@ -171,7 +172,7 @@ describe("Data Subquery Builders", () => {
       fieldOrLogIdx: getFieldIdxReceiptLogIdx(0),
       topicOrDataOrAddressIdx: getFieldIdxReceiptLogAddress(),
       eventSchema: bytes32(0),
-    });
+    } as Subquery);
     const dataQuery = axiom.getDataQuery();
 
     // Check the unbuilt subquery
@@ -203,7 +204,7 @@ describe("Data Subquery Builders", () => {
       fieldOrLogIdx: getFieldIdxReceiptLogsBloomIdx(2),
       topicOrDataOrAddressIdx: 0,
       eventSchema: bytes32(0),
-    });
+    } as Subquery);
     const dataQuery = axiom.getDataQuery();
 
     // Check the unbuilt subquery
@@ -230,7 +231,7 @@ describe("Data Subquery Builders", () => {
       mappingSlot: 0,
       mappingDepth: 3,
       keys: [WETH_ADDR, WETH_WHALE, 100000],
-    });
+    } as Subquery);
     const dataQuery = axiom.getDataQuery();
 
     const subquery = dataQuery?.[0] as SolidityNestedMappingSubquery;

@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 import { QueryBuilderClient, QueryBuilderClientConfig } from "../../../src";
 import { HeaderField } from "@axiom-crypto/circuit";
 import { ConstantsV2 } from "../../../../circuit/src/queryBuilderBase/constants";
+import { Subquery } from "@axiom-crypto/tools";
 
 // Test coverage areas:
 // - QueryBuilderV2 options
@@ -24,7 +25,7 @@ describe("QueryBuilderV2 Options", () => {
     axiom.appendDataSubquery({
       blockNumber,
       fieldIdx: HeaderField.Timestamp,
-    });
+    } as Subquery);
     axiom.setOptions({
       maxFeePerGas: "1000000000000",
     });
@@ -39,7 +40,7 @@ describe("QueryBuilderV2 Options", () => {
     axiom.appendDataSubquery({
       blockNumber,
       fieldIdx: HeaderField.Timestamp,
-    });
+    } as Subquery);
     axiom.setOptions({
       callbackGasLimit: 10000,
     });
@@ -55,7 +56,7 @@ describe("QueryBuilderV2 Options", () => {
     axiom.appendDataSubquery({
       blockNumber,
       fieldIdx: HeaderField.Timestamp,
-    });
+    } as Subquery);
     const builtQuery = await axiom.build();
     expect(builtQuery.feeData.maxFeePerGas).toEqual(ConstantsV2.DefaultMaxFeePerGasWei);
     expect(builtQuery.feeData.callbackGasLimit).toEqual(ConstantsV2.DefaultCallbackGasLimit);

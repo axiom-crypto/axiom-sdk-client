@@ -10,7 +10,6 @@ import { AbiType, AxiomV2ClientOverrides, AxiomV2SendQueryArgsParams, CircuitInp
 import { createPublicClient, http } from 'viem';
 import { getAxiomV2Abi, getAxiomV2QueryAddress, viemChain } from "../lib";
 import { getChainDefaults } from "../lib/chain";
-import { QueryBuilderClient } from "../queryBuilderClient";
 
 export function validateChainId(chainId: string) {
   switch (chainId) {

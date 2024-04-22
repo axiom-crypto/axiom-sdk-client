@@ -76,7 +76,7 @@ function formatDataSubqueryHeader(subquery: HeaderSubquery): DataSubquery {
     subqueryData: {
       blockNumber: subquery.blockNumber,
       fieldIdx: subquery.fieldIdx,
-    },
+    } as HeaderSubquery,
   };
 }
 
@@ -90,7 +90,7 @@ function formatDataSubqueryAccount(subquery: AccountSubquery): DataSubquery {
       blockNumber: subquery.blockNumber,
       addr: subquery.addr.toLowerCase(),
       fieldIdx: subquery.fieldIdx,
-    },
+    } as AccountSubquery,
   };
 }
 
@@ -104,7 +104,7 @@ function formatDataSubqueryStorage(subquery: StorageSubquery): DataSubquery {
       blockNumber: subquery.blockNumber,
       addr: subquery.addr.toLowerCase(),
       slot: subquery.slot,
-    },
+    } as StorageSubquery,
   };
 }
 
@@ -118,7 +118,7 @@ function formatDataSubqueryTx(subquery: TxSubquery): DataSubquery {
       blockNumber: subquery.blockNumber,
       txIdx: subquery.txIdx,
       fieldOrCalldataIdx: subquery.fieldOrCalldataIdx,
-    },
+    } as TxSubquery,
   };
 }
 
@@ -134,7 +134,7 @@ function formatDataSubqueryReceipt(subquery: ReceiptSubquery): DataSubquery {
       fieldOrLogIdx: subquery.fieldOrLogIdx,
       topicOrDataOrAddressIdx: subquery.topicOrDataOrAddressIdx,
       eventSchema: subquery.eventSchema.toLowerCase(),
-    },
+    } as ReceiptSubquery,
   };
 }
 
@@ -152,6 +152,6 @@ function formatDataSubquerySolidityNestedMapping(
       mappingSlot: subquery.mappingSlot,
       mappingDepth: subquery.mappingDepth,
       keys: subquery.keys.map((key) => bytes32(String(key).toLowerCase())),
-    },
+    } as SolidityNestedMappingSubquery,
   };
 }

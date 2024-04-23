@@ -1,4 +1,4 @@
-name: Update Downstream Repositories
+name: "Update Downstream Repositories"
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - '**/package.json'
 
 jobs:
-  update-dependents:
+  update-downstream-repos:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -24,7 +24,7 @@ jobs:
         id: package_version
         run: echo "::set-output name=version::$(jq -r '.version' package.json)"
 
-      - name: Update axiom-quickstart package version
+      - name: "Update axiom-quickstart package version"
         env:
           NEW_VERSION: ${{ steps.package_version.outputs.version }}
         run: |
@@ -39,7 +39,7 @@ jobs:
           git push origin feat/v$NEW_VERSION
           gh pr create --title "Update axiom-sdk-client version to $NEW_VERSION" --body "This is an automated pull request to update the axiom-sdk-client version to $NEW_VERSION" --repo axiom-crypto/axiom-quickstart --head feat/v$NEW_VERSION --base main
 
-      - name: Update axiom-scaffold-nextjs package version
+      - name: "Update axiom-scaffold-nextjs package version"
         env:
           NEW_VERSION: ${{ steps.package_version.outputs.version }}
         run: |

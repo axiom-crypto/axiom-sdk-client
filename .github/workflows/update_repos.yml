@@ -1,11 +1,12 @@
-name: Update Dependent Repositories
+name: Update Downstream Repositories
 
 on:
   push:
     branches:
       - main
+      - feat/downstream_repo_pr
     paths:
-      - 'package.json'
+      - '**/package.json'
 
 jobs:
   update-dependents:
@@ -32,11 +33,11 @@ jobs:
           git clone https://github.com/axiom-crypto/axiom-quickstart.git
           cd axiom-quickstart
           sed -i "s/\"@axiom-crypto\/client\": \".*\"/\"@axiom-crypto\/client\": \"$NEW_VERSION\"/" package.json
-          git checkout -b update-axiom-sdk-client-version
+          git checkout -b feat/v$NEW_VERSION
           git add package.json
           git commit -m "Update axiom-sdk-client version to $NEW_VERSION"
-          git push origin update-axiom-sdk-client-version
-          gh pr create --title "Update axiom-sdk-client version to $NEW_VERSION" --body "This is an automated pull request to update the axiom-sdk-client version to $NEW_VERSION" --repo axiom-crypto/axiom-quickstart --head update-axiom-sdk-client-version --base main
+          git push origin feat/v$NEW_VERSION
+          gh pr create --title "Update axiom-sdk-client version to $NEW_VERSION" --body "This is an automated pull request to update the axiom-sdk-client version to $NEW_VERSION" --repo axiom-crypto/axiom-quickstart --head feat/v$NEW_VERSION --base main
 
       - name: Update axiom-scaffold-nextjs package version
         env:
@@ -47,8 +48,8 @@ jobs:
           git clone https://github.com/axiom-crypto/axiom-scaffold-nextjs.git
           cd axiom-scaffold-nextjs
           sed -i "s/\"@axiom-crypto\/client\": \".*\"/\"@axiom-crypto\/client\": \"$NEW_VERSION\"/" package.json
-          git checkout -b update-axiom-sdk-client-version
+          git checkout -b feat/v$NEW_VERSION
           git add package.json
           git commit -m "Update axiom-sdk-client version to $NEW_VERSION"
-          git push origin update-axiom-sdk-client-version
-          gh pr create --title "Update axiom-sdk-client version to $NEW_VERSION" --body "This is an automated pull request to update the axiom-sdk-client version to $NEW_VERSION" --repo axiom-crypto/axiom-scaffold-nextjs --head update-axiom-sdk-client-version --base main
+          git push origin feat/v$NEW_VERSION
+          gh pr create --title "Update axiom-sdk-client version to $NEW_VERSION" --body "This is an automated pull request to update the axiom-sdk-client version to $NEW_VERSION" --repo axiom-crypto/axiom-scaffold-nextjs --head feat/v$NEW_VERSION --base main

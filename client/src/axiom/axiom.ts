@@ -181,7 +181,7 @@ export class Axiom<T> {
     if (this.walletClient === undefined) {
       throw new Error("Setting `privateKey` in the `Axiom` constructor is required to get sendQuery args");
     }
-    const clientOptions: AxiomV2QueryOptions = {
+    const options: AxiomV2QueryOptions = {
       ...this.options,
       callbackGasLimit: this.options?.callbackGasLimit ?? Number(getChainDefaults(this.config.chainId).callbackGasLimit),
       refundee: this.options?.refundee,
@@ -192,7 +192,7 @@ export class Axiom<T> {
       callbackTarget: this.callback.target,
       callbackExtraData: this.callback.extraData ?? "0x",
       callerAddress: this.walletClient?.account?.address,
-      options: clientOptions,
+      options,
     });
 
     return this.sendQueryArgs;

@@ -1,6 +1,10 @@
 {
   "name": "@axiom-crypto/harness",
+<<<<<<< HEAD
   "version": "2.0.9-rc.0",
+=======
+  "version": "2.0.9-alpha.13",
+>>>>>>> 75d7428 (Fix refundee options setting)
   "author": "Intrinsic Technologies",
   "license": "MIT",
   "description": "Circuit harness for axiom-client",

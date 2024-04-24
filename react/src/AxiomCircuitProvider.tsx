@@ -16,8 +16,7 @@ import {
 } from "@axiom-crypto/client";
 
 type AxiomCircuitContextType<T> = {
-  setOptions: React.Dispatch<React.SetStateAction<AxiomV2QueryOptions | null>>,
-  setParams: (inputs: T, callbackTarget: string, callbackExtraData: string, refundee: string) => void,
+  setParams: (inputs: T, callbackTarget: string, callbackExtraData: string, caller: string) => void,
   areParamsSet: boolean,
   build: () => Promise<AxiomV2SendQueryArgs | null>,
   builtQuery: AxiomV2SendQueryArgs | null,
@@ -48,19 +47,20 @@ function AxiomCircuitProvider({
   const [inputs, setInputs] = useState<any | null>(null);
   const [options, setOptions] = useState<AxiomV2QueryOptions | null>(null);
   const [callback, setCallback] = useState<AxiomV2Callback | null>(null);
-  const [refundee, setRefundee] = useState<string | null>(null);
+  const [caller, setCaller] = useState<string | null>(null);
   const [builtQuery, setBuiltQuery] = useState<AxiomV2SendQueryArgs | null>(null);
 
   const workerApi = useRef<Remote<AxiomCircuit>>();
 
   const build = async () => {
-    if (!inputs || !callback || !refundee) {
-      console.warn("`inputs` or `callback` or `refundee` not set");
+    if (!inputs || !callback || !caller) {
+      console.warn("`inputs` or `callback` or `caller` not set");
       return null;
     }
     if (builtQuery !== null) {
       return null;
     }
+
     const setup = async () => {
       const worker = new Worker(new URL("./worker", import.meta.url), { type: "module" });
       const MyAxiomCircuit = wrap<typeof AxiomCircuit>(worker);
@@ -81,10 +81,10 @@ function AxiomCircuitProvider({
     const generateQuery = async () => {
       await workerApi.current?.run(inputs);
       const res = await workerApi.current?.getSendQueryArgs({
-        options: options ?? {refundee},
         callbackTarget: callback.target,
         callbackExtraData: callback.extraData,
-        callerAddress: refundee,
+        callerAddress: caller,
+        options: options ?? {},
       });
       if (res === undefined) {
         return null;
@@ -100,7 +100,7 @@ function AxiomCircuitProvider({
     setBuiltQuery(null);
   }
 
-  const setParams = useCallback((inputs: any, callbackTarget: string, callbackExtraData: string, refundee: string) => {
+  const setParams = useCallback((inputs: any, callbackTarget: string, callbackExtraData: string, caller: string, options?: AxiomV2QueryOptions) => {
     if (callbackExtraData === "") {
       callbackExtraData = "0x";
     }
@@ -109,13 +109,13 @@ function AxiomCircuitProvider({
       target: callbackTarget,
       extraData: callbackExtraData,
     });
-    setRefundee(refundee);
+    setCaller(caller);
+    setOptions(options ?? {});
   }, []);
 
   const areParamsSet = (inputs !== null && callback !== null);
 
   const contextValues = {
-    setOptions,
     setParams,
     areParamsSet,
     build,

@@ -15,7 +15,7 @@ import {
   BuiltQueryV2,
 } from "./types";
 import { getChainDefaults } from "../lib/chain";
-import { getRandomValues } from "crypto";
+import { randomBytes } from "crypto";
 
 /**
  * QueryBuilderClient builds queries that can be sent to the deployed AxiomV2Query contract on-chain.
@@ -100,7 +100,7 @@ export class QueryBuilderClient extends QueryBuilderBase {
 
     // Get the refundee address
     let refundee = this.config.refundee;
-    if (this.config.refundee === "") {
+    if (!this.config.refundee || this.config.refundee === "") {
       refundee = this.config.caller;
     }
 
@@ -159,12 +159,21 @@ export class QueryBuilderClient extends QueryBuilderBase {
     this.unsetBuiltQuery();
     const defaults = getChainDefaults(this.config.sourceChainId.toString());
     this.options = {
+      ...this.options,
       ...options,
       maxFeePerGas: options?.maxFeePerGas ?? defaults.maxFeePerGasWei.toString(),
       callbackGasLimit: options?.callbackGasLimit ?? Number(defaults.callbackGasLimit),
       overrideAxiomQueryFee: options?.overrideAxiomQueryFee ?? "0",
     };
+    if (options.refundee !== undefined) {
+      this.config.refundee = parseAddress(options.refundee);
+    }
     return this.options;
+  }
+
+  clearOptions() {
+    this.unsetBuiltQuery();
+    this.options = {};
   }
 
   async validate(): Promise<boolean> {
@@ -206,8 +215,7 @@ export class QueryBuilderClient extends QueryBuilderBase {
   }
 
   protected calculateUserSalt(): string {
-    const randomBytes = getRandomValues(new Uint8Array(32))
-    return bytesToHex(randomBytes);
+    return bytesToHex(randomBytes(32));
   }
 
   protected handleCallback(callback: AxiomV2Callback): AxiomV2Callback {

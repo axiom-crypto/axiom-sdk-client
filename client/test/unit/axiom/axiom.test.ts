@@ -61,4 +61,23 @@ describe('Axiom class tests', () => {
     });
     await expect(axiom.sendQueryWithIpfs()).rejects.toThrow("Setting `ipfsClient` is required to send a Query with IPFS");
   });
+
+  test('should build sendQuery with custom refundee', async () => {
+    const axiom = new Axiom({
+      ...config,
+      privateKey: process.env.PRIVATE_KEY_ANVIL as string,
+      options: {
+        refundee: "0x000000000000000000000000000000000000aabb",
+      },
+    });
+    const inputs = {
+      blockNumber: 4000000,
+      address: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701",
+    };
+    await axiom.init();
+    await axiom.prove(inputs);
+    const args = axiom.getSendQueryArgs();
+    expect(args?.args[6]).toEqual("0x000000000000000000000000000000000000aabb");
+  }, 40000);
 });
+

@@ -99,8 +99,8 @@ export class QueryBuilderClient extends QueryBuilderBase {
     };
 
     // Get the refundee address
-    let refundee = this.options.refundee ?? this.config.refundee;
-    if (this.config.refundee === "") {
+    let refundee = this.config.refundee;
+    if (!this.config.refundee || this.config.refundee === "") {
       refundee = this.config.caller;
     }
 
@@ -165,6 +165,9 @@ export class QueryBuilderClient extends QueryBuilderBase {
       callbackGasLimit: options?.callbackGasLimit ?? Number(defaults.callbackGasLimit),
       overrideAxiomQueryFee: options?.overrideAxiomQueryFee ?? "0",
     };
+    if (options.refundee !== undefined) {
+      this.config.refundee = parseAddress(options.refundee);
+    }
     return this.options;
   }
 

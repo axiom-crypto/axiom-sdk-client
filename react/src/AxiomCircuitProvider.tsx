@@ -60,6 +60,7 @@ function AxiomCircuitProvider({
     if (builtQuery !== null) {
       return null;
     }
+
     const setup = async () => {
       const worker = new Worker(new URL("./worker", import.meta.url), { type: "module" });
       const MyAxiomCircuit = wrap<typeof AxiomCircuit>(worker);
@@ -80,10 +81,10 @@ function AxiomCircuitProvider({
     const generateQuery = async () => {
       await workerApi.current?.run(inputs);
       const res = await workerApi.current?.getSendQueryArgs({
-        options: options ?? {},
         callbackTarget: callback.target,
         callbackExtraData: callback.extraData,
         callerAddress: caller,
+        options: options ?? {},
       });
       if (res === undefined) {
         return null;

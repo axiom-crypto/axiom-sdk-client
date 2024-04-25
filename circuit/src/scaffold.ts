@@ -7,10 +7,7 @@ import {
   DataSubquery,
   getQuerySchemaHash,
 } from "@axiom-crypto/tools";
-import {
-  AxiomSdkCore,
-  QueryV2,
-} from "@axiom-crypto/core";
+import { QueryBuilderBase } from "./queryBuilderBase";
 import { BaseCircuitScaffold } from "@axiom-crypto/halo2-lib-js";
 import { DEFAULT_CAPACITY, DEFAULT_CIRCUIT_CONFIG, SUBQUERY_FE, USER_OUTPUT_FE } from "./constants";
 import { AxiomV2CircuitCapacity, AxiomV2CircuitConfig, RawInput } from "./types";
@@ -23,12 +20,12 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   protected halo2Lib!: Halo2LibWasm;
   protected provider: string;
   protected dataQuery: DataSubquery[];
-  protected axiom: AxiomSdkCore;
   protected computeQuery: AxiomV2ComputeQuery | undefined;
-  protected chainId: string;
+  protected chainId?: string;
   protected f: (inputs: T) => Promise<void>;
   protected results: { [key: string]: string };
   protected inputSchema?: string;
+  protected isMock?: boolean;
   protected capacity: AxiomV2CircuitCapacity;
 
   constructor(inputs: {
@@ -45,6 +42,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     super();
     this.resultLen = 0;
     this.provider = inputs.provider;
+    this.isMock = inputs.mock;
     this.config = inputs.config ?? DEFAULT_CIRCUIT_CONFIG;
     this.capacity = inputs.capacity ?? DEFAULT_CAPACITY;
     if (
@@ -55,13 +53,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     }
     
     this.dataQuery = [];
-    this.axiom = new AxiomSdkCore({
-      providerUri: inputs.provider,
-      chainId: inputs.chainId,
-      mock: inputs.mock,
-      version: "v2",
-    });
-    this.chainId = inputs.chainId?.toString() ?? "undefined";
+    this.chainId = inputs.chainId?.toString();
     this.shouldTime = inputs.shouldTime ?? false;
     this.loadedVk = false;
     this.f = inputs.f;
@@ -152,11 +144,17 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     this.results = results;
     await this.populateCircuit(inputs);
 
-    let skipValidate = this.capacity !== DEFAULT_CAPACITY;
+    const skipValidate = this.capacity !== DEFAULT_CAPACITY;
+    
     // Validate max circuit subquery size
-    const queryBuilder = (this.axiom.query as QueryV2).new();
-    queryBuilder.setBuiltDataQuery({
+    const queryBuilderBase = new QueryBuilderBase({
+      providerUri: this.provider,
       sourceChainId: this.chainId,
+      mock: this.isMock,
+      version: "v2",
+    });
+    queryBuilderBase.setBuiltDataQuery({
+      sourceChainId: queryBuilderBase.config.sourceChainId.toString(),
       subqueries: this.dataQuery,
     }, skipValidate);
 
@@ -221,18 +219,20 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   async run(inputs: RawInput<T>) {
     await this.populateCircuit(inputs);
 
-    let skipValidate = this.capacity !== DEFAULT_CAPACITY;
+    const skipValidate = this.capacity !== DEFAULT_CAPACITY;
 
     // Validate data subqueries
-    const queryBuilder = (this.axiom.query as QueryV2).new();
-
-    // const unbuiltSubqueries = await convertBuiltSubqueries(this.provider, this.dataQuery);
-    // queryBuilder.append(unbuiltSubqueries, skipValidate);
-    queryBuilder.setBuiltDataQuery({
+    const queryBuilderBase = new QueryBuilderBase({
+      providerUri: this.provider,
       sourceChainId: this.chainId,
+      mock: this.isMock,
+      version: "v2",
+    });
+    queryBuilderBase.setBuiltDataQuery({
+      sourceChainId: queryBuilderBase.config.sourceChainId.toString(),
       subqueries: this.dataQuery,
     }, skipValidate);
-    if (!skipValidate && !queryBuilder.validate()) {
+    if (!skipValidate && !queryBuilderBase.validate()) {
       throw new Error("Subquery validation failed")
     }
 
@@ -331,11 +331,6 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   }
 
   setMock(mock: boolean) {
-    this.axiom = new AxiomSdkCore({
-      providerUri: this.provider,
-      chainId: this.chainId,
-      mock,
-      version: "v2",
-    });
+    this.isMock = mock;
   }
 }

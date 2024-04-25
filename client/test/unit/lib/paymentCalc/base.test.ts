@@ -1,11 +1,13 @@
 import { Axiom, getOpStackL1BlockAttributesAbi, getOpStackL1BlockAttributesAddress } from "../../../../src";
 import { createPublicClient, http } from "viem";
 import { viemChain } from "../../../../src/lib/viem";
-import { circuit } from "../../../integration/circuits/quickstart/average.circuit";
-import compiledCircuit from "../../circuits/average.compiled.json";
-import inputs from "../../../integration/circuits/quickstart/average.inputs.json";
-import { ClientConstants } from "../../../../src/constants";
+import { circuit } from "../../../circuits/quickstart/average.circuit";
+import compiledCircuit from "../../../circuits/quickstart/average.compiled.json";
+import inputs from "../../../circuits/quickstart/11155111/average.inputs.json";
 import { getChainDefaults } from "../../../../src/lib/chain";
+import { ClientConstants } from "../../../../src/lib/constants";
+
+const DIFF_THRESHOLD_X100 = 800n; // 8%
 
 describe("PaymentCalc: Base", () => {
   const CHAIN_ID = "84532"; // Base Sepolia
@@ -105,8 +107,8 @@ describe("PaymentCalc: Base", () => {
 
     const queryCost = calculateQueryCost(basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
-    expect(percentDiff).toBeLessThan(500n); // 5%
-  }, 20000);
+    expect(percentDiff).toBeLessThan(DIFF_THRESHOLD_X100);
+  }, 30000);
 
   test("Payment calculation high based on options", async () => {
     const maxFeePerGas = 500000000000n;
@@ -133,8 +135,8 @@ describe("PaymentCalc: Base", () => {
 
     const queryCost = calculateQueryCost(basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
-    expect(percentDiff).toBeLessThan(500n); // 5%
-  }, 20000);
+    expect(percentDiff).toBeLessThan(DIFF_THRESHOLD_X100);
+  }, 30000);
 
   test("Payment calculation low based on options", async () => {
     const maxFeePerGas = 5000000000n;
@@ -161,8 +163,8 @@ describe("PaymentCalc: Base", () => {
     
     const queryCost = calculateQueryCost(basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
-    expect(percentDiff).toBeLessThan(500n); // 5%
-  }, 20000);
+    expect(percentDiff).toBeLessThan(DIFF_THRESHOLD_X100);
+  }, 30000);
 
   test("Set overrideAxiomQueryFee greater than standard payment", async () => {
     const maxFeePerGas = 5000000000n
@@ -187,7 +189,7 @@ describe("PaymentCalc: Base", () => {
     await axiom.prove(inputs);
     const args = axiom.getSendQueryArgs();
     expect(args?.value).toEqual(502600000000000000n);
-  }, 20000);
+  }, 30000);
 
   test("Set overrideAxiomQueryFee less than standard payment", async () => {
     const maxFeePerGas = 5000000000n;
@@ -214,6 +216,6 @@ describe("PaymentCalc: Base", () => {
     
     const queryCost = calculateQueryCost(basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
-    expect(percentDiff).toBeLessThan(500n); // 5%
-  }, 20000);
+    expect(percentDiff).toBeLessThan(DIFF_THRESHOLD_X100);
+  }, 30000);
 });

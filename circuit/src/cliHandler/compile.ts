@@ -13,6 +13,8 @@ export const compile = async (
         provider?: string,
         mock?: boolean,
         cache?: string,
+        force?: boolean,
+        defaultInputs?: string,
     }
 ) => {
     let circuitFunction = "circuit";
@@ -37,7 +39,11 @@ export const compile = async (
         capacity: f.config?.capacity,
         config: f.config?.config,
     })
-    const circuitInputs = f.defaultInputs;
+    let circuitInputs = f.defaultInputs;
+    if (options.defaultInputs !== undefined) {
+        console.log("Using default inputs from file:", options.defaultInputs);
+        circuitInputs = readJsonFromFile(options.defaultInputs);
+    }
     const circuitFn = `const ${f.importName} = AXIOM_CLIENT_IMPORT\n${f.circuit.toString()}`;
     const encoder = new TextEncoder();
     const circuitBuild = encoder.encode(circuitFn);
@@ -48,7 +54,9 @@ export const compile = async (
         outfile = options.outputs;
     }
 
-    if (existsSync(outfile)) {
+    if (options.force) {
+        console.log(`Forcing compilation for ${circuitPath}.`);
+    } else if (existsSync(outfile)) {
         const existingData = JSON.parse(readFileSync(outfile, 'utf8'));
         if (existingData.circuit === circuitString) {
             console.log(`Circuit ${circuitPath} already compiled to ${outfile}`);
@@ -57,7 +65,6 @@ export const compile = async (
     }
 
     const res = options.mock ? await circuit.mockCompile(circuitInputs) : await circuit.compile(circuitInputs);
-
     const build = {
         ...res,
         circuit: circuitString,
@@ -67,4 +74,4 @@ export const compile = async (
     if (options.cache) {
         saveJsonToFile(circuit.getResults(), options.cache);
     }
-}
+};

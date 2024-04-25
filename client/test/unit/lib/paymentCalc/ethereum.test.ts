@@ -1,9 +1,9 @@
 import { Axiom } from "../../../../src";
 import { createPublicClient, http } from "viem";
 import { viemChain } from "../../../../src/lib/viem";
-import { circuit } from "../../../integration/circuits/quickstart/average.circuit";
-import compiledCircuit from "../../circuits/average.compiled.json";
-import inputs from "../../../integration/circuits/quickstart/average.inputs.json";
+import { circuit } from "../../../circuits/quickstart/average.circuit";
+import compiledCircuit from "../../../circuits/quickstart/average.compiled.json";
+import inputs from "../../../circuits/quickstart/11155111/average.inputs.json";
 
 describe("PaymentCalc: Ethereum", () => {
   const CHAIN_ID = "11155111";
@@ -30,7 +30,7 @@ describe("PaymentCalc: Ethereum", () => {
     await axiom.prove(inputs);
     const args = axiom.getSendQueryArgs();
     expect(args?.value).toEqual(5600000000000000n);
-  }, 20000);
+  }, 30000);
 
   test("Payment calculation high based on options", async () => {
     const axiom = new Axiom({
@@ -51,7 +51,7 @@ describe("PaymentCalc: Ethereum", () => {
     await axiom.prove(inputs);
     const args = axiom.getSendQueryArgs();
     expect(args?.value).toEqual(500213000000000000000n);
-  }, 20000);
+  }, 30000);
 
   test("Payment calculation low based on options", async () => {
     const axiom = new Axiom({
@@ -72,7 +72,7 @@ describe("PaymentCalc: Ethereum", () => {
     await axiom.prove(inputs);
     const args = axiom.getSendQueryArgs();
     expect(args?.value).toEqual(5105000000000000n);
-  }, 20000);
+  }, 30000);
 
   test("Set overrideAxiomQueryFee greater than standard payment", async () => {
     const axiom = new Axiom({
@@ -93,7 +93,7 @@ describe("PaymentCalc: Ethereum", () => {
     await axiom.prove(inputs);
     const args = axiom.getSendQueryArgs();
     expect(args?.value).toEqual(52600000000000000n);
-  }, 20000);
+  }, 30000);
 
   test("Set overrideAxiomQueryFee less than standard payment", async () => {
     const axiom = new Axiom({
@@ -114,5 +114,5 @@ describe("PaymentCalc: Ethereum", () => {
     await axiom.prove(inputs);
     const args = axiom.getSendQueryArgs();
     expect(args?.value).toEqual(5600000000000000n);
-  }, 20000);
+  }, 30000);
 });

@@ -1,15 +1,27 @@
 import { AxiomCircuit } from "../js";
 import {
+  AxiomV2Callback,
   AxiomV2ClientConfig,
-  AxiomV2ClientOptions,
+  AxiomV2QueryOptions,
   AxiomV2CompiledCircuit,
   AxiomV2SendQueryArgs,
 } from "../types";
-import { AxiomV2CircuitCapacity, UserInput, DEFAULT_CAPACITY } from "@axiom-crypto/circuit";
+import {
+  AxiomV2CircuitCapacity,
+  UserInput,
+  DEFAULT_CAPACITY,
+  DataSubquery,
+} from "@axiom-crypto/circuit";
 import { validateChainId } from "./utils";
-import { PublicClient, TransactionReceipt, WalletClient, createPublicClient, createWalletClient, http } from "viem";
+import { 
+  PublicClient,
+  TransactionReceipt,
+  WalletClient,
+  createPublicClient,
+  createWalletClient,
+  http,
+} from "viem";
 import { privateKeyToAccount } from 'viem/accounts'
-import { AxiomV2Callback } from "@axiom-crypto/core";
 import { viemChain } from "../lib";
 import { getChainDefaults } from "../lib/chain";
 
@@ -18,7 +30,7 @@ export class Axiom<T> {
   protected axiomCircuit: AxiomCircuit<T>;
   protected compiledCircuit: AxiomV2CompiledCircuit;
   protected callback: AxiomV2Callback;
-  protected options?: AxiomV2ClientOptions;
+  protected options?: AxiomV2QueryOptions;
   protected capacity?: AxiomV2CircuitCapacity;
   protected publicClient: PublicClient;
   protected walletClient?: WalletClient;
@@ -27,7 +39,7 @@ export class Axiom<T> {
   constructor(config: AxiomV2ClientConfig<T>) {
     this.config = config;
     this.compiledCircuit = config.compiledCircuit;
-    this.capacity = config.capacity ?? DEFAULT_CAPACITY;
+    this.capacity = config.capacity ?? config.compiledCircuit.capacity ?? DEFAULT_CAPACITY;
     this.callback = {
       target: config.callback.target,
       extraData: config.callback.extraData ?? "0x",
@@ -43,7 +55,7 @@ export class Axiom<T> {
       provider: this.config.provider,
       inputSchema: config.compiledCircuit.inputSchema,
       chainId: this.config.chainId,
-      capacity: this.capacity ?? this.compiledCircuit.capacity ?? DEFAULT_CAPACITY,
+      capacity: this.capacity,
     });
 
     const publicClient = createPublicClient({
@@ -68,16 +80,24 @@ export class Axiom<T> {
   async init() {
     await this.axiomCircuit.loadSaved({
       config: this.compiledCircuit.config,
-      capacity: this.capacity ?? this.compiledCircuit.capacity ?? DEFAULT_CAPACITY,
+      capacity: this.capacity,
       vk: this.compiledCircuit.vk,
     });
+  }
+
+  getOptions(): AxiomV2QueryOptions | undefined {
+    return this.options;
+  }
+
+  getDataQuery(): DataSubquery[] {
+    return this.axiomCircuit.getDataQuery();
   }
 
   getSendQueryArgs(): AxiomV2SendQueryArgs | undefined {
     return this.sendQueryArgs;
   }
 
-  setOptions(options: AxiomV2ClientOptions) {
+  setOptions(options: AxiomV2QueryOptions) {
     this.options = {
       ...this.options,
       ...options,
@@ -161,10 +181,10 @@ export class Axiom<T> {
     if (this.walletClient === undefined) {
       throw new Error("Setting `privateKey` in the `Axiom` constructor is required to get sendQuery args");
     }
-    const clientOptions: AxiomV2ClientOptions = {
+    const options: AxiomV2QueryOptions = {
       ...this.options,
       callbackGasLimit: this.options?.callbackGasLimit ?? Number(getChainDefaults(this.config.chainId).callbackGasLimit),
-      refundee: this.options?.refundee ?? this.walletClient?.account?.address,
+      refundee: this.options?.refundee,
       overrides: this.options?.overrides,
     };
     
@@ -172,7 +192,7 @@ export class Axiom<T> {
       callbackTarget: this.callback.target,
       callbackExtraData: this.callback.extraData ?? "0x",
       callerAddress: this.walletClient?.account?.address,
-      options: clientOptions,
+      options,
     });
 
     return this.sendQueryArgs;

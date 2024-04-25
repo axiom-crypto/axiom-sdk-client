@@ -31,7 +31,9 @@ circuit
   .option("-p, --provider [provider]", "JSON-RPC provider (https)")
   .option("-o, --outputs [outputs]", "outputs json file")
   .option("-f, --function [function]", "function name in typescript circuit")
-  .option("--cache [cache]", "cache output file")
+  .option("-c, --cache [cache]", "cache output file")
+  .option("-d, --defaultInputs [defaultInputs]", "default inputs json file")
+  .option("--force", "force compilation even if output file exists")
   .action(compile);
 
 circuit
@@ -44,7 +46,7 @@ circuit
   .option("-st, --stats", "print stats")
   .option("-p, --provider [provider]", "JSON-RPC provider (https)")
   .option("-o, --outputs [outputs]", "outputs json file")
-  .option("--cache [cache]", "cache input file")
+  .option("-c, --cache [cache]", "cache input file")
   .action(prove);
 
 circuit

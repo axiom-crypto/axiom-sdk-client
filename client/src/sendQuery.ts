@@ -1,67 +1,72 @@
 import {
-  AxiomSdkCore,
   AxiomV2Callback,
   AxiomV2ComputeQuery,
-  AxiomV2QueryOptions,
   DataSubquery,
-  QueryBuilderV2,
-  QueryV2,
-} from "@axiom-crypto/core";
+} from "@axiom-crypto/circuit";
 import { createPublicClient, encodeFunctionData, http } from "viem";
 import { getMaxFeePerGas } from "./axiom/utils";
-import { AbiType, AxiomV2ClientOptions, AxiomV2SendQueryArgs } from "./types";
-import { encodeFullQueryV2 } from "@axiom-crypto/core/packages/tools";
+import { AbiType, AxiomV2QueryOptions, AxiomV2SendQueryArgs } from "./types";
+import { encodeFullQueryV2 } from "@axiom-crypto/circuit/pkg/tools";
 import { calculateFeeDataExtended, calculatePayment } from "./lib/paymentCalc";
 import { viemChain } from "./lib/viem";
 import { getAxiomV2Abi, getAxiomV2QueryAddress } from "./lib";
+import { QueryBuilderClient, QueryBuilderClientConfig } from "./queryBuilderClient";
 
 export const buildSendQuery = async (input: {
-  axiom: AxiomSdkCore;
+  chainId: string;
+  providerUri: string;
   dataQuery: DataSubquery[];
   computeQuery: AxiomV2ComputeQuery;
   callback: AxiomV2Callback;
   caller: string;
-  options: AxiomV2ClientOptions;
+  mock: boolean;
+  options: AxiomV2QueryOptions;
 }): Promise<AxiomV2SendQueryArgs> => {
   const validate = input.options?.overrides?.validateBuild ?? true;
-  const query = input.axiom.query as QueryV2;
-  if (input.options.refundee === undefined) {
-    throw new Error("Refundee is required");
+  if (input.caller === "") {
+    throw new Error("`caller` is required");
   }
-  if (input.options.maxFeePerGas == undefined) {
-    input.options.maxFeePerGas = await getMaxFeePerGas(input.axiom, input.options?.overrides);
+  let options = { ...input.options };
+  if (options.maxFeePerGas == undefined) {
+    options.maxFeePerGas = await getMaxFeePerGas(input.chainId, input.providerUri, input.options?.overrides);
   }
 
-  const chainId = input.axiom.config.chainId.toString();
-  const axiomQueryAddress = input.options?.overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
+  const chainId = input.chainId;
+  const axiomQueryAddress = options?.overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
   const abi = getAxiomV2Abi(AbiType.Query);
 
   const publicClient = createPublicClient({
-    chain: viemChain(chainId, input.axiom.config.providerUri),
-    transport: http(input.axiom.config.providerUri),
+    chain: viemChain(chainId, input.providerUri),
+    transport: http(input.providerUri),
   });
 
-  const feeDataExtended = await calculateFeeDataExtended(chainId, publicClient, input.options);
+  const feeDataExtended = await calculateFeeDataExtended(chainId, publicClient, options);
   const payment = await calculatePayment(chainId, publicClient, feeDataExtended);
 
-  const queryOptions: AxiomV2QueryOptions = {
-    ...feeDataExtended,
-    refundee: input.options.refundee,
+  const config: QueryBuilderClientConfig = {
+    sourceChainId: chainId,
+    providerUri: input.providerUri,
+    caller: input.caller,
+    version: "v2",
+    mock: input.mock,
   };
-
-  const qb: QueryBuilderV2 = query.new(
-    undefined,
+  const queryBuilderClient = new QueryBuilderClient(
+    config,
+    input.dataQuery.map((dq) => dq.subqueryData),
     input.computeQuery,
     input.callback,
-    queryOptions
+    options,
   );
+  queryBuilderClient.setOptions(feeDataExtended);
 
+  // Feed the data query into the query builder 
   if (input.dataQuery.length > 0) {
-    qb.setBuiltDataQuery({
-      subqueries: input.dataQuery,
+    queryBuilderClient.setBuiltDataQuery({
       sourceChainId: chainId,
+      subqueries: input.dataQuery,
     }, true);
   }
+  
   const {
     queryHash,
     dataQueryHash,
@@ -71,8 +76,8 @@ export const buildSendQuery = async (input: {
     userSalt,
     refundee,
     dataQuery,
-  } = await qb.build(validate);
-  const id = await qb.getQueryId(input.caller);
+  } = await queryBuilderClient.build(validate);
+  const id = await queryBuilderClient.getQueryId(input.caller);
 
   let sendQueryArgs: any;
   if (!input.options.ipfsClient) {
@@ -92,7 +97,7 @@ export const buildSendQuery = async (input: {
         dataQuery,
       ],
       queryId: id,
-      mock: input.axiom.config.mock,
+      mock: queryBuilderClient.config.mock,
     };
   } else {
     const encodedQuery = encodeFullQueryV2(
@@ -109,7 +114,7 @@ export const buildSendQuery = async (input: {
       refundee,
     );
     const pinRes = await input.options.ipfsClient.pin(encodedQuery);
-    if (pinRes.status - 200 > 99) {
+    if (pinRes.status > 299) {
       throw new Error(`Failed to write data to IPFS. Status: ${pinRes.status}`);
     }
     const ipfsHash = pinRes.value as string;
@@ -127,7 +132,7 @@ export const buildSendQuery = async (input: {
         refundee,
       ],
       queryId: id,
-      mock: input.axiom.config.mock,
+      mock: queryBuilderClient.config.mock,
     };
   }
 

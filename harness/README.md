@@ -1,30 +1,45 @@
 # axiom-client harness
 
-Client harness that allows for easy circuit parameter generation
+Client harness that allows for easy circuit parameter generation and testing. Uses standard Axiom `*.circuit.ts` files.
 
-Run via:
+## Integration test data generation scripts
 
+### Generating test inputs
+
+We have a Solidity contract that can be deployed to generate transaction and receipt data of a particular size. Set `PROVIDER_URI` and `PRIVATE_KEY` to the provider and account private key of the chain that you would like to deploy on.
+
+```bash
+pnpm deploy:inputs
 ```
-npx harness run <circuit.js file>
+
+Record the block number that the transactions occrred in. You can add them to a comma-separated list of block numbers in the harness search command below.
+
+### Getting chain data for integration tests
+
+To run the chain data search script:
+
+```bash
+# When importing harness as a package
+npx harness search --provider <PROVIDER_URI> --include <BLOCKNUMBER(S)> --output <OUTPUT_DIR>
+
+# Inside this repo
+node dist/cli/index.js search --provider <PROVIDER_URI> --include <BLOCKNUMBER(S)> --output <OUTPUT_DIR>
 ```
 
-Saves output to `./data/` unless a different output directory is specified.
+Where `--include` is optional and blocknumbers is a comma-separated list (single: `--include 1530001` multiple: `--include 1530001,1530005,1530011`).
 
-## Javascript circuit format
+## Setting test inputs
 
-Code and input should be in the same file, with input parameters specified as a Javascript object called `const input = {...}`.
-
-Example circuit.js file:
+Test inputs can be set by adding a `//$` decorator followed by the chaindata object path to each input.
 
 ```javascript
-for (let i = 0; i < 7; i++) {
-  const acct = getAccount(add(claimedBlockNumber, i), address);
-  const balance = await acct.balance();
-  addToCallback(balance);
-}
+blockNumber: 4000000, //$ account.eoa[8].blockNumber
+```
 
-const input = {
-  address: "0x897dDbe14c9C7736EbfDC58461355697FbF70048",
-  claimedBlockNumber: 9173677,
-};
+## Running integration tests
+
+Prefix a `CHAIN_ID` environmental variable before running your test. Ensure that `PROVIDER_URI_${CHAIN_ID}` and `PRIVATE_KEY_${CHAIN_ID}` exist in `.env` before running.
+
+```bash
+CHAIN_ID=11155111 pnpm jest test/integration/start.test.ts
 ```

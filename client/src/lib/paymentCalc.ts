@@ -36,10 +36,10 @@ export async function calculatePayment(
       BigInt(feeData.callbackGasLimit),
       feeData.proofVerificationGas
     );
-    const minimumPayment = projectedCallbackCost + defaults.axiomQueryFeeWei;
-    if (payment < minimumPayment) {
-      throw new Error(`Payment ${payment} is less than minimum payment ${minimumPayment}`);
-    }
+    // const minimumPayment = projectedCallbackCost + defaults.axiomQueryFeeWei;
+    // if (payment < minimumPayment) {
+    //   throw new Error(`Payment ${payment} is less than minimum payment ${minimumPayment}`);
+    // }
     return payment;
   } else {
     throw new Error(`Unsupported chain ${chainId}`);
@@ -66,9 +66,9 @@ export async function calculateFeeDataExtended(
 
   // Get maxFeePerGas and set to SDK default's minMaxFeePerGasWei if less this value
   let maxFeePerGas = BigInt(options.maxFeePerGas ?? defaults.maxFeePerGasWei);
-  if (maxFeePerGas < defaults.minMaxFeePerGasWei) {
-    maxFeePerGas = defaults.minMaxFeePerGasWei;
-  }
+  // if (maxFeePerGas < defaults.minMaxFeePerGasWei) {
+  //   maxFeePerGas = defaults.minMaxFeePerGasWei;
+  // }
 
   // Get proofVerificationGas from contract
   const proofVerificationGas = await readContractValueBigInt(
@@ -81,14 +81,15 @@ export async function calculateFeeDataExtended(
   );
 
   // Get axiomQueryFee from contract
-  const axiomQueryFee = await readContractValueBigInt(
-    publicClient,
-    axiomV2QueryAddr,
-    getAxiomV2Abi(AbiType.Query),
-    "axiomQueryFee",
-    [],
-    defaults.axiomQueryFeeWei
-  );
+  // const axiomQueryFee = await readContractValueBigInt(
+  //   publicClient,
+  //   axiomV2QueryAddr,
+  //   getAxiomV2Abi(AbiType.Query),
+  //   "axiomQueryFee",
+  //   [],
+  //   defaults.axiomQueryFeeWei
+  // );
+  const axiomQueryFee = 0n;
 
   let overrideAxiomQueryFee = BigInt(options.overrideAxiomQueryFee ?? "0");
 
@@ -110,11 +111,11 @@ export async function calculateFeeDataExtended(
     const projectedCallbackCost = await getProjectedL2CallbackCost(chainId, publicClient, maxFeePerGas, callbackGasLimit, proofVerificationGas);
 
     // overrideAxiomQueryFeeL2 = AXIOM_QUERY_FEE + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas)
-    const overrideAxiomQueryFeeL2 = defaultAxiomQueryFee + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas);
+    // const overrideAxiomQueryFeeL2 = defaultAxiomQueryFee + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas);
     
-    // overrideAxiomQueryFee = max(overrideAxiomQueryFeeL2, overrideAxiomQueryFee, AXIOM_QUERY_FEE)
-    const largerAxiomQueryFee = overrideAxiomQueryFeeL2 > axiomQueryFee ? overrideAxiomQueryFeeL2 : defaultAxiomQueryFee;
-    overrideAxiomQueryFee = overrideAxiomQueryFee > largerAxiomQueryFee ? overrideAxiomQueryFee : largerAxiomQueryFee;
+    // // overrideAxiomQueryFee = max(overrideAxiomQueryFeeL2, overrideAxiomQueryFee, AXIOM_QUERY_FEE)
+    // const largerAxiomQueryFee = overrideAxiomQueryFeeL2 > axiomQueryFee ? overrideAxiomQueryFeeL2 : defaultAxiomQueryFee;
+    overrideAxiomQueryFee = overrideAxiomQueryFee ?? defaultAxiomQueryFee;
     
     return {
       maxFeePerGas: maxFeePerGas.toString(),

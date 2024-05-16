@@ -22,7 +22,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
   const UNI_V3_FACTORY_ADDR = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
 
   const config: QueryBuilderBaseConfig = {
-    providerUri: process.env.PROVIDER_URI_MAINNET as string,
+    rpcUrl: process.env.PROVIDER_URI_MAINNET as string,
     version: "v2",
   }
 

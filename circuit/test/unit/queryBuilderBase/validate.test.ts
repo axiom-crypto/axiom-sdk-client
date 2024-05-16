@@ -16,12 +16,12 @@ describe("Query Validation Tests", () => {
   const sepoliaProvider = new ethers.JsonRpcProvider(process.env.PROVIDER_URI_SEPOLIA as string);
 
   const config: QueryBuilderBaseConfig = {
-    providerUri: process.env.PROVIDER_URI_MAINNET as string,
+    rpcUrl: process.env.PROVIDER_URI_MAINNET as string,
     version: "v2",
     sourceChainId: 1,
   };
   const sepoliaConfig = {
-    providerUri: process.env.PROVIDER_URI_SEPOLIA as string,
+    rpcUrl: process.env.PROVIDER_URI_SEPOLIA as string,
     version: "v2",
     sourceChainId: "11155111",
   };

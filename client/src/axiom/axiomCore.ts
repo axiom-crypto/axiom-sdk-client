@@ -20,6 +20,7 @@ import { AxiomBaseCircuit } from "@axiom-crypto/circuit/js/";
 
 export abstract class AxiomCore<T> {
   protected coreConfig: CoreConfig<T>;
+  protected axiomV2QueryAddress: string;
   protected axiomBaseCircuit: AxiomBaseCircuit<T>;
   protected compiledCircuit: AxiomV2CompiledCircuit;
   protected capacity: AxiomV2CircuitCapacity;
@@ -31,11 +32,13 @@ export abstract class AxiomCore<T> {
 
   constructor(
     config: CoreConfig<T>,
+    axiomV2QueryAddress: string,
     axiomBaseCircuit: AxiomBaseCircuit<T>,
     sendQueryPublicClient: PublicClient,
     sendQueryWalletClient?: WalletClient,
   ) {
     this.coreConfig = config;
+    this.axiomV2QueryAddress = axiomV2QueryAddress;
     this.axiomBaseCircuit = axiomBaseCircuit;
     this.compiledCircuit = config.compiledCircuit;
     this.capacity = config.capacity ?? DEFAULT_CAPACITY;

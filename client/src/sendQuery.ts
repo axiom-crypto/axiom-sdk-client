@@ -15,6 +15,7 @@ import { QueryBuilderClient, QueryBuilderClientConfig } from "./queryBuilderClie
 export const buildSendQuery = async (input: {
   chainId: string;
   rpcUrl: string;
+  axiomV2QueryAddress: string;
   dataQuery: DataSubquery[];
   computeQuery: AxiomV2ComputeQuery;
   callback: AxiomV2Callback;
@@ -28,11 +29,10 @@ export const buildSendQuery = async (input: {
   }
   let options = { ...input.options };
   if (options.maxFeePerGas == undefined) {
-    options.maxFeePerGas = await getMaxFeePerGas(input.chainId, input.rpcUrl, input.options?.overrides);
+    options.maxFeePerGas = await getMaxFeePerGas(input.chainId, input.rpcUrl, input.axiomV2QueryAddress);
   }
 
   const chainId = input.chainId;
-  const axiomQueryAddress = options?.overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
   const abi = getAxiomV2Abi(AbiType.Query);
 
   const publicClient = createPublicClient({
@@ -40,7 +40,7 @@ export const buildSendQuery = async (input: {
     transport: http(input.rpcUrl),
   });
 
-  const feeDataExtended = await calculateFeeDataExtended(chainId, publicClient, options);
+  const feeDataExtended = await calculateFeeDataExtended(chainId, publicClient, input.axiomV2QueryAddress, options);
   const payment = await calculatePayment(chainId, publicClient, feeDataExtended);
 
   const config: QueryBuilderClientConfig = {
@@ -82,7 +82,7 @@ export const buildSendQuery = async (input: {
   let sendQueryArgs: any;
   if (!input.options.ipfsClient) {
     sendQueryArgs = {
-      address: axiomQueryAddress as `0x${string}`,
+      address: input.axiomV2QueryAddress as `0x${string}`,
       abi: abi,
       functionName: "sendQuery",
       value: payment,
@@ -119,7 +119,7 @@ export const buildSendQuery = async (input: {
     }
     const ipfsHash = pinRes.value as string;
     sendQueryArgs = {
-      address: axiomQueryAddress as `0x${string}`,
+      address: input.axiomV2QueryAddress as `0x${string}`,
       abi: abi,
       functionName: "sendQueryWithIpfsData",
       value: payment,

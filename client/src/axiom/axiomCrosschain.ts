@@ -1,8 +1,6 @@
 import {
   AxiomV2Callback,
-  AxiomV2ClientConfig,
   AxiomV2QueryOptions,
-  AxiomV2CompiledCircuit,
   AxiomV2SendQueryArgs,
   AxiomV2CrosschainConfig,
   SourceChainConfig,
@@ -10,14 +8,10 @@ import {
   BridgeType,
 } from "../types";
 import {
-  AxiomV2CircuitCapacity,
-  UserInput,
   DEFAULT_CAPACITY,
-  DataSubquery,
 } from "@axiom-crypto/circuit";
 import { validateChainId } from "./utils";
 import { 
-  PublicClient,
   TransactionReceipt,
   WalletClient,
   createPublicClient,
@@ -25,7 +19,7 @@ import {
   http,
 } from "viem";
 import { privateKeyToAccount } from 'viem/accounts'
-import { viemChain } from "../lib";
+import { getAxiomV2QueryBlockhashOracleAddress, getAxiomV2QueryBroadcasterAddress, viemChain } from "../lib";
 import { getChainDefaults } from "../lib/chain";
 import { AxiomCore } from "./axiomCore";
 import { AxiomBaseCircuit } from "@axiom-crypto/circuit/js";
@@ -45,10 +39,12 @@ export class AxiomCrosschain<T> extends AxiomCore<T> {
       chainId: config.source.chainId,
       capacity,
     });
+    
     const publicClient = createPublicClient({
       chain: viemChain(config.target.chainId, config.target.rpcUrl),
       transport: http(config.target.rpcUrl),
     });
+
     let walletClient: WalletClient | undefined;
     if (config.target.privateKey) {
       const account = privateKeyToAccount(config.target.privateKey as `0x${string}`);
@@ -62,6 +58,11 @@ export class AxiomCrosschain<T> extends AxiomCore<T> {
       }
     }
 
+    const fallbackQueryAddress = config.source.bridgeType === BridgeType.BlockhashOracle ? 
+      getAxiomV2QueryBlockhashOracleAddress(config.source.chainId, config.target.chainId) :
+      getAxiomV2QueryBroadcasterAddress(config.source.chainId, config.target.chainId, config.source.bridgeId!);
+    const axiomV2QueryAddress = config.options?.overrides?.queryAddress ?? fallbackQueryAddress;
+
     if (config.source.bridgeType === BridgeType.Broadcaster && config.source.bridgeId === undefined) {
       throw new Error("`source.bridgeId` is required for Broadcaster bridge type");
     }
@@ -73,7 +74,7 @@ export class AxiomCrosschain<T> extends AxiomCore<T> {
       options: config.options,
       capacity,
     }
-    super(coreConfig, axiomBaseCircuit, publicClient, walletClient);
+    super(coreConfig, axiomV2QueryAddress, axiomBaseCircuit, publicClient, walletClient);
 
     this.source = config.source;
     this.target = config.target;
@@ -115,6 +116,7 @@ export class AxiomCrosschain<T> extends AxiomCore<T> {
     const sendQueryArgs = await buildSendQuery({
       chainId: this.source.chainId,
       rpcUrl: this.source.rpcUrl,
+      axiomV2QueryAddress: this.axiomV2QueryAddress,
       dataQuery: this.axiomBaseCircuit.getDataQuery(),
       computeQuery,
       callback,

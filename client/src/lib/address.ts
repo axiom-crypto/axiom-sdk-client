@@ -11,46 +11,66 @@ import {
   sepolia
 } from "viem/chains";
 
-// Maps sourceChainId to targetChainId AxiomV2Query deployment address
 const axiomV2QueryAddresses = {
+  [mainnet.id.toString()]: "0x83c8c0B395850bA55c830451Cfaca4F2A667a983",
+  [sepolia.id.toString()]: "0x83c8c0B395850bA55c830451Cfaca4F2A667a983",
+  [base.id.toString()]: "0xfe059442B0379D5f22Bec384A588766f98A36812",
+  [baseSepolia.id.toString()]: "0xfe059442B0379D5f22Bec384A588766f98A36812",
+};
+
+const axiomV2QueryBlockhashOracleAddresses = {
   [mainnet.id.toString()]: {
-    [mainnet.id.toString()]: "0x83c8c0B395850bA55c830451Cfaca4F2A667a983",
-    [arbitrum.id.toString()]: "",
-    [optimism.id.toString()]: "",
-    [base.id.toString()]: "",
-    [scroll.id.toString()]: "",
+    [optimism.id.toString()]: undefined,
+    [base.id.toString()]: undefined,
   },
   [sepolia.id.toString()]: {
-    [sepolia.id.toString()]: "0x83c8c0B395850bA55c830451Cfaca4F2A667a983",
-    [arbitrumSepolia.id.toString()]: "",
-    [optimismSepolia.id.toString()]: "",
-    [baseSepolia.id.toString()]: "",
-    [scrollSepolia.id.toString()]: "",
+    [optimismSepolia.id.toString()]: undefined,
+    [baseSepolia.id.toString()]: "0x1234",
   },
-  [base.id.toString()]: {
-    [mainnet.id.toString()]: "",
-    [arbitrum.id.toString()]: "",
-    [optimism.id.toString()]: "",
-    [base.id.toString()]: "0xfe059442B0379D5f22Bec384A588766f98A36812",
-    [scroll.id.toString()]: "",
+};
+
+const axiomV2QueryBroadcasterAddresses = {
+  [mainnet.id.toString()]: {
+    [base.id.toString()]: [],
+    [scroll.id.toString()]: [],
   },
-  [baseSepolia.id.toString()]: {
-    [sepolia.id.toString()]: "",
-    [arbitrumSepolia.id.toString()]: "",
-    [optimismSepolia.id.toString()]: "",
-    [baseSepolia.id.toString()]: "0xfe059442B0379D5f22Bec384A588766f98A36812",
-    [scrollSepolia.id.toString()]: "",
+  [sepolia.id.toString()]: {
+    [arbitrumSepolia.id.toString()]: [],
+    [scrollSepolia.id.toString()]: [],
   },
 };
 
 export function getAxiomV2QueryAddress(
   chainId: string,
-  targetChainId?: string,
 ) {
-  if (targetChainId === undefined) {
-    targetChainId = chainId;
+  const address = axiomV2QueryAddresses[chainId];
+  if (!address) {
+    throw new Error(`AxiomV2Query address not found for chainId: ${chainId}`);
   }
-  return axiomV2QueryAddresses?.[chainId]?.[targetChainId] ?? "";
+  return address;
+}
+
+export function getAxiomV2QueryBlockhashOracleAddress(
+  sourceChainId: string,
+  targetChainId: string,
+) {
+  const address = axiomV2QueryBlockhashOracleAddresses?.[sourceChainId]?.[targetChainId];
+  if (!address) {
+    throw new Error(`AxiomV2BlockhashOracle address not found for sourceChainId: ${sourceChainId}, targetChainId: ${targetChainId}`);
+  }
+  return address;
+}
+
+export function getAxiomV2QueryBroadcasterAddress(
+  sourceChainId: string,
+  targetChainId: string,
+  bridgeId: number,
+) {
+  const address = axiomV2QueryBroadcasterAddresses?.[sourceChainId]?.[targetChainId]?.[bridgeId];
+  if (!address) {
+    throw new Error(`AxiomV2QueryBroadcaster address not found for sourceChainId: ${sourceChainId}, targetChainId: ${targetChainId}, bridgeId: ${bridgeId}`);
+  }
+  return address;
 }
 
 export function getOpStackL1BlockAttributesAddress() {

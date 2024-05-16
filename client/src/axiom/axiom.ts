@@ -16,7 +16,7 @@ import {
   http,
 } from "viem";
 import { privateKeyToAccount } from 'viem/accounts'
-import { viemChain } from "../lib";
+import { getAxiomV2QueryAddress, viemChain } from "../lib";
 import { getChainDefaults } from "../lib/chain";
 import { AxiomCore } from "./axiomCore";
 import { AxiomBaseCircuit } from "@axiom-crypto/circuit/js";
@@ -35,10 +35,12 @@ export class Axiom<T> extends AxiomCore<T> {
       chainId: config.chainId,
       capacity,
     });
+
     const publicClient = createPublicClient({
       chain: viemChain(config.chainId, config.rpcUrl),
       transport: http(config.rpcUrl),
     });
+
     let walletClient: WalletClient | undefined;
     if (config.privateKey) {
       const account = privateKeyToAccount(config.privateKey as `0x${string}`);
@@ -52,11 +54,13 @@ export class Axiom<T> extends AxiomCore<T> {
       }
     }
 
+    const axiomV2QueryAddress = config.options?.overrides?.queryAddress ?? getAxiomV2QueryAddress(config.chainId);
+
     const coreConfig: CoreConfig<T> = {
       ...config,
       capacity,
     };
-    super(coreConfig, axiomBaseCircuit, publicClient, walletClient);
+    super(coreConfig, axiomV2QueryAddress, axiomBaseCircuit, publicClient, walletClient);
 
     this.config = config;
     this.compiledCircuit = config.compiledCircuit;
@@ -97,6 +101,7 @@ export class Axiom<T> extends AxiomCore<T> {
     const sendQueryArgs = await buildSendQuery({
       chainId: this.config.chainId,
       rpcUrl: this.config.rpcUrl,
+      axiomV2QueryAddress: this.axiomV2QueryAddress,
       dataQuery: this.axiomBaseCircuit.getDataQuery(),
       computeQuery,
       callback,

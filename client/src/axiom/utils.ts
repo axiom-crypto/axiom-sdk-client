@@ -72,10 +72,8 @@ export function argsObjToArr(
 export async function getMaxFeePerGas(
   chainId: string,
   providerUri: string,
-  overrides?: AxiomV2ClientOverrides
+  axiomQueryAddress: string,
 ): Promise<string> {
-  const axiomQueryAddress = overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
-  
   const publicClient = createPublicClient({
     chain: viemChain(chainId, providerUri),
     transport: http(providerUri),

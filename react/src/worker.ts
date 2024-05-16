@@ -1,11 +1,11 @@
-import { AxiomCircuit as MyAxiomCircuit } from "@axiom-crypto/client/web";
+import { AxiomBaseCircuit } from "@axiom-crypto/client/web/";
 import { expose } from "comlink";
-import { AxiomV2CircuitCapacity } from "../../circuit/dist/types";
+import { AxiomV2CircuitCapacity } from "@axiom-crypto/client";
 
-export class AxiomCircuit extends MyAxiomCircuit<any> {
+export class AxiomCircuit extends AxiomBaseCircuit<any> {
     constructor(inputs: {
-        provider: string,
         chainId: number | string | bigint,
+        rpcUrl: string,
         inputSchema?: string,
         shouldTime?: boolean,
         capacity?: AxiomV2CircuitCapacity,

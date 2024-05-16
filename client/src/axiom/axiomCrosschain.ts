@@ -92,7 +92,6 @@ export class AxiomCrosschain<T> extends AxiomCore<T> {
     return super.sendQuery();
   }
 
-
   protected async buildSendQueryArgs(): Promise<AxiomV2SendQueryArgs> {
     if (!this.sendQueryWalletClient) {
       throw new Error("Setting `privateKey` in the `Axiom` constructor is required to get sendQuery args");

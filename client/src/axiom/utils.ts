@@ -6,9 +6,9 @@ import {
 import {
   getByteLength,
 } from "@axiom-crypto/circuit/pkg/tools";
-import { AbiType, AxiomV2ClientOverrides, AxiomV2SendQueryArgsParams, CircuitInputType } from "../types";
+import { AbiType, AxiomV2SendQueryArgsParams, CircuitInputType } from "../types";
 import { createPublicClient, http } from 'viem';
-import { getAxiomV2Abi, getAxiomV2QueryAddress, viemChain } from "../lib";
+import { getAxiomV2Abi, viemChain } from "../lib";
 import { getChainDefaults } from "../lib/chain";
 
 export function validateChainId(chainId: string) {

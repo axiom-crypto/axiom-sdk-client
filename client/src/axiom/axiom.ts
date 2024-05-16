@@ -21,7 +21,7 @@ import { getChainDefaults } from "../lib/chain";
 import { AxiomCore } from "./axiomCore";
 import { AxiomBaseCircuit } from "@axiom-crypto/circuit/js";
 import { buildSendQuery } from "../sendQuery";
-import { CoreConfig } from "src/types/internal";
+import { CoreConfig } from "../types/internal";
 
 export class Axiom<T> extends AxiomCore<T> {
   protected config: AxiomV2ClientConfig<T>;

@@ -2,15 +2,22 @@ import path from 'path';
 import { getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
 import { buildSendQuery } from "../sendQuery";
 import { argsArrToObj } from '../axiom/utils';
+import {
+  getAxiomV2QueryAddress,
+  getAxiomV2QueryBlockhashOracleAddress,
+  getAxiomV2QueryBroadcasterAddress,
+} from '../lib';
 
 export const queryParams = async (
   callbackTarget: string,
   options: {
     refundAddress: string;
     sourceChainId: string;
-    callbackExtraData: string;
-    caller: string;
-    argsMap: boolean;
+    targetChainId?: string;
+    bridgeId?: number;
+    callbackExtraData?: string;
+    caller?: string;
+    argsMap?: boolean;
     outputs?: string;
     proven?: string;
     rpcUrl?: string;
@@ -19,17 +26,22 @@ export const queryParams = async (
     mock?: boolean;
   },
 ) => {
-  if (!options.refundAddress) {
-    throw new Error("Please provide a refund address (--refundAddress <address>)");
-  }
-  if (!options.sourceChainId) {
-    throw new Error("Please provide a source chain ID (--sourceChainId <id>)");
-  }
   let defaultPath = path.resolve(path.join("app", "axiom"));
   let provenFile = path.join(defaultPath, "data", "proven.json");
   if (options.proven !== undefined) {
       provenFile = options.proven;
   }
+
+  // Get AxiomV2Query address
+  let axiomV2QueryAddress;
+  if (options.targetChainId && options.bridgeId) {
+    axiomV2QueryAddress = getAxiomV2QueryBroadcasterAddress(options.sourceChainId, options.targetChainId, options.bridgeId);
+  } else if (options.targetChainId) {
+    axiomV2QueryAddress = getAxiomV2QueryBlockhashOracleAddress(options.sourceChainId, options.targetChainId);
+  } else {
+    axiomV2QueryAddress = getAxiomV2QueryAddress(options.sourceChainId);
+  }
+
   console.log(`Reading proven circuit JSON from: ${provenFile}`)
   const provenJson = readJsonFromFile(provenFile);
   const rpcUrl = getProvider(options.rpcUrl);
@@ -37,6 +49,7 @@ export const queryParams = async (
     let build = await buildSendQuery({
       chainId: options.sourceChainId,
       rpcUrl,
+      axiomV2QueryAddress,
       dataQuery: provenJson.dataQuery,
       computeQuery: provenJson.computeQuery,
       callback: {

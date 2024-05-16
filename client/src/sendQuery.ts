@@ -9,7 +9,7 @@ import { AbiType, AxiomV2QueryOptions, AxiomV2SendQueryArgs } from "./types";
 import { encodeFullQueryV2 } from "@axiom-crypto/circuit/pkg/tools";
 import { calculateFeeDataExtended, calculatePayment } from "./lib/paymentCalc";
 import { viemChain } from "./lib/viem";
-import { getAxiomV2Abi, getAxiomV2QueryAddress } from "./lib";
+import { getAxiomV2Abi } from "./lib";
 import { QueryBuilderClient, QueryBuilderClientConfig } from "./queryBuilderClient";
 
 export const buildSendQuery = async (input: {

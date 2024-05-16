@@ -77,7 +77,7 @@ export class QueryBuilderBase {
 
   protected configure(config: QueryBuilderBaseConfig): QueryBuilderBaseInternalConfig {
     config = handleProvider(config);
-    const providerUri = parseProvider(config.providerUri);
+    const rpcUrl = parseProvider(config.rpcUrl);
 
     config = handleChainId(config);
     const sourceChainId = parseChainId(config.sourceChainId);
@@ -86,10 +86,10 @@ export class QueryBuilderBase {
     const mock = parseMock(config.mock, sourceChainId);
     const version = parseVersion(config.version);
 
-    const provider = new ethers.JsonRpcProvider(providerUri);
+    const provider = new ethers.JsonRpcProvider(rpcUrl);
 
     return {
-      providerUri,
+      rpcUrl,
       provider,
       sourceChainId,
       targetChainId,

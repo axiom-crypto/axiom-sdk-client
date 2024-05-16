@@ -1,17 +1,15 @@
 import { Axiom } from '../../../src/axiom/axiom';
 import { circuit } from "../../circuits/quickstart/average.circuit";
 import compiledCircuit from "../../circuits/quickstart/average.compiled.json";
-import { viemChain } from '../../../src/lib/viem';
-import { createPublicClient, http } from 'viem';
 import { AxiomV2QueryOptions } from '../../../src';
 
 const chainId = process.env.CHAIN_ID || "11155111"
-const provider = process.env[`PROVIDER_URI_${chainId}`] as string;
+const rpcUrl = process.env[`PROVIDER_URI_${chainId}`] as string;
 
 describe('Axiom class tests', () => {
   const config = {
     chainId,
-    provider,
+    rpcUrl,
     circuit,
     compiledCircuit,
     callback: {
@@ -32,7 +30,10 @@ describe('Axiom class tests', () => {
   });
 
   test('sendQuery should fail without built args', async () => {
-    const axiom = new Axiom(config);
+    const axiom = new Axiom({
+      ...config,
+      privateKey: process.env.PRIVATE_KEY_ANVIL as string,
+    });
     await expect(axiom.sendQuery()).rejects.toThrow('SendQuery args have not been built yet. Please run `prove` first.');
   });
 

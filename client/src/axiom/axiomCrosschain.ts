@@ -2,13 +2,22 @@ import {
   AxiomV2Callback,
   AxiomV2ClientConfig,
   AxiomV2QueryOptions,
+  AxiomV2CompiledCircuit,
   AxiomV2SendQueryArgs,
+  AxiomV2CrosschainConfig,
+  SourceChainConfig,
+  TargetChainConfig,
+  BridgeType,
 } from "../types";
 import {
+  AxiomV2CircuitCapacity,
+  UserInput,
   DEFAULT_CAPACITY,
+  DataSubquery,
 } from "@axiom-crypto/circuit";
 import { validateChainId } from "./utils";
 import { 
+  PublicClient,
   TransactionReceipt,
   WalletClient,
   createPublicClient,
@@ -23,57 +32,65 @@ import { AxiomBaseCircuit } from "@axiom-crypto/circuit/js";
 import { buildSendQuery } from "../sendQuery";
 import { CoreConfig } from "src/types/internal";
 
-export class Axiom<T> extends AxiomCore<T> {
-  protected config: AxiomV2ClientConfig<T>;
-  
-  constructor(config: AxiomV2ClientConfig<T>) {
+export class AxiomCrosschain<T> extends AxiomCore<T> {
+  source: SourceChainConfig;
+  target: TargetChainConfig;
+
+  constructor(config: AxiomV2CrosschainConfig<T>) {
     const capacity = config.capacity ?? config.compiledCircuit.capacity ?? DEFAULT_CAPACITY;
     const axiomBaseCircuit = new AxiomBaseCircuit({
       f: config.circuit,
-      rpcUrl: config.rpcUrl,
+      rpcUrl: config.source.rpcUrl,
       inputSchema: config.compiledCircuit.inputSchema,
-      chainId: config.chainId,
+      chainId: config.source.chainId,
       capacity,
     });
     const publicClient = createPublicClient({
-      chain: viemChain(config.chainId, config.rpcUrl),
-      transport: http(config.rpcUrl),
+      chain: viemChain(config.target.chainId, config.target.rpcUrl),
+      transport: http(config.target.rpcUrl),
     });
     let walletClient: WalletClient | undefined;
-    if (config.privateKey) {
-      const account = privateKeyToAccount(config.privateKey as `0x${string}`);
+    if (config.target.privateKey) {
+      const account = privateKeyToAccount(config.target.privateKey as `0x${string}`);
       walletClient = createWalletClient({
-        chain: viemChain(config.chainId, config.rpcUrl),
+        chain: viemChain(config.target.chainId, config.target.rpcUrl),
         account,
-        transport: http(config.rpcUrl),
+        transport: http(config.target.rpcUrl),
       });
       if (walletClient.account === undefined) {
         throw new Error("Failed to create wallet client");
       }
     }
 
+    if (config.source.bridgeType === BridgeType.Broadcaster && config.source.bridgeId === undefined) {
+      throw new Error("`source.bridgeId` is required for Broadcaster bridge type");
+    }
+
     const coreConfig: CoreConfig<T> = {
-      ...config,
+      circuit: config.circuit,
+      compiledCircuit: config.compiledCircuit,
+      callback: config.callback,
+      options: config.options,
       capacity,
-    };
+    }
     super(coreConfig, axiomBaseCircuit, publicClient, walletClient);
 
-    this.config = config;
-    this.compiledCircuit = config.compiledCircuit;
-    this.capacity = capacity;
+    this.source = config.source;
+    this.target = config.target;
 
     this.options = config.options;
     if (config.options?.overrides?.queryAddress === undefined) {
-      validateChainId(this.config.chainId);
+      validateChainId(this.target.chainId);
     }
   }
 
   async sendQuery(): Promise<TransactionReceipt> {
     if (!this.sendQueryWalletClient) {
-      throw new Error("Setting `privateKey` in the `Axiom` constructor is required to send a query");
+      throw new Error("Setting `privateKey` in the `AxiomCrosschain` constructor's `target` struct is required to send a query");
     }
     return super.sendQuery();
   }
+
 
   protected async buildSendQueryArgs(): Promise<AxiomV2SendQueryArgs> {
     if (!this.sendQueryWalletClient) {
@@ -81,7 +98,8 @@ export class Axiom<T> extends AxiomCore<T> {
     }
     const computeQuery = this.axiomBaseCircuit.getComputeQuery();
     if (!computeQuery) throw new Error("No compute query generated");
-    if (!this.config.chainId) throw new Error("No chain ID provided");
+    if (!this.source.chainId) throw new Error("No source chain ID provided");
+    if (!this.target.chainId) throw new Error("No target chain ID provided");
 
     const callback: AxiomV2Callback = {
       target: this.callback.target,
@@ -89,14 +107,14 @@ export class Axiom<T> extends AxiomCore<T> {
     };
     const options: AxiomV2QueryOptions = {
       ...this.options,
-      callbackGasLimit: this.options?.callbackGasLimit ?? Number(getChainDefaults(this.config.chainId).callbackGasLimit),
+      callbackGasLimit: this.options?.callbackGasLimit ?? Number(getChainDefaults(this.target.chainId).callbackGasLimit),
       refundee: this.options?.refundee,
       overrides: this.options?.overrides,
     };
 
     const sendQueryArgs = await buildSendQuery({
-      chainId: this.config.chainId,
-      rpcUrl: this.config.rpcUrl,
+      chainId: this.source.chainId,
+      rpcUrl: this.source.rpcUrl,
       dataQuery: this.axiomBaseCircuit.getDataQuery(),
       computeQuery,
       callback,

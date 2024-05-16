@@ -14,7 +14,7 @@ import { QueryBuilderClient, QueryBuilderClientConfig } from "./queryBuilderClie
 
 export const buildSendQuery = async (input: {
   chainId: string;
-  providerUri: string;
+  rpcUrl: string;
   dataQuery: DataSubquery[];
   computeQuery: AxiomV2ComputeQuery;
   callback: AxiomV2Callback;
@@ -28,7 +28,7 @@ export const buildSendQuery = async (input: {
   }
   let options = { ...input.options };
   if (options.maxFeePerGas == undefined) {
-    options.maxFeePerGas = await getMaxFeePerGas(input.chainId, input.providerUri, input.options?.overrides);
+    options.maxFeePerGas = await getMaxFeePerGas(input.chainId, input.rpcUrl, input.options?.overrides);
   }
 
   const chainId = input.chainId;
@@ -36,8 +36,8 @@ export const buildSendQuery = async (input: {
   const abi = getAxiomV2Abi(AbiType.Query);
 
   const publicClient = createPublicClient({
-    chain: viemChain(chainId, input.providerUri),
-    transport: http(input.providerUri),
+    chain: viemChain(chainId, input.rpcUrl),
+    transport: http(input.rpcUrl),
   });
 
   const feeDataExtended = await calculateFeeDataExtended(chainId, publicClient, options);
@@ -45,7 +45,7 @@ export const buildSendQuery = async (input: {
 
   const config: QueryBuilderClientConfig = {
     sourceChainId: chainId,
-    providerUri: input.providerUri,
+    rpcUrl: input.rpcUrl,
     caller: input.caller,
     version: "v2",
     mock: input.mock,

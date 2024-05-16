@@ -18,7 +18,7 @@ const DEADBEEF_BYTES32 = "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdead
 export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   protected resultLen: number;
   protected halo2Lib!: Halo2LibWasm;
-  protected provider: string;
+  protected rpcUrl: string;
   protected dataQuery: DataSubquery[];
   protected computeQuery: AxiomV2ComputeQuery | undefined;
   protected chainId?: string;
@@ -29,7 +29,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   protected capacity: AxiomV2CircuitCapacity;
 
   constructor(inputs: {
-    provider: string,
+    rpcUrl: string,
     f: (inputs: T) => Promise<void>,
     inputSchema?: string | object,
     config?: CircuitConfig,
@@ -41,7 +41,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
   }) {
     super();
     this.resultLen = 0;
-    this.provider = inputs.provider;
+    this.rpcUrl = inputs.rpcUrl;
     this.isMock = inputs.mock;
     this.config = inputs.config ?? DEFAULT_CIRCUIT_CONFIG;
     this.capacity = inputs.capacity ?? DEFAULT_CAPACITY;
@@ -137,7 +137,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       this.halo2Lib,
       this.config,
       this.capacity,
-      this.provider,
+      this.rpcUrl,
     ).compile(this.f, inputs, this.inputSchema);
     this.timeEnd("Witness generation");
     this.config = config;
@@ -148,7 +148,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     
     // Validate max circuit subquery size
     const queryBuilderBase = new QueryBuilderBase({
-      providerUri: this.provider,
+      rpcUrl: this.rpcUrl,
       sourceChainId: this.chainId,
       mock: this.isMock,
       version: "v2",
@@ -180,7 +180,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       this.halo2Lib,
       this.config,
       this.capacity,
-      this.provider,
+      this.rpcUrl,
     ).compile(this.f, inputs, this.inputSchema);
     this.timeEnd("Witness generation");
     this.config = config;
@@ -206,7 +206,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       this.halo2Lib,
       this.config,
       this.capacity,
-      this.provider,
+      this.rpcUrl,
     ).run(this.f, inputs, this.inputSchema, this.results);
     this.timeEnd("Witness generation");
     if (numUserInstances % 2 !== 0) {
@@ -223,7 +223,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
 
     // Validate data subqueries
     const queryBuilderBase = new QueryBuilderBase({
-      providerUri: this.provider,
+      rpcUrl: this.rpcUrl,
       sourceChainId: this.chainId,
       mock: this.isMock,
       version: "v2",
@@ -319,6 +319,10 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
       computeResults.push("0x" + instanceString);
     }
     return computeResults;
+  }
+
+  getComputeQuery() {
+    return this.computeQuery;
   }
 
   getDataQuery() {

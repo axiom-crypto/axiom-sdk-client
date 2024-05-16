@@ -49,7 +49,7 @@ async function getBlockAndIdx(provider: JsonRpcProvider, arr: string[], name: st
 
 describe("Config Limit Manager", () => {
   const config: QueryBuilderBaseConfig = {
-    providerUri: process.env.PROVIDER_URI_SEPOLIA as string,
+    rpcUrl: process.env.PROVIDER_URI_SEPOLIA as string,
     sourceChainId: "11155111",
     version: "v2",
   };

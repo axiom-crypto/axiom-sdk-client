@@ -2,8 +2,8 @@ import { Versions } from "./constants";
 import { QueryBuilderBaseConfig } from "./types";
 
 export function handleProvider(config: QueryBuilderBaseConfig): QueryBuilderBaseConfig {
-  if (config.providerUri === undefined || config.providerUri === "") {
-    throw new Error("`providerUri` is required in QueryBuilderBaseConfig");
+  if (config.rpcUrl === undefined || config.rpcUrl === "") {
+    throw new Error("`rpcUrl` is required in QueryBuilderBaseConfig");
   }
   return config;
 }

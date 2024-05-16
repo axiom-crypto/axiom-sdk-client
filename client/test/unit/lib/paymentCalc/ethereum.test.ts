@@ -17,7 +17,7 @@ describe("PaymentCalc: Ethereum", () => {
       circuit,
       compiledCircuit,
       chainId: CHAIN_ID,
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
+      rpcUrl: process.env.PROVIDER_URI_SEPOLIA as string,
       privateKey: process.env.PRIVATE_KEY_ANVIL as string,
       callback: {
         target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
@@ -37,7 +37,7 @@ describe("PaymentCalc: Ethereum", () => {
       circuit,
       compiledCircuit,
       chainId: CHAIN_ID,
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
+      rpcUrl: process.env.PROVIDER_URI_SEPOLIA as string,
       privateKey: process.env.PRIVATE_KEY_ANVIL as string,
       callback: {
         target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
@@ -58,7 +58,7 @@ describe("PaymentCalc: Ethereum", () => {
       circuit,
       compiledCircuit,
       chainId: CHAIN_ID,
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
+      rpcUrl: process.env.PROVIDER_URI_SEPOLIA as string,
       privateKey: process.env.PRIVATE_KEY_ANVIL as string,
       callback: {
         target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
@@ -79,7 +79,7 @@ describe("PaymentCalc: Ethereum", () => {
       circuit,
       compiledCircuit,
       chainId: CHAIN_ID,
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
+      rpcUrl: process.env.PROVIDER_URI_SEPOLIA as string,
       privateKey: process.env.PRIVATE_KEY_ANVIL as string,
       callback: {
         target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
@@ -100,7 +100,7 @@ describe("PaymentCalc: Ethereum", () => {
       circuit,
       compiledCircuit,
       chainId: CHAIN_ID,
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
+      rpcUrl: process.env.PROVIDER_URI_SEPOLIA as string,
       privateKey: process.env.PRIVATE_KEY_ANVIL as string,
       callback: {
         target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",

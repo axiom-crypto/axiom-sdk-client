@@ -29,7 +29,7 @@ export {
 } from "@axiom-crypto/tools";
 
 export interface QueryBuilderBaseConfig {
-  providerUri: string;
+  rpcUrl: string;
   sourceChainId?: number | string | bigint;
   targetChainId?: number | string | bigint;
   version?: string;
@@ -37,7 +37,7 @@ export interface QueryBuilderBaseConfig {
 }
 
 export interface QueryBuilderBaseInternalConfig {
-  providerUri: string;
+  rpcUrl: string;
   sourceChainId: bigint;
   targetChainId: bigint;
   mock: boolean;

@@ -60,7 +60,7 @@ export class QueryBuilderClient extends QueryBuilderBase {
     }
 
     return {
-      providerUri: baseConfig.providerUri,
+      rpcUrl: baseConfig.rpcUrl,
       provider: baseConfig.provider,
       sourceChainId: baseConfig.sourceChainId,
       targetChainId: baseConfig.targetChainId,

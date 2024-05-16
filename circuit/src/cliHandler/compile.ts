@@ -22,7 +22,7 @@ export const compile = async (
         circuitFunction = options.function;
     }
     const f = await getFunctionFromTs(circuitPath, circuitFunction);
-    const provider = getProvider(options.provider);
+    const rpcUrl = getProvider(options.provider);
     const cache: { [key: string]: string } = {};
     if (options.cache !== undefined && existsSync(options.cache)) {
         const cacheJson = readJsonFromFile(options.cache);
@@ -32,7 +32,7 @@ export const compile = async (
         f: f.circuit,
         mock: options.mock,
         chainId: options.chainId,
-        provider,
+        rpcUrl,
         shouldTime: options.stats,
         inputSchema: f.inputSchema,
         results: cache,

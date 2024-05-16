@@ -13,7 +13,7 @@ export const queryParams = async (
     argsMap: boolean;
     outputs?: string;
     proven?: string;
-    provider?: string;
+    rpcUrl?: string;
     maxFeePerGas?: string;
     callbackGasLimit?: number;
     mock?: boolean;
@@ -32,11 +32,11 @@ export const queryParams = async (
   }
   console.log(`Reading proven circuit JSON from: ${provenFile}`)
   const provenJson = readJsonFromFile(provenFile);
-  const providerUri = getProvider(options.provider);
+  const rpcUrl = getProvider(options.rpcUrl);
   try {
     let build = await buildSendQuery({
       chainId: options.sourceChainId,
-      providerUri,
+      rpcUrl,
       dataQuery: provenJson.dataQuery,
       computeQuery: provenJson.computeQuery,
       callback: {

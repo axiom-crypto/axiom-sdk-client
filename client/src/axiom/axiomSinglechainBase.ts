@@ -4,9 +4,6 @@ import {
   AxiomV2QueryOptions,
   AxiomV2SendQueryArgs,
 } from "../types";
-import {
-  DEFAULT_CAPACITY,
-} from "@axiom-crypto/circuit";
 import { validateChainId } from "./utils";
 import { 
   TransactionReceipt,
@@ -18,24 +15,13 @@ import {
 import { privateKeyToAccount } from 'viem/accounts'
 import { getAxiomV2QueryAddress, viemChain } from "../lib";
 import { getChainDefaults } from "../lib/chain";
-import { AxiomCore } from "./axiomCore";
-import { AxiomBaseCircuit } from "@axiom-crypto/circuit/js";
+import { AxiomBaseCircuitGeneric, AxiomCore } from "./axiomCore";
 import { buildSendQuery } from "../sendQuery";
-import { CoreConfig } from "../types/internal";
 
-export class Axiom<T> extends AxiomCore<T> {
+export class AxiomSinglechainBase<T, C extends AxiomBaseCircuitGeneric<T>> extends AxiomCore<T, C> {
   protected config: AxiomV2ClientConfig<T>;
   
-  constructor(config: AxiomV2ClientConfig<T>) {
-    const capacity = config.capacity ?? config.compiledCircuit.capacity ?? DEFAULT_CAPACITY;
-    const axiomBaseCircuit = new AxiomBaseCircuit({
-      f: config.circuit,
-      rpcUrl: config.rpcUrl,
-      inputSchema: config.compiledCircuit.inputSchema,
-      chainId: config.chainId,
-      capacity,
-    });
-
+  constructor(config: AxiomV2ClientConfig<T>, axiomBaseCircuit: AxiomBaseCircuitGeneric<T>) {
     const publicClient = createPublicClient({
       chain: viemChain(config.chainId, config.rpcUrl),
       transport: http(config.rpcUrl),
@@ -56,15 +42,10 @@ export class Axiom<T> extends AxiomCore<T> {
 
     const axiomV2QueryAddress = config.options?.overrides?.queryAddress ?? getAxiomV2QueryAddress(config.chainId);
 
-    const coreConfig: CoreConfig<T> = {
-      ...config,
-      capacity,
-    };
-    super(coreConfig, axiomV2QueryAddress, axiomBaseCircuit, publicClient, walletClient);
+    super(config, axiomV2QueryAddress, axiomBaseCircuit as C, publicClient, walletClient);
 
     this.config = config;
     this.compiledCircuit = config.compiledCircuit;
-    this.capacity = capacity;
 
     this.options = config.options;
     if (config.options?.overrides?.queryAddress === undefined) {

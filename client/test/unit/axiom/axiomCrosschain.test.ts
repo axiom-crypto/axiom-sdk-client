@@ -1,4 +1,11 @@
-import { AxiomCrosschain, AxiomV2QueryOptions, BridgeType, getAxiomV2QueryBlockhashOracleAddress, SourceChainConfig, TargetChainConfig } from "../../../src";
+import {
+  AxiomCrosschain,
+  AxiomV2QueryOptions,
+  BridgeType,
+  getAxiomV2QueryBlockhashOracleAddress,
+  SourceChainConfig,
+  TargetChainConfig,
+} from "../../../src";
 import { circuit } from "../../circuits/quickstart/average.circuit";
 import compiledCircuit from "../../circuits/quickstart/average.compiled.json";
 

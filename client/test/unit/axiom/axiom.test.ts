@@ -1,7 +1,6 @@
-import { Axiom } from '../../../src/axiom/axiom';
+import { Axiom, AxiomV2QueryOptions } from "../../../src";
 import { circuit } from "../../circuits/quickstart/average.circuit";
 import compiledCircuit from "../../circuits/quickstart/average.compiled.json";
-import { AxiomV2QueryOptions } from '../../../src';
 
 const chainId = process.env.CHAIN_ID || "11155111"
 const rpcUrl = process.env[`PROVIDER_URI_${chainId}`] as string;

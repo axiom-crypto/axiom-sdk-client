@@ -7,9 +7,6 @@ import {
   TargetChainConfig,
   BridgeType,
 } from "../types";
-import {
-  DEFAULT_CAPACITY,
-} from "@axiom-crypto/circuit";
 import { validateChainId } from "./utils";
 import { 
   TransactionReceipt,
@@ -21,25 +18,14 @@ import {
 import { privateKeyToAccount } from 'viem/accounts'
 import { getAxiomV2QueryBlockhashOracleAddress, getAxiomV2QueryBroadcasterAddress, viemChain } from "../lib";
 import { getChainDefaults } from "../lib/chain";
-import { AxiomCore } from "./axiomCore";
-import { AxiomBaseCircuit } from "@axiom-crypto/circuit/js";
+import { AxiomBaseCircuitGeneric, AxiomCore } from "./axiomCore";
 import { buildSendQuery } from "../sendQuery";
-import { CoreConfig } from "../types/internal";
 
-export class AxiomCrosschain<T> extends AxiomCore<T> {
+export class AxiomCrosschainBase<T, C extends AxiomBaseCircuitGeneric<T>> extends AxiomCore<T, C> {
   source: SourceChainConfig;
   target: TargetChainConfig;
 
-  constructor(config: AxiomV2CrosschainConfig<T>) {
-    const capacity = config.capacity ?? config.compiledCircuit.capacity ?? DEFAULT_CAPACITY;
-    const axiomBaseCircuit = new AxiomBaseCircuit({
-      f: config.circuit,
-      rpcUrl: config.source.rpcUrl,
-      inputSchema: config.compiledCircuit.inputSchema,
-      chainId: config.source.chainId,
-      capacity,
-    });
-    
+  constructor(config: AxiomV2CrosschainConfig<T>, axiomBaseCircuit: AxiomBaseCircuitGeneric<T>) {
     const publicClient = createPublicClient({
       chain: viemChain(config.target.chainId, config.target.rpcUrl),
       transport: http(config.target.rpcUrl),
@@ -67,14 +53,7 @@ export class AxiomCrosschain<T> extends AxiomCore<T> {
       throw new Error("`source.bridgeId` is required for Broadcaster bridge type");
     }
 
-    const coreConfig: CoreConfig<T> = {
-      circuit: config.circuit,
-      compiledCircuit: config.compiledCircuit,
-      callback: config.callback,
-      options: config.options,
-      capacity,
-    }
-    super(coreConfig, axiomV2QueryAddress, axiomBaseCircuit, publicClient, walletClient);
+    super(config, axiomV2QueryAddress, axiomBaseCircuit as C, publicClient, walletClient);
 
     this.source = config.source;
     this.target = config.target;

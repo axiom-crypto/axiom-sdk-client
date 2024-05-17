@@ -9,6 +9,8 @@ import {
   UserInput,
   DEFAULT_CAPACITY,
   DataSubquery,
+  CircuitConfig,
+  AxiomV2ComputeQuery,
 } from "@axiom-crypto/circuit";
 import { 
   PublicClient,
@@ -16,12 +18,23 @@ import {
   WalletClient,
 } from "viem";
 import { CoreConfig } from "../types/internal";
-import { AxiomBaseCircuit } from "@axiom-crypto/circuit/js/";
 
-export abstract class AxiomCore<T> {
+// Generic stand-in type for AxiomBaseCircuit<T> to handle both JS and Web versions
+export type AxiomBaseCircuitGeneric<T> = {
+  loadSaved: (args: {
+    config: CircuitConfig;
+    capacity: AxiomV2CircuitCapacity;
+    vk: any;
+  }) => Promise<void>;
+  getDataQuery: () => DataSubquery[];
+  getComputeQuery: () => AxiomV2ComputeQuery | undefined;
+  run: (input: UserInput<T>) => Promise<AxiomV2ComputeQuery>;
+}
+
+export abstract class AxiomCore<T, C extends AxiomBaseCircuitGeneric<T>> {
   protected coreConfig: CoreConfig<T>;
   protected axiomV2QueryAddress: string;
-  protected axiomBaseCircuit: AxiomBaseCircuit<T>;
+  protected axiomBaseCircuit: C;
   protected compiledCircuit: AxiomV2CompiledCircuit;
   protected capacity: AxiomV2CircuitCapacity;
   protected callback: AxiomV2Callback;
@@ -33,7 +46,7 @@ export abstract class AxiomCore<T> {
   constructor(
     config: CoreConfig<T>,
     axiomV2QueryAddress: string,
-    axiomBaseCircuit: AxiomBaseCircuit<T>,
+    axiomBaseCircuit: C,
     sendQueryPublicClient: PublicClient,
     sendQueryWalletClient?: WalletClient,
   ) {
@@ -41,7 +54,7 @@ export abstract class AxiomCore<T> {
     this.axiomV2QueryAddress = axiomV2QueryAddress;
     this.axiomBaseCircuit = axiomBaseCircuit;
     this.compiledCircuit = config.compiledCircuit;
-    this.capacity = config.capacity ?? DEFAULT_CAPACITY;
+    this.capacity = config.capacity ?? config.compiledCircuit.capacity ?? DEFAULT_CAPACITY;
     this.callback = {
       target: config.callback.target,
       extraData: config.callback.extraData ?? "0x",

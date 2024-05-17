@@ -8,7 +8,7 @@ import { AxiomBaseCircuit } from "@axiom-crypto/circuit/web";
 import { AxiomSinglechainBase } from "../axiomSinglechainBase";
 
 export class Axiom<T> extends AxiomSinglechainBase<T, AxiomBaseCircuit<T>> {  
-  constructor(config: AxiomV2ClientConfig<T>) {
+  constructor(config: AxiomV2ClientConfig<T>, numThreads: number) {
     const capacity = config.capacity ?? config.compiledCircuit.capacity ?? DEFAULT_CAPACITY;
     const axiomBaseCircuit = new AxiomBaseCircuit({
       f: config.circuit,
@@ -17,6 +17,7 @@ export class Axiom<T> extends AxiomSinglechainBase<T, AxiomBaseCircuit<T>> {
       chainId: config.chainId,
       capacity,
     });
+    axiomBaseCircuit.setup(numThreads);
     super(config, axiomBaseCircuit);
   }
 }

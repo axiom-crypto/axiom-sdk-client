@@ -20,6 +20,7 @@ import { buildSendQuery } from "../sendQuery";
 
 export class AxiomSinglechainBase<T, C extends AxiomBaseCircuitGeneric<T>> extends AxiomCore<T, C> {
   protected config: AxiomV2ClientConfig<T>;
+  protected caller: string;
   
   constructor(config: AxiomV2ClientConfig<T>, axiomBaseCircuit: AxiomBaseCircuitGeneric<T>) {
     const publicClient = createPublicClient({
@@ -39,13 +40,18 @@ export class AxiomSinglechainBase<T, C extends AxiomBaseCircuitGeneric<T>> exten
         throw new Error("Failed to create wallet client");
       }
     }
+    
+    const caller = walletClient?.account?.address ?? config.caller;
+    if (!caller) {
+      throw new Error("`privateKey` or `caller` must be provided");
+    }
 
     const axiomV2QueryAddress = config.options?.overrides?.queryAddress ?? getAxiomV2QueryAddress(config.chainId);
 
     super(config, axiomV2QueryAddress, axiomBaseCircuit as C, publicClient, walletClient);
 
     this.config = config;
-    this.compiledCircuit = config.compiledCircuit;
+    this.caller = caller;
 
     this.options = config.options;
     if (config.options?.overrides?.queryAddress === undefined) {
@@ -61,9 +67,6 @@ export class AxiomSinglechainBase<T, C extends AxiomBaseCircuitGeneric<T>> exten
   }
 
   protected async buildSendQueryArgs(): Promise<AxiomV2SendQueryArgs> {
-    if (!this.sendQueryWalletClient) {
-      throw new Error("Setting `privateKey` in the `Axiom` constructor is required to get sendQuery args");
-    }
     const computeQuery = this.axiomBaseCircuit.getComputeQuery();
     if (!computeQuery) throw new Error("No compute query generated");
     if (!this.config.chainId) throw new Error("No chain ID provided");
@@ -86,7 +89,7 @@ export class AxiomSinglechainBase<T, C extends AxiomBaseCircuitGeneric<T>> exten
       dataQuery: this.axiomBaseCircuit.getDataQuery(),
       computeQuery,
       callback,
-      caller: this.sendQueryWalletClient?.account?.address,
+      caller: this.caller,
       mock: false,
       options,
     })

@@ -22,8 +22,9 @@ import { AxiomBaseCircuitGeneric, AxiomCore } from "./axiomCore";
 import { buildSendQuery } from "../sendQuery";
 
 export class AxiomCrosschainBase<T, C extends AxiomBaseCircuitGeneric<T>> extends AxiomCore<T, C> {
-  source: SourceChainConfig;
-  target: TargetChainConfig;
+  protected source: SourceChainConfig;
+  protected target: TargetChainConfig;
+  protected caller: string;
 
   constructor(config: AxiomV2CrosschainConfig<T>, axiomBaseCircuit: AxiomBaseCircuitGeneric<T>) {
     const publicClient = createPublicClient({
@@ -44,6 +45,11 @@ export class AxiomCrosschainBase<T, C extends AxiomBaseCircuitGeneric<T>> extend
       }
     }
 
+    const caller = walletClient?.account?.address ?? config.target.caller;
+    if (!caller) {
+      throw new Error("`privateKey` or `caller` must be provided");
+    }
+
     const fallbackQueryAddress = config.source.bridgeType === BridgeType.BlockhashOracle ? 
       getAxiomV2QueryBlockhashOracleAddress(config.source.chainId, config.target.chainId) :
       getAxiomV2QueryBroadcasterAddress(config.source.chainId, config.target.chainId, config.source.bridgeId!);
@@ -57,6 +63,7 @@ export class AxiomCrosschainBase<T, C extends AxiomBaseCircuitGeneric<T>> extend
 
     this.source = config.source;
     this.target = config.target;
+    this.caller = caller;
 
     this.options = config.options;
     if (config.options?.overrides?.queryAddress === undefined) {
@@ -72,9 +79,6 @@ export class AxiomCrosschainBase<T, C extends AxiomBaseCircuitGeneric<T>> extend
   }
 
   protected async buildSendQueryArgs(): Promise<AxiomV2SendQueryArgs> {
-    if (!this.sendQueryWalletClient) {
-      throw new Error("Setting `privateKey` in the `Axiom` constructor is required to get sendQuery args");
-    }
     const computeQuery = this.axiomBaseCircuit.getComputeQuery();
     if (!computeQuery) throw new Error("No compute query generated");
     if (!this.source.chainId) throw new Error("No source chain ID provided");
@@ -98,7 +102,7 @@ export class AxiomCrosschainBase<T, C extends AxiomBaseCircuitGeneric<T>> extend
       dataQuery: this.axiomBaseCircuit.getDataQuery(),
       computeQuery,
       callback,
-      caller: this.sendQueryWalletClient?.account?.address,
+      caller: this.caller,
       mock: false,
       options,
     })

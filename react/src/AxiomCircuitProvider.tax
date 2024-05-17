@@ -1,21 +1,6 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useRef,
-  useState,
-} from "react";
-import { Remote, wrap } from "comlink";
-import { AxiomCircuit } from "./worker";
 import { 
   AxiomV2CompiledCircuit,
-  AxiomV2Callback,
-  AxiomV2SendQueryArgs,
-  AxiomV2QueryOptions,
-  buildSendQuery,
-  DEFAULT_CAPACITY,
 } from "@axiom-crypto/client";
-import { getAxiomV2QueryAddress } from '@axiom-crypto/client/lib/address';
 import { AxiomCircuitContext, AxiomCoreCircuitProvider } from "./AxiomCoreCircuitProvider";
 
 export { useAxiomCircuit } from "./AxiomCoreCircuitProvider";
@@ -31,15 +16,16 @@ export const AxiomCircuitProvider = ({
   compiledCircuit: AxiomV2CompiledCircuit,
   children: React.ReactNode,
 }) => {
-  return (
-    <AxiomCoreCircuitProvider
-      compiledCircuit={compiledCircuit}
-      chainId={chainId}
-      rpcUrl={rpcUrl}
-    >
-      {children}
-    </AxiomCoreCircuitProvider>
-  )
+  return null;
+  // return (
+  //   <AxiomCoreCircuitProvider
+  //     compiledCircuit={compiledCircuit}
+  //     chainId={chainId}
+  //     rpcUrl={rpcUrl}
+  //   >
+  //     {children}
+  //   </AxiomCoreCircuitProvider>
+  // )
 }
 
 //   const [inputs, setInputs] = useState<any | null>(null);

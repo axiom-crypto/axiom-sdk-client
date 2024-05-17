@@ -83,6 +83,7 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     config: CircuitConfig;
     capacity?: AxiomV2CircuitCapacity;
   }) {
+    console.log("YJLOG loadSaved called");
     this.config = input.config;
     this.capacity = input.capacity ?? DEFAULT_CAPACITY;
     await this.loadParamsAndVk(base64ToByteArray(input.vk));

@@ -6,16 +6,13 @@ import React, {
   useState,
 } from "react";
 import { Remote, wrap } from "comlink";
-import { AxiomCircuit } from "./worker";
 import { 
   AxiomV2CompiledCircuit,
   AxiomV2Callback,
   AxiomV2SendQueryArgs,
   AxiomV2QueryOptions,
-  buildSendQuery,
-  DEFAULT_CAPACITY,
-} from "@axiom-crypto/client";
-import { getAxiomV2QueryAddress } from '@axiom-crypto/client/lib/address';
+} from "@axiom-crypto/client/types/";
+import { AxiomWorker } from "./workers/axiom";
 
 type AxiomCircuitContextType<T> = {
   setParams: (inputs: T, callbackTarget: string, callbackExtraData: string, caller: string) => void,
@@ -36,11 +33,13 @@ export const useAxiomCircuit = <T,>(): AxiomCircuitContextType<T> => {
 }
 
 export const AxiomCoreCircuitProvider = ({
+  // circuit,
   compiledCircuit,
   chainId,
   rpcUrl,
   children,
 }: {
+  // circuit: (inputs: any) => Promise<void>,
   compiledCircuit: AxiomV2CompiledCircuit,
   chainId: number | string | bigint,
   rpcUrl: string,
@@ -52,7 +51,7 @@ export const AxiomCoreCircuitProvider = ({
   const [caller, setCaller] = useState<string | null>(null);
   const [builtQuery, setBuiltQuery] = useState<AxiomV2SendQueryArgs | null>(null);
 
-  const workerApi = useRef<Remote<AxiomCircuit>>();
+  const workerApi = useRef<Remote<AxiomWorker<typeof inputs>>>();
 
   const build = async () => {
     if (!inputs || !callback || !caller) {
@@ -64,56 +63,69 @@ export const AxiomCoreCircuitProvider = ({
     }
 
     const setup = async () => {
+      console.log("YJLOG setup");
       const worker = new Worker(new URL("./workers/axiom", import.meta.url), { type: "module" });
-      const AxiomCircuitWorker = wrap<typeof AxiomCircuit>(worker);
-      workerApi.current = await new AxiomCircuitWorker({
-        chainId,
-        rpcUrl,
-        inputSchema: compiledCircuit.inputSchema,
-        f: compiledCircuit.circuit,
-      });
-      await workerApi.current.setup(window.navigator.hardwareConcurrency);
-      await workerApi.current.loadSaved({
-        config: compiledCircuit.config,
-        capacity: compiledCircuit.capacity ?? DEFAULT_CAPACITY,
-        vk: compiledCircuit.vk,
-      });
+      const WrappedAxiomWorker = wrap<typeof AxiomWorker>(worker);
+      console.log("YJLOG 0");
+      workerApi.current = await new WrappedAxiomWorker(
+        {
+          chainId: chainId.toString(),
+          rpcUrl,
+          compiledCircuit,
+          callback,
+          caller,
+          options: options ?? {},
+        },
+        window.navigator.hardwareConcurrency,
+      );
+      console.log("YJLOG 1");
+      await workerApi.current.init();
+      console.log("YJLOG 2");
+      // await workerApi.current.loadSaved({
+      //   config: compiledCircuit.config,
+      //   capacity: compiledCircuit.capacity ?? DEFAULT_CAPACITY,
+      //   vk: compiledCircuit.vk,
+      // });
     }
 
     const generateQuery = async () => {
+      console.log("YJLOG generateQuery");
       if (!workerApi.current) {
         console.warn("Worker API not set up");
         return null;
       }
-      await workerApi.current.run(inputs);
       const circuit = workerApi.current!;
-      const axiomV2QueryAddress = getAxiomV2QueryAddress(chainId.toString());
-      const dataQuery = await circuit.getDataQuery();
-      if (!dataQuery) {
-        console.warn("Unable to get dataQuery from circuit");
-        return null;
-      }
-      const computeQuery = await circuit.getComputeQuery();
-      if (!computeQuery) {
-        console.warn("Unable to get computeQuery from circuit");
-        return null;
-      }
-      const sendQueryArgs = await buildSendQuery({
-        chainId: chainId.toString(),
-        rpcUrl,
-        axiomV2QueryAddress,
-        dataQuery,
-        computeQuery,
-        callback,
-        caller,
-        mock: false,
-        options: options ?? {},
-      });
-      if (sendQueryArgs === undefined) {
-        return null;
-      }
-      setBuiltQuery(sendQueryArgs);
-      return sendQueryArgs;
+      console.log("YJLOG 3");
+      return await circuit.prove(inputs);
+
+      
+      // const axiomV2QueryAddress = getAxiomV2QueryAddress(chainId.toString());
+      // const dataQuery = await circuit.getDataQuery();
+      // if (!dataQuery) {
+      //   console.warn("Unable to get dataQuery from circuit");
+      //   return null;
+      // }
+      // const computeQuery = await circuit.getComputeQuery();
+      // if (!computeQuery) {
+      //   console.warn("Unable to get computeQuery from circuit");
+      //   return null;
+      // }
+      // const sendQueryArgs = await buildSendQuery({
+      //   chainId: chainId.toString(),
+      //   rpcUrl,
+      //   axiomV2QueryAddress,
+      //   dataQuery,
+      //   computeQuery,
+      //   callback,
+      //   caller,
+      //   mock: false,
+      //   options: options ?? {},
+      // });
+      // if (sendQueryArgs === undefined) {
+      //   return null;
+      // }
+      // setBuiltQuery(sendQueryArgs);
+      // return sendQueryArgs;
     }
     await setup();
     return await generateQuery();

@@ -8,7 +8,7 @@ import { AxiomBaseCircuit } from "@axiom-crypto/circuit/web";
 import { AxiomCrosschainBase } from "../axiomCrosschainBase";
 
 export class AxiomCrosschain<T> extends AxiomCrosschainBase<T, AxiomBaseCircuit<T>> {
-  constructor(config: AxiomV2CrosschainConfig<T>) {
+  constructor(config: AxiomV2CrosschainConfig<T>, numThreads: number) {
     const capacity = config.capacity ?? config.compiledCircuit.capacity ?? DEFAULT_CAPACITY;
     const axiomBaseCircuit = new AxiomBaseCircuit({
       f: config.circuit,
@@ -17,6 +17,7 @@ export class AxiomCrosschain<T> extends AxiomCrosschainBase<T, AxiomBaseCircuit<
       chainId: config.source.chainId,
       capacity,
     });
+    axiomBaseCircuit.setup(numThreads);
     super(config, axiomBaseCircuit);
   }
 }

@@ -17,7 +17,7 @@ import {
   TransactionReceipt,
   WalletClient,
 } from "viem";
-import { CoreConfig } from "../types/internal";
+import { CoreConfigCircuit } from "../types/internal";
 
 // Generic stand-in type for AxiomBaseCircuit<T> to handle both JS and Web versions
 export type AxiomBaseCircuitGeneric<T> = {
@@ -32,7 +32,7 @@ export type AxiomBaseCircuitGeneric<T> = {
 }
 
 export abstract class AxiomCore<T, C extends AxiomBaseCircuitGeneric<T>> {
-  protected coreConfig: CoreConfig<T>;
+  protected coreConfigCircuit: CoreConfigCircuit<T>;
   protected axiomV2QueryAddress: string;
   protected axiomBaseCircuit: C;
   protected compiledCircuit: AxiomV2CompiledCircuit;
@@ -44,13 +44,13 @@ export abstract class AxiomCore<T, C extends AxiomBaseCircuitGeneric<T>> {
   protected sendQueryArgs?: AxiomV2SendQueryArgs;
 
   constructor(
-    config: CoreConfig<T>,
+    config: CoreConfigCircuit<T>,
     axiomV2QueryAddress: string,
     axiomBaseCircuit: C,
     sendQueryPublicClient: PublicClient,
     sendQueryWalletClient?: WalletClient,
   ) {
-    this.coreConfig = config;
+    this.coreConfigCircuit = config;
     this.axiomV2QueryAddress = axiomV2QueryAddress;
     this.axiomBaseCircuit = axiomBaseCircuit;
     this.compiledCircuit = config.compiledCircuit;
@@ -65,6 +65,7 @@ export abstract class AxiomCore<T, C extends AxiomBaseCircuitGeneric<T>> {
   }
 
   async init() {
+    console.log("YJLOG axiomCore init");
     await this.axiomBaseCircuit.loadSaved({
       config: this.compiledCircuit.config,
       capacity: this.capacity,
@@ -134,7 +135,7 @@ export abstract class AxiomCore<T, C extends AxiomBaseCircuitGeneric<T>> {
   }
 
   async sendQueryWithIpfs(): Promise<TransactionReceipt> {
-    if (this.coreConfig.options?.ipfsClient === undefined) {
+    if (this.coreConfigCircuit.options?.ipfsClient === undefined) {
       throw new Error("Setting `ipfsClient` is required to send a Query with IPFS");
     }
 

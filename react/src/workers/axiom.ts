@@ -1,33 +1,21 @@
 import { expose } from "comlink";
-import { Axiom, AxiomV2Callback, AxiomV2CircuitCapacity, AxiomV2ClientConfig, AxiomV2CompiledCircuit } from "@axiom-crypto/client";
+import { Axiom } from "@axiom-crypto/client/axiom/web/";
+import { CoreConfig, ClientConfig } from "@axiom-crypto/client/types/internal";
+
+interface ReactClientConfig extends CoreConfig, ClientConfig {}
 
 export class AxiomWorker<T> extends Axiom<T> {
-  constructor(config: AxiomV2ClientConfig<T>) {
-    super(config);
+  constructor(config: ReactClientConfig, numThreads: number) {
+    const decodedArray = Buffer.from(config.compiledCircuit.circuit, 'base64');
+    const decoder = new TextDecoder();
+    const raw = decoder.decode(decodedArray);
+    const AXIOM_CLIENT_IMPORT = require("@axiom-crypto/client/lib/react");
+    const newConfig = {
+      ...config,
+      circuit: eval(raw),
+    };
+    super(newConfig, numThreads);
   }
-
-
-  // constructor(
-  //   inputs: {
-  //     chainId: number | string | bigint,
-  //     rpcUrl: string,
-  //     circuit: (inputs: unknown) => Promise<void>,
-  //     compiledCircuit: AxiomV2CompiledCircuit,
-  //     callback: AxiomV2Callback,
-  //     inputSchema?: string,
-  //     shouldTime?: boolean,
-  //     capacity?: AxiomV2CircuitCapacity,
-  //   }
-  // ) {
-  //   const axiom = new Axiom({
-  //     chainId: inputs.chainId.toString(),
-  //     rpcUrl: inputs.rpcUrl,
-  //     circuit: inputs.circuit,
-  //     compiledCircuit: inputs.compiledCircuit,
-  //     capacity: inputs.capacity,
-  //     callback: inputs.callback,
-  //   });
-  // }
 }
 
-expose(AxiomWorker);
+expose(Axiom);

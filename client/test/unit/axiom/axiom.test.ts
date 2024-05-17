@@ -62,7 +62,19 @@ describe('Axiom class tests', () => {
     await expect(axiom.sendQueryWithIpfs()).rejects.toThrow("Setting `ipfsClient` is required to send a Query with IPFS");
   });
 
-  test('should build sendQuery with custom refundee', async () => {
+  test('should build query with caller', async () => {
+    expect(false).toBeTruthy();
+  }, 40000);
+
+  test('should build a query with caller and privateKey', async () => {
+    expect(false).toBeTruthy();
+  }, 40000);
+
+  test('should build a query with caller, privateKey, and refundee', async () => {
+    expect(false).toBeTruthy();
+  }, 40000);
+
+  test('should build a query with privateKey and refundee', async () => {
     const axiom = new Axiom({
       ...config,
       privateKey: process.env.PRIVATE_KEY_ANVIL as string,

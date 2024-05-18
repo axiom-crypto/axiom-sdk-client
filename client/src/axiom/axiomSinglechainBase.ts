@@ -22,7 +22,11 @@ export class AxiomSinglechainBase<T, C extends AxiomBaseCircuitGeneric<T>> exten
   protected config: AxiomV2ClientConfig<T>;
   protected caller: string;
   
-  constructor(config: AxiomV2ClientConfig<T>, axiomBaseCircuit: AxiomBaseCircuitGeneric<T>) {
+  constructor(
+    config: AxiomV2ClientConfig<T>,
+    axiomBaseCircuit: AxiomBaseCircuitGeneric<T>,
+    numThreads: number,
+  ) {
     const publicClient = createPublicClient({
       chain: viemChain(config.chainId, config.rpcUrl),
       transport: http(config.rpcUrl),
@@ -48,7 +52,7 @@ export class AxiomSinglechainBase<T, C extends AxiomBaseCircuitGeneric<T>> exten
 
     const axiomV2QueryAddress = config.options?.overrides?.queryAddress ?? getAxiomV2QueryAddress(config.chainId);
 
-    super(config, axiomV2QueryAddress, axiomBaseCircuit as C, publicClient, walletClient);
+    super(config, axiomV2QueryAddress, axiomBaseCircuit as C, numThreads, publicClient, walletClient);
 
     this.config = config;
     this.caller = caller;

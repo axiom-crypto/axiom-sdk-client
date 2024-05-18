@@ -17,7 +17,6 @@ export class AxiomCrosschain<T> extends AxiomCrosschainBase<T, AxiomBaseCircuit<
       chainId: config.source.chainId,
       capacity,
     });
-    axiomBaseCircuit.setup(numThreads);
-    super(config, axiomBaseCircuit);
+    super(config, axiomBaseCircuit, numThreads);
   }
 }

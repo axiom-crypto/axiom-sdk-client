@@ -17,6 +17,6 @@ export class Axiom<T> extends AxiomSinglechainBase<T, AxiomBaseCircuit<T>> {
       chainId: config.chainId,
       capacity,
     });
-    super(config, axiomBaseCircuit);
+    super(config, axiomBaseCircuit, 0);
   }
 }

@@ -21,6 +21,7 @@ import { CoreConfigCircuit } from "../types/internal";
 
 // Generic stand-in type for AxiomBaseCircuit<T> to handle both JS and Web versions
 export type AxiomBaseCircuitGeneric<T> = {
+  setup?: (numThreads: number) => void;
   loadSaved: (args: {
     config: CircuitConfig;
     capacity: AxiomV2CircuitCapacity;
@@ -38,6 +39,7 @@ export abstract class AxiomCore<T, C extends AxiomBaseCircuitGeneric<T>> {
   protected compiledCircuit: AxiomV2CompiledCircuit;
   protected capacity: AxiomV2CircuitCapacity;
   protected callback: AxiomV2Callback;
+  protected numThreads: number;
   protected sendQueryPublicClient: PublicClient;
   protected sendQueryWalletClient?: WalletClient;
   protected options?: AxiomV2QueryOptions;
@@ -47,6 +49,7 @@ export abstract class AxiomCore<T, C extends AxiomBaseCircuitGeneric<T>> {
     config: CoreConfigCircuit<T>,
     axiomV2QueryAddress: string,
     axiomBaseCircuit: C,
+    numThreads: number,
     sendQueryPublicClient: PublicClient,
     sendQueryWalletClient?: WalletClient,
   ) {
@@ -59,13 +62,16 @@ export abstract class AxiomCore<T, C extends AxiomBaseCircuitGeneric<T>> {
       target: config.callback.target,
       extraData: config.callback.extraData ?? "0x",
     };
+    this.numThreads = numThreads;
     this.sendQueryPublicClient = sendQueryPublicClient;
     this.sendQueryWalletClient = sendQueryWalletClient;
     this.options = config.options;
   }
 
   async init() {
-    console.log("YJLOG axiomCore init");
+    if (this.axiomBaseCircuit.setup) {
+      await this.axiomBaseCircuit.setup(this.numThreads);
+    }
     await this.axiomBaseCircuit.loadSaved({
       config: this.compiledCircuit.config,
       capacity: this.capacity,

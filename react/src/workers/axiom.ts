@@ -18,4 +18,4 @@ export class AxiomWorker<T> extends Axiom<T> {
   }
 }
 
-expose(Axiom);
+expose(AxiomWorker);

@@ -33,13 +33,11 @@ export const useAxiomCircuit = <T,>(): AxiomCircuitContextType<T> => {
 }
 
 export const AxiomCoreCircuitProvider = ({
-  // circuit,
   compiledCircuit,
   chainId,
   rpcUrl,
   children,
 }: {
-  // circuit: (inputs: any) => Promise<void>,
   compiledCircuit: AxiomV2CompiledCircuit,
   chainId: number | string | bigint,
   rpcUrl: string,
@@ -63,10 +61,8 @@ export const AxiomCoreCircuitProvider = ({
     }
 
     const setup = async () => {
-      console.log("YJLOG setup");
       const worker = new Worker(new URL("./workers/axiom", import.meta.url), { type: "module" });
       const WrappedAxiomWorker = wrap<typeof AxiomWorker>(worker);
-      console.log("YJLOG 0");
       workerApi.current = await new WrappedAxiomWorker(
         {
           chainId: chainId.toString(),
@@ -78,54 +74,18 @@ export const AxiomCoreCircuitProvider = ({
         },
         window.navigator.hardwareConcurrency,
       );
-      console.log("YJLOG 1");
       await workerApi.current.init();
-      console.log("YJLOG 2");
-      // await workerApi.current.loadSaved({
-      //   config: compiledCircuit.config,
-      //   capacity: compiledCircuit.capacity ?? DEFAULT_CAPACITY,
-      //   vk: compiledCircuit.vk,
-      // });
     }
 
     const generateQuery = async () => {
-      console.log("YJLOG generateQuery");
       if (!workerApi.current) {
         console.warn("Worker API not set up");
         return null;
       }
-      const circuit = workerApi.current!;
-      console.log("YJLOG 3");
-      return await circuit.prove(inputs);
-
-      
-      // const axiomV2QueryAddress = getAxiomV2QueryAddress(chainId.toString());
-      // const dataQuery = await circuit.getDataQuery();
-      // if (!dataQuery) {
-      //   console.warn("Unable to get dataQuery from circuit");
-      //   return null;
-      // }
-      // const computeQuery = await circuit.getComputeQuery();
-      // if (!computeQuery) {
-      //   console.warn("Unable to get computeQuery from circuit");
-      //   return null;
-      // }
-      // const sendQueryArgs = await buildSendQuery({
-      //   chainId: chainId.toString(),
-      //   rpcUrl,
-      //   axiomV2QueryAddress,
-      //   dataQuery,
-      //   computeQuery,
-      //   callback,
-      //   caller,
-      //   mock: false,
-      //   options: options ?? {},
-      // });
-      // if (sendQueryArgs === undefined) {
-      //   return null;
-      // }
-      // setBuiltQuery(sendQueryArgs);
-      // return sendQueryArgs;
+      const worker = workerApi.current!;
+      const sendQueryArgs = await worker.prove(inputs);
+      setBuiltQuery(sendQueryArgs);
+      return sendQueryArgs;
     }
     await setup();
     return await generateQuery();

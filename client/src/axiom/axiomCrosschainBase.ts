@@ -26,7 +26,11 @@ export class AxiomCrosschainBase<T, C extends AxiomBaseCircuitGeneric<T>> extend
   protected target: TargetChainConfig;
   protected caller: string;
 
-  constructor(config: AxiomV2CrosschainConfig<T>, axiomBaseCircuit: AxiomBaseCircuitGeneric<T>) {
+  constructor(
+    config: AxiomV2CrosschainConfig<T>,
+    axiomBaseCircuit: AxiomBaseCircuitGeneric<T>,
+    numThreads: number,
+  ) {
     const publicClient = createPublicClient({
       chain: viemChain(config.target.chainId, config.target.rpcUrl),
       transport: http(config.target.rpcUrl),
@@ -59,7 +63,7 @@ export class AxiomCrosschainBase<T, C extends AxiomBaseCircuitGeneric<T>> extend
       throw new Error("`source.bridgeId` is required for Broadcaster bridge type");
     }
 
-    super(config, axiomV2QueryAddress, axiomBaseCircuit as C, publicClient, walletClient);
+    super(config, axiomV2QueryAddress, axiomBaseCircuit as C, numThreads, publicClient, walletClient);
 
     this.source = config.source;
     this.target = config.target;

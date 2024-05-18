@@ -1,28 +1,21 @@
 import { expose } from "comlink";
 import { AxiomCrosschain } from "@axiom-crypto/client/axiom/web/";
+import { CoreConfig, CrosschainConfig } from "@axiom-crypto/client/types/internal";
 
-// export class AxiomWorker {
-//   constructor(
-//     inputs: {
-//       chainId: number | string | bigint,
-//       rpcUrl: string,
-//       circuit: (inputs: unknown) => Promise<void>,
-//       compiledCircuit: AxiomV2CompiledCircuit,
-//       callback: AxiomV2Callback,
-//       inputSchema?: string,
-//       shouldTime?: boolean,
-//       capacity?: AxiomV2CircuitCapacity,
-//     }
-//   ) {
-//     const axiom = new Axiom({
-//       chainId: inputs.chainId.toString(),
-//       rpcUrl: inputs.rpcUrl,
-//       circuit: inputs.circuit,
-//       compiledCircuit: inputs.compiledCircuit,
-//       capacity: inputs.capacity,
-//       callback: inputs.callback,
-//     });
-//   }
-// }
+interface ReactCrosschainConfig extends CoreConfig, CrosschainConfig {}
 
-expose(AxiomCrosschain);
+export class AxiomCrosschainWorker<T> extends AxiomCrosschain<T> {
+  constructor(config: ReactCrosschainConfig, numThreads: number) {
+    const decodedArray = Buffer.from(config.compiledCircuit.circuit, 'base64');
+    const decoder = new TextDecoder();
+    const raw = decoder.decode(decodedArray);
+    const AXIOM_CLIENT_IMPORT = require("@axiom-crypto/client/lib/react");
+    const newConfig = {
+      ...config,
+      circuit: eval(raw),
+    };
+    super(newConfig, numThreads);
+  }
+}
+
+expose(AxiomCrosschainWorker);

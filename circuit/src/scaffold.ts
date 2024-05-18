@@ -83,7 +83,6 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     config: CircuitConfig;
     capacity?: AxiomV2CircuitCapacity;
   }) {
-    console.log("YJLOG loadSaved called");
     this.config = input.config;
     this.capacity = input.capacity ?? DEFAULT_CAPACITY;
     await this.loadParamsAndVk(base64ToByteArray(input.vk));
@@ -219,7 +218,6 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
 
   async run(inputs: RawInput<T>) {
     await this.populateCircuit(inputs);
-
     const skipValidate = this.capacity !== DEFAULT_CAPACITY;
 
     // Validate data subqueries
@@ -236,7 +234,6 @@ export abstract class AxiomBaseCircuitScaffold<T> extends BaseCircuitScaffold {
     if (!skipValidate && !queryBuilderBase.validate()) {
       throw new Error("Subquery validation failed")
     }
-
     this.prove();
     return this.buildComputeQuery();
   }

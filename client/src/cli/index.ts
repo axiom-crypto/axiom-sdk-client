@@ -62,7 +62,7 @@ circuit
   .option("--maxFeePerGas [maxFeePerGas]", "maxFeePerGas")
   .option("--callbackGasLimit [callbackGasLimit]", "callbackGasLimit")
   .option("-m, --mock", "generate a mock query")
-  .option("-p, --rpcUrl [rpcUrl]", "JSON-RPC provider URL (https)")
+  .option("-p, --rpcUrl [rpcUrl]", "Source chain JSON-RPC provider URL (https)")
   .option("-pv, --proven [proven]", "`axiom circuit prove` outputs path")
   .option("-o, --outputs [outputs]", "query-params outputs path")
   .option("-a, --args-map", "sendQuery argments output as mapping for use with Forge")

@@ -1,9 +1,12 @@
 import { 
   AxiomV2CompiledCircuit,
 } from "@axiom-crypto/client";
-import { AxiomCircuitContext, AxiomCoreCircuitProvider } from "./AxiomCoreCircuitProvider";
+import { AxiomCoreCircuitProvider } from "./AxiomCoreCircuitProvider";
+import { AxiomWorker } from "./workers/axiomWorker";
 
 export { useAxiomCircuit } from "./AxiomCoreCircuitProvider";
+
+const workerApi = useRef<Remote<AxiomWorker<typeof inputs>>>();
 
 export const AxiomCircuitProvider = ({
   compiledCircuit,
@@ -16,16 +19,26 @@ export const AxiomCircuitProvider = ({
   compiledCircuit: AxiomV2CompiledCircuit,
   children: React.ReactNode,
 }) => {
-  return null;
-  // return (
-  //   <AxiomCoreCircuitProvider
-  //     compiledCircuit={compiledCircuit}
-  //     chainId={chainId}
-  //     rpcUrl={rpcUrl}
-  //   >
-  //     {children}
-  //   </AxiomCoreCircuitProvider>
-  // )
+  const worker = new Worker(new URL("./workers/axiomWorker", import.meta.url), { type: "module" });
+  const WrappedAxiomWorker = wrap<typeof AxiomWorker>(worker);
+  workerApi.current = await new WrappedAxiomWorker(
+    {
+      chainId: chainId.toString(),
+      rpcUrl,
+      compiledCircuit,
+      callback,
+      caller,
+      options: options ?? {},
+    },
+    window.navigator.hardwareConcurrency,
+  );
+  return (
+    <AxiomCoreCircuitProvider<typeof AxiomWorker>
+      workerApi={workerApi}
+    >
+      {children}
+    </AxiomCoreCircuitProvider>
+  )
 }
 
 //   const [inputs, setInputs] = useState<any | null>(null);

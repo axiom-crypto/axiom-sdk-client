@@ -1,26 +1,14 @@
-// import React, {
-//   createContext,
-//   useCallback,
-//   useContext,
-//   useRef,
-//   useState,
-// } from "react";
-// import { Remote, wrap } from "comlink";
-// import { AxiomCircuit } from "./worker";
 import { 
   AxiomV2CompiledCircuit,
-//   AxiomV2Callback,
-//   AxiomV2SendQueryArgs,
-//   AxiomV2QueryOptions,
-//   buildSendQuery,
-//   BridgeType,
-//   DEFAULT_CAPACITY,
-//   getAxiomV2QueryAddress,
   SourceChainConfig,
   TargetChainConfig,
 } from "@axiom-crypto/client";
+import { AxiomCoreCircuitProvider } from "./AxiomCoreCircuitProvider";
+import { AxiomCrosschainWorker } from "./workers/axiomCrosschainWorker";
 
-// export { useAxiomCircuit } from "./AxiomCoreCircuitProvider";
+export { useAxiomCircuit } from "./AxiomCoreCircuitProvider";
+
+const workerApi = useRef<Remote<AxiomCrosschainWorker<typeof inputs>>>();
 
 export const AxiomCrosschainCircuitProvider = ({
   compiledCircuit,
@@ -33,5 +21,26 @@ export const AxiomCrosschainCircuitProvider = ({
   target: TargetChainConfig;
   children: React.ReactNode;
 }) => {
-  
+  const worker = new Worker(new URL("./workers/axiomCrosschainWorker", import.meta.url), { type: "module" });
+  const WrappedAxiomCrosschainWorker = wrap<typeof AxiomCrosschainWorker>(worker);
+  workerApi.current = await new WrappedAxiomCrosschainWorker(
+    {
+      source,
+      target,
+      compiledCircuit,
+      callback: target.callback,
+      options: options ?? {},
+    },
+    window.navigator.hardwareConcurrency,
+  );
+  return (
+    <AxiomCoreCircuitProvider<typeof AxiomCrosschainWorker>
+      workerApi={workerApi}
+      compiledCircuit={compiledCircuit}
+      chainId={chainId}
+      rpcUrl={rpcUrl}
+    >
+      {children}
+    </AxiomCoreCircuitProvider>
+  )
 };

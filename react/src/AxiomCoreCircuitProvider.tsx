@@ -12,7 +12,6 @@ import {
   AxiomV2SendQueryArgs,
   AxiomV2QueryOptions,
 } from "@axiom-crypto/client/types/";
-import { AxiomWorker } from "./workers/axiom";
 
 type AxiomCircuitContextType<T> = {
   setParams: (inputs: T, callbackTarget: string, callbackExtraData: string, caller: string) => void,
@@ -22,25 +21,26 @@ type AxiomCircuitContextType<T> = {
   reset: () => void,
 }
 
+type GenericAxiomWorker<T> = {
+  init: () => Promise<void>,
+  prove: (inputs: T) => Promise<AxiomV2SendQueryArgs>,
+}
+
 export const AxiomCircuitContext = createContext<AxiomCircuitContextType<any> | null>(null);
 
 export const useAxiomCircuit = <T,>(): AxiomCircuitContextType<T> => {
   const context = useContext(AxiomCircuitContext);
   if (context === null) {
-    throw new Error("useAxiomCircuit must be used within a AxiomCircuitProvider");
+    throw new Error("useAxiomCircuit must be used within AxiomCircuitProvider");
   }
   return context;
 }
 
-export const AxiomCoreCircuitProvider = ({
-  compiledCircuit,
-  chainId,
-  rpcUrl,
+export const AxiomCoreCircuitProvider = <T,>({
+  workerApi,
   children,
 }: {
-  compiledCircuit: AxiomV2CompiledCircuit,
-  chainId: number | string | bigint,
-  rpcUrl: string,
+  workerApi: React.MutableRefObject<Remote<GenericAxiomWorker<T>>>,
   children: React.ReactNode,
 }) => {
   const [inputs, setInputs] = useState<any | null>(null);
@@ -48,8 +48,6 @@ export const AxiomCoreCircuitProvider = ({
   const [callback, setCallback] = useState<AxiomV2Callback | null>(null);
   const [caller, setCaller] = useState<string | null>(null);
   const [builtQuery, setBuiltQuery] = useState<AxiomV2SendQueryArgs | null>(null);
-
-  const workerApi = useRef<Remote<AxiomWorker<typeof inputs>>>();
 
   const build = async () => {
     if (!inputs || !callback || !caller) {
@@ -61,19 +59,6 @@ export const AxiomCoreCircuitProvider = ({
     }
 
     const setup = async () => {
-      const worker = new Worker(new URL("./workers/axiom", import.meta.url), { type: "module" });
-      const WrappedAxiomWorker = wrap<typeof AxiomWorker>(worker);
-      workerApi.current = await new WrappedAxiomWorker(
-        {
-          chainId: chainId.toString(),
-          rpcUrl,
-          compiledCircuit,
-          callback,
-          caller,
-          options: options ?? {},
-        },
-        window.navigator.hardwareConcurrency,
-      );
       await workerApi.current.init();
     }
 

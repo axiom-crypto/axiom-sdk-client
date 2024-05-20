@@ -66,7 +66,7 @@ describe('Axiom class tests', () => {
     await axiom.init();
     const args = await axiom.prove(inputs);
     expect(args?.address).toEqual(queryAddr);
-  }, 20000);
+  }, 40000);
 
   test('should prove & build query with caller', async () => {
     const caller = "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701";

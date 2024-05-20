@@ -34,7 +34,7 @@ describe("Integration tests", () => {
     }
   }
 
-  const provider = process.env[`PROVIDER_URI_${CHAIN_ID}`] as string;
+  const rpcUrl = process.env[`PROVIDER_URI_${CHAIN_ID}`] as string;
   const data = `./test/chainData/${CHAIN_ID}.json`;
 
   beforeAll(async () => {
@@ -47,7 +47,7 @@ describe("Integration tests", () => {
     test(`Test ${folder}/${filename}`, async () => {
       const receipt = await run({
         circuit: circuitPath,
-        provider,
+        rpcUrl,
         data,
         send: true,
       })
@@ -59,7 +59,7 @@ describe("Integration tests", () => {
     const testFn = async () => {
       await run({
         circuit: "./test/integration/circuits/capacityDataQuery/size129Header.circuit.ts",
-        provider,
+        rpcUrl,
         data,
         send: true,
       });
@@ -70,7 +70,7 @@ describe("Integration tests", () => {
   test(`Custom capacity (256)`, async () => {
     const receipt = await run({
       circuit: "./test/integration/circuits/computeQuery/simpleWithCapacity.circuit.ts",
-      provider,
+      rpcUrl,
       data,
       send: true,
       options: { 
@@ -90,7 +90,7 @@ describe("Integration tests", () => {
     const testFn = async () => {
       await run({
         circuit: "./test/integration/circuits/eip4844/eip4844receipt.circuit.ts",
-        provider,
+        rpcUrl,
         data,
         send: true,
       });

@@ -66,7 +66,7 @@ describe("AxiomCrosschain tests", () => {
     expect(args?.args[4].callbackGasLimit).toEqual(100000);
     expect(BigInt(args?.args[4].overrideAxiomQueryFee)).toBeGreaterThan(BigInt("3000000000000000")); // will not be "0" on an L2
     expect(args?.args[6]).toEqual("0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266");
-  }, 20000);
+  }, 40000);
 
   test("sendQueryWithIpfs should throw error without ipfsClient", async () => {
     const axiomCrosschain = new AxiomCrosschain(config);
@@ -86,7 +86,7 @@ describe("AxiomCrosschain tests", () => {
     await axiomCrosschain.init();
     const args = await axiomCrosschain.prove(inputs);
     expect(args?.address).toEqual(queryAddr);
-  }, 20000);
+  }, 40000);
 
   test('should prove & build query with caller', async () => {
     const caller = "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701";

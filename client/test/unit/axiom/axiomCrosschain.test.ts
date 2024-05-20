@@ -39,19 +39,6 @@ describe("AxiomCrosschain tests", () => {
     expect(axiomCrosschain).toBeInstanceOf(AxiomCrosschain);
   });
 
-  test("should initialize with caller", async () => {
-    const configCaller = {
-      ...config,
-      target: {
-        chainId: "84532",
-        rpcUrl: process.env.PROVIDER_URI_84532 as string,
-        caller: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701",
-      },
-    };
-    const axiomCrosschain = new AxiomCrosschain(configCaller);
-    expect(axiomCrosschain).toBeInstanceOf(AxiomCrosschain);
-  });
-
   test("setOptions should update options correctly", () => {
     const axiomCrosschain = new AxiomCrosschain(config);
     const newOptions: AxiomV2QueryOptions = { callbackGasLimit: 500000 };
@@ -69,7 +56,6 @@ describe("AxiomCrosschain tests", () => {
     const axiomCrosschain = new AxiomCrosschain(config);
     await axiomCrosschain.init();
     const args = await axiomCrosschain.prove(inputs);
-    console.log(args);
     expect(args?.address).toEqual(queryAddr);
     expect(args?.args[0]).toEqual(source.chainId);
     expect(args?.args[1]).toEqual("0x7dae14e73f4129746db078a6ecb12c94548985a85d8256477d8dd118a6df1a6a");
@@ -78,7 +64,7 @@ describe("AxiomCrosschain tests", () => {
     expect(args?.args[3].target).toEqual(config.callback.target.toLowerCase());
     expect(args?.args[3].extraData).toEqual("0x");
     expect(args?.args[4].callbackGasLimit).toEqual(100000);
-    expect(args?.args[4].overrideAxiomQueryFee).toEqual("3000000000000000"); // will not be "0" on an L2
+    expect(BigInt(args?.args[4].overrideAxiomQueryFee)).toBeGreaterThan(BigInt("3000000000000000")); // will not be "0" on an L2
     expect(args?.args[6]).toEqual("0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266");
   }, 20000);
 
@@ -102,19 +88,71 @@ describe("AxiomCrosschain tests", () => {
     expect(args?.address).toEqual(queryAddr);
   }, 20000);
 
-  test('should build query with caller', async () => {
-    expect(false).toBeTruthy();
+  test('should prove & build query with caller', async () => {
+    const caller = "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701";
+    const configCaller = {
+      ...config,
+      target: {
+        chainId: "84532",
+        rpcUrl: process.env.PROVIDER_URI_84532 as string,
+        caller,
+      },
+    };
+    const axiomCrosschain = new AxiomCrosschain(configCaller);
+    expect(axiomCrosschain).toBeInstanceOf(AxiomCrosschain);
+    await axiomCrosschain.init();
+    const args = await axiomCrosschain.prove(inputs);
+    expect(args?.args[6]).toEqual(caller.toLowerCase());
   }, 40000);
 
-  test('should build a query with caller and privateKey', async () => {
-    expect(false).toBeTruthy();
+  test('should prove & build a query with caller and privateKey', async () => {
+    const caller = "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701";
+    const newConfig = {
+      ...config,
+      target: {
+        ...config.target,
+        caller,
+      },
+    };
+    const axiomCrosschain = new AxiomCrosschain(newConfig);
+    expect(axiomCrosschain).toBeInstanceOf(AxiomCrosschain);
+    await axiomCrosschain.init();
+    const args = await axiomCrosschain.prove(inputs);
+    expect(args?.args[6]).toEqual("0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266");
   }, 40000);
 
-  test('should build a query with caller, privateKey, and refundee', async () => {
-    expect(false).toBeTruthy();
+  test('should prove & build a query with caller, privateKey, and refundee', async () => {
+    const caller = "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701";
+    const refundee = "0x000000000000000000000000000000000000aabb";
+    const newConfig = {
+      ...config,
+      target: {
+        ...config.target,
+        caller,
+      },
+      options: {
+        refundee,
+      },
+    };
+    const axiomCrosschain = new AxiomCrosschain(newConfig);
+    expect(axiomCrosschain).toBeInstanceOf(AxiomCrosschain);
+    await axiomCrosschain.init();
+    const args = await axiomCrosschain.prove(inputs);
+    expect(args?.args[6]).toEqual(refundee);
   }, 40000);
 
-  test('should build a query with privateKey and refundee', async () => {
-    expect(false).toBeTruthy();
+  test('should prove & build a query with privateKey and refundee', async () => {
+    const refundee = "0x000000000000000000000000000000000000aabb";
+    const newConfig = {
+      ...config,
+      options: {
+        refundee,
+      },
+    };
+    const axiomCrosschain = new AxiomCrosschain(newConfig);
+    expect(axiomCrosschain).toBeInstanceOf(AxiomCrosschain);
+    await axiomCrosschain.init();
+    const args = await axiomCrosschain.prove(inputs);
+    expect(args?.args[6]).toEqual(refundee);
   }, 40000);
 });

@@ -26,21 +26,6 @@ describe('Axiom class tests', () => {
     expect(axiom).toBeInstanceOf(Axiom);
   });
 
-  test('should initialize with caller', async () => {
-    const configCaller = {
-      chainId,
-      rpcUrl,
-      circuit,
-      compiledCircuit,
-      callback: {
-        target: '0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e',
-      },
-      caller: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701",
-    };
-    const axiom = new Axiom(configCaller);
-    expect(axiom).toBeInstanceOf(Axiom);
-  });
-
   test('setOptions should update options correctly', () => {
     const axiom = new Axiom(config);
     const newOptions: AxiomV2QueryOptions = { callbackGasLimit: 500000 };
@@ -56,8 +41,7 @@ describe('Axiom class tests', () => {
   test('prove should build sendQuery args correctly', async () => {
     const axiom = new Axiom(config);
     await axiom.init();
-    await axiom.prove(inputs);
-    const args = axiom.getSendQueryArgs();
+    const args = await axiom.prove(inputs);
     expect(args?.args[0]).toEqual(chainId);
     expect(args?.args[2].resultLen).toEqual(3);
     expect(args?.args[3].target).toEqual(config.callback.target.toLowerCase());
@@ -84,34 +68,65 @@ describe('Axiom class tests', () => {
     expect(args?.address).toEqual(queryAddr);
   }, 20000);
 
-  test('should build query with caller', async () => {
-    expect(false).toBeTruthy();
+  test('should prove & build query with caller', async () => {
+    const caller = "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701";
+    const configCaller = {
+      chainId,
+      rpcUrl,
+      circuit,
+      compiledCircuit,
+      callback: {
+        target: '0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e',
+      },
+      caller,
+    };
+    const axiom = new Axiom(configCaller);
+    expect(axiom).toBeInstanceOf(Axiom);
+    await axiom.init();
+    const args = await axiom.prove(inputs);
+    expect(args?.args[6]).toEqual(caller.toLowerCase());
   }, 40000);
 
-  test('should build a query with caller and privateKey', async () => {
-    expect(false).toBeTruthy();
-  }, 40000);
-
-  test('should build a query with caller, privateKey, and refundee', async () => {
-    expect(false).toBeTruthy();
-  }, 40000);
-
-  test('should build a query with privateKey and refundee', async () => {
+  test('should prove & build a query with caller and privateKey', async () => {
+    const caller = "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701";
     const axiom = new Axiom({
       ...config,
-      privateKey: process.env.PRIVATE_KEY_ANVIL as string,
+      caller,
+    });
+    expect(axiom).toBeInstanceOf(Axiom);
+    await axiom.init();
+    const args = await axiom.prove(inputs);
+    expect(args?.args[6]).toEqual("0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266");
+  }, 40000);
+
+  test('should prove & build a query with caller, privateKey, and refundee', async () => {
+    const caller = "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701";
+    const refundee = "0x000000000000000000000000000000000000aabb";
+    const axiom = new Axiom({
+      ...config,
+      caller,
       options: {
-        refundee: "0x000000000000000000000000000000000000aabb",
+        refundee,
       },
     });
-    const inputs = {
-      blockNumber: 4000000,
-      address: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701",
-    };
+    expect(axiom).toBeInstanceOf(Axiom);
+    await axiom.init();
+    const args = await axiom.prove(inputs);
+    expect(args?.args[6]).toEqual(refundee);
+  }, 40000);
+
+  test('should prove & build a query with privateKey and refundee', async () => {
+    const refundee = "0x000000000000000000000000000000000000aabb";
+    const axiom = new Axiom({
+      ...config,
+      options: {
+        refundee,
+      },
+    });
     await axiom.init();
     await axiom.prove(inputs);
     const args = axiom.getSendQueryArgs();
-    expect(args?.args[6]).toEqual("0x000000000000000000000000000000000000aabb");
+    expect(args?.args[6]).toEqual(refundee);
   }, 40000);
 });
 

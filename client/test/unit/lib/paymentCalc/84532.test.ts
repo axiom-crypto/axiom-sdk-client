@@ -5,7 +5,7 @@ import { circuit } from "../../../circuits/quickstart/average.circuit";
 import compiledCircuit from "../../../circuits/quickstart/average.compiled.json";
 import inputs from "../../../circuits/quickstart/11155111/average.inputs.json";
 import { getChainDefaults } from "../../../../src/lib/chain";
-import { ClientConstants } from "../../../../src/lib/constants";
+import { calculateQueryCost, percentDiffX100 } from "./calc";
 
 const DIFF_THRESHOLD_X100 = 800n; // 8%
 
@@ -16,48 +16,21 @@ describe("PaymentCalc: Base", () => {
     transport: http(process.env[`PROVIDER_URI_${CHAIN_ID}`] as string),
   });
 
+  const config = {
+    circuit,
+    compiledCircuit,
+    chainId: CHAIN_ID,
+    rpcUrl: process.env[`PROVIDER_URI_${CHAIN_ID}`] as string,
+    privateKey: process.env.PRIVATE_KEY_ANVIL as string,
+    callback: {
+      target: "0x81908149E769236F1c9e62b468d07899CB95890F",
+    },
+  }
+
   let baseFeeScalar: bigint;
   let basefee: bigint;
   let blobBaseFeeScalar: bigint;
   let blobBaseFee: bigint;
-
-  const calculateOpStackCallbackCost = (
-    basefee: bigint,
-    baseFeeScalar: bigint,
-    blobBaseFee: bigint,
-    blobBaseFeeScalar: bigint,
-    maxFeePerGas: bigint,
-    callbackGasLimit: bigint,
-    proofVerificationGas: bigint
-  ) => {
-    return maxFeePerGas * (callbackGasLimit + proofVerificationGas) + 
-      BigInt(ClientConstants.AXIOM_PROOF_CALLDATA_LEN) * 
-      (16n * baseFeeScalar * basefee + blobBaseFeeScalar * blobBaseFee)  * 
-      BigInt(ClientConstants.L1_FEE_NUMERATOR) / BigInt(ClientConstants.L1_FEE_DENOMINATOR) / BigInt(1e6);
-  }
-
-  const calculateQueryCost = (
-    basefee: bigint,
-    baseFeeScalar: bigint,
-    blobBaseFee: bigint,
-    blobBaseFeeScalar: bigint,
-    maxFeePerGas: bigint,
-    callbackGasLimit: bigint,
-    proofVerificationGas: bigint
-  ): bigint => {
-    const projectedCallbackCost = calculateOpStackCallbackCost(basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
-    const overrideAxiomQueryFee = getChainDefaults(CHAIN_ID).axiomQueryFeeWei + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas);
-    const queryCost = overrideAxiomQueryFee + maxFeePerGas * (callbackGasLimit + proofVerificationGas);
-    return queryCost;
-  }
-
-  const percentDiffX100 = (a: bigint, b: bigint): bigint => {
-    let percentDiff = (a - b) * 10000n / a;
-    if (percentDiff < 0) {
-      percentDiff = -percentDiff;
-    }
-    return percentDiff;
-  }
 
   beforeEach(async () => {
     // Read values from chain
@@ -89,14 +62,7 @@ describe("PaymentCalc: Base", () => {
     const proofVerificationGas = getChainDefaults(CHAIN_ID).proofVerificationGas;
 
     const axiom = new Axiom({
-      circuit,
-      compiledCircuit,
-      chainId: CHAIN_ID,
-      rpcUrl: process.env[`PROVIDER_URI_${CHAIN_ID}`] as string,
-      privateKey: process.env.PRIVATE_KEY_ANVIL as string,
-      callback: {
-        target: "0x81908149E769236F1c9e62b468d07899CB95890F",
-      },
+      ...config,
       options: {
         maxFeePerGas: maxFeePerGas.toString(),
       },
@@ -105,7 +71,7 @@ describe("PaymentCalc: Base", () => {
     await axiom.prove(inputs);
     const args = axiom.getSendQueryArgs();
 
-    const queryCost = calculateQueryCost(basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
+    const queryCost = calculateQueryCost(CHAIN_ID, basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
     expect(percentDiff).toBeLessThan(DIFF_THRESHOLD_X100);
   }, 30000);
@@ -116,14 +82,7 @@ describe("PaymentCalc: Base", () => {
     const proofVerificationGas = getChainDefaults(CHAIN_ID).proofVerificationGas;
 
     const axiom = new Axiom({
-      circuit,
-      compiledCircuit,
-      chainId: CHAIN_ID,
-      rpcUrl: process.env[`PROVIDER_URI_${CHAIN_ID}`] as string,
-      privateKey: process.env.PRIVATE_KEY_ANVIL as string,
-      callback: {
-        target: "0x81908149E769236F1c9e62b468d07899CB95890F",
-      },
+      ...config,
       options: {
         maxFeePerGas: maxFeePerGas.toString(),
         callbackGasLimit: Number(callbackGasLimit),
@@ -133,7 +92,7 @@ describe("PaymentCalc: Base", () => {
     await axiom.prove(inputs);
     const args = axiom.getSendQueryArgs();
 
-    const queryCost = calculateQueryCost(basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
+    const queryCost = calculateQueryCost(CHAIN_ID, basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
     expect(percentDiff).toBeLessThan(DIFF_THRESHOLD_X100);
   }, 30000);
@@ -144,14 +103,7 @@ describe("PaymentCalc: Base", () => {
     const proofVerificationGas = getChainDefaults(CHAIN_ID).proofVerificationGas;
 
     const axiom = new Axiom({
-      circuit,
-      compiledCircuit,
-      chainId: CHAIN_ID,
-      rpcUrl: process.env[`PROVIDER_URI_${CHAIN_ID}`] as string,
-      privateKey: process.env.PRIVATE_KEY_ANVIL as string,
-      callback: {
-        target: "0x81908149E769236F1c9e62b468d07899CB95890F",
-      },
+      ...config,
       options: {
         maxFeePerGas: maxFeePerGas.toString(),
         callbackGasLimit: Number(callbackGasLimit),
@@ -161,7 +113,7 @@ describe("PaymentCalc: Base", () => {
     await axiom.prove(inputs);
     const args = axiom.getSendQueryArgs();
     
-    const queryCost = calculateQueryCost(basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
+    const queryCost = calculateQueryCost(CHAIN_ID, basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
     expect(percentDiff).toBeLessThan(DIFF_THRESHOLD_X100);
   }, 30000);
@@ -214,7 +166,7 @@ describe("PaymentCalc: Base", () => {
     await axiom.prove(inputs);
     const args = axiom.getSendQueryArgs();
     
-    const queryCost = calculateQueryCost(basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
+    const queryCost = calculateQueryCost(CHAIN_ID, basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
     expect(percentDiff).toBeLessThan(DIFF_THRESHOLD_X100);
   }, 30000);

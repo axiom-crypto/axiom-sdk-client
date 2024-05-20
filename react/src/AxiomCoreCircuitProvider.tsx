@@ -12,8 +12,12 @@ import {
   AxiomV2SendQueryArgs,
   AxiomV2QueryOptions,
 } from "@axiom-crypto/client/types/";
+import {
+  AxiomCore,
+  AxiomBaseCircuitGeneric,
+} from "@axiom-crypto/client/axiom/axiomCore";
 
-type AxiomCircuitContextType<T> = {
+export type AxiomCircuitContextType<T> = {
   setParams: (inputs: T, callbackTarget: string, callbackExtraData: string, caller: string) => void,
   areParamsSet: boolean,
   build: () => Promise<AxiomV2SendQueryArgs | null>,
@@ -21,28 +25,38 @@ type AxiomCircuitContextType<T> = {
   reset: () => void,
 }
 
+type CoreState<T> = {
+  setWorkerApi: React.Dispatch<React.SetStateAction<React.MutableRefObject<Remote<AxiomCore<T, AxiomBaseCircuitGeneric<T>>>> | undefined>>,
+  inputs: any,
+  options: AxiomV2QueryOptions | null,
+  callback: AxiomV2Callback | null,
+  caller: string | null,
+  builtQuery: AxiomV2SendQueryArgs | null,
+}
+
+type AxiomCoreCircuitContextType<T> = CoreState<T> & AxiomCircuitContextType<T>;
+
 type GenericAxiomWorker<T> = {
   init: () => Promise<void>,
   prove: (inputs: T) => Promise<AxiomV2SendQueryArgs>,
 }
 
-export const AxiomCircuitContext = createContext<AxiomCircuitContextType<any> | null>(null);
+export const AxiomCoreCircuitContext = createContext<AxiomCoreCircuitContextType<any> | null>(null);
 
-export const useAxiomCircuit = <T,>(): AxiomCircuitContextType<T> => {
-  const context = useContext(AxiomCircuitContext);
+export const useAxiomCoreCircuit = <T,>(): AxiomCoreCircuitContextType<T> => {
+  const context = useContext(AxiomCoreCircuitContext);
   if (context === null) {
-    throw new Error("useAxiomCircuit must be used within AxiomCircuitProvider");
+    throw new Error("useAxiomCoreCircuit must be used within AxiomCoreCircuitProvider");
   }
   return context;
 }
 
 export const AxiomCoreCircuitProvider = <T,>({
-  workerApi,
   children,
 }: {
-  workerApi: React.MutableRefObject<Remote<GenericAxiomWorker<T>>>,
   children: React.ReactNode,
 }) => {
+  const [workerApi, setWorkerApi] = useState<React.MutableRefObject<Remote<AxiomCore<T, AxiomBaseCircuitGeneric<T>>>> | undefined>(undefined);
   const [inputs, setInputs] = useState<any | null>(null);
   const [options, setOptions] = useState<AxiomV2QueryOptions | null>(null);
   const [callback, setCallback] = useState<AxiomV2Callback | null>(null);
@@ -50,6 +64,9 @@ export const AxiomCoreCircuitProvider = <T,>({
   const [builtQuery, setBuiltQuery] = useState<AxiomV2SendQueryArgs | null>(null);
 
   const build = async () => {
+    if (!workerApi) {
+      return null;
+    }
     if (!inputs || !callback || !caller) {
       console.warn("`inputs` or `callback` or `caller` not set");
       return null;
@@ -59,6 +76,10 @@ export const AxiomCoreCircuitProvider = <T,>({
     }
 
     const setup = async () => {
+      if (!workerApi.current) {
+        console.warn("Worker API not set up");
+        return null;
+      }
       await workerApi.current.init();
     }
 
@@ -67,8 +88,7 @@ export const AxiomCoreCircuitProvider = <T,>({
         console.warn("Worker API not set up");
         return null;
       }
-      const worker = workerApi.current!;
-      const sendQueryArgs = await worker.prove(inputs);
+      const sendQueryArgs = await workerApi.current.prove(inputs);
       setBuiltQuery(sendQueryArgs);
       return sendQueryArgs;
     }
@@ -81,6 +101,7 @@ export const AxiomCoreCircuitProvider = <T,>({
   }
 
   const setParams = useCallback((inputs: any, callbackTarget: string, callbackExtraData: string, caller: string, options?: AxiomV2QueryOptions) => {
+    console.log("YJLOG setParams");
     if (callbackExtraData === "") {
       callbackExtraData = "0x";
     }
@@ -95,17 +116,24 @@ export const AxiomCoreCircuitProvider = <T,>({
 
   const areParamsSet = (inputs !== null && callback !== null);
 
-  const contextValues = {
+  const contextValues: AxiomCoreCircuitContextType<T> = {
     setParams,
     areParamsSet,
     build,
     builtQuery,
     reset,
+    inputs,
+    options,
+    callback,
+    caller,
+    setWorkerApi,
   };
 
+  console.log("YJLOG AxiomCoreCircuitProvider contextValues", contextValues);
+
   return (
-    <AxiomCircuitContext.Provider value={contextValues}>
+    <AxiomCoreCircuitContext.Provider value={contextValues}>
       {children}
-    </AxiomCircuitContext.Provider>
+    </AxiomCoreCircuitContext.Provider>
   )
 }

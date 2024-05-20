@@ -1,5 +1,5 @@
-// export * from './AxiomCircuitProvider.tax';
-// export * from './AxiomCrosschainCircuitProvider.tax';
+export * from "./AxiomCircuitProvider";
+// export * from './AxiomCrosschainCircuitProvider';
 
 // WIP: Remove this export
-export * from './AxiomCoreCircuitProvider';
+// export * from './AxiomCoreCircuitProvider';

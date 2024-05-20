@@ -5,8 +5,9 @@ import {
   AxiomV2CallbackInput,
   AxiomV2CompiledCircuit,
   AxiomV2QueryOptions,
-  SourceChainConfig,
-  TargetChainConfig,
+  ChainConfig,
+  ClientConfig,
+  BridgeType,
 } from "./external";
 
 export interface CoreConfig {
@@ -16,18 +17,13 @@ export interface CoreConfig {
   options?: AxiomV2QueryOptions;
 }
 
-export interface ClientConfig {
-  chainId: string;
-  rpcUrl: string;
-  privateKey?: string;
-  caller?: string;
-}
-
 export interface CoreConfigCircuit<T> extends CoreConfig {
   circuit: (inputs: T) => Promise<void>;
 }
 
 export interface CrosschainConfig {
-  source: SourceChainConfig;
-  target: TargetChainConfig;
+  source: ChainConfig;
+  target: ClientConfig;
+  bridgeType: BridgeType;
+  bridgeId?: number;
 }

@@ -79,7 +79,7 @@ export async function runTestProve(
     circuit,
     compiledCircuit,
     chainId,
-    provider: process.env[`PROVIDER_URI_${chainId}`] as string,
+    rpcUrl: process.env[`RPC_URL_${chainId}`] as string,
     privateKey: process.env[`PRIVATE_KEY_${chainId}`] as string,
     callback: {
       target: getTarget(chainId, targetOverride),

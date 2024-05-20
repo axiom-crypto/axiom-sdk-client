@@ -2,10 +2,10 @@ import {
   AxiomV2Callback,
   AxiomV2QueryOptions,
   AxiomV2SendQueryArgs,
-  AxiomV2CrosschainConfig,
-  SourceChainConfig,
-  TargetChainConfig,
+  AxiomV2ClientCrosschainConfig,
   BridgeType,
+  ChainConfig,
+  ClientConfig,
 } from "../types";
 import { validateChainId } from "./utils";
 import { 
@@ -22,12 +22,12 @@ import { AxiomBaseCircuitGeneric, AxiomCore } from "./axiomCore";
 import { buildSendQuery } from "../sendQuery";
 
 export class AxiomCrosschainBase<T, C extends AxiomBaseCircuitGeneric<T>> extends AxiomCore<T, C> {
-  protected source: SourceChainConfig;
-  protected target: TargetChainConfig;
+  protected source: ChainConfig;
+  protected target: ClientConfig;
   protected caller: string;
 
   constructor(
-    config: AxiomV2CrosschainConfig<T>,
+    config: AxiomV2ClientCrosschainConfig<T>,
     axiomBaseCircuit: AxiomBaseCircuitGeneric<T>,
     numThreads: number,
   ) {
@@ -54,12 +54,12 @@ export class AxiomCrosschainBase<T, C extends AxiomBaseCircuitGeneric<T>> extend
       throw new Error("`privateKey` or `caller` must be provided");
     }
 
-    const fallbackQueryAddress = config.source.bridgeType === BridgeType.BlockhashOracle ? 
+    const fallbackQueryAddress = config.bridgeType === BridgeType.BlockhashOracle ? 
       getAxiomV2QueryBlockhashOracleAddress(config.source.chainId, config.target.chainId) :
-      getAxiomV2QueryBroadcasterAddress(config.source.chainId, config.target.chainId, config.source.bridgeId!);
+      getAxiomV2QueryBroadcasterAddress(config.source.chainId, config.target.chainId, config.bridgeId!);
     const axiomV2QueryAddress = config.options?.overrides?.queryAddress ?? fallbackQueryAddress;
 
-    if (config.source.bridgeType === BridgeType.Broadcaster && config.source.bridgeId === undefined) {
+    if (config.bridgeType === BridgeType.Broadcaster && config.bridgeId === undefined) {
       throw new Error("`source.bridgeId` is required for Broadcaster bridge type");
     }
 

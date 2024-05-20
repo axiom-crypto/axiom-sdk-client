@@ -1,6 +1,6 @@
 import path from 'path';
 import { AxiomBaseCircuit } from "../js";
-import { getFunctionFromTs, getProvider, readJsonFromFile, saveJsonToFile } from "./utils";
+import { getFunctionFromTs, getRpcUrl, readJsonFromFile, saveJsonToFile } from "./utils";
 import { existsSync, readFileSync } from 'fs';
 
 export const compile = async (
@@ -10,7 +10,7 @@ export const compile = async (
         function?: string,
         outputs?: string,
         chainId?: number | string | bigint,
-        provider?: string,
+        rpcUrl?: string,
         mock?: boolean,
         cache?: string,
         force?: boolean,
@@ -22,7 +22,7 @@ export const compile = async (
         circuitFunction = options.function;
     }
     const f = await getFunctionFromTs(circuitPath, circuitFunction);
-    const rpcUrl = getProvider(options.provider);
+    const rpcUrl = getRpcUrl(options.rpcUrl);
     const cache: { [key: string]: string } = {};
     if (options.cache !== undefined && existsSync(options.cache)) {
         const cacheJson = readJsonFromFile(options.cache);

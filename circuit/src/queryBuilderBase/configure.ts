@@ -18,20 +18,20 @@ export function handleChainId(config: QueryBuilderBaseConfig): QueryBuilderBaseC
   return config;
 }
 
-export function parseProvider(provider: string): string {
-  if (!provider) {
-    throw new Error("Invalid provider: value is undefined or empty string");
+export function parseRpcUrl(rpcUrl: string): string {
+  if (!rpcUrl) {
+    throw new Error("Invalid rpcUrl: value is undefined or empty string");
   }
   if (
-    provider.startsWith("http://") ||
-    provider.startsWith("https://")
+    rpcUrl.startsWith("http://") ||
+    rpcUrl.startsWith("https://")
   ) {
-    return provider;
-  } else if (provider.startsWith("wss://")) {
+    return rpcUrl;
+  } else if (rpcUrl.startsWith("wss://")) {
     throw new Error("Websockets is not yet supported");
   } else {
     throw new Error(
-      "Invalid provider: must start with http://, https://, or wss://"
+      "Invalid rpcUrl: must start with http://, https://, or wss://"
     );
   }
 }

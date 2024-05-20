@@ -44,7 +44,7 @@ circuit
   .option("-s, --sourceChainId [sourceChainId]", "source chain id")
   .option("-m, --mock", "generate a mock compute proof")
   .option("-st, --stats", "print stats")
-  .option("-p, --rpcUrl [rpcUrl]", "JSON-RPC provider URL (https)")
+  .option("-p, --rpcUrl [rpcUrl]", "source chain JSON-RPC provider URL (https)")
   .option("-o, --outputs [outputs]", "outputs json file")
   .option("-c, --cache [cache]", "cache input file")
   .action(prove);
@@ -62,10 +62,12 @@ circuit
   .option("--maxFeePerGas [maxFeePerGas]", "maxFeePerGas")
   .option("--callbackGasLimit [callbackGasLimit]", "callbackGasLimit")
   .option("-m, --mock", "generate a mock query")
-  .option("-p, --rpcUrl [rpcUrl]", "Source chain JSON-RPC provider URL (https)")
+  .option("-p, --rpcUrl [rpcUrl]", "source chain JSON-RPC provider URL (https)")
   .option("-pv, --proven [proven]", "`axiom circuit prove` outputs path")
   .option("-o, --outputs [outputs]", "query-params outputs path")
   .option("-a, --args-map", "sendQuery argments output as mapping for use with Forge")
+  .option("-br, --broadcaster", "Use crosschain broadcaster")
+  .option("-bo, --blockhashOracle", "Use crosschain blockhash oracle")
   .action(queryParams);
 
 const scaffold = program.command("scaffold")

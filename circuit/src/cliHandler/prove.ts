@@ -1,6 +1,6 @@
 import path from 'path';
 import { AxiomBaseCircuit } from "../js";
-import { getProvider, readInputs, readJsonFromFile, saveJsonToFile } from "./utils";
+import { getRpcUrl, readInputs, readJsonFromFile, saveJsonToFile } from "./utils";
 import { existsSync } from 'fs';
 
 export const prove = async (
@@ -22,7 +22,7 @@ export const prove = async (
     const decodedArray = Buffer.from(compiled.circuit, 'base64');
     const raw = decoder.decode(decodedArray);
     const AXIOM_CLIENT_IMPORT = require("../index");
-    const rpcUrl = getProvider(options.rpcUrl);
+    const rpcUrl = getRpcUrl(options.rpcUrl);
 
     const cache: { [key: string]: string } = {};
     if (options.cache !== undefined && existsSync(options.cache)) {

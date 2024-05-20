@@ -7,7 +7,7 @@ import { generateInputs } from './inputs';
 export const run = async (
   options: {
     circuit: string;
-    provider: string;
+    rpcUrl: string;
     data: string;
     circuitInputsPath?: string;
     output?: string;
@@ -18,7 +18,7 @@ export const run = async (
 ): Promise<any> => {
   const chainDataPath = path.dirname(options.data);
   const data = JSON.parse(fs.readFileSync(options.data, 'utf8'));
-  const provider = new JsonRpcProvider(options.provider);
+  const provider = new JsonRpcProvider(options.rpcUrl);
   const chainId = (await provider.getNetwork()).chainId.toString();
 
   let outputPath = path.join(path.dirname(options.circuit), '../output');

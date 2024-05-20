@@ -110,12 +110,12 @@ const padInstances = (capacity: AxiomV2CircuitCapacity) => {
   return { numUserInstances };
 }
 
-export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibWasm, config: CircuitConfig, capacity: AxiomV2CircuitCapacity, provider: string) {
+export function AxiomCircuitRunner(halo2Wasm: Halo2Wasm, halo2LibWasm: Halo2LibWasm, config: CircuitConfig, capacity: AxiomV2CircuitCapacity, rpcUrl: string) {
   globalThis.axiom = {
     dataQuery: [],
     halo2lib: halo2LibWasm,
     halo2wasm: halo2Wasm,
-    provider: new JsonRpcProvider(provider),
+    provider: new JsonRpcProvider(rpcUrl),
     results: {}
   };
   setCircuit(halo2Wasm, halo2LibWasm);

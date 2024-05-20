@@ -2,20 +2,15 @@ import React, {
   createContext,
   useCallback,
   useContext,
-  useRef,
   useState,
 } from "react";
-import { Remote, wrap } from "comlink";
+import { Remote, UnproxyOrClone } from "comlink";
 import { 
-  AxiomV2CompiledCircuit,
   AxiomV2Callback,
   AxiomV2SendQueryArgs,
   AxiomV2QueryOptions,
 } from "@axiom-crypto/client/types/";
-import {
-  AxiomCore,
-  AxiomBaseCircuitGeneric,
-} from "@axiom-crypto/client/axiom/axiomCore";
+import { UserInput } from "@axiom-crypto/client";
 
 export type AxiomCircuitContextType<T> = {
   setParams: (inputs: T, callbackTarget: string, callbackExtraData: string, caller: string) => void,
@@ -26,8 +21,8 @@ export type AxiomCircuitContextType<T> = {
 }
 
 type CoreState<T> = {
-  setWorkerApi: React.Dispatch<React.SetStateAction<React.MutableRefObject<Remote<AxiomCore<T, AxiomBaseCircuitGeneric<T>>>> | undefined>>,
-  inputs: any,
+  setWorkerApi: React.Dispatch<React.SetStateAction<React.MutableRefObject<Remote<GenericAxiomWorker<T>>> | null>>,
+  inputs: T | null,
   options: AxiomV2QueryOptions | null,
   callback: AxiomV2Callback | null,
   caller: string | null,
@@ -38,13 +33,13 @@ type AxiomCoreCircuitContextType<T> = CoreState<T> & AxiomCircuitContextType<T>;
 
 type GenericAxiomWorker<T> = {
   init: () => Promise<void>,
-  prove: (inputs: T) => Promise<AxiomV2SendQueryArgs>,
+  prove: (input: UserInput<T>) => Promise<AxiomV2SendQueryArgs>,
 }
 
 export const AxiomCoreCircuitContext = createContext<AxiomCoreCircuitContextType<any> | null>(null);
 
 export const useAxiomCoreCircuit = <T,>(): AxiomCoreCircuitContextType<T> => {
-  const context = useContext(AxiomCoreCircuitContext);
+  const context = useContext(AxiomCoreCircuitContext) as AxiomCoreCircuitContextType<T> | null;
   if (context === null) {
     throw new Error("useAxiomCoreCircuit must be used within AxiomCoreCircuitProvider");
   }
@@ -56,8 +51,8 @@ export const AxiomCoreCircuitProvider = <T,>({
 }: {
   children: React.ReactNode,
 }) => {
-  const [workerApi, setWorkerApi] = useState<React.MutableRefObject<Remote<AxiomCore<T, AxiomBaseCircuitGeneric<T>>>> | undefined>(undefined);
-  const [inputs, setInputs] = useState<any | null>(null);
+  const [workerApi, setWorkerApi] = useState<React.MutableRefObject<Remote<GenericAxiomWorker<T>>> | null>(null);
+  const [inputs, setInputs] = useState<T | null>(null);
   const [options, setOptions] = useState<AxiomV2QueryOptions | null>(null);
   const [callback, setCallback] = useState<AxiomV2Callback | null>(null);
   const [caller, setCaller] = useState<string | null>(null);
@@ -88,7 +83,7 @@ export const AxiomCoreCircuitProvider = <T,>({
         console.warn("Worker API not set up");
         return null;
       }
-      const sendQueryArgs = await workerApi.current.prove(inputs);
+      const sendQueryArgs = await workerApi.current.prove(inputs as UnproxyOrClone<UserInput<T>>);
       setBuiltQuery(sendQueryArgs);
       return sendQueryArgs;
     }
@@ -100,8 +95,7 @@ export const AxiomCoreCircuitProvider = <T,>({
     setBuiltQuery(null);
   }
 
-  const setParams = useCallback((inputs: any, callbackTarget: string, callbackExtraData: string, caller: string, options?: AxiomV2QueryOptions) => {
-    console.log("YJLOG setParams");
+  const setParams = useCallback((inputs: T, callbackTarget: string, callbackExtraData: string, caller: string, options?: AxiomV2QueryOptions) => {
     if (callbackExtraData === "") {
       callbackExtraData = "0x";
     }
@@ -129,10 +123,8 @@ export const AxiomCoreCircuitProvider = <T,>({
     setWorkerApi,
   };
 
-  console.log("YJLOG AxiomCoreCircuitProvider contextValues", contextValues);
-
   return (
-    <AxiomCoreCircuitContext.Provider value={contextValues}>
+    <AxiomCoreCircuitContext.Provider value={contextValues as AxiomCoreCircuitContextType<any>}>
       {children}
     </AxiomCoreCircuitContext.Provider>
   )

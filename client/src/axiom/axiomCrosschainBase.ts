@@ -24,6 +24,8 @@ import { buildSendQuery } from "../sendQuery";
 export class AxiomCrosschainBase<T, C extends AxiomBaseCircuitGeneric<T>> extends AxiomCore<T, C> {
   protected source: ChainConfig;
   protected target: ClientConfig;
+  protected bridgeType: BridgeType;
+  protected bridgeId?: number;
   protected caller: string;
 
   constructor(
@@ -67,6 +69,8 @@ export class AxiomCrosschainBase<T, C extends AxiomBaseCircuitGeneric<T>> extend
 
     this.source = config.source;
     this.target = config.target;
+    this.bridgeType = config.bridgeType;
+    this.bridgeId = config.bridgeId;
     this.caller = caller;
 
     this.options = config.options;
@@ -109,6 +113,12 @@ export class AxiomCrosschainBase<T, C extends AxiomBaseCircuitGeneric<T>> extend
       caller: this.caller,
       mock: false,
       options,
+      crosschain: {
+        chainId: this.target.chainId,
+        rpcUrl: this.target.rpcUrl,
+        bridgeType: this.bridgeType,
+        bridgeId: this.bridgeId,
+      }
     })
 
     this.sendQueryArgs = sendQueryArgs;

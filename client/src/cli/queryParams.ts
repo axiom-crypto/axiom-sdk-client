@@ -1,5 +1,5 @@
 import path from 'path';
-import { getProvider, readJsonFromFile, saveJsonToFile } from "@axiom-crypto/circuit/cliHandler/utils";
+import { getRpcUrl, readJsonFromFile, saveJsonToFile } from "@axiom-crypto/circuit/cliHandler/utils";
 import { buildSendQuery } from "../sendQuery";
 import { argsArrToObj } from '../axiom/utils';
 import {
@@ -60,7 +60,7 @@ export const queryParams = async (
 
   console.log(`Reading proven circuit JSON from: ${provenFile}`)
   const provenJson = readJsonFromFile(provenFile);
-  const rpcUrl = getProvider(options.rpcUrl);
+  const rpcUrl = getRpcUrl(options.rpcUrl);
   try {
     let build = await buildSendQuery({
       chainId: options.sourceChainId,

@@ -2,22 +2,21 @@ import {
   AxiomCrosschain,
   AxiomV2QueryOptions,
   BridgeType,
+  ChainConfig,
+  ClientConfig,
   getAxiomV2QueryBlockhashOracleAddress,
-  SourceChainConfig,
-  TargetChainConfig,
 } from "../../../src";
 import { circuit } from "../../circuits/quickstart/average.circuit";
 import compiledCircuit from "../../circuits/quickstart/average.compiled.json";
 
 describe("AxiomCrosschain tests", () => {
-  const source: SourceChainConfig = {
+  const source: ChainConfig = {
     chainId: "11155111",
-    rpcUrl: process.env.PROVIDER_URI_SEPOLIA as string,
-    bridgeType: BridgeType.BlockhashOracle,
+    rpcUrl: process.env.PROVIDER_URI_11155111 as string,
   };
-  const target: TargetChainConfig = {
+  const target: ClientConfig = {
     chainId: "84532",
-    rpcUrl: process.env.PROVIDER_URI_SEPOLIA as string,
+    rpcUrl: process.env.PROVIDER_URI_84532 as string,
     privateKey: process.env.PRIVATE_KEY_ANVIL as string,
   };
   const config = {
@@ -28,6 +27,7 @@ describe("AxiomCrosschain tests", () => {
     callback: {
       target: "0x3b49DE82B86d677C072Dcc7ED47bcA9F20f0CF46",
     },
+    bridgeType: BridgeType.BlockhashOracle,
   };
   const inputs = {
     blockNumber: 4000000,
@@ -36,6 +36,19 @@ describe("AxiomCrosschain tests", () => {
 
   test("should initialize correctly", async () => {
     const axiomCrosschain = new AxiomCrosschain(config);
+    expect(axiomCrosschain).toBeInstanceOf(AxiomCrosschain);
+  });
+
+  test("should initialize with caller", async () => {
+    const configCaller = {
+      ...config,
+      target: {
+        chainId: "84532",
+        rpcUrl: process.env.PROVIDER_URI_84532 as string,
+        caller: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701",
+      },
+    };
+    const axiomCrosschain = new AxiomCrosschain(configCaller);
     expect(axiomCrosschain).toBeInstanceOf(AxiomCrosschain);
   });
 
@@ -65,8 +78,43 @@ describe("AxiomCrosschain tests", () => {
     expect(args?.args[3].target).toEqual(config.callback.target.toLowerCase());
     expect(args?.args[3].extraData).toEqual("0x");
     expect(args?.args[4].callbackGasLimit).toEqual(100000);
-    expect(args?.args[4].overrideAxiomQueryFee).toEqual("0");
+    expect(args?.args[4].overrideAxiomQueryFee).toEqual("3000000000000000"); // will not be "0" on an L2
     expect(args?.args[6]).toEqual("0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266");
   }, 20000);
-});
 
+  test("sendQueryWithIpfs should throw error without ipfsClient", async () => {
+    const axiomCrosschain = new AxiomCrosschain(config);
+    await expect(axiomCrosschain.sendQueryWithIpfs()).rejects.toThrow("Setting `ipfsClient` is required to send a Query with IPFS");
+  });
+
+  test("should set override query address correctly", async () => {
+    const queryAddr = "0x1234567890123456789012345678901234567890";
+    const axiomCrosschain = new AxiomCrosschain({
+      ...config,
+      options: {
+        overrides: {
+          queryAddress: queryAddr,
+        },
+      },
+    });
+    await axiomCrosschain.init();
+    const args = await axiomCrosschain.prove(inputs);
+    expect(args?.address).toEqual(queryAddr);
+  }, 20000);
+
+  test('should build query with caller', async () => {
+    expect(false).toBeTruthy();
+  }, 40000);
+
+  test('should build a query with caller and privateKey', async () => {
+    expect(false).toBeTruthy();
+  }, 40000);
+
+  test('should build a query with caller, privateKey, and refundee', async () => {
+    expect(false).toBeTruthy();
+  }, 40000);
+
+  test('should build a query with privateKey and refundee', async () => {
+    expect(false).toBeTruthy();
+  }, 40000);
+});

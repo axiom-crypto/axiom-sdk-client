@@ -14,10 +14,30 @@ describe('Axiom class tests', () => {
     callback: {
       target: '0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e',
     },
+    privateKey: process.env.PRIVATE_KEY_ANVIL as string,
+  };
+  const inputs = {
+    blockNumber: 4000000,
+    address: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701",
   };
 
   test('should initialize correctly', async () => {
     const axiom = new Axiom(config);
+    expect(axiom).toBeInstanceOf(Axiom);
+  });
+
+  test('should initialize with caller', async () => {
+    const configCaller = {
+      chainId,
+      rpcUrl,
+      circuit,
+      compiledCircuit,
+      callback: {
+        target: '0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e',
+      },
+      caller: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701",
+    };
+    const axiom = new Axiom(configCaller);
     expect(axiom).toBeInstanceOf(Axiom);
   });
 
@@ -29,22 +49,12 @@ describe('Axiom class tests', () => {
   });
 
   test('sendQuery should fail without built args', async () => {
-    const axiom = new Axiom({
-      ...config,
-      privateKey: process.env.PRIVATE_KEY_ANVIL as string,
-    });
+    const axiom = new Axiom(config);
     await expect(axiom.sendQuery()).rejects.toThrow('SendQuery args have not been built yet. Please run `prove` first.');
   });
 
   test('prove should build sendQuery args correctly', async () => {
-    const axiom = new Axiom({
-      ...config,
-      privateKey: process.env.PRIVATE_KEY_ANVIL as string,
-    });
-    const inputs = {
-      blockNumber: 4000000,
-      address: "0xEaa455e4291742eC362Bc21a8C46E5F2b5ed4701",
-    };
+    const axiom = new Axiom(config);
     await axiom.init();
     await axiom.prove(inputs);
     const args = axiom.getSendQueryArgs();
@@ -55,12 +65,24 @@ describe('Axiom class tests', () => {
   }, 40000);
 
   test('sendQueryWithIpfs should throw error without ipfsClient', async () => {
-    const axiom = new Axiom({
-      ...config,
-      privateKey: process.env.PRIVATE_KEY_ANVIL as string,
-    });
+    const axiom = new Axiom(config);
     await expect(axiom.sendQueryWithIpfs()).rejects.toThrow("Setting `ipfsClient` is required to send a Query with IPFS");
   });
+
+  test("should set override query address correctly", async () => {
+    const queryAddr = "0x1234567890123456789012345678901234567890";
+    const axiom = new Axiom({
+      ...config,
+      options: {
+        overrides: {
+          queryAddress: queryAddr,
+        },
+      },
+    });
+    await axiom.init();
+    const args = await axiom.prove(inputs);
+    expect(args?.address).toEqual(queryAddr);
+  }, 20000);
 
   test('should build query with caller', async () => {
     expect(false).toBeTruthy();

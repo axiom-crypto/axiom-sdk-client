@@ -24,7 +24,7 @@ export async function generateCircuitArtifacts(
   circuitInputsPath: string,
   outputPath: string,
 ) {
-  const provider = process.env[`PROVIDER_URI_${chainId}`] as string;
+  const rpcUrl = process.env[`PROVIDER_URI_${chainId}`] as string;
   const circuitPathResolved = path.resolve(circuitPath);
   const pathToFile = path.dirname(circuitPathResolved);
   const filename = path.basename(circuitPathResolved);
@@ -44,7 +44,7 @@ export async function generateCircuitArtifacts(
     rmSync(compiledPath);
   }
 
-  execSync(`npx axiom circuit compile ${circuitPathResolved} -o ${compiledPath} ${externalDefaults ? "-d " + defaultInputsPath : ""} -p ${provider}`, { stdio: 'inherit' });
+  execSync(`npx axiom circuit compile ${circuitPathResolved} -o ${compiledPath} ${externalDefaults ? "-d " + defaultInputsPath : ""} -r ${rpcUrl}`, { stdio: 'inherit' });
 
   if (externalDefaults) {
     const defaultInputs = (await import(defaultInputsPath)).default;

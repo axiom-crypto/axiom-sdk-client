@@ -113,11 +113,9 @@ export class AxiomCrosschainBase<T, C extends AxiomBaseCircuitGeneric<T>> extend
       caller: this.caller,
       mock: false,
       options,
-      crosschain: {
+      target: {
         chainId: this.target.chainId,
         rpcUrl: this.target.rpcUrl,
-        bridgeType: this.bridgeType,
-        bridgeId: this.bridgeId,
       }
     })
 

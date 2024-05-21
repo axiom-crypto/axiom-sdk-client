@@ -7,6 +7,7 @@ import {
   getAxiomV2QueryBlockhashOracleAddress,
   getAxiomV2QueryBroadcasterAddress,
 } from '../lib';
+import { ChainConfig } from '../types';
 
 export const queryParams = async (
   callbackTarget: string,
@@ -21,6 +22,7 @@ export const queryParams = async (
     outputs?: string;
     proven?: string;
     rpcUrl?: string;
+    targetRpcUrl?: string;
     maxFeePerGas?: string;
     callbackGasLimit?: number;
     mock?: boolean;
@@ -57,6 +59,17 @@ export const queryParams = async (
     axiomV2QueryAddress = getAxiomV2QueryAddress(options.sourceChainId);
   }
 
+  let target: ChainConfig | undefined;
+  if (options.targetChainId || options.targetRpcUrl) {
+    if (!options.targetChainId || !options.targetRpcUrl) {
+      throw new Error("`targetChainId` and `targetRpcUrl` must be provided together");
+    }
+    target = {
+      chainId: options.targetChainId,
+      rpcUrl: options.targetRpcUrl,
+    }
+  }
+
   console.log(`Reading proven circuit JSON from: ${provenFile}`)
   const provenJson = readJsonFromFile(provenFile);
   const rpcUrl = getRpcUrl(options.rpcUrl);
@@ -77,6 +90,7 @@ export const queryParams = async (
         maxFeePerGas: options.maxFeePerGas,
         callbackGasLimit: options.callbackGasLimit,
       },
+      target,
     });
     build.value = build.value.toString() as any;
     const res = {

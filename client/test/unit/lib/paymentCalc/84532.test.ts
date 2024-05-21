@@ -10,7 +10,7 @@ import { calculateQueryCost, percentDiffX100 } from "./calc";
 const DIFF_THRESHOLD_X100 = 800n; // 8%
 
 describe("PaymentCalc: Base", () => {
-  const CHAIN_ID = "84532"; // Base Sepolia
+  const CHAIN_ID = "84532"; // Base Sepolia 
   const publicClient = createPublicClient({
     chain: viemChain(CHAIN_ID, process.env[`PROVIDER_URI_${CHAIN_ID}`] as string),
     transport: http(process.env[`PROVIDER_URI_${CHAIN_ID}`] as string),

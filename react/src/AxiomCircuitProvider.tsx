@@ -1,6 +1,6 @@
 import { 
   AxiomV2CompiledCircuit,
-} from "@axiom-crypto/client";
+} from "@axiom-crypto/client/types/";
 import {
   AxiomCoreCircuitProvider,
   AxiomCircuitContextType,
@@ -59,9 +59,9 @@ const AxiomIntermediateCircuitProvider = <T,>({
           chainId: chainId.toString(),
           rpcUrl,
           compiledCircuit,
-          callback: callback ?? { target: "", extraData: "" },
-          caller: caller ?? "",
-          options: options ?? {},
+          callback: callback ?? { target: "", extraData: "" }, // must be filled in via setParams
+          caller: caller ?? "", // must be filled in via setParams
+          options: options ?? {}, // can be filled in via setParams
         },
         window.navigator.hardwareConcurrency,
       );
@@ -105,7 +105,11 @@ const AxiomIntermediateCircuitProvider = <T,>({
 }) => {
   return (
     <AxiomCoreCircuitProvider>
-      <AxiomIntermediateCircuitProvider chainId={chainId} rpcUrl={rpcUrl} compiledCircuit={compiledCircuit}>
+      <AxiomIntermediateCircuitProvider
+        chainId={chainId}
+        rpcUrl={rpcUrl}
+        compiledCircuit={compiledCircuit}
+      >
         {children}
       </AxiomIntermediateCircuitProvider>
     </AxiomCoreCircuitProvider>

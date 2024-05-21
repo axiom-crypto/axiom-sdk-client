@@ -1,6 +1,6 @@
 {
   "name": "@axiom-crypto/client",
-  "version": "2.1.0-alpha.3",
+  "version": "2.1.0-alpha.6",
   "author": "Intrinsic Technologies",
   "license": "MIT",
   "description": "Client SDK to write custom queries for Axiom, the ZK Coprocessor for Ethereum.",
@@ -24,7 +24,7 @@
     "crypto"
   ],
   "dependencies": {
-    "@axiom-crypto/circuit": "link:../circuit/dist",
+    "@axiom-crypto/circuit": "2.1.0-alpha.6",
     "chalk": "^4.1.2",
     "commander": "^11.1.0",
     "prompts": "^2.4.2",

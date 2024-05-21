@@ -13,7 +13,13 @@ import {
 import { UserInput } from "@axiom-crypto/client";
 
 export type AxiomCircuitContextType<T> = {
-  setParams: (inputs: T, callbackTarget: string, callbackExtraData: string, caller: string) => void,
+  setParams: (
+    inputs: T,
+    callbackTarget: string,
+    callbackExtraData: string,
+    caller: string,
+    options?: AxiomV2QueryOptions,
+  ) => void,
   areParamsSet: boolean,
   build: () => Promise<AxiomV2SendQueryArgs | null>,
   builtQuery: AxiomV2SendQueryArgs | null,
@@ -95,18 +101,27 @@ export const AxiomCoreCircuitProvider = <T,>({
     setBuiltQuery(null);
   }
 
-  const setParams = useCallback((inputs: T, callbackTarget: string, callbackExtraData: string, caller: string, options?: AxiomV2QueryOptions) => {
-    if (callbackExtraData === "") {
-      callbackExtraData = "0x";
-    }
-    setInputs(inputs);
-    setCallback({
-      target: callbackTarget,
-      extraData: callbackExtraData,
-    });
-    setCaller(caller);
-    setOptions(options ?? {});
-  }, []);
+  const setParams = useCallback(
+    (
+      inputs: T,
+      callbackTarget: string,
+      callbackExtraData: string,
+      caller: string,
+      options?: AxiomV2QueryOptions,
+    ) => {
+      if (callbackExtraData === "") {
+        callbackExtraData = "0x";
+      }
+      setInputs(inputs);
+      setCallback({
+        target: callbackTarget,
+        extraData: callbackExtraData,
+      });
+      setCaller(caller);
+      setOptions(options ?? {});
+    }, 
+    []
+  );
 
   const areParamsSet = (inputs !== null && callback !== null);
 

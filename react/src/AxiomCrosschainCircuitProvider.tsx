@@ -3,7 +3,7 @@ import {
   BridgeType,
   ChainConfig,
   ClientConfig,
-} from "@axiom-crypto/client";
+} from "@axiom-crypto/client/types/";
 import {
   AxiomCoreCircuitProvider,
   AxiomCircuitContextType,
@@ -50,6 +50,10 @@ const AxiomCrosschainIntermediateCircuitProvider = <T,>({
     setWorkerApi,
   } = useAxiomCoreCircuit();
 
+  if (bridgeType === BridgeType.Broadcaster && bridgeId === undefined) {
+    throw new Error("`bridgeId` is required for Broadcaster bridge type");
+  }
+
   const workerApi = useRef<Remote<AxiomCrosschainWorker<T>>>();
 
   useEffect(() => {
@@ -66,13 +70,13 @@ const AxiomCrosschainIntermediateCircuitProvider = <T,>({
           source,
           target: {
             ...target,
-            caller: caller ?? "",
+            caller: caller ?? "", // must be filled in via setParams
           },
           bridgeType,
           bridgeId,
           compiledCircuit,
-          callback: callback ?? { target: "", extraData: "" },
-          options: options ?? {},
+          callback: callback ?? { target: "", extraData: "" }, // must be filled in via setParams
+          options: options ?? {}, // can be filled in via setParams
         },
         window.navigator.hardwareConcurrency,
       );
@@ -120,7 +124,13 @@ const AxiomCrosschainIntermediateCircuitProvider = <T,>({
 }) => {
   return (
     <AxiomCoreCircuitProvider>
-      <AxiomCrosschainIntermediateCircuitProvider source={source} target={target} bridgeType={bridgeType} bridgeId={bridgeId} compiledCircuit={compiledCircuit}>
+      <AxiomCrosschainIntermediateCircuitProvider
+        source={source}
+        target={target}
+        bridgeType={bridgeType}
+        bridgeId={bridgeId}
+        compiledCircuit={compiledCircuit}
+      >
         {children}
       </AxiomCrosschainIntermediateCircuitProvider>
     </AxiomCoreCircuitProvider>

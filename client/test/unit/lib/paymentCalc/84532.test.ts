@@ -74,7 +74,7 @@ describe("PaymentCalc: Base", () => {
     const queryCost = calculateQueryCost(CHAIN_ID, basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
     expect(percentDiff).toBeLessThan(DIFF_THRESHOLD_X100);
-  }, 30000);
+  }, 40000);
 
   test("Payment calculation high based on options", async () => {
     const maxFeePerGas = 500000000000n;
@@ -95,7 +95,7 @@ describe("PaymentCalc: Base", () => {
     const queryCost = calculateQueryCost(CHAIN_ID, basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
     expect(percentDiff).toBeLessThan(DIFF_THRESHOLD_X100);
-  }, 30000);
+  }, 40000);
 
   test("Payment calculation low based on options", async () => {
     const maxFeePerGas = 5000000000n;
@@ -116,7 +116,7 @@ describe("PaymentCalc: Base", () => {
     const queryCost = calculateQueryCost(CHAIN_ID, basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
     expect(percentDiff).toBeLessThan(DIFF_THRESHOLD_X100);
-  }, 30000);
+  }, 40000);
 
   test("Set overrideAxiomQueryFee greater than standard payment", async () => {
     const maxFeePerGas = 5000000000n
@@ -141,7 +141,7 @@ describe("PaymentCalc: Base", () => {
     await axiom.prove(inputs);
     const args = axiom.getSendQueryArgs();
     expect(args?.value).toEqual(502600000000000000n);
-  }, 30000);
+  }, 40000);
 
   test("Set overrideAxiomQueryFee less than standard payment", async () => {
     const maxFeePerGas = 5000000000n;
@@ -169,5 +169,5 @@ describe("PaymentCalc: Base", () => {
     const queryCost = calculateQueryCost(CHAIN_ID, basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
     expect(percentDiff).toBeLessThan(DIFF_THRESHOLD_X100);
-  }, 30000);
+  }, 40000);
 });

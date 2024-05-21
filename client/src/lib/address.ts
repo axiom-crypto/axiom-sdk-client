@@ -25,7 +25,7 @@ const axiomV2QueryBlockhashOracleAddresses = {
   },
   [sepolia.id.toString()]: {
     [optimismSepolia.id.toString()]: undefined,
-    [baseSepolia.id.toString()]: "0x1234",
+    [baseSepolia.id.toString()]: "0xdEaDBEefDeaDbEefDeAdbeefDeAdbEEfAAaaAAaA",
   },
 };
 

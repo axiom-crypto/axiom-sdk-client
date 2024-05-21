@@ -5,7 +5,7 @@ import {
 } from "@axiom-crypto/circuit";
 import { createPublicClient, encodeFunctionData, http } from "viem";
 import { getMaxFeePerGas } from "./axiom/utils";
-import { AbiType, AxiomV2QueryOptions, AxiomV2SendQueryArgs, BridgeType } from "./types";
+import { AbiType, AxiomV2QueryOptions, AxiomV2SendQueryArgs, BridgeType, ChainConfig } from "./types";
 import { encodeFullQueryV2 } from "@axiom-crypto/circuit/pkg/tools";
 import { calculateFeeDataExtended, calculatePayment } from "./lib/paymentCalc";
 import { viemChain } from "./lib/viem";
@@ -22,12 +22,7 @@ export const buildSendQuery = async (input: {
   caller: string;
   mock: boolean;
   options: AxiomV2QueryOptions;
-  crosschain?: {
-    bridgeType: BridgeType;
-    chainId: string;
-    rpcUrl: string;
-    bridgeId?: number;
-  }
+  target?: ChainConfig;
 }): Promise<AxiomV2SendQueryArgs> => {
   const validate = input.options?.overrides?.validateBuild ?? true;
   if (input.caller === "") {
@@ -35,21 +30,21 @@ export const buildSendQuery = async (input: {
   }
   const sourceChainId = input.chainId;
   const sourceRpcUrl = input.rpcUrl;
-  const targetChainId = input.crosschain?.chainId ?? input.chainId;
-  const targetRpcUrl = input.crosschain?.rpcUrl ?? input.rpcUrl;
+  const targetChainId = input.target?.chainId ?? input.chainId;
+  const targetRpcUrl = input.target?.rpcUrl ?? input.rpcUrl;
   const abi = getAxiomV2Abi(AbiType.Query);
   let options = { ...input.options };
   if (options.maxFeePerGas === undefined) {
     options.maxFeePerGas = await getMaxFeePerGas(targetChainId, targetRpcUrl, input.axiomV2QueryAddress);
   }
 
-  const publicClient = createPublicClient({
+  const targetChainPublicClient = createPublicClient({
     chain: viemChain(targetChainId, targetRpcUrl),
     transport: http(targetRpcUrl),
   });
 
-  const feeDataExtended = await calculateFeeDataExtended(targetChainId, publicClient, input.axiomV2QueryAddress, options);
-  const payment = await calculatePayment(targetChainId, publicClient, feeDataExtended);
+  const feeDataExtended = await calculateFeeDataExtended(targetChainId, targetChainPublicClient, input.axiomV2QueryAddress, options);
+  const payment = await calculatePayment(targetChainId, targetChainPublicClient, feeDataExtended);
 
   const config: QueryBuilderClientConfig = {
     sourceChainId,

@@ -41,12 +41,11 @@ export const queryParams = async (
   // Get AxiomV2Query address
   let axiomV2QueryAddress;
   if (options.broadcaster) {
-    if (!options.targetChainId) {
+    if (!options.targetChainId ) {
       throw new Error("`targetChainId` is required for broadcaster bridge type");
     }
     if (!options.bridgeId) {
-      console.log("No `bridgeId` provided, defaulting to 0");
-      options.bridgeId = 0;
+      throw new Error("`bridgeId` is required for broadcaster bridge type");
     }
     axiomV2QueryAddress = getAxiomV2QueryBroadcasterAddress(options.sourceChainId, options.targetChainId, options.bridgeId);
   } else if (options.blockhashOracle) {

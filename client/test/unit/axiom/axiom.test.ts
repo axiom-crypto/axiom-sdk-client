@@ -1,9 +1,26 @@
-import { Axiom, AxiomV2QueryOptions } from "../../../src";
+import { PinataIpfsClient } from "@axiom-crypto/tools";
+import { Axiom, AxiomV2CircuitCapacity, AxiomV2QueryOptions } from "../../../src";
 import { circuit } from "../../circuits/quickstart/average.circuit";
 import compiledCircuit from "../../circuits/quickstart/average.compiled.json";
 
 const chainId = process.env.CHAIN_ID || "11155111"
 const rpcUrl = process.env[`PROVIDER_URI_${chainId}`] as string;
+
+const MOCK_TX_HASH = "0x1234567890123456789012345678901234567890123456789012345678901234";
+const MOCK_IPFS_HASH = "0xaa000000000000000000000000000000000000000000000000000000000000aa";
+
+jest.mock("@axiom-crypto/tools", () => {
+  const originalModule = jest.requireActual("@axiom-crypto/tools");
+  return {
+    ...originalModule,
+    PinataIpfsClient: jest.fn().mockImplementation(() => {
+      return {
+        ...originalModule.PinataIpfsClient,
+        pin: jest.fn().mockResolvedValue({ status: 200, value: MOCK_IPFS_HASH }),
+      };
+    }),
+  };
+});
 
 describe('Axiom class tests', () => {
   const config = {
@@ -46,6 +63,18 @@ describe('Axiom class tests', () => {
     expect(args?.args[2].resultLen).toEqual(3);
     expect(args?.args[3].target).toEqual(config.callback.target.toLowerCase());
     expect(args?.args[6]).toEqual("0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266");
+  }, 40000);
+
+  test("sendQueryWithIpfs with ipfsClient", async () => {
+    const axiom = new Axiom({
+      ...config,
+      options: {
+        ipfsClient: new PinataIpfsClient("MOCK_JWT"),
+      },
+    });
+    await axiom.init();
+    const args = await axiom.prove(inputs);
+    expect(args?.args[1]).toEqual(MOCK_IPFS_HASH);
   }, 40000);
 
   test('sendQueryWithIpfs should throw error without ipfsClient', async () => {
@@ -127,6 +156,19 @@ describe('Axiom class tests', () => {
     await axiom.prove(inputs);
     const args = axiom.getSendQueryArgs();
     expect(args?.args[6]).toEqual(refundee);
+  }, 40000);
+
+  test('should be able to set a non-default capacity (but SNARK proof will fail to verify)', async () => {
+    const capacity: AxiomV2CircuitCapacity = {
+      maxOutputs: 64,
+      maxSubqueries: 64,
+    }
+    const axiom = new Axiom({
+      ...config,
+      capacity,
+    });
+    await axiom.init();
+    await expect(axiom.prove(inputs)).rejects.toThrow("unreachable");
   }, 40000);
 });
 

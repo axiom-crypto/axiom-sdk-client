@@ -1,5 +1,7 @@
+import { PinataIpfsClient } from "@axiom-crypto/tools";
 import {
   AxiomCrosschain,
+  AxiomV2CircuitCapacity,
   AxiomV2QueryOptions,
   BridgeType,
   ChainConfig,
@@ -8,6 +10,21 @@ import {
 } from "../../../src";
 import { circuit } from "../../circuits/quickstart/average.circuit";
 import compiledCircuit from "../../circuits/quickstart/average.compiled.json";
+
+const MOCK_IPFS_HASH = "0xaa000000000000000000000000000000000000000000000000000000000000aa";
+
+jest.mock("@axiom-crypto/tools", () => {
+  const originalModule = jest.requireActual("@axiom-crypto/tools");
+  return {
+    ...originalModule,
+    PinataIpfsClient: jest.fn().mockImplementation(() => {
+      return {
+        ...originalModule.PinataIpfsClient,
+        pin: jest.fn().mockResolvedValue({ status: 200, value: MOCK_IPFS_HASH }),
+      };
+    }),
+  };
+});
 
 describe("AxiomCrosschain tests", () => {
   const source: ChainConfig = {
@@ -66,6 +83,18 @@ describe("AxiomCrosschain tests", () => {
     expect(args?.args[4].callbackGasLimit).toEqual(100000);
     expect(BigInt(args?.args[4].overrideAxiomQueryFee)).toBeGreaterThan(BigInt("3000000000000000")); // will not be "0" on an L2
     expect(args?.args[6]).toEqual("0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266");
+  }, 40000);
+
+  test("sendQueryWithIpfs with ipfsClient", async () => {
+    const axiomCrosschain = new AxiomCrosschain({
+      ...config,
+      options: {
+        ipfsClient: new PinataIpfsClient("MOCK_JWT"),
+      },
+    });
+    await axiomCrosschain.init();
+    const args = await axiomCrosschain.prove(inputs);
+    expect(args?.args[1]).toEqual(MOCK_IPFS_HASH);
   }, 40000);
 
   test("sendQueryWithIpfs should throw error without ipfsClient", async () => {
@@ -154,5 +183,18 @@ describe("AxiomCrosschain tests", () => {
     await axiomCrosschain.init();
     const args = await axiomCrosschain.prove(inputs);
     expect(args?.args[6]).toEqual(refundee);
+  }, 40000);
+
+  test('should be able to set a non-default capacity (but SNARK proof will fail to verify)', async () => {
+    const capacity: AxiomV2CircuitCapacity = {
+      maxOutputs: 64,
+      maxSubqueries: 64,
+    }
+    const axiomCrosschain = new AxiomCrosschain({
+      ...config,
+      capacity,
+    });
+    await axiomCrosschain.init();
+    await expect(axiomCrosschain.prove(inputs)).rejects.toThrow("unreachable");
   }, 40000);
 });

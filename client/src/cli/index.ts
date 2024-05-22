@@ -53,7 +53,7 @@ circuit
   .command("query-params")
   .description("generate parameters to send a Query into Axiom")
   .argument("<callback address>", "callback address")
-  .requiredOption("-a, --refundAddress <refundAddress>", "refundAddress")
+  .requiredOption("-r, --refundAddress <refundAddress>", "refundAddress")
   .requiredOption("-s, --sourceChainId <sourceChainId>", "source chain id")
   .option("-sr, --rpcUrl <rpcUrl>", "source chain JSON-RPC provider URL (https)")
   .option("-e, --callbackExtraData <callbackExtraData>", "callback extra data")

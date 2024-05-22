@@ -14,18 +14,20 @@ export const queryParams = async (
   options: {
     refundAddress: string;
     sourceChainId: string;
-    targetChainId?: string;
-    bridgeId?: number;
     callbackExtraData?: string;
     caller?: string;
     argsMap?: boolean;
     outputs?: string;
     proven?: string;
     rpcUrl?: string;
-    targetRpcUrl?: string;
     maxFeePerGas?: string;
     callbackGasLimit?: number;
     mock?: boolean;
+
+    // Crosschain options
+    targetRpcUrl?: string;
+    targetChainId?: string;
+    bridgeId?: number;
     isBroadcaster?: boolean;
     isBlockhashOracle?: boolean;
   },
@@ -36,38 +38,42 @@ export const queryParams = async (
       provenFile = options.proven;
   }
 
-  if (options.isBroadcaster && options.isBlockhashOracle) {
-    throw new Error("Cannot use --isBroadcaster and --isBlockhashOracle at the same time");
-  }
-
-  // Get AxiomV2Query address
-  let axiomV2QueryAddress;
-  if (options.isBroadcaster) {
-    if (!options.targetChainId ) {
-      throw new Error("`targetChainId` is required for broadcaster bridge type");
-    }
-    if (!options.bridgeId) {
-      throw new Error("`bridgeId` is required for broadcaster bridge type");
-    }
-    axiomV2QueryAddress = getAxiomV2QueryBroadcasterAddress({
-      targetChainId: options.targetChainId,
-      sourceChainId: options.sourceChainId,
-      bridgeId: options.bridgeId,
-    });
-  } else if (options.isBlockhashOracle) {
-    if (!options.targetChainId) {
-      throw new Error("`targetChainId` is required for blockhash oracle bridge type");
-    }
-    axiomV2QueryAddress = getAxiomV2QueryBlockhashOracleAddress({
-      targetChainId: options.targetChainId,
-      sourceChainId: options.sourceChainId,
-    });
-  } else {
-    axiomV2QueryAddress = getAxiomV2QueryAddress(options.sourceChainId);
+  let isCrosschain = false;
+  if (options.targetRpcUrl || options.targetChainId || options.bridgeId || options.isBroadcaster || options.isBlockhashOracle) {
+    isCrosschain = true;
   }
 
   let target: ChainConfig | undefined;
-  if (options.targetChainId || options.targetRpcUrl) {
+  let axiomV2QueryAddress = getAxiomV2QueryAddress(options.sourceChainId);
+  if (isCrosschain) {
+    // Get AxiomV2Query address
+    if (options.isBroadcaster) {
+      if (options.isBlockhashOracle) {
+        throw new Error("Cannot use --isBroadcaster and --isBlockhashOracle at the same time");
+      }
+      if (!options.targetChainId) {
+        throw new Error("`targetChainId` is required for broadcaster bridge type");
+      }
+      if (!options.bridgeId) {
+        throw new Error("`bridgeId` is required for broadcaster bridge type");
+      }
+      axiomV2QueryAddress = getAxiomV2QueryBroadcasterAddress({
+        targetChainId: options.targetChainId,
+        sourceChainId: options.sourceChainId,
+        bridgeId: options.bridgeId,
+      });
+    } else if (options.isBlockhashOracle) {
+      if (!options.targetChainId) {
+        throw new Error("`targetChainId` is required for blockhash oracle bridge type");
+      }
+      axiomV2QueryAddress = getAxiomV2QueryBlockhashOracleAddress({
+        targetChainId: options.targetChainId,
+        sourceChainId: options.sourceChainId,
+      });
+    } else {
+      throw new Error("Need to set either `--isBroadcaster` or `--isBlockhashOracle` for crosschain query");
+    }
+  
     if (!options.targetChainId || !options.targetRpcUrl) {
       throw new Error("`targetChainId` and `targetRpcUrl` must be provided together");
     }
@@ -99,9 +105,8 @@ export const queryParams = async (
       },
       target,
     });
-    build.value = build.value.toString() as any;
     const res = {
-      value: build.value,
+      value: build.value.toString(),
       mock: build.mock,
       queryId: build.queryId,
       args: options.argsMap ? argsArrToObj(build.args) : build.args,

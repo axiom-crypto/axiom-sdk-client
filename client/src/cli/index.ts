@@ -28,7 +28,7 @@ circuit
   .argument("<circuitPath>", "path to the typescript circuit file")
   .option("-st, --stats", "print stats")
   .option("-m, --mock", "generate a mock vkey and query schema")
-  .option("-r, --rpcUrl [rpcUrl]", "JSON-RPC provider URL (https)")
+  .option("-r, --rpcUrl [rpcUrl]", "source chain JSON-RPC provider URL (https)")
   .option("-o, --outputs [outputs]", "outputs json file")
   .option("-f, --function [function]", "function name in typescript circuit")
   .option("-c, --cache [cache]", "cache output file")
@@ -67,8 +67,8 @@ circuit
   .option("-pv, --proven [proven]", "`axiom circuit prove` outputs path")
   .option("-o, --outputs [outputs]", "query-params outputs path")
   .option("-a, --args-map", "sendQuery argments output as mapping for use with Forge")
-  .option("-br, --broadcaster", "Use crosschain broadcaster")
-  .option("-bo, --blockhashOracle", "Use crosschain blockhash oracle")
+  .option("-br, --isBroadcaster", "Use crosschain broadcaster")
+  .option("-bo, --isBlockhashOracle", "Use crosschain blockhash oracle")
   .action(queryParams);
 
 const scaffold = program.command("scaffold")

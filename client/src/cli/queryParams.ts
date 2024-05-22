@@ -7,7 +7,7 @@ import {
   getAxiomV2QueryBlockhashOracleAddress,
   getAxiomV2QueryBroadcasterAddress,
 } from '../lib';
-import { ChainConfig } from '../types';
+import { ChainConfig } from 'src/types';
 
 export const queryParams = async (
   callbackTarget: string,
@@ -26,8 +26,8 @@ export const queryParams = async (
     maxFeePerGas?: string;
     callbackGasLimit?: number;
     mock?: boolean;
-    broadcaster?: boolean;
-    blockhashOracle?: boolean;
+    isBroadcaster?: boolean;
+    isBlockhashOracle?: boolean;
   },
 ) => {
   let defaultPath = path.resolve(path.join("app", "axiom"));
@@ -36,13 +36,13 @@ export const queryParams = async (
       provenFile = options.proven;
   }
 
-  if (options.broadcaster && options.blockhashOracle) {
-    throw new Error("Cannot use --broadcaster and --blockhashOracle at the same time");
+  if (options.isBroadcaster && options.isBlockhashOracle) {
+    throw new Error("Cannot use --isBroadcaster and --isBlockhashOracle at the same time");
   }
 
   // Get AxiomV2Query address
   let axiomV2QueryAddress;
-  if (options.broadcaster) {
+  if (options.isBroadcaster) {
     if (!options.targetChainId ) {
       throw new Error("`targetChainId` is required for broadcaster bridge type");
     }
@@ -50,7 +50,7 @@ export const queryParams = async (
       throw new Error("`bridgeId` is required for broadcaster bridge type");
     }
     axiomV2QueryAddress = getAxiomV2QueryBroadcasterAddress(options.sourceChainId, options.targetChainId, options.bridgeId);
-  } else if (options.blockhashOracle) {
+  } else if (options.isBlockhashOracle) {
     if (!options.targetChainId) {
       throw new Error("`targetChainId` is required for blockhash oracle bridge type");
     }

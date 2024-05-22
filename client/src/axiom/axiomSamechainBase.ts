@@ -18,7 +18,7 @@ import { getChainDefaults } from "../lib/chain";
 import { AxiomBaseCircuitGeneric, AxiomCore } from "./axiomCore";
 import { buildSendQuery } from "../sendQuery";
 
-export class AxiomSinglechainBase<T, C extends AxiomBaseCircuitGeneric<T>> extends AxiomCore<T, C> {
+export class AxiomSamechainBase<T, C extends AxiomBaseCircuitGeneric<T>> extends AxiomCore<T, C> {
   protected config: AxiomV2ClientConfig<T>;
   protected caller: string;
   

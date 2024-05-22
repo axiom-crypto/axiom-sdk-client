@@ -56,13 +56,17 @@ export class AxiomCrosschainBase<T, C extends AxiomBaseCircuitGeneric<T>> extend
       throw new Error("`privateKey` or `caller` must be provided");
     }
 
-    if (config.bridgeType === BridgeType.Broadcaster && config.bridgeId === undefined) {
-      throw new Error("`bridgeId` is required for Broadcaster bridge type");
+    let fallbackQueryAddress;
+    if (config.bridgeType === BridgeType.Broadcaster) {
+      if (config.bridgeId === undefined) {
+        throw new Error("`bridgeId` is required for Broadcaster bridge type");
+      }
+      fallbackQueryAddress = getAxiomV2QueryBroadcasterAddress(config.source.chainId, config.target.chainId, config.bridgeId!);
+    } else if (config.bridgeType === BridgeType.BlockhashOracle) {
+      fallbackQueryAddress = getAxiomV2QueryBlockhashOracleAddress(config.source.chainId, config.target.chainId);
+    } else {
+      throw new Error("Invalid bridge type");
     }
-
-    const fallbackQueryAddress = config.bridgeType === BridgeType.BlockhashOracle ? 
-      getAxiomV2QueryBlockhashOracleAddress(config.source.chainId, config.target.chainId) :
-      getAxiomV2QueryBroadcasterAddress(config.source.chainId, config.target.chainId, config.bridgeId!);
     const axiomV2QueryAddress = config.options?.overrides?.queryAddress ?? fallbackQueryAddress;
 
     super(config, axiomV2QueryAddress, axiomBaseCircuit as C, numThreads, publicClient, walletClient);

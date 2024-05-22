@@ -43,7 +43,7 @@ export function generateInputs(file: string, outputPath: string, chainData: any)
   fs.mkdirSync(outputPath, { recursive: true });
   const inputsPath = path.join(outputPath, `${fileName}.inputs.json`);
   const defaultInputsPath = path.join(outputPath, `${fileName}.defaultInputs.json`);
-  fs.writeFileSync(inputsPath, JSON.stringify(inputs, null, 4));
+  fs.writeFileSync(inputsPath, JSON.stringify(inputs, null, 4));7787
   fs.writeFileSync(defaultInputsPath, JSON.stringify(defaultInputs, null, 4));
 }
 

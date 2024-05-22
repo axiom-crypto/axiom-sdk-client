@@ -5,7 +5,7 @@ import {
   AxiomV2QueryOptions,
   BridgeType,
   ChainConfig,
-  ClientConfig,
+  TargetChainConfig,
   getAxiomV2QueryBlockhashOracleAddress,
 } from "../../../src";
 import { circuit } from "../../circuits/quickstart/average.circuit";
@@ -31,7 +31,7 @@ describe("AxiomCrosschain tests", () => {
     chainId: "11155111",
     rpcUrl: process.env.PROVIDER_URI_11155111 as string,
   };
-  const target: ClientConfig = {
+  const target: TargetChainConfig = {
     chainId: "84532",
     rpcUrl: process.env.PROVIDER_URI_84532 as string,
     privateKey: process.env.PRIVATE_KEY_ANVIL as string,

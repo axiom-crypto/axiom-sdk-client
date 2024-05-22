@@ -2,7 +2,7 @@ import {
   AxiomV2CompiledCircuit,
   BridgeType,
   ChainConfig,
-  ClientConfig,
+  TargetChainConfig,
 } from "@axiom-crypto/client/types/";
 import {
   AxiomCoreCircuitProvider,
@@ -33,7 +33,7 @@ const AxiomCrosschainIntermediateCircuitProvider = <T,>({
 }: {
   compiledCircuit: AxiomV2CompiledCircuit,
   source: ChainConfig,
-  target: ClientConfig,
+  target: TargetChainConfig,
   bridgeType: BridgeType,
   bridgeId?: number,
   children: React.ReactNode,
@@ -117,7 +117,7 @@ const AxiomCrosschainIntermediateCircuitProvider = <T,>({
 }: {
   compiledCircuit: AxiomV2CompiledCircuit,
   source: ChainConfig,
-  target: ClientConfig,
+  target: TargetChainConfig,
   bridgeType: BridgeType,
   bridgeId?: number,
   children: React.ReactNode,

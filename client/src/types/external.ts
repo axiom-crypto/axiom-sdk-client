@@ -16,7 +16,7 @@ const solidityInputTypes = [...solidityTypes, ...solidityTypes.map((type: string
 export type CircuitInputType = typeof solidityInputTypes[number];
 
 // Types combined in this way to support React component
-export interface AxiomV2ClientConfig<T> extends CoreConfigCircuit<T>, ClientConfig {}
+export interface AxiomV2ClientConfig<T> extends CoreConfigCircuit<T>, TargetChainConfig {}
 
 // Types combined in this way to support React component
 export interface AxiomV2ClientCrosschainConfig<T> extends CoreConfigCircuit<T>, CrosschainConfig {}
@@ -31,9 +31,7 @@ export interface ChainConfig {
   rpcUrl: string;
 }
 
-export interface ClientConfig {
-  chainId: string;
-  rpcUrl: string;
+export interface TargetChainConfig extends ChainConfig {
   privateKey?: string;
   caller?: string;
 }

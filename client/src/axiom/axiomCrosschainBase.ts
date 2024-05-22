@@ -5,7 +5,7 @@ import {
   AxiomV2ClientCrosschainConfig,
   BridgeType,
   ChainConfig,
-  ClientConfig,
+  TargetChainConfig,
 } from "../types";
 import { validateChainId } from "./utils";
 import { 
@@ -23,7 +23,7 @@ import { buildSendQuery } from "../sendQuery";
 
 export class AxiomCrosschainBase<T, C extends AxiomBaseCircuitGeneric<T>> extends AxiomCore<T, C> {
   protected source: ChainConfig;
-  protected target: ClientConfig;
+  protected target: TargetChainConfig;
   protected bridgeType: BridgeType;
   protected bridgeId?: number;
   protected caller: string;

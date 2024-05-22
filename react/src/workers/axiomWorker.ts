@@ -1,9 +1,9 @@
 import { expose } from "comlink";
 import { Axiom } from "@axiom-crypto/client/axiom/web/";
 import { CoreConfig } from "@axiom-crypto/client/types/internal";
-import { ClientConfig } from "@axiom-crypto/client";
+import { TargetChainConfig } from "@axiom-crypto/client/types";
 
-interface ReactClientConfig extends CoreConfig, ClientConfig {}
+interface ReactClientConfig extends CoreConfig, TargetChainConfig {}
 
 export class AxiomWorker<T> extends Axiom<T> {
   constructor(config: ReactClientConfig, numThreads: number) {

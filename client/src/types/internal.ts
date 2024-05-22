@@ -6,7 +6,7 @@ import {
   AxiomV2CompiledCircuit,
   AxiomV2QueryOptions,
   ChainConfig,
-  ClientConfig,
+  TargetChainConfig,
   BridgeType,
 } from "./external";
 
@@ -23,7 +23,7 @@ export interface CoreConfigCircuit<T> extends CoreConfig {
 
 export interface CrosschainConfig {
   source: ChainConfig;
-  target: ClientConfig;
+  target: TargetChainConfig;
   bridgeType: BridgeType;
   bridgeId?: number;
 }

@@ -69,7 +69,10 @@ describe("AxiomCrosschain tests", () => {
   });
 
   test("prove should build sendQuery args correctly", async () => {
-    const queryAddr = getAxiomV2QueryBlockhashOracleAddress(source.chainId, target.chainId);
+    const queryAddr = getAxiomV2QueryBlockhashOracleAddress({
+      targetChainId: target.chainId,
+      sourceChainId: source.chainId,
+    });
     const axiomCrosschain = new AxiomCrosschain(config);
     await axiomCrosschain.init();
     const args = await axiomCrosschain.prove(inputs);

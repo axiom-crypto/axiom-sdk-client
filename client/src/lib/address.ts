@@ -18,31 +18,27 @@ const axiomV2QueryAddresses = {
   [baseSepolia.id.toString()]: "0xfe059442B0379D5f22Bec384A588766f98A36812",
 };
 
+// TargetChainId -> SourceChainId
 const axiomV2QueryBlockhashOracleAddresses = {
-  [mainnet.id.toString()]: {
-    [optimism.id.toString()]: undefined,
-    [base.id.toString()]: undefined,
+  [base.id.toString()]: {
+    [mainnet.id.toString()]: undefined,
   },
-  [sepolia.id.toString()]: {
-    [optimismSepolia.id.toString()]: undefined,
-    [baseSepolia.id.toString()]: "0xdEaDBEefDeaDbEefDeAdbeefDeAdbEEfAAaaAAaA",
+  [baseSepolia.id.toString()]: {
+    [sepolia.id.toString()]: "0xdEaDBEefDeaDbEefDeAdbeefDeAdbEEfAAaaAAaA",
   },
 };
 
+// TargetChainId -> SourceChainId -> BridgeId
 const axiomV2QueryBroadcasterAddresses = {
-  [mainnet.id.toString()]: {
-    [base.id.toString()]: [],
-    [scroll.id.toString()]: [],
+  [arbitrum.id.toString()]: {
+    [mainnet.id.toString()]: [],
   },
-  [sepolia.id.toString()]: {
-    [arbitrumSepolia.id.toString()]: [],
-    [scrollSepolia.id.toString()]: [],
+  [arbitrumSepolia.id.toString()]: {
+    [sepolia.id.toString()]: [],
   },
 };
 
-export function getAxiomV2QueryAddress(
-  chainId: string,
-) {
+export function getAxiomV2QueryAddress(chainId: string) {
   const address = axiomV2QueryAddresses[chainId];
   if (!address) {
     throw new Error(`AxiomV2Query address not found for chainId: ${chainId}`);
@@ -50,25 +46,25 @@ export function getAxiomV2QueryAddress(
   return address;
 }
 
-export function getAxiomV2QueryBlockhashOracleAddress(
-  sourceChainId: string,
+export function getAxiomV2QueryBlockhashOracleAddress(input: {
   targetChainId: string,
-) {
-  const address = axiomV2QueryBlockhashOracleAddresses?.[sourceChainId]?.[targetChainId];
+  sourceChainId: string,
+}) {
+  const address = axiomV2QueryBlockhashOracleAddresses?.[input.targetChainId]?.[input.sourceChainId];
   if (!address) {
-    throw new Error(`AxiomV2BlockhashOracle address not found for sourceChainId: ${sourceChainId}, targetChainId: ${targetChainId}`);
+    throw new Error(`AxiomV2BlockhashOracle address not found for targetChainId: ${input.targetChainId}, sourceChainId: ${input.sourceChainId}`);
   }
   return address;
 }
 
-export function getAxiomV2QueryBroadcasterAddress(
-  sourceChainId: string,
-  targetChainId: string,
-  bridgeId: number,
-) {
-  const address = axiomV2QueryBroadcasterAddresses?.[sourceChainId]?.[targetChainId]?.[bridgeId];
+export function getAxiomV2QueryBroadcasterAddress(input: {
+  targetChainId: string;
+  sourceChainId: string;
+  bridgeId: number;
+}) {
+  const address = axiomV2QueryBroadcasterAddresses?.[input.targetChainId]?.[input.sourceChainId]?.[input.bridgeId];
   if (!address) {
-    throw new Error(`AxiomV2QueryBroadcaster address not found for sourceChainId: ${sourceChainId}, targetChainId: ${targetChainId}, bridgeId: ${bridgeId}`);
+    throw new Error(`AxiomV2QueryBroadcaster address not found for targetChainId: ${input.targetChainId}, sourceChainId: ${input.sourceChainId}, bridgeId: ${input.bridgeId}`);
   }
   return address;
 }

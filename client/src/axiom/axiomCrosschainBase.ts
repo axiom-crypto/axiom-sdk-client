@@ -61,9 +61,16 @@ export class AxiomCrosschainBase<T, C extends AxiomBaseCircuitGeneric<T>> extend
       if (config.bridgeId === undefined) {
         throw new Error("`bridgeId` is required for Broadcaster bridge type");
       }
-      fallbackQueryAddress = getAxiomV2QueryBroadcasterAddress(config.source.chainId, config.target.chainId, config.bridgeId!);
+      fallbackQueryAddress = getAxiomV2QueryBroadcasterAddress({
+        targetChainId: config.target.chainId,
+        sourceChainId: config.source.chainId,
+        bridgeId: config.bridgeId!,
+      });
     } else if (config.bridgeType === BridgeType.BlockhashOracle) {
-      fallbackQueryAddress = getAxiomV2QueryBlockhashOracleAddress(config.source.chainId, config.target.chainId);
+      fallbackQueryAddress = getAxiomV2QueryBlockhashOracleAddress({
+        targetChainId: config.target.chainId,
+        sourceChainId: config.source.chainId,
+      });
     } else {
       throw new Error("Invalid bridge type");
     }

@@ -49,12 +49,19 @@ export const queryParams = async (
     if (!options.bridgeId) {
       throw new Error("`bridgeId` is required for broadcaster bridge type");
     }
-    axiomV2QueryAddress = getAxiomV2QueryBroadcasterAddress(options.sourceChainId, options.targetChainId, options.bridgeId);
+    axiomV2QueryAddress = getAxiomV2QueryBroadcasterAddress({
+      targetChainId: options.targetChainId,
+      sourceChainId: options.sourceChainId,
+      bridgeId: options.bridgeId,
+    });
   } else if (options.isBlockhashOracle) {
     if (!options.targetChainId) {
       throw new Error("`targetChainId` is required for blockhash oracle bridge type");
     }
-    axiomV2QueryAddress = getAxiomV2QueryBlockhashOracleAddress(options.sourceChainId, options.targetChainId);
+    axiomV2QueryAddress = getAxiomV2QueryBlockhashOracleAddress({
+      targetChainId: options.targetChainId,
+      sourceChainId: options.sourceChainId,
+    });
   } else {
     axiomV2QueryAddress = getAxiomV2QueryAddress(options.sourceChainId);
   }

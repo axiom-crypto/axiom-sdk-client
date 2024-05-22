@@ -6,7 +6,7 @@ import {
 import {
   getByteLength,
 } from "@axiom-crypto/circuit/pkg/tools";
-import { AbiType, AxiomV2SendQueryArgsParams, CircuitInputType } from "../types";
+import { AbiType, AxiomV2QueryOptions, AxiomV2SendQueryArgsParams, CircuitInputType } from "../types";
 import { createPublicClient, http } from 'viem';
 import { getAxiomV2Abi, viemChain } from "../lib";
 import { getChainDefaults } from "../lib/chain";
@@ -73,6 +73,7 @@ export async function getMaxFeePerGas(
   chainId: string,
   providerUri: string,
   axiomQueryAddress: string,
+  options?: AxiomV2QueryOptions,
 ): Promise<string> {
   const publicClient = createPublicClient({
     chain: viemChain(chainId, providerUri),
@@ -92,7 +93,7 @@ export async function getMaxFeePerGas(
     const sdkMinMaxFeePerGas = getChainDefaults(chainId).minMaxFeePerGasWei;
     contractMinMaxFeePerGas = contractMinMaxFeePerGas === 0n ? sdkMinMaxFeePerGas : contractMinMaxFeePerGas;
     
-    let maxFeePerGas = contractMinMaxFeePerGas;
+    let maxFeePerGas = BigInt(options?.maxFeePerGas ?? contractMinMaxFeePerGas);
     if (providerMaxFeePerGas > maxFeePerGas) {
       maxFeePerGas = providerMaxFeePerGas;
     }

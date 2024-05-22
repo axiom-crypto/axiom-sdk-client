@@ -27,6 +27,9 @@ export class AxiomSamechainBase<T, C extends AxiomBaseCircuitGeneric<T>> extends
     axiomBaseCircuit: AxiomBaseCircuitGeneric<T>,
     numThreads: number,
   ) {
+    if (!config.chainId) throw new Error("No chain ID provided");
+    if (!config.rpcUrl) throw new Error("No RPC URL provided");
+
     const publicClient = createPublicClient({
       chain: viemChain(config.chainId, config.rpcUrl),
       transport: http(config.rpcUrl),

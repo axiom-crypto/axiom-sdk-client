@@ -44,7 +44,7 @@ export async function generateCircuitArtifacts(
     rmSync(compiledPath);
   }
 
-  execSync(`npx axiom circuit compile ${circuitPathResolved} -o ${compiledPath} ${externalDefaults ? "-d " + defaultInputsPath : ""} -r ${rpcUrl}`, { stdio: 'inherit' });
+  execSync(`npx axiom circuit compile ${circuitPathResolved} -o ${compiledPath} ${externalDefaults ? "-d " + defaultInputsPath : ""} -sr ${rpcUrl}`, { stdio: 'inherit' });
 
   if (externalDefaults) {
     const defaultInputs = (await import(defaultInputsPath)).default;

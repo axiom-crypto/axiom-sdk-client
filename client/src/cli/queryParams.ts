@@ -49,7 +49,7 @@ export const queryParams = async (
     // Get AxiomV2Query address
     if (options.isBroadcaster) {
       if (options.isBlockhashOracle) {
-        throw new Error("Cannot use --isBroadcaster and --isBlockhashOracle at the same time");
+        throw new Error("Cannot use `--isBroadcaster` and `--isBlockhashOracle` at the same time");
       }
       if (!options.targetChainId) {
         throw new Error("`targetChainId` is required for broadcaster bridge type");

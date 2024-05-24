@@ -35,7 +35,9 @@ export const buildSendQuery = async (input: {
   const abi = getAxiomV2Abi(AbiType.Query);
 
   let options = { ...input.options };
-  options.maxFeePerGas = await getMaxFeePerGas(targetChainId, targetRpcUrl, input.axiomV2QueryAddress, options);
+  if (options.maxFeePerGas === undefined) {
+    options.maxFeePerGas = await getMaxFeePerGas(targetChainId, targetRpcUrl, input.axiomV2QueryAddress, options);
+  }
 
   const targetChainPublicClient = createPublicClient({
     chain: viemChain(targetChainId, targetRpcUrl),

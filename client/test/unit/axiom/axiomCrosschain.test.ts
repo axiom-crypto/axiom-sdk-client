@@ -63,8 +63,14 @@ describe("AxiomCrosschain tests", () => {
     expect(axiomCrosschain.getOptions()).toMatchObject(newOptions);
   });
 
-  test("sendQuery should fail without built args", async () => {
+  test("sendQuery should fail without built args (without init)", async () => {
     const axiomCrosschain = new AxiomCrosschain(config);
+    await expect(axiomCrosschain.sendQuery()).rejects.toThrow("SendQuery args have not been built yet. Please run `prove` first.");
+  });
+
+  test("sendQuery should fail without built args (with init)", async () => {
+    const axiomCrosschain = new AxiomCrosschain(config);
+    await axiomCrosschain.init();
     await expect(axiomCrosschain.sendQuery()).rejects.toThrow("SendQuery args have not been built yet. Please run `prove` first.");
   });
 

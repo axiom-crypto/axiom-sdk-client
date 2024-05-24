@@ -50,10 +50,16 @@ describe('Axiom class tests', () => {
     expect(axiom.getOptions()).toMatchObject(newOptions);
   });
 
-  test('sendQuery should fail without built args', async () => {
+  test('sendQuery should fail without built args (without init)', async () => {
     const axiom = new Axiom(config);
     await expect(axiom.sendQuery()).rejects.toThrow('SendQuery args have not been built yet. Please run `prove` first.');
   });
+
+  test('sendQuery should fail without built args (with init)', async () => {
+    const axiom = new Axiom(config);
+    await axiom.init();
+    await expect(axiom.sendQuery()).rejects.toThrow("SendQuery args have not been built yet. Please run `prove` first.");
+  }, 40000);
 
   test('prove should build sendQuery args correctly', async () => {
     const axiom = new Axiom(config);

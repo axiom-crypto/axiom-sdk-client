@@ -5,47 +5,49 @@ import {
 } from "@axiom-crypto/circuit";
 import { createPublicClient, encodeFunctionData, http } from "viem";
 import { getMaxFeePerGas } from "./axiom/utils";
-import { AbiType, AxiomV2QueryOptions, AxiomV2SendQueryArgs } from "./types";
+import { AbiType, AxiomV2QueryOptions, AxiomV2SendQueryArgs, BridgeType, ChainConfig } from "./types";
 import { encodeFullQueryV2 } from "@axiom-crypto/circuit/pkg/tools";
 import { calculateFeeDataExtended, calculatePayment } from "./lib/paymentCalc";
 import { viemChain } from "./lib/viem";
-import { getAxiomV2Abi, getAxiomV2QueryAddress } from "./lib";
+import { getAxiomV2Abi } from "./lib";
 import { QueryBuilderClient, QueryBuilderClientConfig } from "./queryBuilderClient";
 
 export const buildSendQuery = async (input: {
   chainId: string;
-  providerUri: string;
+  rpcUrl: string;
+  axiomV2QueryAddress: string;
   dataQuery: DataSubquery[];
   computeQuery: AxiomV2ComputeQuery;
   callback: AxiomV2Callback;
   caller: string;
   mock: boolean;
   options: AxiomV2QueryOptions;
+  target?: ChainConfig;
 }): Promise<AxiomV2SendQueryArgs> => {
   const validate = input.options?.overrides?.validateBuild ?? true;
   if (input.caller === "") {
     throw new Error("`caller` is required");
   }
-  let options = { ...input.options };
-  if (options.maxFeePerGas == undefined) {
-    options.maxFeePerGas = await getMaxFeePerGas(input.chainId, input.providerUri, input.options?.overrides);
-  }
-
-  const chainId = input.chainId;
-  const axiomQueryAddress = options?.overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
+  const sourceChainId = input.chainId;
+  const sourceRpcUrl = input.rpcUrl;
+  const targetChainId = input.target?.chainId ?? input.chainId;
+  const targetRpcUrl = input.target?.rpcUrl ?? input.rpcUrl;
   const abi = getAxiomV2Abi(AbiType.Query);
 
-  const publicClient = createPublicClient({
-    chain: viemChain(chainId, input.providerUri),
-    transport: http(input.providerUri),
+  let options = { ...input.options };
+  options.maxFeePerGas = await getMaxFeePerGas(targetChainId, targetRpcUrl, input.axiomV2QueryAddress, options);
+
+  const targetChainPublicClient = createPublicClient({
+    chain: viemChain(targetChainId, targetRpcUrl),
+    transport: http(targetRpcUrl),
   });
 
-  const feeDataExtended = await calculateFeeDataExtended(chainId, publicClient, options);
-  const payment = await calculatePayment(chainId, publicClient, feeDataExtended);
+  const feeDataExtended = await calculateFeeDataExtended(targetChainId, targetChainPublicClient, input.axiomV2QueryAddress, options);
+  const payment = await calculatePayment(targetChainId, targetChainPublicClient, feeDataExtended);
 
   const config: QueryBuilderClientConfig = {
-    sourceChainId: chainId,
-    providerUri: input.providerUri,
+    sourceChainId,
+    rpcUrl: sourceRpcUrl,
     caller: input.caller,
     version: "v2",
     mock: input.mock,
@@ -62,7 +64,7 @@ export const buildSendQuery = async (input: {
   // Feed the data query into the query builder 
   if (input.dataQuery.length > 0) {
     queryBuilderClient.setBuiltDataQuery({
-      sourceChainId: chainId,
+      sourceChainId,
       subqueries: input.dataQuery,
     }, true);
   }
@@ -82,12 +84,12 @@ export const buildSendQuery = async (input: {
   let sendQueryArgs: any;
   if (!input.options.ipfsClient) {
     sendQueryArgs = {
-      address: axiomQueryAddress as `0x${string}`,
+      address: input.axiomV2QueryAddress as `0x${string}`,
       abi: abi,
       functionName: "sendQuery",
       value: payment,
       args: [
-        chainId,
+        sourceChainId,
         dataQueryHash,
         computeQuery,
         callback,
@@ -101,10 +103,10 @@ export const buildSendQuery = async (input: {
     };
   } else {
     const encodedQuery = encodeFullQueryV2(
-      chainId,
+      sourceChainId,
       refundee,
       {
-        sourceChainId: chainId,
+        sourceChainId,
         subqueries: input.dataQuery,
       },
       computeQuery,
@@ -119,7 +121,7 @@ export const buildSendQuery = async (input: {
     }
     const ipfsHash = pinRes.value as string;
     sendQueryArgs = {
-      address: axiomQueryAddress as `0x${string}`,
+      address: input.axiomV2QueryAddress as `0x${string}`,
       abi: abi,
       functionName: "sendQueryWithIpfsData",
       value: payment,

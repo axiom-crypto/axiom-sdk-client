@@ -133,7 +133,7 @@ describe("QueryV2", () => {
 
   const config: QueryBuilderClientConfig = {
     caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-    providerUri: process.env.PROVIDER_URI_MAINNET as string,
+    rpcUrl: process.env.PROVIDER_URI_MAINNET as string,
     version: "v2",
   };
   // const axiom = new QueryBuilderClient(config);

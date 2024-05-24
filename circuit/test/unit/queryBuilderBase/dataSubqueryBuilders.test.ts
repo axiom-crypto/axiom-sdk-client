@@ -36,7 +36,7 @@ describe("Data Subquery Builders", () => {
   const blockNumber = 18000000;
 
   const config: QueryBuilderBaseConfig = {
-    providerUri: process.env.PROVIDER_URI_MAINNET as string,
+    rpcUrl: process.env.PROVIDER_URI_MAINNET as string,
     sourceChainId: 1,
     version: "v2",
   };

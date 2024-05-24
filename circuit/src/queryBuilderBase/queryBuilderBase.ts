@@ -37,7 +37,7 @@ import { getSubqueryTypeFromKeys } from "./utils";
 import { formatDataQuery, formatDataSubqueries, encodeBuilderDataQuery } from "./dataSubquery/format";
 import { deepCopyObject } from "../utils";
 import { ConfigLimitManager } from "./dataSubquery/configLimitManager";
-import { handleChainId, handleProvider, parseChainId, parseMock, parseProvider, parseVersion } from "./configure";
+import { handleChainId, handleProvider, parseChainId, parseMock, parseRpcUrl, parseVersion } from "./configure";
 
 /**
  * Base class for building Axiom queries. This is a base class is used to eventually build a dataQuery and computeQuery into a 
@@ -77,7 +77,7 @@ export class QueryBuilderBase {
 
   protected configure(config: QueryBuilderBaseConfig): QueryBuilderBaseInternalConfig {
     config = handleProvider(config);
-    const providerUri = parseProvider(config.providerUri);
+    const rpcUrl = parseRpcUrl(config.rpcUrl);
 
     config = handleChainId(config);
     const sourceChainId = parseChainId(config.sourceChainId);
@@ -86,10 +86,10 @@ export class QueryBuilderBase {
     const mock = parseMock(config.mock, sourceChainId);
     const version = parseVersion(config.version);
 
-    const provider = new ethers.JsonRpcProvider(providerUri);
+    const provider = new ethers.JsonRpcProvider(rpcUrl);
 
     return {
-      providerUri,
+      rpcUrl,
       provider,
       sourceChainId,
       targetChainId,

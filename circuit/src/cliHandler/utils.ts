@@ -67,20 +67,20 @@ export async function getFunctionFromTs(relativePath: string, functionName: stri
     };
 }
 
-export function getProvider(provider: string | undefined): string {
+export function getRpcUrl(rpcUrl: string | undefined): string {
     const home = os.homedir();
-    const axiomProviderPath = path.join(home, '.axiom', 'provider.json');
-    const folderPath = path.dirname(axiomProviderPath);
-    const exists = fs.existsSync(axiomProviderPath);
-    if (!exists && !provider) {
-        throw new Error("Must set a provider");
+    const axiomRpcUrlPath = path.join(home, '.axiom', 'rpcUrl.json');
+    const folderPath = path.dirname(axiomRpcUrlPath);
+    const exists = fs.existsSync(axiomRpcUrlPath);
+    if (!exists && !rpcUrl) {
+        throw new Error("Must set rpcUrl");
     }
-    const providerToUse = provider || readJsonFromFile(axiomProviderPath).provider;
+    const rpcUrlToUse = rpcUrl || readJsonFromFile(axiomRpcUrlPath).rpcUrl;
     if (!fs.existsSync(folderPath)) {
         fs.mkdirSync(folderPath, { recursive: true });
     }
-    fs.writeFileSync(axiomProviderPath, JSON.stringify({ provider: providerToUse }));
-    return providerToUse;
+    fs.writeFileSync(axiomRpcUrlPath, JSON.stringify({ rpcUrl: rpcUrlToUse }));
+    return rpcUrlToUse;
 }
 
 export function readInputs(inputsFile: string, circuitInputs: any) {

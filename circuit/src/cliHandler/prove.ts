@@ -1,6 +1,6 @@
 import path from 'path';
 import { AxiomBaseCircuit } from "../js";
-import { getFunctionFromTs, getProvider, readInputs, readJsonFromFile, saveJsonToFile } from "./utils";
+import { getRpcUrl, readInputs, readJsonFromFile, saveJsonToFile } from "./utils";
 import { existsSync } from 'fs';
 
 export const prove = async (
@@ -10,7 +10,7 @@ export const prove = async (
         stats: boolean,
         outputs?: string,
         sourceChainId?: number | string | bigint,
-        provider?: string,
+        rpcUrl?: string,
         mock?: boolean,
         cache?: string;
     }
@@ -22,7 +22,7 @@ export const prove = async (
     const decodedArray = Buffer.from(compiled.circuit, 'base64');
     const raw = decoder.decode(decodedArray);
     const AXIOM_CLIENT_IMPORT = require("../index");
-    const provider = getProvider(options.provider);
+    const rpcUrl = getRpcUrl(options.rpcUrl);
 
     const cache: { [key: string]: string } = {};
     if (options.cache !== undefined && existsSync(options.cache)) {
@@ -33,7 +33,7 @@ export const prove = async (
         f: eval(raw),
         mock: options.mock,
         chainId: options.sourceChainId,
-        provider,
+        rpcUrl,
         shouldTime: options.stats,
         inputSchema: compiled.inputSchema,
         results: cache,

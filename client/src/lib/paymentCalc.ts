@@ -31,7 +31,8 @@ export async function calculatePayment(
   } else if (isOpStackChain(chainId) || isArbitrumChain(chainId) || isScrollChain(chainId)) {
     // Get the projected callback cost
     const projectedCallbackCost = await getProjectedL2CallbackCost(
-      chainId, publicClient,
+      chainId,
+      publicClient,
       BigInt(feeData.maxFeePerGas),
       BigInt(feeData.callbackGasLimit),
       feeData.proofVerificationGas
@@ -56,9 +57,9 @@ export async function calculatePayment(
 export async function calculateFeeDataExtended(
   chainId: string,
   publicClient: PublicClient,
+  axiomQueryAddress: string,
   options: AxiomV2QueryOptions,
 ): Promise<AxiomV2FeeDataExtended> {
-  const axiomV2QueryAddr = options.overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
   const defaults = getChainDefaults(chainId);
 
   // Get callback gas limit
@@ -73,7 +74,7 @@ export async function calculateFeeDataExtended(
   // Get proofVerificationGas from contract
   const proofVerificationGas = await readContractValueBigInt(
     publicClient,
-    axiomV2QueryAddr,
+    axiomQueryAddress,
     getAxiomV2Abi(AbiType.Query),
     "proofVerificationGas",
     [],
@@ -83,7 +84,7 @@ export async function calculateFeeDataExtended(
   // Get axiomQueryFee from contract
   const axiomQueryFee = await readContractValueBigInt(
     publicClient,
-    axiomV2QueryAddr,
+    axiomQueryAddress,
     getAxiomV2Abi(AbiType.Query),
     "axiomQueryFee",
     [],

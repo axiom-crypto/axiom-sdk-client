@@ -5,7 +5,7 @@ import { AxiomV2CircuitCapacity } from "../types";
 
 export class AxiomBaseCircuit<T> extends AxiomBaseCircuitScaffold<T> {
     constructor(inputs: {
-        provider: string,
+        rpcUrl: string,
         f: (inputs: T) => Promise<void>,
         inputSchema?: string,
         mock?: boolean,
@@ -23,9 +23,8 @@ export class AxiomBaseCircuit<T> extends AxiomBaseCircuitScaffold<T> {
         this.halo2wasm.config(this.config);
     }
 
-    async setup(_numThreads: number) {
-        console.warn("Setup does nothing in JS AxiomBaseCircuit (multiple threads not supported)");
-    }
+    // Note: JS version does not support multiple threads, but we keep `setup` to match shape of the Web version's `AxiomBaseCircuit` class
+    async setup(_numThreads: number) {}
 
     newCircuitFromConfig(config: CircuitConfig): void {
         super.newCircuitFromConfig(config);

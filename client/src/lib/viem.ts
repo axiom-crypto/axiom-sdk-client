@@ -1,10 +1,10 @@
 import { Chain, PublicClient } from "viem";
 
-// Creates a generic viem Chain object that uses a specified chainId and provider
+// Creates a generic viem Chain object that uses a specified chainId and rpcUrl
 // Can use `chainProperties` to override any field.
 export const viemChain = (
   chainId: string, 
-  provider: string,
+  rpcUrl: string,
   chainProperties?: object
 ): Chain => {
   let chain = {
@@ -17,7 +17,7 @@ export const viemChain = (
     },
     rpcUrls: {
       default: {
-        http: [provider],
+        http: [rpcUrl],
       },
     },
   } as const satisfies Chain

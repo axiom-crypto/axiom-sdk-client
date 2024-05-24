@@ -2,8 +2,8 @@ import { Versions } from "./constants";
 import { QueryBuilderBaseConfig } from "./types";
 
 export function handleProvider(config: QueryBuilderBaseConfig): QueryBuilderBaseConfig {
-  if (config.providerUri === undefined || config.providerUri === "") {
-    throw new Error("`providerUri` is required in QueryBuilderBaseConfig");
+  if (config.rpcUrl === undefined || config.rpcUrl === "") {
+    throw new Error("`rpcUrl` is required in QueryBuilderBaseConfig");
   }
   return config;
 }
@@ -18,20 +18,20 @@ export function handleChainId(config: QueryBuilderBaseConfig): QueryBuilderBaseC
   return config;
 }
 
-export function parseProvider(provider: string): string {
-  if (!provider) {
-    throw new Error("Invalid provider: value is undefined or empty string");
+export function parseRpcUrl(rpcUrl: string): string {
+  if (!rpcUrl) {
+    throw new Error("Invalid rpcUrl: value is undefined or empty string");
   }
   if (
-    provider.startsWith("http://") ||
-    provider.startsWith("https://")
+    rpcUrl.startsWith("http://") ||
+    rpcUrl.startsWith("https://")
   ) {
-    return provider;
-  } else if (provider.startsWith("wss://")) {
+    return rpcUrl;
+  } else if (rpcUrl.startsWith("wss://")) {
     throw new Error("Websockets is not yet supported");
   } else {
     throw new Error(
-      "Invalid provider: must start with http://, https://, or wss://"
+      "Invalid rpcUrl: must start with http://, https://, or wss://"
     );
   }
 }

@@ -1,27 +1,25 @@
 import { Axiom } from "../../../../src";
-import { createPublicClient, http } from "viem";
-import { viemChain } from "../../../../src/lib/viem";
 import { circuit } from "../../../circuits/quickstart/average.circuit";
 import compiledCircuit from "../../../circuits/quickstart/average.compiled.json";
 import inputs from "../../../circuits/quickstart/11155111/average.inputs.json";
 
 describe("PaymentCalc: Ethereum", () => {
   const CHAIN_ID = "11155111";
-  const publicClient = createPublicClient({
-    chain: viemChain(CHAIN_ID, process.env.PROVIDER_URI_SEPOLIA as string),
-    transport: http(process.env.PROVIDER_URI_SEPOLIA as string),
-  });
+
+  const config = {
+    circuit,
+    compiledCircuit,
+    chainId: CHAIN_ID,
+    rpcUrl: process.env.PROVIDER_URI_SEPOLIA as string,
+    privateKey: process.env.PRIVATE_KEY_ANVIL as string,
+    callback: {
+      target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
+    },
+  }
 
   test("Payment calculation default based on options", async () => {
     const axiom = new Axiom({
-      circuit,
-      compiledCircuit,
-      chainId: CHAIN_ID,
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_ANVIL as string,
-      callback: {
-        target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
-      },
+      ...config,
       options: {
         maxFeePerGas: "5000000000",
       },
@@ -34,14 +32,7 @@ describe("PaymentCalc: Ethereum", () => {
 
   test("Payment calculation high based on options", async () => {
     const axiom = new Axiom({
-      circuit,
-      compiledCircuit,
-      chainId: CHAIN_ID,
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_ANVIL as string,
-      callback: {
-        target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
-      },
+      ...config,
       options: {
         maxFeePerGas: "500000000000",
         callbackGasLimit: 1000000000,
@@ -55,14 +46,7 @@ describe("PaymentCalc: Ethereum", () => {
 
   test("Payment calculation low based on options", async () => {
     const axiom = new Axiom({
-      circuit,
-      compiledCircuit,
-      chainId: CHAIN_ID,
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_ANVIL as string,
-      callback: {
-        target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
-      },
+      ...config,
       options: {
         maxFeePerGas: "5000000000",
         callbackGasLimit: 1000,
@@ -76,14 +60,7 @@ describe("PaymentCalc: Ethereum", () => {
 
   test("Set overrideAxiomQueryFee greater than standard payment", async () => {
     const axiom = new Axiom({
-      circuit,
-      compiledCircuit,
-      chainId: CHAIN_ID,
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_ANVIL as string,
-      callback: {
-        target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
-      },
+      ...config,
       options: {
         maxFeePerGas: "5000000000",
         overrideAxiomQueryFee: "50000000000000000",
@@ -97,14 +74,7 @@ describe("PaymentCalc: Ethereum", () => {
 
   test("Set overrideAxiomQueryFee less than standard payment", async () => {
     const axiom = new Axiom({
-      circuit,
-      compiledCircuit,
-      chainId: CHAIN_ID,
-      provider: process.env.PROVIDER_URI_SEPOLIA as string,
-      privateKey: process.env.PRIVATE_KEY_ANVIL as string,
-      callback: {
-        target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
-      },
+      ...config,
       options: {
         maxFeePerGas: "5000000000",
         overrideAxiomQueryFee: "50000000000",

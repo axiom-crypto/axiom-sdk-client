@@ -12,7 +12,7 @@ import {
 describe("Crosschain", () => {
   test("Build a query with a different target chain", async () => {
     const config: QueryBuilderBaseConfig = {
-      providerUri: process.env.PROVIDER_URI_SEPOLIA as string,
+      rpcUrl: process.env.PROVIDER_URI_SEPOLIA as string,
       targetChainId: 5,
       version: "v2",
     };

@@ -8,7 +8,7 @@ import {
 } from "@axiom-crypto/circuit/pkg/tools";
 import { AbiType, AxiomV2QueryOptions, AxiomV2SendQueryArgsParams, CircuitInputType } from "../types";
 import { createPublicClient, http } from 'viem';
-import { getAxiomV2Abi, viemChain } from "../lib";
+import { getAxiomV2Abi, readContractValueBigInt, viemChain } from "../lib";
 import { getChainDefaults } from "../lib/chain";
 
 export function validateChainId(chainId: string) {
@@ -83,15 +83,15 @@ export async function getMaxFeePerGas(
   const providerMaxFeePerGas = providerFeeData.maxFeePerGas ?? 0n;
 
   try {
-    let contractMinMaxFeePerGas = await publicClient.readContract({
-      address: axiomQueryAddress as `0x${string}`,
-      abi: getAxiomV2Abi(AbiType.Query),
-      functionName: "minMaxFeePerGas",
-      args: [],
-    }) as bigint;
-
     const sdkMinMaxFeePerGas = getChainDefaults(chainId).minMaxFeePerGasWei;
-    contractMinMaxFeePerGas = contractMinMaxFeePerGas === 0n ? sdkMinMaxFeePerGas : contractMinMaxFeePerGas;
+    const contractMinMaxFeePerGas = await readContractValueBigInt(
+      publicClient,
+      axiomQueryAddress,
+      getAxiomV2Abi(AbiType.Query),
+      "minMaxFeePerGas",
+      [],
+      sdkMinMaxFeePerGas,
+    );
     
     let maxFeePerGas = BigInt(options?.maxFeePerGas ?? contractMinMaxFeePerGas);
     if (providerMaxFeePerGas > maxFeePerGas) {
@@ -106,7 +106,6 @@ export async function getMaxFeePerGas(
     } else if (maxFeePerGas === sdkMinMaxFeePerGas) {
       console.log(`Network gas price below threshold. Using SDK-defined minimum minMaxFeePerGas: ${maxFeePerGas.toString()}`);
     }
-    
     return maxFeePerGas.toString();
   } catch (e) {
     const defaultMinMaxFeePerGas = getChainDefaults(chainId).minMaxFeePerGasWei.toString();

@@ -26,6 +26,10 @@ export const calculateQueryCost = (
   callbackGasLimit: bigint,
   proofVerificationGas: bigint
 ): bigint => {
+  const sdkMinMaxFeePerGas = getChainDefaults(chainId).minMaxFeePerGasWei;
+  if (maxFeePerGas < sdkMinMaxFeePerGas) {
+    maxFeePerGas = sdkMinMaxFeePerGas;
+  }
   const projectedCallbackCost = calculateOpStackCallbackCost(basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
   const overrideAxiomQueryFee = getChainDefaults(chainId).axiomQueryFeeWei + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas);
   const queryCost = overrideAxiomQueryFee + maxFeePerGas * (callbackGasLimit + proofVerificationGas);

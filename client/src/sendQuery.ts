@@ -33,19 +33,18 @@ export const buildSendQuery = async (input: {
   const targetChainId = input.target?.chainId ?? input.chainId;
   const targetRpcUrl = input.target?.rpcUrl ?? input.rpcUrl;
   const abi = getAxiomV2Abi(AbiType.Query);
-  console.log(1)
+
   let options = { ...input.options };
   options.maxFeePerGas = await getMaxFeePerGas(targetChainId, targetRpcUrl, input.axiomV2QueryAddress, options);
-  console.log(2)
+
   const targetChainPublicClient = createPublicClient({
     chain: viemChain(targetChainId, targetRpcUrl),
     transport: http(targetRpcUrl),
   });
-  console.log(3)
+
   const feeDataExtended = await calculateFeeDataExtended(targetChainId, targetChainPublicClient, input.axiomV2QueryAddress, options);
-  console.log(4)
   const payment = await calculatePayment(targetChainId, targetChainPublicClient, feeDataExtended);
-  console.log(5)
+
   const config: QueryBuilderClientConfig = {
     sourceChainId,
     rpcUrl: sourceRpcUrl,
@@ -53,7 +52,6 @@ export const buildSendQuery = async (input: {
     version: "v2",
     mock: input.mock,
   };
-  console.log(6)
   const queryBuilderClient = new QueryBuilderClient(
     config,
     input.dataQuery.map((dq) => dq.subqueryData),
@@ -61,9 +59,8 @@ export const buildSendQuery = async (input: {
     input.callback,
     options,
   );
-  console.log(7)
   queryBuilderClient.setOptions(feeDataExtended);
-  console.log(8)
+
   // Feed the data query into the query builder 
   if (input.dataQuery.length > 0) {
     queryBuilderClient.setBuiltDataQuery({
@@ -71,7 +68,7 @@ export const buildSendQuery = async (input: {
       subqueries: input.dataQuery,
     }, true);
   }
-  console.log(9)
+  
   const {
     queryHash,
     dataQueryHash,
@@ -82,9 +79,8 @@ export const buildSendQuery = async (input: {
     refundee,
     dataQuery,
   } = await queryBuilderClient.build(validate);
-  console.log(10)
   const id = await queryBuilderClient.getQueryId(input.caller);
-  console.log(11)
+
   let sendQueryArgs: any;
   if (!input.options.ipfsClient) {
     sendQueryArgs = {
@@ -141,9 +137,8 @@ export const buildSendQuery = async (input: {
       mock: queryBuilderClient.config.mock,
     };
   }
-  console.log(12)
+
   const calldata = encodeFunctionData(sendQueryArgs);
-  console.log(13)
   return {
     ...sendQueryArgs,
     calldata,

@@ -105,8 +105,9 @@ export const queryParams = async (
       },
       target,
     });
+    build.value = build.value.toString() as any;
     const res = {
-      value: build.value.toString(),
+      value: build.value,
       mock: build.mock,
       queryId: build.queryId,
       args: options.argsMap ? argsArrToObj(build.args) : build.args,

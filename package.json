@@ -1,6 +1,6 @@
 {
   "name": "axiom-sdk-client",
-  "version": "2.1.0-alpha.11",
+  "version": "2.1.0-alpha.12",
   "description": "Axiom client SDK",
   "scripts": {
     "remote": "node -e 'require(\"./scripts/setRemote.js\").setRemote()'",

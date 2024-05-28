@@ -22,7 +22,7 @@ describe("Build Query w/ ComputeQuery, DataQuery, Callback, and Options set (cor
   const WSOL_ADDR = "0xd31a59c85ae9d8edefec411d448f90841571b89c";
   const UNI_V3_FACTORY_ADDR = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
 
-  const provider = new ethers.JsonRpcProvider(process.env.PROVIDER_URI);
+  const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
 
   const computeQuery: AxiomV2ComputeQuery = {
     k: 13,
@@ -49,7 +49,7 @@ describe("Build Query w/ ComputeQuery, DataQuery, Callback, and Options set (cor
 
   test("should initialize with private key; build QueryV2 with dataQuery, computeQuery, and callback", async () => {
     const config: QueryBuilderBaseConfig = {
-      rpcUrl: process.env.PROVIDER_URI_SEPOLIA as string,
+      rpcUrl: process.env.RPC_URL_SEPOLIA as string,
       version: "v2",
     };
 
@@ -109,7 +109,7 @@ describe("Build Query w/ ComputeQuery, DataQuery, Callback, and Options set (cor
 
   test("should initialize without private key; build QueryV2 with dataQuery, computeQuery, and callback", async () => {
     const config: QueryBuilderBaseConfig = {
-      rpcUrl: process.env.PROVIDER_URI_SEPOLIA as string,
+      rpcUrl: process.env.RPC_URL_SEPOLIA as string,
       version: "v2",
     };
 

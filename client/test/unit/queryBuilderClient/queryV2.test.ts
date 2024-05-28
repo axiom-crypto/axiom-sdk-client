@@ -33,7 +33,7 @@ describe("QueryV2", () => {
   const WSOL_ADDR = "0xd31a59c85ae9d8edefec411d448f90841571b89c";
   const UNI_V3_FACTORY_ADDR = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
 
-  const provider = new ethers.JsonRpcProvider(process.env.PROVIDER_URI_MAINNET as string);
+  const provider = new ethers.JsonRpcProvider(process.env.RPC_URL_MAINNET as string);
 
   const vkey = [
     "0x0000000e0000000609bddd9050d5cb871ead4831773e485d445bde72a636efda",
@@ -133,7 +133,7 @@ describe("QueryV2", () => {
 
   const config: QueryBuilderClientConfig = {
     caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-    rpcUrl: process.env.PROVIDER_URI_MAINNET as string,
+    rpcUrl: process.env.RPC_URL_MAINNET as string,
     version: "v2",
   };
   // const axiom = new QueryBuilderClient(config);

@@ -12,15 +12,15 @@ const DIFF_THRESHOLD_X100 = 800n; // 8%
 describe("PaymentCalc: Base", () => {
   const CHAIN_ID = "84532"; // Base Sepolia 
   const publicClient = createPublicClient({
-    chain: viemChain(CHAIN_ID, process.env[`PROVIDER_URI_${CHAIN_ID}`] as string),
-    transport: http(process.env[`PROVIDER_URI_${CHAIN_ID}`] as string),
+    chain: viemChain(CHAIN_ID, process.env[`RPC_URL_${CHAIN_ID}`] as string),
+    transport: http(process.env[`RPC_URL_${CHAIN_ID}`] as string),
   });
 
   const config = {
     circuit,
     compiledCircuit,
     chainId: CHAIN_ID,
-    rpcUrl: process.env[`PROVIDER_URI_${CHAIN_ID}`] as string,
+    rpcUrl: process.env[`RPC_URL_${CHAIN_ID}`] as string,
     privateKey: process.env.PRIVATE_KEY_ANVIL as string,
     callback: {
       target: "0x81908149E769236F1c9e62b468d07899CB95890F",
@@ -127,7 +127,7 @@ describe("PaymentCalc: Base", () => {
       circuit,
       compiledCircuit,
       chainId: CHAIN_ID,
-      rpcUrl: process.env[`PROVIDER_URI_${CHAIN_ID}`] as string,
+      rpcUrl: process.env[`RPC_URL_${CHAIN_ID}`] as string,
       privateKey: process.env.PRIVATE_KEY_ANVIL as string,
       callback: {
         target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",
@@ -152,7 +152,7 @@ describe("PaymentCalc: Base", () => {
       circuit,
       compiledCircuit,
       chainId: CHAIN_ID,
-      rpcUrl: process.env[`PROVIDER_URI_${CHAIN_ID}`] as string,
+      rpcUrl: process.env[`RPC_URL_${CHAIN_ID}`] as string,
       privateKey: process.env.PRIVATE_KEY_ANVIL as string,
       callback: {
         target: "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e",

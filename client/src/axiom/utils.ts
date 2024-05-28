@@ -71,13 +71,13 @@ export function argsObjToArr(
 
 export async function getMaxFeePerGas(
   chainId: string,
-  providerUri: string,
+  rpcUrl: string,
   axiomQueryAddress: string,
   options?: AxiomV2QueryOptions,
 ): Promise<string> {
   const publicClient = createPublicClient({
-    chain: viemChain(chainId, providerUri),
-    transport: http(providerUri),
+    chain: viemChain(chainId, rpcUrl),
+    transport: http(rpcUrl),
   });
   const providerFeeData = await publicClient.estimateFeesPerGas();
   const providerMaxFeePerGas = providerFeeData.maxFeePerGas ?? 0n;

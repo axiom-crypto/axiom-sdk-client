@@ -14,8 +14,8 @@ describe("PaymentCalc: Base", () => {
   const SOURCE_CHAIN_ID = "11155111"; // Sepolia
   const TARGET_CHAIN_ID = "84532"; // Base Sepolia
   const publicClient = createPublicClient({
-    chain: viemChain(TARGET_CHAIN_ID, process.env[`PROVIDER_URI_${TARGET_CHAIN_ID}`] as string),
-    transport: http(process.env[`PROVIDER_URI_${TARGET_CHAIN_ID}`] as string),
+    chain: viemChain(TARGET_CHAIN_ID, process.env[`RPC_URL_${TARGET_CHAIN_ID}`] as string),
+    transport: http(process.env[`RPC_URL_${TARGET_CHAIN_ID}`] as string),
   });
 
   const config = {
@@ -23,11 +23,11 @@ describe("PaymentCalc: Base", () => {
     compiledCircuit,
     source: {
       chainId: SOURCE_CHAIN_ID,
-      rpcUrl: process.env[`PROVIDER_URI_${SOURCE_CHAIN_ID}`] as string,
+      rpcUrl: process.env[`RPC_URL_${SOURCE_CHAIN_ID}`] as string,
     },
     target: {
       chainId: TARGET_CHAIN_ID,
-      rpcUrl: process.env[`PROVIDER_URI_${TARGET_CHAIN_ID}`] as string,
+      rpcUrl: process.env[`RPC_URL_${TARGET_CHAIN_ID}`] as string,
       privateKey: process.env.PRIVATE_KEY_ANVIL as string,
     },
     callback: {

@@ -22,7 +22,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
   const UNI_V3_FACTORY_ADDR = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
 
   const config: QueryBuilderBaseConfig = {
-    rpcUrl: process.env.PROVIDER_URI_MAINNET as string,
+    rpcUrl: process.env.RPC_URL_1 as string,
     version: "v2",
   }
 
@@ -63,7 +63,7 @@ describe("DataQuery Capacity (SDK-enforced)", () => {
     // "0x079fe983f70c4c176e2b15d0fa4392c5a30fc535055d10fca31003cb48037ba0", // 33
   ];
 
-  const provider = new JsonRpcProvider(process.env.PROVIDER_URI_MAINNET as string);
+  const provider = new JsonRpcProvider(process.env.RPC_URL_1 as string);
 
   test(`Append ${ConstantsV2.UserMaxTotalSubqueries} Header subqueries`, () => {
     const axiom = new QueryBuilderBase(config);

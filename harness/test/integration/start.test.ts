@@ -18,8 +18,8 @@ const SPECIAL_TESTS = [
 
 // NOTE: A valid data file in the `test/chainData` directory must be provided
 describe("Integration tests", () => {
-  if (process.env[`PROVIDER_URI_${CHAIN_ID}`] === undefined) {
-    throw new Error(`PROVIDER_URI_${CHAIN_ID} environment variable must be defined`);
+  if (process.env[`RPC_URL_${CHAIN_ID}`] === undefined) {
+    throw new Error(`RPC_URL_${CHAIN_ID} environment variable must be defined`);
   }
   if (process.env[`PRIVATE_KEY_${CHAIN_ID}`] === undefined) {
     throw new Error(`PRIVATE_KEY_${CHAIN_ID} environment variable must be defined`);
@@ -34,7 +34,7 @@ describe("Integration tests", () => {
     }
   }
 
-  const rpcUrl = process.env[`PROVIDER_URI_${CHAIN_ID}`] as string;
+  const rpcUrl = process.env[`RPC_URL_${CHAIN_ID}`] as string;
   const data = `./test/chainData/${CHAIN_ID}.json`;
 
   beforeAll(async () => {

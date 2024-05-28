@@ -49,7 +49,7 @@ async function getBlockAndIdx(provider: JsonRpcProvider, arr: string[], name: st
 
 describe("Config Limit Manager", () => {
   const config: QueryBuilderBaseConfig = {
-    rpcUrl: process.env.PROVIDER_URI_SEPOLIA as string,
+    rpcUrl: process.env.RPC_URL_11155111 as string,
     sourceChainId: "11155111",
     version: "v2",
   };
@@ -450,7 +450,7 @@ describe("Config Limit Manager", () => {
     "0x80b19a2f01456357682c9131d237dfb915f9d3e888962f3f828df439d8e550d2": { blockNumber: 5068606, txIdx: 20 },
   }
 
-  const provider = new JsonRpcProvider(process.env.PROVIDER_URI_SEPOLIA as string);
+  const provider = new JsonRpcProvider(process.env.RPC_URL_11155111 as string);
 
   // test("cache data", async () => {
   //   await getBlockAndIdx(provider, txHashesSmall, "txHashesSmall");

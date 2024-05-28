@@ -12,16 +12,16 @@ describe("Query Validation Tests", () => {
   const WETH_WHALE = "0x2E15D7AA0650dE1009710FDd45C3468d75AE1392";
   const UNI_V3_FACTORY_ADDR = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
 
-  const provider = new ethers.JsonRpcProvider(process.env.RPC_URL_MAINNET as string);
-  const sepoliaProvider = new ethers.JsonRpcProvider(process.env.RPC_URL_SEPOLIA as string);
+  const provider = new ethers.JsonRpcProvider(process.env.RPC_URL_1 as string);
+  const sepoliaProvider = new ethers.JsonRpcProvider(process.env.RPC_URL_11155111 as string);
 
   const config: QueryBuilderBaseConfig = {
-    rpcUrl: process.env.RPC_URL_MAINNET as string,
+    rpcUrl: process.env.RPC_URL_1 as string,
     version: "v2",
     sourceChainId: 1,
   };
   const sepoliaConfig = {
-    rpcUrl: process.env.RPC_URL_SEPOLIA as string,
+    rpcUrl: process.env.RPC_URL_11155111 as string,
     version: "v2",
     sourceChainId: "11155111",
   };

@@ -9,14 +9,14 @@ import { Subquery } from "@axiom-crypto/tools";
 
 describe("QueryBuilderV2 Options", () => {
   const config: QueryBuilderClientConfig = {
-    rpcUrl: process.env.PROVIDER_URI_MAINNET as string,
+    rpcUrl: process.env.RPC_URL_MAINNET as string,
     caller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     sourceChainId: 1,
     version: "v2",
   };
   const wallet = new ethers.Wallet(
     process.env.PRIVATE_KEY_ANVIL as string,
-    new ethers.JsonRpcProvider(process.env.PROVIDER_URI_MAINNET as string),
+    new ethers.JsonRpcProvider(process.env.RPC_URL_MAINNET as string),
   );
   const blockNumber = 18300000;
 

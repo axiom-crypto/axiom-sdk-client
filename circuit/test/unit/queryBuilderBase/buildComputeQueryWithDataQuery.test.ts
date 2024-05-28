@@ -16,7 +16,7 @@ import {
 
 describe("Build ComputeQuery with DataQuery", () => {
   const config: QueryBuilderBaseConfig = {
-    rpcUrl: process.env.PROVIDER_URI_SEPOLIA as string,
+    rpcUrl: process.env.RPC_URL_SEPOLIA as string,
     sourceChainId: 1,
     version: "v2",
   };

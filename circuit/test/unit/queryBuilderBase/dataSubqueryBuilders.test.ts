@@ -32,11 +32,11 @@ describe("Data Subquery Builders", () => {
   const WETH_ADDR = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2".toLowerCase();
   const WETH_WHALE = "0x2E15D7AA0650dE1009710FDd45C3468d75AE1392".toLowerCase();
 
-  const provider = new ethers.JsonRpcProvider(process.env.PROVIDER_URI_MAINNET as string);
+  const provider = new ethers.JsonRpcProvider(process.env.RPC_URL_MAINNET as string);
   const blockNumber = 18000000;
 
   const config: QueryBuilderBaseConfig = {
-    rpcUrl: process.env.PROVIDER_URI_MAINNET as string,
+    rpcUrl: process.env.RPC_URL_MAINNET as string,
     sourceChainId: 1,
     version: "v2",
   };

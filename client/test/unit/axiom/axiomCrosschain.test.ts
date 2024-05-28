@@ -29,11 +29,11 @@ jest.mock("@axiom-crypto/tools", () => {
 describe("AxiomCrosschain tests", () => {
   const source: ChainConfig = {
     chainId: "11155111",
-    rpcUrl: process.env.PROVIDER_URI_11155111 as string,
+    rpcUrl: process.env.RPC_URL_11155111 as string,
   };
   const target: TargetChainConfig = {
     chainId: "84532",
-    rpcUrl: process.env.PROVIDER_URI_84532 as string,
+    rpcUrl: process.env.RPC_URL_84532 as string,
     privateKey: process.env.PRIVATE_KEY_ANVIL as string,
   };
   const config = {
@@ -132,7 +132,7 @@ describe("AxiomCrosschain tests", () => {
       ...config,
       target: {
         chainId: "84532",
-        rpcUrl: process.env.PROVIDER_URI_84532 as string,
+        rpcUrl: process.env.RPC_URL_84532 as string,
         caller,
       },
     };

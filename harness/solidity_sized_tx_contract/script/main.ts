@@ -2,11 +2,11 @@ import { ethers } from "ethers";
 import dotenv from 'dotenv';
 dotenv.config();
 
-const PROVIDER_URI = process.env.PROVIDER_URI as string;
+const RPC_URL = process.env.RPC_URL as string;
 const PRIVATE_KEY = process.env.PRIVATE_KEY as string;
 
 async function main() {
-    const provider = new ethers.JsonRpcProvider(PROVIDER_URI);
+    const provider = new ethers.JsonRpcProvider(RPC_URL);
     const signer = new ethers.Wallet(PRIVATE_KEY, provider);
 
     const contractAddress = "0x88941290daBd7884e31B047459d25cA530B293F0";

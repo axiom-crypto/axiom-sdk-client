@@ -4,7 +4,7 @@ import { circuit } from "../../circuits/quickstart/average.circuit";
 import compiledCircuit from "../../circuits/quickstart/average.compiled.json";
 
 const chainId = process.env.CHAIN_ID || "11155111"
-const rpcUrl = process.env[`PROVIDER_URI_${chainId}`] as string;
+const rpcUrl = process.env[`RPC_URL_${chainId}`] as string;
 
 const MOCK_TX_HASH = "0x1234567890123456789012345678901234567890123456789012345678901234";
 const MOCK_IPFS_HASH = "0xaa000000000000000000000000000000000000000000000000000000000000aa";

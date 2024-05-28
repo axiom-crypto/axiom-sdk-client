@@ -49,7 +49,7 @@ describe("Build Query w/ ComputeQuery, DataQuery, Callback, and Options set (cor
 
   test("should initialize with private key; build QueryV2 with dataQuery, computeQuery, and callback", async () => {
     const config: QueryBuilderBaseConfig = {
-      rpcUrl: process.env.RPC_URL_SEPOLIA as string,
+      rpcUrl: process.env.RPC_URL_11155111 as string,
       version: "v2",
     };
 
@@ -109,7 +109,7 @@ describe("Build Query w/ ComputeQuery, DataQuery, Callback, and Options set (cor
 
   test("should initialize without private key; build QueryV2 with dataQuery, computeQuery, and callback", async () => {
     const config: QueryBuilderBaseConfig = {
-      rpcUrl: process.env.RPC_URL_SEPOLIA as string,
+      rpcUrl: process.env.RPC_URL_11155111 as string,
       version: "v2",
     };
 

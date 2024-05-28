@@ -8,7 +8,7 @@ import { QueryBuilderBase, QueryBuilderBaseConfig, AxiomV2Callback, AxiomV2Compu
 
 describe("Build a Query with no Callback", () => {
   const config: QueryBuilderBaseConfig = {
-    rpcUrl: process.env.RPC_URL_SEPOLIA as string,
+    rpcUrl: process.env.RPC_URL_11155111 as string,
     sourceChainId: 1,
     version: "v2",
   };

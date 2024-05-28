@@ -20,10 +20,10 @@ To run the chain data search script:
 
 ```bash
 # When importing harness as a package
-npx harness search --provider <RPC_URL> --include <BLOCKNUMBER(S)> --output <OUTPUT_DIR>
+npx harness search --rpc-url <RPC_URL> --include <BLOCKNUMBER(S)> --output <OUTPUT_DIR>
 
 # Inside this repo
-node dist/cli/index.js search --provider <RPC_URL> --include <BLOCKNUMBER(S)> --output <OUTPUT_DIR>
+node dist/cli/index.js search --rpc-url <RPC_URL> --include <BLOCKNUMBER(S)> --output <OUTPUT_DIR>
 ```
 
 Where `--include` is optional and blocknumbers is a comma-separated list (single: `--include 1530001` multiple: `--include 1530001,1530005,1530011`).

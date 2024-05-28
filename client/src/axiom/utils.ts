@@ -94,7 +94,7 @@ export async function getMaxFeePerGas(
     );
     
     let maxFeePerGas = BigInt(options?.maxFeePerGas ?? contractMinMaxFeePerGas);
-    if (providerMaxFeePerGas > maxFeePerGas) {
+    if (!options?.maxFeePerGas && providerMaxFeePerGas > maxFeePerGas) {
       maxFeePerGas = providerMaxFeePerGas;
     }
     if (sdkMinMaxFeePerGas > maxFeePerGas) {

@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { JsonRpcProvider } from "ethers";
-import { generateCircuitArtifacts, runTestProve, runTestSendQuery } from "./circuitTest";
+import { generateCircuitArtifacts, runTestProve, runTestProveSendQuery } from "./circuitTest";
 import { generateInputs } from './inputs';
 
 export const run = async (
@@ -44,6 +44,6 @@ export const run = async (
   if (!input.send) {
     return await runTestProve(chainId, input.rpcUrl, circuit, compiledCircuit, inputs, input.options);
   } else {
-    return await runTestSendQuery(chainId, input.rpcUrl, circuit, compiledCircuit, inputs, input.options);
+    return await runTestProveSendQuery(chainId, input.rpcUrl, circuit, compiledCircuit, inputs, input.options);
   }
 };

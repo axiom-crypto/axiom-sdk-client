@@ -3,7 +3,7 @@ import { run } from '../run/run';
 import { search } from "../search/search";
 import { HARNESS_VERSION } from "../version";
 import { generateInputs } from "../run";
-import { compile, prove, sendQuery } from "./handlers";
+import { compile, prove, proveSendQuery } from "./handlers";
 
 const harnessCli = new Command('harness');
 
@@ -52,18 +52,18 @@ harnessCli
   .action(prove);
 
 harnessCli
-  .command("send-query")
-  .description("Send a query to AxiomV2Query")
+  .command("prove-send-query")
+  .description("Proves the circuit AND sends a query to AxiomV2Query")
   .argument("<chain id>", "source chain ID")
   .argument("<rpc-url>", "Source chain JSON-RPC provider URL")
   .argument("<circuit>", "path to the typescript circuit file")
   .argument("<compiled circuit>", "path to the compiled circuit json file")
   .argument("<inputs path>", "path to the inputs json file")
-  .action(sendQuery);
+  .action(proveSendQuery);
 
 harnessCli
   .command("run")
-  .description("Runs `generate-inputs`, `compile`, `prove`, and (optionally) `send-query` in sequence")
+  .description("Runs `generate-inputs`, `compile`, `prove`/`prove-send-query` in sequence")
   .requiredOption("-c, --circuit <path>", "js circuit path")
   .requiredOption("-sr, --rpc-url <RPC https url>", "Source chain JSON-RPC provider URL")
   .requiredOption("-d, --data <path>", "Chain data json file path (output of `search` command)")

@@ -5,7 +5,7 @@ import { generateCircuitArtifacts, runTestProve, runTestSendQuery } from "./circ
 import { generateInputs } from './inputs';
 
 export const run = async (
-  options: {
+  input: {
     circuit: string;
     rpcUrl: string;
     data: string;
@@ -16,34 +16,34 @@ export const run = async (
     options?: any;
   }
 ): Promise<any> => {
-  const chainDataPath = path.dirname(options.data);
-  const data = JSON.parse(fs.readFileSync(options.data, 'utf8'));
-  const provider = new JsonRpcProvider(options.rpcUrl);
+  const chainDataPath = path.dirname(input.data);
+  const data = JSON.parse(fs.readFileSync(input.data, 'utf8'));
+  const provider = new JsonRpcProvider(input.rpcUrl);
   const chainId = (await provider.getNetwork()).chainId.toString();
 
-  let outputPath = path.join(path.dirname(options.circuit), '../output');
-  if (options.output) {
-    outputPath = options.output;
+  let outputPath = path.join(path.dirname(input.circuit), '../output');
+  if (input.output) {
+    outputPath = input.output;
   }
   let circuitInputsPath = path.join(chainDataPath, chainId);
-  if (options.circuitInputsPath) {
-    circuitInputsPath = options.circuitInputsPath;
+  if (input.circuitInputsPath) {
+    circuitInputsPath = input.circuitInputsPath;
   }
 
   // Geneate the input values for this circuit file
-  generateInputs(options.circuit, circuitInputsPath, data);
+  generateInputs(input.circuit, circuitInputsPath, data);
   
   // Compile the circuit
   const { 
     circuit,
     compiledCircuit,
     inputs,
-  } = await generateCircuitArtifacts(options.rpcUrl, options.circuit, circuitInputsPath, outputPath);
+  } = await generateCircuitArtifacts(input.rpcUrl, input.circuit, circuitInputsPath, outputPath);
 
-  // Prove or prove+send the query
-  if (!options.send) {
-    return await runTestProve(chainId, options.rpcUrl, circuit, compiledCircuit, inputs, options.options);
+  // Prove or prove+sendQuery
+  if (!input.send) {
+    return await runTestProve(chainId, input.rpcUrl, circuit, compiledCircuit, inputs, input.options);
   } else {
-    return await runTestSendQuery(chainId, options.rpcUrl, circuit, compiledCircuit, inputs, options.options);
+    return await runTestSendQuery(chainId, input.rpcUrl, circuit, compiledCircuit, inputs, input.options);
   }
 };

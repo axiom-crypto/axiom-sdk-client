@@ -22,10 +22,3 @@ export interface RcId {
   logIdx: number;
   eventSchema: string;
 }
-
-export interface HarnessOptions {
-  output: string;
-  circuitInputsPath: string;
-  fnName: string;
-  send: boolean;
-}

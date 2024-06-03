@@ -38,7 +38,6 @@ export const run = async (
     circuit,
     compiledCircuit,
     inputs,
-<<<<<<< HEAD
   } = await generateCircuitArtifacts(input.rpcUrl, input.circuit, circuitInputsPath, outputPath);
 
   // Prove or prove+sendQuery
@@ -46,14 +45,5 @@ export const run = async (
     return await runTestProve(chainId, input.rpcUrl, circuit, compiledCircuit, inputs, input.options);
   } else {
     return await runTestProveSendQuery(chainId, input.rpcUrl, circuit, compiledCircuit, inputs, input.options);
-=======
-  } = await generateCircuitArtifacts(options.rpcUrl, options.circuit, circuitInputsPath, outputPath);
-
-  // Prove or prove+send the query
-  if (!options.send) {
-    return await runTestProve(chainId, options.rpcUrl, circuit, compiledCircuit, inputs, options.options);
-  } else {
-    return await runTestSendQuery(chainId, options.rpcUrl, circuit, compiledCircuit, inputs, options.options);
->>>>>>> 52fb2beb9f151ee85d60895a9147a211455b2558
   }
 };

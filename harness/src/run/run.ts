@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { JsonRpcProvider } from "ethers";
+import { generateCircuitInputs } from './inputs';
 import { generateCircuitArtifacts, runTestProve, runTestProveSendQuery } from "./circuitTest";
-import { generateInputs } from './inputs';
 
 export const run = async (
   input: {
@@ -31,7 +31,7 @@ export const run = async (
   }
 
   // Geneate the input values for this circuit file
-  generateInputs(input.circuit, circuitInputsPath, data);
+  generateCircuitInputs(input.circuit, circuitInputsPath, data);
   
   // Compile the circuit
   const { 

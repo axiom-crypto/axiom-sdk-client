@@ -2,8 +2,8 @@ import { Command } from "commander";
 import { run } from '../run/run';
 import { search } from "../search/search";
 import { HARNESS_VERSION } from "../version";
-import { generateInputs } from "../run";
-import { compile, prove, proveSendQuery } from "./handlers";
+import { compile, generateInputs } from "../run";
+import { handleProve, handleProveSendQuery } from "./handlers";
 
 const harnessCli = new Command('harness');
 
@@ -29,7 +29,7 @@ harnessCli
   .description("Generate inputs for a circuit")
   .argument("<circuit>", "path to the typescript circuit file")
   .argument("<output path>", "path to write generated inputs to")
-  .argument("<chain data>", "path to the chain data json file")
+  .argument("<chain data path>", "path to the chain data json file")
   .action(generateInputs);
 
 harnessCli
@@ -49,7 +49,7 @@ harnessCli
   .argument("<circuit>", "path to the typescript circuit file")
   .argument("<compiled circuit>", "path to the compiled circuit json file")
   .argument("<inputs path>", "path to the inputs json file")
-  .action(prove);
+  .action(handleProve);
 
 harnessCli
   .command("prove-send-query")
@@ -59,7 +59,7 @@ harnessCli
   .argument("<circuit>", "path to the typescript circuit file")
   .argument("<compiled circuit>", "path to the compiled circuit json file")
   .argument("<inputs path>", "path to the inputs json file")
-  .action(proveSendQuery);
+  .action(handleProveSendQuery);
 
 harnessCli
   .command("run")

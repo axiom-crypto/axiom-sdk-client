@@ -1,16 +1,6 @@
-import path from "path";
-import { generateCircuitArtifacts, runTestProve, runTestProveSendQuery } from "../run"
+import { prove, proveSendQuery } from "../run";
 
-export const compile = async (
-  rpcUrl: string,
-  circuitPath: string,
-  circuitInputsPath: string,
-  outputPath: string
-): Promise<void> => {
-  await generateCircuitArtifacts(rpcUrl, circuitPath, circuitInputsPath, outputPath)
-}
-
-export const prove = async (
+export const handleProve = async (
   chainId: string,
   rpcUrl: string,
   circuitPath: string,
@@ -18,13 +8,10 @@ export const prove = async (
   inputsPath: string,
   options?: any,
 ): Promise<void> => {
-  const circuit = (await import(path.resolve(circuitPath))).circuit;
-  const compiledCircuit = await import(path.resolve(compiledCircuitPath));
-  const inputs = (await import(path.resolve(inputsPath))).default;
-  await runTestProve(chainId, rpcUrl, circuit, compiledCircuit, inputs, options);
+  await prove(chainId, rpcUrl, circuitPath, compiledCircuitPath, inputsPath, options);
 }
 
-export const proveSendQuery = async (
+export const handleProveSendQuery = async (
   chainId: string,
   rpcUrl: string,
   circuitPath: string,
@@ -32,8 +19,5 @@ export const proveSendQuery = async (
   inputsPath: string,
   options?: any,
 ): Promise<void> => {
-  const circuit = (await import(path.resolve(circuitPath))).circuit;
-  const compiledCircuit = await import(path.resolve(compiledCircuitPath));
-  const inputs = (await import(path.resolve(inputsPath))).default;
-  await runTestProveSendQuery(chainId, rpcUrl, circuit, compiledCircuit, inputs, options);
+  await proveSendQuery(chainId, rpcUrl, circuitPath, compiledCircuitPath, inputsPath, options);
 }

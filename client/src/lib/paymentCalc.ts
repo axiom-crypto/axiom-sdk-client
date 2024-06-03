@@ -143,7 +143,8 @@ export async function getProjectedL2CallbackCost(
     // projectedCallbackCost = 
     //   maxFeePerGas * (callbackGasLimit + proofVerificationGas) +
     //   opStackGasOracle.getL1Fee(AXIOM_PROOF_CALLDATA_BYTES)
-    let l1Fee = await readContractValueBigInt(
+    const gasUsed = maxFeePerGas * (callbackGasLimit + proofVerificationGas);
+    const l1Fee = await readContractValueBigInt(
       publicClient.extend(publicActionsL2()),
       getOpStackGasPriceOracleAddress() as `0x${string}`,
       getOpStackGasPriceOracleAbi(),
@@ -154,9 +155,10 @@ export async function getProjectedL2CallbackCost(
       if (!(l1FeeMultiplierNumerator && l1FeeMultiplierDenominator)) {
         throw new Error("l1FeeMultiplierNumerator and l1FeeMultiplierDenominator must be both set or both unset");
       }
-      l1Fee = l1Fee * l1FeeMultiplierNumerator / l1FeeMultiplierDenominator;
+      const paddedL1Fee = l1Fee * l1FeeMultiplierNumerator / l1FeeMultiplierDenominator;
+      return gasUsed + paddedL1Fee;
     }
-    return maxFeePerGas * (callbackGasLimit + proofVerificationGas) + l1Fee;
+    return gasUsed + l1Fee;
   } else if (isArbitrumChain(chainId)) {
     // on Arbitrum
     // projectedCallbackCost = 

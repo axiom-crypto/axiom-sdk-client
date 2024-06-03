@@ -45,25 +45,27 @@ describe("Integration tests", () => {
     const folder = path.basename(path.dirname(circuitPath));
     const filename = path.basename(circuitPath).split(".")[0];
     test(`Test ${folder}/${filename}`, async () => {
-      // // Run a test via component functions
-      // await generateInputs(
-      //   circuitPath,
-      //   `./test/integration/circuits/output`,
-      //   `./test/chainData/${CHAIN_ID}.json`
-      // );
-      // await compile(
-      //   rpcUrl,
-      //   circuitPath,
-      //   `./test/integration/circuits/output`,
-      //   `./test/integration/circuits/output`
-      // );
-      // const receipt = await proveSendQuery(
-      //   CHAIN_ID,
-      //   rpcUrl,
-      //   circuitPath,
-      //   `./test/integration/circuits/output/${filename}.compiled.json`,
-      //   `./test/integration/circuits/output/${filename}.inputs.json`
-      // );
+      /*
+        // Run a test via component functions
+        await generateInputs(
+          circuitPath,
+          `./test/integration/circuits/output`,
+          `./test/chainData/${CHAIN_ID}.json`
+        );
+        await compile(
+          rpcUrl,
+          circuitPath,
+          `./test/integration/circuits/output`,
+          `./test/integration/circuits/output`
+        );
+        const receipt = await proveSendQuery(
+          CHAIN_ID,
+          rpcUrl,
+          circuitPath,
+          `./test/integration/circuits/output/${filename}.compiled.json`,
+          `./test/integration/circuits/output/${filename}.inputs.json`
+        );
+      */
 
       // Run a test via standard `run` method
       const receipt = await run({

@@ -91,7 +91,7 @@ export async function runTestProve(
   return axiom;
 }
 
-export async function runTestSendQuery(
+export async function runTestProveSendQuery(
   chainId: string,
   rpcUrl: string,
   circuit: (inputs: any) => Promise<void>,

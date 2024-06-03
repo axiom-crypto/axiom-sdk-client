@@ -1,5 +1,5 @@
 import path from "path";
-import { generateCircuitArtifacts, runTestProve, runTestSendQuery } from "../run"
+import { generateCircuitArtifacts, runTestProve, runTestProveSendQuery } from "../run"
 
 export const compile = async (
   rpcUrl: string,
@@ -24,7 +24,7 @@ export const prove = async (
   await runTestProve(chainId, rpcUrl, circuit, compiledCircuit, inputs, options);
 }
 
-export const sendQuery = async (
+export const proveSendQuery = async (
   chainId: string,
   rpcUrl: string,
   circuitPath: string,
@@ -35,5 +35,5 @@ export const sendQuery = async (
   const circuit = (await import(path.resolve(circuitPath))).circuit;
   const compiledCircuit = await import(path.resolve(compiledCircuitPath));
   const inputs = (await import(path.resolve(inputsPath))).default;
-  await runTestSendQuery(chainId, rpcUrl, circuit, compiledCircuit, inputs, options);
+  await runTestProveSendQuery(chainId, rpcUrl, circuit, compiledCircuit, inputs, options);
 }

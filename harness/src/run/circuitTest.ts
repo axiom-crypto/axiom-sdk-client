@@ -19,12 +19,11 @@ export function parseArgs(): { chainId: string } {
 }
 
 export async function generateCircuitArtifacts(
-  chainId: string,
+  rpcUrl: string,
   circuitPath: string,
   circuitInputsPath: string,
   outputPath: string,
 ) {
-  const rpcUrl = process.env[`RPC_URL_${chainId}`] as string;
   const circuitPathResolved = path.resolve(circuitPath);
   const pathToFile = path.dirname(circuitPathResolved);
   const filename = path.basename(circuitPathResolved);
@@ -66,6 +65,7 @@ export async function generateCircuitArtifacts(
 
 export async function runTestProve(
   chainId: string,
+  rpcUrl: string,
   circuit: (inputs: UserInput<any>) => Promise<void>,
   compiledCircuit: AxiomV2CompiledCircuit,
   inputs: UserInput<any>,
@@ -79,7 +79,7 @@ export async function runTestProve(
     circuit,
     compiledCircuit,
     chainId,
-    rpcUrl: process.env[`RPC_URL_${chainId}`] as string,
+    rpcUrl,
     privateKey: process.env[`PRIVATE_KEY_${chainId}`] as string,
     callback: {
       target: getTarget(chainId, targetOverride),
@@ -93,12 +93,13 @@ export async function runTestProve(
 
 export async function runTestSendQuery(
   chainId: string,
+  rpcUrl: string,
   circuit: (inputs: any) => Promise<void>,
   compiledCircuit: AxiomV2CompiledCircuit,
   inputs: UserInput<any>,
   options?: object,
 ): Promise<TransactionReceipt> {
-  const axiom = await runTestProve(chainId, circuit, compiledCircuit, inputs, options);
+  const axiom = await runTestProve(chainId, rpcUrl, circuit, compiledCircuit, inputs, options);
   const receipt = await axiom.sendQuery();
   return receipt;
 }

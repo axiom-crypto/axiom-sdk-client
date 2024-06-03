@@ -38,12 +38,12 @@ export const run = async (
     circuit,
     compiledCircuit,
     inputs,
-  } = await generateCircuitArtifacts(chainId, options.circuit, circuitInputsPath, outputPath);
+  } = await generateCircuitArtifacts(options.rpcUrl, options.circuit, circuitInputsPath, outputPath);
 
   // Prove or prove+send the query
   if (!options.send) {
-    return await runTestProve(chainId, circuit, compiledCircuit, inputs, options.options);
+    return await runTestProve(chainId, options.rpcUrl, circuit, compiledCircuit, inputs, options.options);
   } else {
-    return await runTestSendQuery(chainId, circuit, compiledCircuit, inputs, options.options);
+    return await runTestSendQuery(chainId, options.rpcUrl, circuit, compiledCircuit, inputs, options.options);
   }
 };

@@ -224,7 +224,6 @@ export class QueryBuilderClient extends QueryBuilderBase {
     return callback;
   }
 
-
   protected async validateCallback(): Promise<boolean> {
     if (this.callback === undefined) {
       return true;

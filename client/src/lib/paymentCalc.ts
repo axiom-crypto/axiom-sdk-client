@@ -28,13 +28,13 @@ export async function calculatePayment(
 
   // Handle supported L2s
   if (isOpStackChain(chainId) || isArbitrumChain(chainId) || isScrollChain(chainId)) {
-    // Get the projected callback cost
+    // Get the raw projected callback cost
     const projectedCallbackCost = await getProjectedL2CallbackCost(
       chainId,
       publicClient,
       BigInt(feeData.maxFeePerGas),
       BigInt(feeData.callbackGasLimit),
-      feeData.proofVerificationGas
+      feeData.proofVerificationGas,
     );
     const minimumPayment = projectedCallbackCost + defaults.axiomQueryFeeWei;
     if (payment < minimumPayment) {
@@ -99,8 +99,16 @@ export async function calculateFeeDataExtended(
   } else if (isOpStackChain(chainId) || isArbitrumChain(chainId) || isScrollChain(chainId)) {
     const defaultAxiomQueryFee = getChainDefaults(chainId).axiomQueryFeeWei;
 
-    // Get the projected callback cost
-    const projectedCallbackCost = await getProjectedL2CallbackCost(chainId, publicClient, maxFeePerGas, callbackGasLimit, proofVerificationGas);
+    // Get the projected callback cost multiplied by a predefined factor
+    const projectedCallbackCost = await getProjectedL2CallbackCost(
+      chainId,
+      publicClient,
+      maxFeePerGas,
+      callbackGasLimit,
+      proofVerificationGas,
+      ClientConstants.L1_FEE_NUMERATOR,
+      ClientConstants.L1_FEE_DENOMINATOR,
+    );
 
     // overrideAxiomQueryFeeL2 = AXIOM_QUERY_FEE + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas)
     const overrideAxiomQueryFeeL2 = defaultAxiomQueryFee + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas);
@@ -127,22 +135,28 @@ export async function getProjectedL2CallbackCost(
   maxFeePerGas: bigint,
   callbackGasLimit: bigint,
   proofVerificationGas: bigint,
+  l1FeeMultiplierNumerator?: bigint,
+  l1FeeMultiplierDenominator?: bigint,
 ): Promise<bigint> {
   if (isOpStackChain(chainId)) {
     // on OP Stack
     // projectedCallbackCost = 
     //   maxFeePerGas * (callbackGasLimit + proofVerificationGas) +
     //   opStackGasOracle.getL1Fee(AXIOM_PROOF_CALLDATA_BYTES)
-    const l1Fee = await readContractValueBigInt(
+    let l1Fee = await readContractValueBigInt(
       publicClient.extend(publicActionsL2()),
       getOpStackGasPriceOracleAddress() as `0x${string}`,
       getOpStackGasPriceOracleAbi(),
       "getL1Fee",
       [ClientConstants.AXIOM_PROOF_CALLDATA_BYTES],
     );
-    // 1.2x mutltiplier for L1 fee value to ensure the query is fulfilled
-    return maxFeePerGas * (callbackGasLimit + proofVerificationGas) + 
-      (l1Fee * ClientConstants.L1_FEE_NUMERATOR / ClientConstants.L1_FEE_DENOMINATOR);
+    if (l1FeeMultiplierNumerator || l1FeeMultiplierDenominator) {
+      if (!(l1FeeMultiplierNumerator && l1FeeMultiplierDenominator)) {
+        throw new Error("l1FeeMultiplierNumerator and l1FeeMultiplierDenominator must be both set or both unset");
+      }
+      l1Fee = l1Fee * l1FeeMultiplierNumerator / l1FeeMultiplierDenominator;
+    }
+    return maxFeePerGas * (callbackGasLimit + proofVerificationGas) + l1Fee;
   } else if (isArbitrumChain(chainId)) {
     // on Arbitrum
     // projectedCallbackCost = 

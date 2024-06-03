@@ -72,6 +72,8 @@ describe("PaymentCalc: Base", () => {
     const args = axiom.getSendQueryArgs();
 
     const queryCost = calculateQueryCost(CHAIN_ID, basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
+    console.log("queryCost", queryCost);
+    console.log("args?.value", args?.value);
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
     expect(percentDiff).toBeLessThan(DIFF_THRESHOLD_X100);
   }, 40000);
@@ -93,6 +95,8 @@ describe("PaymentCalc: Base", () => {
     const args = axiom.getSendQueryArgs();
 
     const queryCost = calculateQueryCost(CHAIN_ID, basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
+    console.log("queryCost", queryCost);
+    console.log("args?.value", args?.value);
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
     expect(percentDiff).toBeLessThan(DIFF_THRESHOLD_X100);
   }, 40000);
@@ -114,6 +118,8 @@ describe("PaymentCalc: Base", () => {
     const args = axiom.getSendQueryArgs();
     
     const queryCost = calculateQueryCost(CHAIN_ID, basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
+    console.log("queryCost", queryCost);
+    console.log("args?.value", args?.value);
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
     expect(percentDiff).toBeLessThan(DIFF_THRESHOLD_X100);
   }, 40000);
@@ -167,6 +173,8 @@ describe("PaymentCalc: Base", () => {
     const args = axiom.getSendQueryArgs();
     
     const queryCost = calculateQueryCost(CHAIN_ID, basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
+    console.log("queryCost", queryCost);
+    console.log("args?.value", args?.value);
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
     expect(percentDiff).toBeLessThan(DIFF_THRESHOLD_X100);
   }, 40000);

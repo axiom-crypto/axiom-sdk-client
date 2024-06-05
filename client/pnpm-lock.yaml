@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@axiom-crypto/circuit':
-        specifier: 2.1.0-rc.0
-        version: 2.1.0-rc.0(typescript@5.4.5)
+        specifier: 2.1.0-rc.1
+        version: 2.1.0-rc.1(typescript@5.4.5)
       chalk:
         specifier: ^4.1.2
         version: 4.1.2
@@ -77,8 +77,8 @@ packages:
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
 
-  '@axiom-crypto/circuit@2.1.0-rc.0':
-    resolution: {integrity: sha512-hk8gv8DG1DQIc6uNEFoRkoehBj1iaqwtSr8z6PhwKQQUEq5Fat0Gg3W0krK21lQrASuVaot7g6uNAMKgMVe4Og==}
+  '@axiom-crypto/circuit@2.1.0-rc.1':
+    resolution: {integrity: sha512-epi6HTekhDTLgqt/8+WRDlFLok+OU6WPvi55rb4CDHgjiPsy7fl4te8y5mhhBZ3iEm/JzfzsKuiq6pAfFaUpNg==}
 
   '@axiom-crypto/halo2-lib-js@0.3.4':
     resolution: {integrity: sha512-E/i7EqlcvjcfXZejL8HcpvFQIIMJxcMrVBXsdaDJGgEXVc6pEDJ07Hy3drLbhQ007ZJ8aultw3HSfD9gJRkh4w==}
@@ -1550,7 +1550,7 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@axiom-crypto/circuit@2.1.0-rc.0(typescript@5.4.5)':
+  '@axiom-crypto/circuit@2.1.0-rc.1(typescript@5.4.5)':
     dependencies:
       '@axiom-crypto/halo2-lib-js': 0.3.4
       '@axiom-crypto/halo2-wasm': 0.3.4

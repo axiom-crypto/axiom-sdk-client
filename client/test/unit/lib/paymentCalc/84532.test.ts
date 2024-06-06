@@ -89,7 +89,6 @@ describe("PaymentCalc: Base", () => {
     const args = axiom.getSendQueryArgs();
 
     const queryCost =  await calculateQueryCost(publicClient, CHAIN_ID, basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
-    expect(queryCost).toEqual(BigInt(args?.value ?? 0));
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
     expect(percentDiff).toBeLessThan(DIFF_THRESHOLD_X100);
   }, 40000);

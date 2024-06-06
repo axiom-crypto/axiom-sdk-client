@@ -11,8 +11,19 @@ const DIFF_THRESHOLD_X100 = 800n; // 8%
 
 describe("PaymentCalc: Base", () => {
   const CHAIN_ID = "84532"; // Base Sepolia 
+  let baseChain = viemChain(CHAIN_ID, process.env[`RPC_URL_${CHAIN_ID}`] as string);
+  baseChain = { 
+    ...baseChain, 
+    contracts: {
+      multicall3: {
+        address: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        blockCreated: 1059647,
+      }
+    } 
+  };
+
   const publicClient = createPublicClient({
-    chain: viemChain(CHAIN_ID, process.env[`RPC_URL_${CHAIN_ID}`] as string),
+    chain: baseChain,
     transport: http(process.env[`RPC_URL_${CHAIN_ID}`] as string),
   });
 
@@ -33,27 +44,33 @@ describe("PaymentCalc: Base", () => {
   let blobBaseFee: bigint;
 
   beforeEach(async () => {
-    // Read values from chain
-    baseFeeScalar = BigInt(await publicClient.readContract({
+    const l1BlockAttributesContract = {
       address: getOpStackL1BlockAttributesAddress() as `0x${string}`,
       abi: getOpStackL1BlockAttributesAbi(),
-      functionName: "baseFeeScalar",
-    }) as bigint);
-    basefee = BigInt(await publicClient.readContract({
-      address: getOpStackL1BlockAttributesAddress() as `0x${string}`,
-      abi: getOpStackL1BlockAttributesAbi(),
-      functionName: "basefee",
-    }) as bigint);
-    blobBaseFeeScalar = BigInt(await publicClient.readContract({
-      address: getOpStackL1BlockAttributesAddress() as `0x${string}`,
-      abi: getOpStackL1BlockAttributesAbi(),
-      functionName: "blobBaseFeeScalar",
-    }) as bigint);
-    blobBaseFee = BigInt(await publicClient.readContract({
-      address: getOpStackL1BlockAttributesAddress() as `0x${string}`,
-      abi: getOpStackL1BlockAttributesAbi(),
-      functionName: "blobBaseFee",
-    }) as bigint);
+    } as const;
+
+    [baseFeeScalar, basefee, blobBaseFeeScalar, blobBaseFee] = (
+      await publicClient.multicall({
+        contracts: [
+          {
+            ...l1BlockAttributesContract,
+            functionName: "baseFeeScalar",
+          },
+          {
+            ...l1BlockAttributesContract,
+            functionName: "basefee",
+          },
+          {
+            ...l1BlockAttributesContract,
+            functionName: "blobBaseFeeScalar",
+          },
+          {
+            ...l1BlockAttributesContract,
+            functionName: "blobBaseFee",
+          },
+        ]
+      })
+    ).map(({ result }) => result as bigint);
   });
 
   test("Payment calculation default based on options", async () => {
@@ -71,7 +88,8 @@ describe("PaymentCalc: Base", () => {
     await axiom.prove(inputs);
     const args = axiom.getSendQueryArgs();
 
-    const queryCost = calculateQueryCost(CHAIN_ID, basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
+    const queryCost =  await calculateQueryCost(publicClient, CHAIN_ID, basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
+    expect(queryCost).toEqual(BigInt(args?.value ?? 0));
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
     expect(percentDiff).toBeLessThan(DIFF_THRESHOLD_X100);
   }, 40000);
@@ -92,7 +110,7 @@ describe("PaymentCalc: Base", () => {
     await axiom.prove(inputs);
     const args = axiom.getSendQueryArgs();
 
-    const queryCost = calculateQueryCost(CHAIN_ID, basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
+    const queryCost = await calculateQueryCost(publicClient, CHAIN_ID, basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
     expect(percentDiff).toBeLessThan(DIFF_THRESHOLD_X100);
   }, 40000);
@@ -113,7 +131,7 @@ describe("PaymentCalc: Base", () => {
     await axiom.prove(inputs);
     const args = axiom.getSendQueryArgs();
     
-    const queryCost = calculateQueryCost(CHAIN_ID, basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
+    const queryCost = await calculateQueryCost(publicClient, CHAIN_ID, basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
     expect(percentDiff).toBeLessThan(DIFF_THRESHOLD_X100);
   }, 40000);
@@ -166,7 +184,7 @@ describe("PaymentCalc: Base", () => {
     await axiom.prove(inputs);
     const args = axiom.getSendQueryArgs();
     
-    const queryCost = calculateQueryCost(CHAIN_ID, basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
+    const queryCost = await calculateQueryCost(publicClient, CHAIN_ID, basefee, baseFeeScalar, blobBaseFee, blobBaseFeeScalar, maxFeePerGas, callbackGasLimit, proofVerificationGas);
     let percentDiff = percentDiffX100(queryCost, BigInt(args?.value ?? 0));
     expect(percentDiff).toBeLessThan(DIFF_THRESHOLD_X100);
   }, 40000);

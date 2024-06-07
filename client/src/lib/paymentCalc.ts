@@ -111,6 +111,7 @@ export async function calculateFeeDataExtended(
     );
 
     // overrideAxiomQueryFeeL2 = AXIOM_QUERY_FEE + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas)
+    // overrideAxiomQueryFeeL2 = AXIOM_QUERY_FEE + paddedL1Fee
     const overrideAxiomQueryFeeL2 = defaultAxiomQueryFee + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas);
     
     // overrideAxiomQueryFee = max(overrideAxiomQueryFeeL2, overrideAxiomQueryFee, AXIOM_QUERY_FEE)

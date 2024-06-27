@@ -47,6 +47,7 @@ export const buildSendQuery = async (input: {
 
   const config: QueryBuilderClientConfig = {
     sourceChainId,
+    targetChainId,
     rpcUrl: sourceRpcUrl,
     caller: input.caller,
     version: "v2",

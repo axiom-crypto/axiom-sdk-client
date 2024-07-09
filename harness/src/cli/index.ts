@@ -49,6 +49,8 @@ harnessCli
   .argument("<circuit>", "path to the typescript circuit file")
   .argument("<compiled circuit>", "path to the compiled circuit json file")
   .argument("<inputs path>", "path to the inputs json file")
+  .option("-t, --target-chain-id <chain id>", "(crosschain) target chain id")
+  .option("-tr, --target-rpc-url <https url>", "(crosschain) target chain JSON-RPC provider URL (https)")
   .action(handleProve);
 
 harnessCli
@@ -59,6 +61,8 @@ harnessCli
   .argument("<circuit>", "path to the typescript circuit file")
   .argument("<compiled circuit>", "path to the compiled circuit json file")
   .argument("<inputs path>", "path to the inputs json file")
+  .option("-t, --target-chain-id <chain id>", "(crosschain) target chain id")
+  .option("-tr, --target-rpc-url <https url>", "(crosschain) target chain JSON-RPC provider URL (https)")
   .action(handleProveSendQuery);
 
 harnessCli
@@ -71,6 +75,7 @@ harnessCli
   .option("-ci, --circuit-inputs-path <path>", "Path to circuit inputs (default: <chainDataPath>/<chainId>)")
   .option("-f, --function <fnName>", "Function name (default: circuit)", "circuit")
   .option("--send", "Send query after proving")
+  .option("-tr, --target-rpc-url <https url>", "(crosschain) target chain JSON-RPC provider URL (https)")
   .action(run);
 
 harnessCli.parseAsync(process.argv);

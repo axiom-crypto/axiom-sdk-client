@@ -1,9 +1,9 @@
 import fs from "fs";
 import path from "path";
-import { generateCircuitArtifacts, runTestProve, runTestProveSendQuery } from "./circuitTest"
+import { generateCircuitArtifacts, runTestProve, runTestProveCrosschain, runTestProveSendQuery, runTestProveSendQueryCrosschain } from "./circuitTest"
 import { TransactionReceipt } from "viem";
-import { Axiom } from "@axiom-crypto/client";
 import { generateCircuitInputs } from "./inputs";
+import { AxiomCore } from "@axiom-crypto/client/axiom/axiomCore";
 
 export const generateInputs = async (
   circuitPath: string,
@@ -30,11 +30,23 @@ export const prove = async (
   compiledCircuitPath: string,
   inputsPath: string,
   options?: any,
-): Promise<Axiom<any>> => {
+): Promise<AxiomCore<any, any>> => {
   const circuit = (await import(path.resolve(circuitPath))).circuit;
   const compiledCircuit = await import(path.resolve(compiledCircuitPath));
   const inputs = (await import(path.resolve(inputsPath))).default;
-  return await runTestProve(chainId, rpcUrl, circuit, compiledCircuit, inputs, options);
+  const crosschain = options.targetRpcUrl && options.targetChainId;
+  if (crosschain) {
+    return await runTestProveCrosschain(
+      { chainId, rpcUrl },
+      { chainId: options.targetChainId, rpcUrl: options.targetRpcUrl },
+      circuit,
+      compiledCircuit,
+      inputs,
+      options
+    );
+  } else {
+    return await runTestProve(chainId, rpcUrl, circuit, compiledCircuit, inputs, options);
+  }
 }
 
 export const proveSendQuery = async (
@@ -44,9 +56,21 @@ export const proveSendQuery = async (
   compiledCircuitPath: string,
   inputsPath: string,
   options?: any,
-): Promise<TransactionReceipt> => {
+): Promise<[AxiomCore<any, any>, TransactionReceipt]> => {
   const circuit = (await import(path.resolve(circuitPath))).circuit;
   const compiledCircuit = await import(path.resolve(compiledCircuitPath));
   const inputs = (await import(path.resolve(inputsPath))).default;
-  return await runTestProveSendQuery(chainId, rpcUrl, circuit, compiledCircuit, inputs, options);
+  const crosschain = options.targetRpcUrl && options.targetChainId;
+  if (crosschain) {
+    return await runTestProveSendQueryCrosschain(
+      { chainId, rpcUrl },
+      { chainId: options.targetChainId, rpcUrl: options.targetRpcUrl },
+      circuit,
+      compiledCircuit,
+      inputs,
+      options
+    );
+  } else {
+    return await runTestProveSendQuery(chainId, rpcUrl, circuit, compiledCircuit, inputs, options);
+  }
 }

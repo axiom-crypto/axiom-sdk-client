@@ -68,12 +68,13 @@ describe("Integration tests", () => {
       */
 
       // Run a test via standard `run` method
-      const receipt = await run({
+      const [axiom, receipt] = await run({
         circuit: circuitPath,
         rpcUrl,
         data,
         send: true,
       })
+      expect(axiom.getSendQueryArgs !== undefined).toBe(true);
       expect(receipt.status).toEqual("success");
     });
   }
@@ -91,18 +92,19 @@ describe("Integration tests", () => {
   });
 
   test(`Custom capacity (256)`, async () => {
-    const receipt = await run({
+    const [axiom, receipt] = await run({
       circuit: "./test/integration/circuits/computeQuery/simpleWithCapacity.circuit.ts",
       rpcUrl,
       data,
       send: true,
-      options: { 
+      options: {
         capacity: {
           maxOutputs: 256,
           maxSubqueries: 256,
         },
       },
     });
+    expect(axiom.getSendQueryArgs !== undefined).toBe(true);
     expect(receipt.status).toEqual("success");
   });
 

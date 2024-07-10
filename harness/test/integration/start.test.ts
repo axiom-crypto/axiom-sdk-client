@@ -74,6 +74,7 @@ describe("Integration tests", () => {
         data,
         send: true,
       })
+      expect(axiom.getSendQueryArgs !== undefined).toBe(true);
       expect(receipt.status).toEqual("success");
     });
   }
@@ -103,6 +104,7 @@ describe("Integration tests", () => {
         },
       },
     });
+    expect(axiom.getSendQueryArgs !== undefined).toBe(true);
     expect(receipt.status).toEqual("success");
   });
 

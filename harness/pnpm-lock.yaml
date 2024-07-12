@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@axiom-crypto/client':
-        specifier: 2.1.0-rc.2
-        version: 2.1.0-rc.2(typescript@5.3.3)
+        specifier: 2.1.0-rc.4
+        version: 2.1.0-rc.4(typescript@5.3.3)
       '@axiom-crypto/tools':
         specifier: 2.1.1
         version: 2.1.1
@@ -65,11 +65,11 @@ packages:
     resolution: {integrity: sha512-lFMjJTrFL3j7L9yBxwYfCq2k6qqwHyzuUl/XBnif78PWTJYyL/dfowQHWE3sp6U6ZzqWiiIZnpTMO96zhkjwtg==}
     engines: {node: '>=6.0.0'}
 
-  '@axiom-crypto/circuit@2.1.0-rc.2':
-    resolution: {integrity: sha512-Be1XHXj1JVoY7dmS67MW9kKa6bpAeTlurDrr+zbnD7Bnj0plQ57PPu/eBrPPcxe24sNEeqp252mawuFa36jjSg==}
+  '@axiom-crypto/circuit@2.1.0-rc.4':
+    resolution: {integrity: sha512-sZJpECLvuL8YK98hOjwaZtT4nUZ1LnCoSq/tmZ5MADl0aG2NY3v5iS6GspdVE8vOnauhJ8Tcj3yMEefdfcwhLQ==}
 
-  '@axiom-crypto/client@2.1.0-rc.2':
-    resolution: {integrity: sha512-LpHWLvu31e7QP8KSY0ZoqTTTvAOFA6znMhlNHkxfQryf3h2k4/nLQLJsCVcE5BhksrQmOesCKmn1quepBoqplg==}
+  '@axiom-crypto/client@2.1.0-rc.4':
+    resolution: {integrity: sha512-FNCszF9IZgJMlxaWHv9+j/k6Rx7oLRaYd+jRJms61TW3h48TvuqYFiPqM++b7X0T+Nbkk8GX5MQjob1j1q4Hkg==}
     hasBin: true
 
   '@axiom-crypto/halo2-lib-js@0.3.4':
@@ -1539,7 +1539,7 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.3
       '@jridgewell/trace-mapping': 0.3.20
 
-  '@axiom-crypto/circuit@2.1.0-rc.2(typescript@5.3.3)':
+  '@axiom-crypto/circuit@2.1.0-rc.4(typescript@5.3.3)':
     dependencies:
       '@axiom-crypto/halo2-lib-js': 0.3.4
       '@axiom-crypto/halo2-wasm': 0.3.4
@@ -1554,9 +1554,9 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@axiom-crypto/client@2.1.0-rc.2(typescript@5.3.3)':
+  '@axiom-crypto/client@2.1.0-rc.4(typescript@5.3.3)':
     dependencies:
-      '@axiom-crypto/circuit': 2.1.0-rc.2(typescript@5.3.3)
+      '@axiom-crypto/circuit': 2.1.0-rc.4(typescript@5.3.3)
       chalk: 4.1.2
       commander: 11.1.0
       prompts: 2.4.2

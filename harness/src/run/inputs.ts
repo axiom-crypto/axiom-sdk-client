@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-export function generateInputs(file: string, outputPath: string, chainData: any) {
+export function generateCircuitInputs(file: string, outputPath: string, chainData: any) {
   // Read the entire file content
   const fileContent = fs.readFileSync(file, 'utf8');
 

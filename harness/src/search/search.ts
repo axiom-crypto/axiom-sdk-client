@@ -9,7 +9,7 @@ dotenv.config();
 
 export const search = async (
   options: {
-    provider: string;
+    rpcUrl: string;
     samples?: number;
     interval?: number;
     block?: number;
@@ -18,7 +18,7 @@ export const search = async (
     output?: string;
   }
 ) => {
-  const provider = new ethers.JsonRpcProvider(options.provider);
+  const provider = new ethers.JsonRpcProvider(options.rpcUrl);
   let currentBlock = await provider.getBlockNumber();
   const numSamples = options.samples ?? BLOCK_SAMPLES;
   const interval = options.interval ?? BLOCK_INTERVAL;

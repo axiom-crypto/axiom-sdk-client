@@ -1,11 +1,13 @@
 import path from 'path';
-import { findCircuitFiles, run } from "../../src/run";
+import { findCircuitFiles, run, generateInputs, compile, proveSendQuery } from "../../src/run";
 import { rmSync } from 'fs';
 
 if (process.env.CHAIN_ID === undefined) {
   throw new Error(`CHAIN_ID environment variable must be defined`);
 }
 const CHAIN_ID = process.env.CHAIN_ID;
+const TARGET_CHAIN_ID = process.env.TARGET_CHAIN_ID || undefined;
+const TARGET_RPC_URL = process.env[`RPC_URL_${TARGET_CHAIN_ID}`] || undefined;
 
 jest.setTimeout(240000);
 
@@ -18,8 +20,8 @@ const SPECIAL_TESTS = [
 
 // NOTE: A valid data file in the `test/chainData` directory must be provided
 describe("Integration tests", () => {
-  if (process.env[`PROVIDER_URI_${CHAIN_ID}`] === undefined) {
-    throw new Error(`PROVIDER_URI_${CHAIN_ID} environment variable must be defined`);
+  if (process.env[`RPC_URL_${CHAIN_ID}`] === undefined) {
+    throw new Error(`RPC_URL_${CHAIN_ID} environment variable must be defined`);
   }
   if (process.env[`PRIVATE_KEY_${CHAIN_ID}`] === undefined) {
     throw new Error(`PRIVATE_KEY_${CHAIN_ID} environment variable must be defined`);
@@ -34,7 +36,7 @@ describe("Integration tests", () => {
     }
   }
 
-  const provider = process.env[`PROVIDER_URI_${CHAIN_ID}`] as string;
+  const rpcUrl = process.env[`RPC_URL_${CHAIN_ID}`] as string;
   const data = `./test/chainData/${CHAIN_ID}.json`;
 
   beforeAll(async () => {
@@ -43,14 +45,40 @@ describe("Integration tests", () => {
 
   for (const circuitPath of standardTests) {
     const folder = path.basename(path.dirname(circuitPath));
-    const filename = path.basename(circuitPath);
+    const filename = path.basename(circuitPath).split(".")[0];
     test(`Test ${folder}/${filename}`, async () => {
-      const receipt = await run({
+      /*
+        // Run a test via component functions
+        await generateInputs(
+          circuitPath,
+          `./test/integration/circuits/output`,
+          `./test/chainData/${CHAIN_ID}.json`
+        );
+        await compile(
+          rpcUrl,
+          circuitPath,
+          `./test/integration/circuits/output`,
+          `./test/integration/circuits/output`
+        );
+        const receipt = await proveSendQuery(
+          CHAIN_ID,
+          rpcUrl,
+          circuitPath,
+          `./test/integration/circuits/output/${filename}.compiled.json`,
+          `./test/integration/circuits/output/${filename}.inputs.json`
+        );
+      */
+
+      // Run a test via standard `run` method
+      const [axiom, receipt] = await run({
         circuit: circuitPath,
-        provider,
+        rpcUrl,
+        targetRpcUrl: TARGET_RPC_URL,
         data,
         send: true,
       })
+      console.log(receipt);
+      expect(axiom.getSendQueryArgs !== undefined).toBe(true);
       expect(receipt.status).toEqual("success");
     });
   }
@@ -59,7 +87,8 @@ describe("Integration tests", () => {
     const testFn = async () => {
       await run({
         circuit: "./test/integration/circuits/capacityDataQuery/size129Header.circuit.ts",
-        provider,
+        rpcUrl,
+        targetRpcUrl: TARGET_RPC_URL,
         data,
         send: true,
       });
@@ -68,18 +97,21 @@ describe("Integration tests", () => {
   });
 
   test(`Custom capacity (256)`, async () => {
-    const receipt = await run({
+    const [axiom, receipt] = await run({
       circuit: "./test/integration/circuits/computeQuery/simpleWithCapacity.circuit.ts",
-      provider,
+      rpcUrl,
+      targetRpcUrl: TARGET_RPC_URL,
       data,
       send: true,
-      options: { 
+      options: {
         capacity: {
           maxOutputs: 256,
           maxSubqueries: 256,
         },
       },
     });
+    console.log(receipt);
+    expect(axiom.getSendQueryArgs !== undefined).toBe(true);
     expect(receipt.status).toEqual("success");
   });
 
@@ -90,7 +122,8 @@ describe("Integration tests", () => {
     const testFn = async () => {
       await run({
         circuit: "./test/integration/circuits/eip4844/eip4844receipt.circuit.ts",
-        provider,
+        rpcUrl,
+        targetRpcUrl: TARGET_RPC_URL,
         data,
         send: true,
       });

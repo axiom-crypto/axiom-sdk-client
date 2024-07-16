@@ -1,7 +1,7 @@
 import { execSync } from "child_process";
 import { existsSync, rmSync } from "fs";
 import path from "path";
-import { Axiom, AxiomV2CompiledCircuit, UserInput } from "@axiom-crypto/client";
+import { Axiom, AxiomCrosschain, AxiomV2CompiledCircuit, BridgeType, ChainConfig, UserInput } from "@axiom-crypto/client";
 import { TransactionReceipt } from "viem";
 
 export function parseArgs(): { chainId: string } {
@@ -19,22 +19,21 @@ export function parseArgs(): { chainId: string } {
 }
 
 export async function generateCircuitArtifacts(
-  chainId: string,
+  rpcUrl: string,
   circuitPath: string,
   circuitInputsPath: string,
   outputPath: string,
 ) {
-  const provider = process.env[`PROVIDER_URI_${chainId}`] as string;
   const circuitPathResolved = path.resolve(circuitPath);
   const pathToFile = path.dirname(circuitPathResolved);
   const filename = path.basename(circuitPathResolved);
   const filebase = filename.split(".")[0];
   const folder = path.basename(path.dirname(circuitPathResolved));
-  
+
   const compiledPath = path.resolve(`${outputPath}/${filebase}.compiled.json`);
   const inputsPath = path.resolve(`${circuitInputsPath}/${filebase}.inputs.json`);
   const defaultInputsPath = path.resolve(`${circuitInputsPath}/${filebase}.defaultInputs.json`);
-  
+
   let externalDefaults = false;
   if (existsSync(defaultInputsPath)) {
     externalDefaults = true;
@@ -44,7 +43,7 @@ export async function generateCircuitArtifacts(
     rmSync(compiledPath);
   }
 
-  execSync(`npx axiom circuit compile ${circuitPathResolved} -o ${compiledPath} ${externalDefaults ? "-d " + defaultInputsPath : ""} -p ${provider}`, { stdio: 'inherit' });
+  execSync(`npx axiom circuit compile ${circuitPathResolved} -o ${compiledPath} ${externalDefaults ? "-d " + defaultInputsPath : ""} -sr ${rpcUrl}`, { stdio: 'inherit' });
 
   if (externalDefaults) {
     const defaultInputs = (await import(defaultInputsPath)).default;
@@ -66,6 +65,7 @@ export async function generateCircuitArtifacts(
 
 export async function runTestProve(
   chainId: string,
+  rpcUrl: string,
   circuit: (inputs: UserInput<any>) => Promise<void>,
   compiledCircuit: AxiomV2CompiledCircuit,
   inputs: UserInput<any>,
@@ -79,10 +79,10 @@ export async function runTestProve(
     circuit,
     compiledCircuit,
     chainId,
-    provider: process.env[`PROVIDER_URI_${chainId}`] as string,
+    rpcUrl,
     privateKey: process.env[`PRIVATE_KEY_${chainId}`] as string,
     callback: {
-      target: getTarget(chainId, targetOverride),
+      target: getCallbackTarget(chainId, targetOverride),
     },
     ...options,
   });
@@ -91,23 +91,56 @@ export async function runTestProve(
   return axiom;
 }
 
-export async function runTestSendQuery(
+export async function runTestProveCrosschain(
+  source: ChainConfig,
+  target: ChainConfig,
+  circuit: (inputs: UserInput<any>) => Promise<void>,
+  compiledCircuit: AxiomV2CompiledCircuit,
+  inputs: UserInput<any>,
+  options?: any,
+): Promise<AxiomCrosschain<any>> {
+  let callbackTargetOverride = undefined;
+  if (options?.callback?.target !== undefined) {
+    callbackTargetOverride = options.callback.target;
+  }
+  const axiom = new AxiomCrosschain({
+    circuit,
+    compiledCircuit,
+    source,
+    target: {
+      chainId: target.chainId,
+      rpcUrl: target.rpcUrl,
+      privateKey: process.env[`PRIVATE_KEY_${target.chainId}`] as string,
+    },
+    bridgeType: BridgeType.BlockhashOracle,
+    callback: {
+      target: getCallbackTarget(target.chainId, callbackTargetOverride),
+    },
+    ...options,
+  });
+  await axiom.init();
+  await axiom.prove(inputs);
+  return axiom;
+}
+
+export async function runTestProveSendQuery(
   chainId: string,
+  rpcUrl: string,
   circuit: (inputs: any) => Promise<void>,
   compiledCircuit: AxiomV2CompiledCircuit,
   inputs: UserInput<any>,
   options?: object,
-): Promise<TransactionReceipt> {
-  const axiom = await runTestProve(chainId, circuit, compiledCircuit, inputs, options);
+): Promise<[Axiom<any>, TransactionReceipt]> {
+  const axiom = await runTestProve(chainId, rpcUrl, circuit, compiledCircuit, inputs, options);
   const receipt = await axiom.sendQuery();
-  return receipt;
+  return [axiom, receipt];
 }
 
-export function getTarget(chainId: string, override?: string) {
+export function getCallbackTarget(chainId: string, override?: string) {
   if (override) {
     return override;
   }
-  switch(chainId) {
+  switch (chainId) {
     case "1":
       return "0x4D36100eA7BD6F685Fd44EB6BE5ccE7A92047581";
     case "11155111":
@@ -119,4 +152,17 @@ export function getTarget(chainId: string, override?: string) {
     default:
       throw new Error(`No target found for chainId: ${chainId}`);
   }
+}
+
+export async function runTestProveSendQueryCrosschain(
+  source: ChainConfig,
+  target: ChainConfig,
+  circuit: (inputs: UserInput<any>) => Promise<void>,
+  compiledCircuit: AxiomV2CompiledCircuit,
+  inputs: UserInput<any>,
+  options?: any,
+): Promise<[AxiomCrosschain<any>, TransactionReceipt]> {
+  const axiom = await runTestProveCrosschain(source, target, circuit, compiledCircuit, inputs, options);
+  const receipt = await axiom.sendQuery();
+  return [axiom, receipt];
 }

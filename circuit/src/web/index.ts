@@ -4,7 +4,7 @@ import { AxiomV2CircuitCapacity } from "../types";
 
 export class AxiomBaseCircuit<T> extends AxiomBaseCircuitScaffold<T> {
     constructor(inputs: {
-        provider: string,
+        rpcUrl: string,
         f: (inputs: T) => Promise<void>,
         inputSchema?: string,
         mock?: boolean,

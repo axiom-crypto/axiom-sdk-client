@@ -1,49 +1,63 @@
 import fs from 'fs';
 import path from 'path';
 import { JsonRpcProvider } from "ethers";
-import { generateCircuitArtifacts, runTestProve, runTestSendQuery } from "./circuitTest";
-import { generateInputs } from './inputs';
+import { generateCircuitInputs } from './inputs';
+import { generateCircuitArtifacts, runTestProve, runTestProveCrosschain, runTestProveSendQuery, runTestProveSendQueryCrosschain } from "./circuitTest";
+import { ChainConfig } from '@axiom-crypto/client';
 
 export const run = async (
-  options: {
+  input: {
     circuit: string;
-    provider: string;
+    rpcUrl: string;
     data: string;
     circuitInputsPath?: string;
     output?: string;
     function?: string;
     send?: boolean;
     options?: any;
+    targetRpcUrl?: string,
   }
 ): Promise<any> => {
-  const chainDataPath = path.dirname(options.data);
-  const data = JSON.parse(fs.readFileSync(options.data, 'utf8'));
-  const provider = new JsonRpcProvider(options.provider);
+  const chainDataPath = path.dirname(input.data);
+  const data = JSON.parse(fs.readFileSync(input.data, 'utf8'));
+  const provider = new JsonRpcProvider(input.rpcUrl);
   const chainId = (await provider.getNetwork()).chainId.toString();
 
-  let outputPath = path.join(path.dirname(options.circuit), '../output');
-  if (options.output) {
-    outputPath = options.output;
+  let outputPath = path.join(path.dirname(input.circuit), '../output');
+  if (input.output) {
+    outputPath = input.output;
   }
   let circuitInputsPath = path.join(chainDataPath, chainId);
-  if (options.circuitInputsPath) {
-    circuitInputsPath = options.circuitInputsPath;
+  if (input.circuitInputsPath) {
+    circuitInputsPath = input.circuitInputsPath;
   }
 
-  // Geneate the input values for this circuit file
-  generateInputs(options.circuit, circuitInputsPath, data);
-  
+  // Generate the input values for this circuit file
+  generateCircuitInputs(input.circuit, circuitInputsPath, data);
+
   // Compile the circuit
-  const { 
+  const {
     circuit,
     compiledCircuit,
     inputs,
-  } = await generateCircuitArtifacts(chainId, options.circuit, circuitInputsPath, outputPath);
+  } = await generateCircuitArtifacts(input.rpcUrl, input.circuit, circuitInputsPath, outputPath);
 
-  // Prove or prove+send the query
-  if (!options.send) {
-    return await runTestProve(chainId, circuit, compiledCircuit, inputs, options.options);
+  let targetChainId = undefined;
+  if (input.targetRpcUrl) {
+    const targetProvider = new JsonRpcProvider(input.targetRpcUrl);
+    targetChainId = (await targetProvider.getNetwork()).chainId.toString();
+  }
+
+  // Prove or prove+sendQuery
+  if (input.targetRpcUrl) {
+    const sourceConfig: ChainConfig = { chainId, rpcUrl: input.rpcUrl };
+    const targetConfig: ChainConfig = { chainId: targetChainId!, rpcUrl: input.targetRpcUrl };
+    return !input.send ?
+      await runTestProveCrosschain(sourceConfig, targetConfig, circuit, compiledCircuit, inputs, input.options) :
+      await runTestProveSendQueryCrosschain(sourceConfig, targetConfig, circuit, compiledCircuit, inputs, input.options);
   } else {
-    return await runTestSendQuery(chainId, circuit, compiledCircuit, inputs, options.options);
+    return !input.send ?
+      await runTestProve(chainId, input.rpcUrl, circuit, compiledCircuit, inputs, input.options) :
+      await runTestProveSendQuery(chainId, input.rpcUrl, circuit, compiledCircuit, inputs, input.options);
   }
 };

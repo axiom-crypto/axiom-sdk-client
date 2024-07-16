@@ -1,119 +1,81 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useRef,
-  useState,
-} from "react";
-import { Remote, wrap } from "comlink";
-import { AxiomCircuit } from "./worker";
 import { 
   AxiomV2CompiledCircuit,
-  AxiomV2Callback,
-  AxiomV2SendQueryArgs,
-  AxiomV2QueryOptions,
-  DEFAULT_CAPACITY,
-} from "@axiom-crypto/client";
-
-type AxiomCircuitContextType<T> = {
-  setParams: (inputs: T, callbackTarget: string, callbackExtraData: string, caller: string) => void,
-  areParamsSet: boolean,
-  build: () => Promise<AxiomV2SendQueryArgs | null>,
-  builtQuery: AxiomV2SendQueryArgs | null,
-  reset: () => void,
-}
+} from "@axiom-crypto/client/types/";
+import {
+  AxiomCoreCircuitProvider,
+  AxiomCircuitContextType,
+  useAxiomCoreCircuit,
+} from "./AxiomCoreCircuitProvider";
+import { AxiomWorker } from "./workers/axiomWorker";
+import { Remote, wrap } from "comlink";
+import React, { createContext, useContext, useEffect, useRef } from "react";
 
 const AxiomCircuitContext = createContext<AxiomCircuitContextType<any> | null>(null);
 
-const useAxiomCircuit = <T,>(): AxiomCircuitContextType<T> => {
+export const useAxiomCircuit = <T,>(): AxiomCircuitContextType<T> => {
   const context = useContext(AxiomCircuitContext);
   if (context === null) {
-    throw new Error("useAxiomCircuit must be used within a AxiomCircuitProvider");
+    throw new Error("useAxiomCircuit must be used within AxiomCircuitProvider");
   }
   return context;
 }
 
-function AxiomCircuitProvider({
-  provider,
+const AxiomIntermediateCircuitProvider = <T,>({
   compiledCircuit,
   chainId,
+  rpcUrl,
   children,
 }: {
-  provider: string,
-  compiledCircuit: AxiomV2CompiledCircuit,
   chainId: number | string | bigint,
+  rpcUrl: string,
+  compiledCircuit: AxiomV2CompiledCircuit,
   children: React.ReactNode,
-}) {
-  const [inputs, setInputs] = useState<any | null>(null);
-  const [options, setOptions] = useState<AxiomV2QueryOptions | null>(null);
-  const [callback, setCallback] = useState<AxiomV2Callback | null>(null);
-  const [caller, setCaller] = useState<string | null>(null);
-  const [builtQuery, setBuiltQuery] = useState<AxiomV2SendQueryArgs | null>(null);
+}) => {
+  const {
+    setParams,
+    areParamsSet,
+    build,
+    builtQuery,
+    reset,
+    callback,
+    caller,
+    options,
+    setWorkerApi,
+  } = useAxiomCoreCircuit();
 
-  const workerApi = useRef<Remote<AxiomCircuit>>();
+  const workerApi = useRef<Remote<AxiomWorker<T>>>();
 
-  const build = async () => {
-    if (!inputs || !callback || !caller) {
-      console.warn("`inputs` or `callback` or `caller` not set");
-      return null;
-    }
-    if (builtQuery !== null) {
-      return null;
-    }
+  useEffect(() => {
+    let isMounted = true; 
 
-    const setup = async () => {
-      const worker = new Worker(new URL("./worker", import.meta.url), { type: "module" });
-      const MyAxiomCircuit = wrap<typeof AxiomCircuit>(worker);
-      workerApi.current = await new MyAxiomCircuit({
-        provider,
-        inputSchema: compiledCircuit.inputSchema,
-        chainId,
-        f: compiledCircuit.circuit,
-      });
-      await workerApi.current.setup(window.navigator.hardwareConcurrency);
-      await workerApi.current?.loadSaved({
-        config: compiledCircuit.config,
-        capacity: compiledCircuit.capacity ?? DEFAULT_CAPACITY,
-        vk: compiledCircuit.vk,
-      });
-    }
-
-    const generateQuery = async () => {
-      await workerApi.current?.run(inputs);
-      const res = await workerApi.current?.getSendQueryArgs({
-        callbackTarget: callback.target,
-        callbackExtraData: callback.extraData,
-        callerAddress: caller,
-        options: options ?? {},
-      });
-      if (res === undefined) {
-        return null;
+    const setupWorker = async () => {
+      if (!callback || !caller) {
+        return;
       }
-      setBuiltQuery(res);
-      return res;
-    }
-    await setup();
-    return await generateQuery();
-  }
+      const worker = new Worker(new URL("./workers/axiomWorker", import.meta.url), { type: "module" });
+      const WrappedAxiomWorker = wrap<typeof AxiomWorker>(worker);
+      workerApi.current = await new WrappedAxiomWorker(
+        {
+          chainId: chainId.toString(),
+          rpcUrl,
+          compiledCircuit,
+          callback: callback ?? { target: "", extraData: "" }, // must be filled in via setParams
+          caller: caller ?? "", // must be filled in via setParams
+          options: options ?? {}, // can be filled in via setParams
+        },
+        window.navigator.hardwareConcurrency,
+      );
+      if (isMounted && workerApi.current) {
+        setWorkerApi(workerApi as any);
+      }
+    };
 
-  const reset = () => {
-    setBuiltQuery(null);
-  }
+    setupWorker();
 
-  const setParams = useCallback((inputs: any, callbackTarget: string, callbackExtraData: string, caller: string, options?: AxiomV2QueryOptions) => {
-    if (callbackExtraData === "") {
-      callbackExtraData = "0x";
-    }
-    setInputs(inputs);
-    setCallback({
-      target: callbackTarget,
-      extraData: callbackExtraData,
-    });
-    setCaller(caller);
-    setOptions(options ?? {});
-  }, []);
-
-  const areParamsSet = (inputs !== null && callback !== null);
+    return () => {
+      isMounted = false;
+    };
+  }, [chainId, rpcUrl, compiledCircuit, callback, caller, options]);
 
   const contextValues = {
     setParams,
@@ -121,7 +83,7 @@ function AxiomCircuitProvider({
     build,
     builtQuery,
     reset,
-  };
+  }
 
   return (
     <AxiomCircuitContext.Provider value={contextValues}>
@@ -130,4 +92,26 @@ function AxiomCircuitProvider({
   )
 }
 
-export { useAxiomCircuit, AxiomCircuitProvider };
+ export const AxiomCircuitProvider = ({
+  compiledCircuit,
+  chainId,
+  rpcUrl,
+  children,
+}: {
+  chainId: number | string | bigint,
+  rpcUrl: string,
+  compiledCircuit: AxiomV2CompiledCircuit,
+  children: React.ReactNode,
+}) => {
+  return (
+    <AxiomCoreCircuitProvider>
+      <AxiomIntermediateCircuitProvider
+        chainId={chainId}
+        rpcUrl={rpcUrl}
+        compiledCircuit={compiledCircuit}
+      >
+        {children}
+      </AxiomIntermediateCircuitProvider>
+    </AxiomCoreCircuitProvider>
+  )
+}

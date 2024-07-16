@@ -22,7 +22,7 @@ describe("Build DataQuery Standalone", () => {
   const UNI_V3_FACTORY_ADDR = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
 
   const config: QueryBuilderBaseConfig = {
-    providerUri: process.env.PROVIDER_URI_SEPOLIA as string,
+    rpcUrl: process.env.RPC_URL_11155111 as string,
     sourceChainId: "1",
     version: "v2",
   };

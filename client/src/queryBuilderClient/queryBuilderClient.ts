@@ -60,7 +60,7 @@ export class QueryBuilderClient extends QueryBuilderBase {
     }
 
     return {
-      providerUri: baseConfig.providerUri,
+      rpcUrl: baseConfig.rpcUrl,
       provider: baseConfig.provider,
       sourceChainId: baseConfig.sourceChainId,
       targetChainId: baseConfig.targetChainId,
@@ -223,7 +223,6 @@ export class QueryBuilderClient extends QueryBuilderBase {
     callback.extraData = callback.extraData.toLowerCase();
     return callback;
   }
-
 
   protected async validateCallback(): Promise<boolean> {
     if (this.callback === undefined) {

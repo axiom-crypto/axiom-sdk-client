@@ -9,20 +9,31 @@ import {
   ByteLengths,
   IpfsClient,
 } from "@axiom-crypto/circuit/pkg/tools";
+import { CoreConfigCircuit, CrosschainConfig } from "./internal";
 
 const solidityTypes = Object.keys(ByteLengths);
 const solidityInputTypes = [...solidityTypes, ...solidityTypes.map((type: string) => `${type}[]`)] as const;
 export type CircuitInputType = typeof solidityInputTypes[number];
 
-export interface AxiomV2ClientConfig<T> {
-  circuit: (inputs: T) => Promise<void>;
-  compiledCircuit: AxiomV2CompiledCircuit;
+// Types combined in this way to support React component
+export interface AxiomV2ClientConfig<T> extends CoreConfigCircuit<T>, TargetChainConfig {}
+
+// Types combined in this way to support React component
+export interface AxiomV2ClientCrosschainConfig<T> extends CoreConfigCircuit<T>, CrosschainConfig {}
+
+export enum BridgeType {
+  Broadcaster,
+  BlockhashOracle,
+}
+
+export interface ChainConfig {
   chainId: string;
-  provider: string;
-  callback: AxiomV2CallbackInput;
+  rpcUrl: string;
+}
+
+export interface TargetChainConfig extends ChainConfig {
   privateKey?: string;
-  capacity?: AxiomV2CircuitCapacity;
-  options?: AxiomV2QueryOptions;
+  caller?: string;
 }
 
 export interface AxiomV2CallbackInput {

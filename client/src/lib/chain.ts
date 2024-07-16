@@ -64,6 +64,7 @@ export function getChainDefaults(chainId: string): Readonly<ChainDefaults> {
   } else if (isBaseChain(chainId)) {
     return BaseDefaults;
   } else {
-    throw new Error(`Unsupported chain ${chainId}`);
+    console.warn(`Unsupported chain ${chainId}; using Mainnet defaults`);
+    return MainnetDefaults;
   }
 }

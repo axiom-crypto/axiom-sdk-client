@@ -26,24 +26,24 @@ export async function calculatePayment(
   const payment = queryFee + BigInt(feeData.maxFeePerGas) * 
       (BigInt(feeData.callbackGasLimit) + feeData.proofVerificationGas);
 
-  if (isMainnetChain(chainId)) {
-    return payment;
-  } else if (isOpStackChain(chainId) || isArbitrumChain(chainId) || isScrollChain(chainId)) {
-    // Get the projected callback cost
+  // Handle supported L2s
+  if (isOpStackChain(chainId) || isArbitrumChain(chainId) || isScrollChain(chainId)) {
+    // Get the raw projected callback cost
     const projectedCallbackCost = await getProjectedL2CallbackCost(
-      chainId, publicClient,
+      chainId,
+      publicClient,
       BigInt(feeData.maxFeePerGas),
       BigInt(feeData.callbackGasLimit),
-      feeData.proofVerificationGas
+      feeData.proofVerificationGas,
     );
     const minimumPayment = projectedCallbackCost + defaults.axiomQueryFeeWei;
     if (payment < minimumPayment) {
-      throw new Error(`Payment ${payment} is less than minimum payment ${minimumPayment}`);
+      console.warn(`Payment ${payment} is less than minimum payment ${minimumPayment}`);
     }
-    return payment;
-  } else {
-    throw new Error(`Unsupported chain ${chainId}`);
   }
+
+  // Mainnet or other chain
+  return payment;
 }
 
 /**
@@ -56,9 +56,9 @@ export async function calculatePayment(
 export async function calculateFeeDataExtended(
   chainId: string,
   publicClient: PublicClient,
+  axiomQueryAddress: string,
   options: AxiomV2QueryOptions,
 ): Promise<AxiomV2FeeDataExtended> {
-  const axiomV2QueryAddr = options.overrides?.queryAddress ?? getAxiomV2QueryAddress(chainId);
   const defaults = getChainDefaults(chainId);
 
   // Get callback gas limit
@@ -73,7 +73,7 @@ export async function calculateFeeDataExtended(
   // Get proofVerificationGas from contract
   const proofVerificationGas = await readContractValueBigInt(
     publicClient,
-    axiomV2QueryAddr,
+    axiomQueryAddress,
     getAxiomV2Abi(AbiType.Query),
     "proofVerificationGas",
     [],
@@ -83,7 +83,7 @@ export async function calculateFeeDataExtended(
   // Get axiomQueryFee from contract
   const axiomQueryFee = await readContractValueBigInt(
     publicClient,
-    axiomV2QueryAddr,
+    axiomQueryAddress,
     getAxiomV2Abi(AbiType.Query),
     "axiomQueryFee",
     [],
@@ -96,36 +96,38 @@ export async function calculateFeeDataExtended(
     if (overrideAxiomQueryFee !== 0n && axiomQueryFee > overrideAxiomQueryFee) {
       overrideAxiomQueryFee = axiomQueryFee;
     } 
-    return {
-      maxFeePerGas: maxFeePerGas.toString(),
-      callbackGasLimit: Number(callbackGasLimit),
-      overrideAxiomQueryFee: overrideAxiomQueryFee.toString(),
-      axiomQueryFee,
-      proofVerificationGas,
-    };
   } else if (isOpStackChain(chainId) || isArbitrumChain(chainId) || isScrollChain(chainId)) {
     const defaultAxiomQueryFee = getChainDefaults(chainId).axiomQueryFeeWei;
 
-    // Get the projected callback cost
-    const projectedCallbackCost = await getProjectedL2CallbackCost(chainId, publicClient, maxFeePerGas, callbackGasLimit, proofVerificationGas);
+    // Get the projected callback cost multiplied by a predefined factor
+    const projectedCallbackCost = await getProjectedL2CallbackCost(
+      chainId,
+      publicClient,
+      maxFeePerGas,
+      callbackGasLimit,
+      proofVerificationGas,
+      ClientConstants.L1_FEE_NUMERATOR,
+      ClientConstants.L1_FEE_DENOMINATOR,
+    );
 
     // overrideAxiomQueryFeeL2 = AXIOM_QUERY_FEE + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas)
+    // overrideAxiomQueryFeeL2 = AXIOM_QUERY_FEE + paddedL1Fee
     const overrideAxiomQueryFeeL2 = defaultAxiomQueryFee + projectedCallbackCost - maxFeePerGas * (callbackGasLimit + proofVerificationGas);
     
     // overrideAxiomQueryFee = max(overrideAxiomQueryFeeL2, overrideAxiomQueryFee, AXIOM_QUERY_FEE)
     const largerAxiomQueryFee = overrideAxiomQueryFeeL2 > axiomQueryFee ? overrideAxiomQueryFeeL2 : defaultAxiomQueryFee;
     overrideAxiomQueryFee = overrideAxiomQueryFee > largerAxiomQueryFee ? overrideAxiomQueryFee : largerAxiomQueryFee;
-    
-    return {
-      maxFeePerGas: maxFeePerGas.toString(),
-      callbackGasLimit: Number(callbackGasLimit),
-      overrideAxiomQueryFee: overrideAxiomQueryFee.toString(),
-      axiomQueryFee,
-      proofVerificationGas,
-    };
   } else {
-    throw new Error(`Unsupported chain ${chainId}`);
+    console.warn(`Unsupported chain ${chainId}`);
   }
+  
+  return {
+    maxFeePerGas: maxFeePerGas.toString(),
+    callbackGasLimit: Number(callbackGasLimit),
+    overrideAxiomQueryFee: overrideAxiomQueryFee.toString(),
+    axiomQueryFee,
+    proofVerificationGas,
+  };
 }
 
 export async function getProjectedL2CallbackCost(
@@ -134,12 +136,15 @@ export async function getProjectedL2CallbackCost(
   maxFeePerGas: bigint,
   callbackGasLimit: bigint,
   proofVerificationGas: bigint,
+  l1FeeMultiplierNumerator?: bigint,
+  l1FeeMultiplierDenominator?: bigint,
 ): Promise<bigint> {
   if (isOpStackChain(chainId)) {
     // on OP Stack
     // projectedCallbackCost = 
     //   maxFeePerGas * (callbackGasLimit + proofVerificationGas) +
     //   opStackGasOracle.getL1Fee(AXIOM_PROOF_CALLDATA_BYTES)
+    const gasUsed = maxFeePerGas * (callbackGasLimit + proofVerificationGas);
     const l1Fee = await readContractValueBigInt(
       publicClient.extend(publicActionsL2()),
       getOpStackGasPriceOracleAddress() as `0x${string}`,
@@ -147,23 +152,31 @@ export async function getProjectedL2CallbackCost(
       "getL1Fee",
       [ClientConstants.AXIOM_PROOF_CALLDATA_BYTES],
     );
-    // 1.2x mutltiplier for L1 fee value to ensure the query is fulfilled
-    return maxFeePerGas * (callbackGasLimit + proofVerificationGas) + 
-      (l1Fee * ClientConstants.L1_FEE_NUMERATOR / ClientConstants.L1_FEE_DENOMINATOR);
+    if (l1FeeMultiplierNumerator || l1FeeMultiplierDenominator) {
+      if (!(l1FeeMultiplierNumerator && l1FeeMultiplierDenominator)) {
+        throw new Error("l1FeeMultiplierNumerator and l1FeeMultiplierDenominator must be both set or both unset");
+      }
+      const paddedL1Fee = l1Fee * l1FeeMultiplierNumerator / l1FeeMultiplierDenominator;
+      return gasUsed + paddedL1Fee;
+    }
+    return gasUsed + l1Fee;
   } else if (isArbitrumChain(chainId)) {
     // on Arbitrum
     // projectedCallbackCost = 
     //   maxFeePerGas * (callbackGasLimit + proofVerificationGas) +
     //   AXIOM_PROOF_CALLDATA_LEN * 16 * ArbGasInfo.getL1BaseFeeEstimate()
-    throw new Error("Arbitrum not yet supported");
+    console.warn("Arbitrum not yet supported");
+    return 0n;
   } else if (isScrollChain(chainId)) {
     // on Scroll
     // projectedCallbackCost = 
     //   maxFeePerGas * (callbackGasLimit + proofVerificationGas) +   
     //   AXIOM_PROOF_CALLDATA_LEN * 16 * L1GasPriceOracle.l1BaseFee()
-    throw new Error("Scroll not yet supported");
+    console.warn("Scroll not yet supported");
+    return 0n;
   } else {    
-    throw new Error(`Unsupported chain ${chainId}`);
+    console.warn(`Unsupported chain ${chainId}`);
+    return 0n;
   }
 }
 

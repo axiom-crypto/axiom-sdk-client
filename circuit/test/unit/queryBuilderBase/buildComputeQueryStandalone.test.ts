@@ -7,7 +7,7 @@ import { QueryBuilderBase, QueryBuilderBaseConfig, AxiomV2Callback, AxiomV2Compu
 
 describe("Build ComputeQuery Standalone", () => {
   const config: QueryBuilderBaseConfig = {
-    providerUri: process.env.PROVIDER_URI_SEPOLIA as string,
+    rpcUrl: process.env.RPC_URL_11155111 as string,
     sourceChainId: 1,
     version: "v2",
   };

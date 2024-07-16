@@ -6,6 +6,8 @@ if (process.env.CHAIN_ID === undefined) {
   throw new Error(`CHAIN_ID environment variable must be defined`);
 }
 const CHAIN_ID = process.env.CHAIN_ID;
+const TARGET_CHAIN_ID = process.env.TARGET_CHAIN_ID || undefined;
+const TARGET_RPC_URL = process.env[`RPC_URL_${TARGET_CHAIN_ID}`] || undefined;
 
 jest.setTimeout(240000);
 
@@ -71,9 +73,11 @@ describe("Integration tests", () => {
       const [axiom, receipt] = await run({
         circuit: circuitPath,
         rpcUrl,
+        targetRpcUrl: TARGET_RPC_URL,
         data,
         send: true,
       })
+      console.log(receipt);
       expect(axiom.getSendQueryArgs !== undefined).toBe(true);
       expect(receipt.status).toEqual("success");
     });
@@ -84,6 +88,7 @@ describe("Integration tests", () => {
       await run({
         circuit: "./test/integration/circuits/capacityDataQuery/size129Header.circuit.ts",
         rpcUrl,
+        targetRpcUrl: TARGET_RPC_URL,
         data,
         send: true,
       });
@@ -95,6 +100,7 @@ describe("Integration tests", () => {
     const [axiom, receipt] = await run({
       circuit: "./test/integration/circuits/computeQuery/simpleWithCapacity.circuit.ts",
       rpcUrl,
+      targetRpcUrl: TARGET_RPC_URL,
       data,
       send: true,
       options: {
@@ -104,6 +110,7 @@ describe("Integration tests", () => {
         },
       },
     });
+    console.log(receipt);
     expect(axiom.getSendQueryArgs !== undefined).toBe(true);
     expect(receipt.status).toEqual("success");
   });
@@ -116,6 +123,7 @@ describe("Integration tests", () => {
       await run({
         circuit: "./test/integration/circuits/eip4844/eip4844receipt.circuit.ts",
         rpcUrl,
+        targetRpcUrl: TARGET_RPC_URL,
         data,
         send: true,
       });

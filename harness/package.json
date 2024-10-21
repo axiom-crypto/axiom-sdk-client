@@ -1,6 +1,6 @@
 {
   "name": "@axiom-crypto/harness",
-  "version": "2.1.1-alpha.0",
+  "version": "2.1.1",
   "author": "Intrinsic Technologies",
   "license": "MIT",
   "description": "Circuit harness for axiom-client",

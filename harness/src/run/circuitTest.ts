@@ -145,10 +145,6 @@ export function getCallbackTarget(chainId: string, override?: string) {
       return "0x4D36100eA7BD6F685Fd44EB6BE5ccE7A92047581";
     case "11155111":
       return "0x4A4e2D8f3fBb3525aD61db7Fc843c9bf097c362e";
-    case "8453":
-      return "0x89C6FbABf570dc53b64b5D52095A8d955dABAE16";
-    case "84532":
-      return "0x3b49DE82B86d677C072Dcc7ED47bcA9F20f0CF46";
     default:
       throw new Error(`No target found for chainId: ${chainId}`);
   }

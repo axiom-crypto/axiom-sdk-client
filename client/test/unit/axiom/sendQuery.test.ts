@@ -5,8 +5,6 @@ import { getCallbackHash, getQueryHashV2, getQueryId } from "@axiom-crypto/circu
 
 const SOURCE_CHAIN_ID = "11155111";
 const SOURCE_RPC_URL = process.env[`RPC_URL_${SOURCE_CHAIN_ID}`] as string;
-const TARGET_CHAIN_ID = "84532";
-const TARGET_RPC_URL = process.env[`RPC_URL_${TARGET_CHAIN_ID}`] as string;
 const AXIOM_V2_QUERY_ADDR = "0x83c8c0B395850bA55c830451Cfaca4F2A667a983";
 const CALLER = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
 const MOCK = true;
@@ -75,37 +73,6 @@ describe("SendQuery tests", () => {
     const queryHash = getQueryHashV2(SOURCE_CHAIN_ID, dataQueryHash, computeQuery);
     const callbackHash = getCallbackHash(callback.target, callback.extraData);
     const queryId = getQueryId(SOURCE_CHAIN_ID, CALLER, salt, queryHash, callbackHash, CALLER);
-    expect(BigInt(queryId).toString()).toEqual(sendQueryParams.queryId);
-  });
-
-  test("Check sendQuery crosschain params", async () => {
-    const sendQueryParams = await buildSendQuery({
-      chainId: SOURCE_CHAIN_ID,
-      rpcUrl: SOURCE_RPC_URL,
-      axiomV2QueryAddress: AXIOM_V2_QUERY_ADDR,
-      dataQuery,
-      computeQuery,
-      callback,
-      caller: CALLER,
-      mock: MOCK,
-      options,
-      target: {
-        chainId: TARGET_CHAIN_ID,
-        rpcUrl: TARGET_RPC_URL,
-      },
-    });
-    const args = sendQueryParams.args;
-    expect(args[0]).toEqual(SOURCE_CHAIN_ID);
-    expect(args[1]).toEqual("0xbf0bafe9d8b45ce53265cd7afa042d7373e0f4eb1b1f641fbfe44d3f8962cba9");
-    expect(args[2]).toEqual(computeQuery);
-    expect(args[3]).toEqual(callback);
-    expect(args[6]).toEqual(CALLER.toLowerCase());
-    expect(args[7]).toEqual("0x0000000000aa36a700010002004c4b40f39fd6e51aad88f6f4ce6ab8827279cfffb9226600000000");
-    const dataQueryHash = args[1];
-    const salt = args[5];
-    const queryHash = getQueryHashV2(SOURCE_CHAIN_ID, dataQueryHash, computeQuery);
-    const callbackHash = getCallbackHash(callback.target, callback.extraData);
-    const queryId = getQueryId(TARGET_CHAIN_ID, CALLER, salt, queryHash, callbackHash, CALLER);
     expect(BigInt(queryId).toString()).toEqual(sendQueryParams.queryId);
   });
 });

@@ -1,42 +1,18 @@
 import {
-  arbitrum,
-  arbitrumSepolia,
-  base,
-  baseSepolia,
   mainnet,
-  optimism,
-  optimismSepolia,
-  scroll,
-  scrollSepolia,
   sepolia
 } from "viem/chains";
 
 const axiomV2QueryAddresses = {
   [mainnet.id.toString()]: "0x83c8c0B395850bA55c830451Cfaca4F2A667a983",
   [sepolia.id.toString()]: "0x83c8c0B395850bA55c830451Cfaca4F2A667a983",
-  [base.id.toString()]: "0xfe059442B0379D5f22Bec384A588766f98A36812",
-  [baseSepolia.id.toString()]: "0xfe059442B0379D5f22Bec384A588766f98A36812",
 };
 
 // TargetChainId -> SourceChainId
-const axiomV2QueryBlockhashOracleAddresses = {
-  [base.id.toString()]: {
-    [mainnet.id.toString()]: undefined,
-  },
-  [baseSepolia.id.toString()]: {
-    [sepolia.id.toString()]: "0xFa44Fc4CDE68177Bd8212774a09E32d23fA1F41f",
-  },
-};
+const axiomV2QueryBlockhashOracleAddresses: Record<string, Record<string, undefined>> = {};
 
 // TargetChainId -> SourceChainId -> BridgeId
-const axiomV2QueryBroadcasterAddresses = {
-  [arbitrum.id.toString()]: {
-    [mainnet.id.toString()]: [],
-  },
-  [arbitrumSepolia.id.toString()]: {
-    [sepolia.id.toString()]: [],
-  },
-};
+const axiomV2QueryBroadcasterAddresses: Record<string, Record<string, Array<string>>> = {};
 
 export function getAxiomV2QueryAddress(chainId: string) {
   const address = axiomV2QueryAddresses[chainId];

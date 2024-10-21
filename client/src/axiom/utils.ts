@@ -15,8 +15,6 @@ export function validateChainId(chainId: string) {
   switch (chainId) {
     case "1": // Mainnet
     case "11155111":  // Sepolia
-    case "8453":  // Base
-    case "84532":  // Base Sepolia
       return;
     default:
       throw new Error(`Unsupported chainId ${chainId}`);

@@ -1,4 +1,4 @@
-import { BaseDefaults, MainnetDefaults } from "./constants";
+import { MainnetDefaults } from "./constants";
 import { ChainDefaults } from "../types";
 
 export function isMainnetChain(chainId: string) {
@@ -21,18 +21,8 @@ export function isOptimismChain(chainId: string) {
   }
 }
 
-export function isBaseChain(chainId: string) {
-  switch (chainId) {
-    case "8453":  // Base
-    case "84532":  // Base Sepolia
-      return true;
-    default:
-      return false;
-  }
-}
-
 export function isOpStackChain(chainId: string) {
-  if (isOptimismChain(chainId) || isBaseChain(chainId)) {
+  if (isOptimismChain(chainId)) {
     return true;
   }
   return false;
@@ -61,8 +51,6 @@ export function isScrollChain(chainId: string) {
 export function getChainDefaults(chainId: string): Readonly<ChainDefaults> {
   if (isMainnetChain(chainId)) {
     return MainnetDefaults;
-  } else if (isBaseChain(chainId)) {
-    return BaseDefaults;
   } else {
     console.warn(`Unsupported chain ${chainId}; using Mainnet defaults`);
     return MainnetDefaults;

@@ -53,6 +53,11 @@ circuit
   .option("-pv, --proven <proven>", "`axiom circuit prove` outputs path")
   .option("-o, --outputs <outputs>", "query-params outputs path")
   .option("-a, --args-map", "sendQuery argments output as mapping for use with Forge")
+  .option("-t, --target-chain-id <chain id>", "(crosschain) target chain id")
+  .option("-tr, --target-rpc-url <https url>", "(crosschain) target chain JSON-RPC provider URL (https)")
+  .option("-b, --bridge-id <bridge id>", "(crosschain) bridge id", parseInt)
+  .option("-br, --is-broadcaster", "(crosschain) Use crosschain broadcaster")
+  .option("-bo, --is-blockhash-oracle", "(crosschain) Use crosschain blockhash oracle")
   .action(queryParams);
 
 program.parseAsync(process.argv);
